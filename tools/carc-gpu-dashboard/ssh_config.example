@@ -1,0 +1,20 @@
+# Example snippet for ~/.ssh/config
+# Replace YOUR_NETID and adjust IdentityFile as needed.
+#
+# Test:
+#   ssh -o BatchMode=yes discovery 'echo ok && whoami'
+
+Host discovery
+  HostName discovery.usc.edu
+  User YOUR_NETID
+  IdentityFile ~/.ssh/id_ed25519
+  IdentitiesOnly yes
+  ServerAliveInterval 60
+  ServerAliveCountMax 3
+
+# Optional transfer node (rsync / scp), not required by the dashboard:
+# Host hpc-transfer
+#   HostName hpc-transfer1.usc.edu
+#   User YOUR_NETID
+#   IdentityFile ~/.ssh/id_ed25519
+#   IdentitiesOnly yes

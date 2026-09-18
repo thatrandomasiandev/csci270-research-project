@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CARC GPU Queue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;650&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>CARC GPU queue</h1>
+        <p class="sub">Discovery live queue + recent finished jobs (port 8767).</p>
+      </div>
+      <div class="controls">
+        <span id="pill" class="status-pill">loading</span>
+        <button id="refresh" type="button">Refresh</button>
+      </div>
+    </header>
+
+    <div id="error" class="banner" hidden></div>
+
+    <div class="grid">
+      <div class="metric">
+        <div class="label">GPU running</div>
+        <div class="value" id="gpu_running">—</div>
+        <div class="hint">jobs on partition gpu</div>
+      </div>
+      <div class="metric">
+        <div class="label">GPU pending</div>
+        <div class="value" id="gpu_pending">—</div>
+        <div class="hint">queued ahead / around you</div>
+      </div>
+      <div class="metric">
+        <div class="label">Debug running</div>
+        <div class="value" id="debug_running">—</div>
+        <div class="hint">short-test partition</div>
+      </div>
+      <div class="metric">
+        <div class="label">Debug pending</div>
+        <div class="value" id="debug_pending">—</div>
+        <div class="hint">usually shorter wait</div>
+      </div>
+    </div>
+
+    <section>
+      <h2>Your jobs <span class="count" id="my_jobs_count"></span></h2>
+      <div class="panel" id="my_jobs_panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th><th>Partition</th><th>Name</th><th>State</th><th>Time</th><th>Reason / nodelist</th>
+            </tr>
+          </thead>
+          <tbody id="my_jobs"></tbody>
+        </table>
+        <div id="my_jobs_empty" class="empty" hidden>No jobs currently in the Slurm queue.</div>
+      </div>
+      <div class="meta" id="start_meta"></div>
+    </section>
+
+    <section>
+      <h2>Recently finished <span class="count" id="recent_count"></span></h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th><th>Partition</th><th>Name</th><th>State</th><th>Elapsed</th><th>Detail</th>
+            </tr>
+          </thead>
+          <tbody id="recent_jobs"></tbody>
+        </table>
+        <div id="recent_empty" class="empty" hidden>No finished jobs in the recent window yet.</div>
+      </div>
+    </section>
+
+    <section>
+      <h2>GPU / debug node types</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Partition</th><th>GRES</th><th>GPU</th><th>Nodes</th><th>CPUs/node</th><th>Mem</th>
+            </tr>
+          </thead>
+          <tbody id="nodes"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Top pending on gpu</h2>
+      <div class="panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Job</th><th>User</th><th>Priority</th><th>Time</th><th>Reason</th>
+            </tr>
+          </thead>
+          <tbody id="top_pending"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <h2>Priority detail</h2>
+      <div class="panel">
+        <pre class="raw" id="sprio">—</pre>
+      </div>
+      <p class="meta" id="fetch_meta"></p>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let lastGood = null;
+    let inFlight = false;
+
+    function stateClass(st) {
+      if (!st) return "";
+      const s = String(st).toUpperCase();
+      if (s === "R") return "state-R";
+      if (s === "PD") return "state-PD";
+      if (s === "CD") return "state-CD";
+      if (s === "CA" || s === "CG") return "state-CA";
+      return "state-F";
+    }
+
+    function fillTable(tbodyId, rows, cols) {
+      const tb = $(tbodyId);
+      const html = rows.map((row) => {
+        const cells = cols.map((c) => {
+          const val = row[c] ?? "";
+          const cls = c === "state" ? stateClass(val) : "";
+          return `<td class="${cls}">${escapeHtml(String(val))}</td>`;
+        }).join("");
+        const rowCls = row.source === "history" ? "row-history" : "";
+        return `<tr class="${rowCls}">${cells}</tr>`;
+      }).join("");
+      tb.innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+      return s
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function render(data) {
+      const s = data.summary || {};
+      $("gpu_running").textContent = s.gpu_running ?? "—";
+      $("gpu_pending").textContent = s.gpu_pending ?? "—";
+      $("debug_running").textContent = s.debug_running ?? "—";
+      $("debug_pending").textContent = s.debug_pending ?? "—";
+
+      const mine = data.my_jobs || [];
+      $("my_jobs_empty").hidden = mine.length > 0;
+      $("my_jobs_count").textContent = mine.length ? `(${mine.length})` : "";
+      fillTable("my_jobs", mine, ["job_id", "partition", "name", "state", "time", "reason"]);
+
+      const recent = data.recent_jobs || [];
+      $("recent_empty").hidden = recent.length > 0;
+      $("recent_count").textContent = recent.length ? `(${recent.length})` : "";
+      fillTable("recent_jobs", recent, ["job_id", "partition", "name", "state", "time", "reason"]);
+
+      fillTable("nodes", data.nodes || [], ["partition", "gres", "gpu_type", "nodes", "cpus", "memory"]);
+      fillTable("top_pending", data.top_pending || [], ["job_id", "user", "priority", "time", "reason"]);
+
+      $("sprio").textContent = data.sprio || "—";
+      $("start_meta").textContent = data.start_estimates
+        ? "Start estimates:\n" + data.start_estimates
+        : "";
+      const staleNote = data.stale ? " · showing last good snapshot" : "";
+      const cacheNote = data.cached ? ` · cached ${data.cache_age_sec ?? "?"}s` : " · live";
+      const modeNote = data.mode === "demo" ? " · DEMO" : "";
+      $("fetch_meta").textContent = data.fetched_at
+        ? `Fetched ${data.fetched_at} · ssh ${data.ssh_host || "discovery"} · user ${data.user || ""}${cacheNote}${staleNote}${modeNote}`
+        : "";
+    }
+
+    async function load(force = false) {
+      if (inFlight) return;
+      inFlight = true;
+      $("refresh").disabled = true;
+      $("pill").textContent = lastGood ? "updating…" : "fetching…";
+      $("pill").className = "status-pill";
+      document.body.classList.add("is-updating");
+      try {
+        const res = await fetch("/api/status" + (force ? "?force=1" : ""));
+        const data = await res.json();
+        const err = $("error");
+
+        if (!data.ok && !data.stale && !data.my_jobs) {
+          err.hidden = false;
+          err.innerHTML = `<strong>Could not reach Discovery.</strong> ${escapeHtml(data.error || "")}<br/><code>${escapeHtml(data.hint || "")}</code>`;
+          $("pill").textContent = "offline";
+          $("pill").className = "status-pill bad";
+          return;
+        }
+
+        if (!data.ok && data.stale) {
+          err.hidden = false;
+          err.innerHTML = `<strong>Refresh failed — keeping last good view.</strong> ${escapeHtml(data.error || "")}`;
+          $("pill").textContent = "stale";
+          $("pill").className = "status-pill warn";
+          render(data);
+          lastGood = data;
+          return;
+        }
+
+        err.hidden = true;
+        const mode = data.mode === "demo" ? "demo" : (data.cached ? `ok · cached ${data.cache_age_sec}s` : "ok · live");
+        $("pill").textContent = mode;
+        $("pill").className = "status-pill ok";
+        render(data);
+        lastGood = data;
+      } catch (e) {
+        $("error").hidden = false;
+        $("error").textContent = String(e);
+        $("pill").textContent = lastGood ? "stale" : "error";
+        $("pill").className = "status-pill " + (lastGood ? "warn" : "bad");
+      } finally {
+        inFlight = false;
+        $("refresh").disabled = false;
+        document.body.classList.remove("is-updating");
+      }
+    }
+
+    $("refresh").addEventListener("click", () => load(true));
+    load(false);
+    setInterval(() => load(false), 30000);
+  </script>
+</body>
+</html>

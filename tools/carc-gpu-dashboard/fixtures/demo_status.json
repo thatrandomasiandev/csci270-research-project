@@ -1,0 +1,105 @@
+{
+  "ssh_host": "demo",
+  "user": "demo_user",
+  "summary": {
+    "gpu_running": 42,
+    "gpu_pending": 17,
+    "debug_running": 3,
+    "debug_pending": 1
+  },
+  "nodes": [
+    {
+      "partition": "gpu",
+      "gres": "gpu:v100:2",
+      "gpu_type": "v100",
+      "gpus_per_node": 2,
+      "nodes": 24,
+      "cpus": 28,
+      "memory": 187000
+    },
+    {
+      "partition": "gpu",
+      "gres": "gpu:a40:1",
+      "gpu_type": "a40",
+      "gpus_per_node": 1,
+      "nodes": 8,
+      "cpus": 48,
+      "memory": 250000
+    },
+    {
+      "partition": "debug",
+      "gres": "gpu:v100:1",
+      "gpu_type": "v100",
+      "gpus_per_node": 1,
+      "nodes": 4,
+      "cpus": 28,
+      "memory": 187000
+    }
+  ],
+  "my_jobs": [
+    {
+      "job_id": "12345678",
+      "partition": "gpu",
+      "name": "example_train",
+      "user": "demo_user",
+      "state": "PD",
+      "time": "0:00",
+      "nodes": "1",
+      "reason": "(Priority) · eta 2026-09-18T18:00:00",
+      "source": "queue"
+    },
+    {
+      "job_id": "12345679",
+      "partition": "debug",
+      "name": "smoke_test",
+      "user": "demo_user",
+      "state": "R",
+      "time": "4:12",
+      "nodes": "1",
+      "reason": "d12-12",
+      "source": "queue"
+    }
+  ],
+  "recent_jobs": [
+    {
+      "job_id": "12345000",
+      "partition": "gpu",
+      "name": "prev_sweep",
+      "user": "demo_user",
+      "state": "CD",
+      "time": "01:22:11",
+      "nodes": "",
+      "reason": "exit 0:0 · end 2026-09-18T12:01:00",
+      "source": "history"
+    },
+    {
+      "job_id": "12344999",
+      "partition": "gpu",
+      "name": "prev_sweep",
+      "user": "demo_user",
+      "state": "F",
+      "time": "00:03:40",
+      "nodes": "",
+      "reason": "exit 1:0 · end 2026-09-18T09:15:22",
+      "source": "history"
+    }
+  ],
+  "top_pending": [
+    {
+      "job_id": "12340001",
+      "user": "alice",
+      "priority": "4294900000",
+      "time": "2:11:03",
+      "reason": "(Resources)"
+    },
+    {
+      "job_id": "12345678",
+      "user": "demo_user",
+      "priority": "4294800000",
+      "time": "0:00",
+      "reason": "(Priority)"
+    }
+  ],
+  "start_estimates": "12345678|PD|2026-09-18T18:00:00|(Priority)\n12345679|R|2026-09-18T14:50:00|d12-12",
+  "sprio": "          JOBID PARTITION   PRIORITY       AGE  FAIRSHARE    JOBSIZE  PARTITION        QOS\n        12345678       gpu 4294800000         0          0          0          0          0"
+}
