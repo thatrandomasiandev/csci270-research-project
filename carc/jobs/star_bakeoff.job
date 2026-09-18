@@ -1,0 +1,61 @@
+#!/bin/bash
+# Graded bake-off: stock vs S7+PGO on Suite B i01–i04 (MATCH-gated, 1 thread).
+#SBATCH --job-name=star_bakeoff
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=32G
+#SBATCH --time=04:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/bakeoff-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/bakeoff-%j.err
+
+set -euo pipefail
+ROOT=/project2/biyik_1165/jjt_373/csci270-star
+cd "${ROOT}"
+mkdir -p carc/logs star/bench/results
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0
+module load samtools/1.19.2
+
+STOCK_BIN="${ROOT}/star/src/STAR_stock"
+OPT_BIN="${ROOT}/star/src/STAR_optimized"
+[[ -x "${STOCK_BIN}" ]] || { echo "missing ${STOCK_BIN} — run star_build.job first" >&2; exit 1; }
+[[ -x "${OPT_BIN}" ]] || { echo "missing ${OPT_BIN} — run star_build.job first" >&2; exit 1; }
+command -v samtools >/dev/null || { echo "samtools required" >&2; exit 1; }
+
+echo "=== binaries ==="
+"${STOCK_BIN}" --version
+"${OPT_BIN}" --version
+samtools --version | head -1
+hostname
+lscpu | grep -E 'Model name|CPU\(s\)|Thread|MHz' || true
+
+export STOCK_BIN OPT_BIN
+export THREADS=1 RUNS="${RUNS:-5}" WARMUP="${WARMUP:-1}"
+export EXTRA_STAR_ARGS='--outBAMcompression 0'
+# Shared nb10 index (i02–i04 symlink to i01 on disk)
+export GENOME_DIR="${ROOT}/star/bench/datasets/suiteB/i01/genome_nb10"
+
+SUMMARY="${ROOT}/star/bench/results/carc_bakeoff_summary.txt"
+: > "${SUMMARY}"
+{
+  echo "host=$(hostname)"
+  echo "date=$(date -Is)"
+  echo "stock=${STOCK_BIN}"
+  echo "opt=${OPT_BIN}"
+  echo "threads=${THREADS} runs=${RUNS} warmup=${WARMUP}"
+  echo "EXTRA_STAR_ARGS=${EXTRA_STAR_ARGS}"
+  echo "GENOME_DIR=${GENOME_DIR}"
+} | tee -a "${SUMMARY}"
+
+for DS in i01 i02 i03 i04; do
+  echo "===== DATASET ${DS} =====" | tee -a "${SUMMARY}"
+  export OUT_ROOT="${ROOT}/star/bench/results/carc_bakeoff_${DS}"
+  bash star/bench/scripts/run_bakeoff.sh "${DS}" | tee -a "${SUMMARY}"
+done
+
+echo BAKEOFF_DONE | tee -a "${SUMMARY}"

@@ -1,0 +1,65 @@
+#!/bin/bash
+# Full baseline: 3 envs × 4 protocols × 5 seeds = 60 tasks
+# Array index layout: env*20 + protocol*5 + seed
+#SBATCH --job-name=rmdiag_base
+#SBATCH --account=biyik_1165
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-task=v100:1
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+#SBATCH --array=0-59
+#SBATCH --output=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/base-%A_%a.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/base-%A_%a.err
+
+set -euo pipefail
+ROOT="/project2/biyik_1165/jjt_373/rm-decay-vs-overopt"
+mkdir -p "${ROOT}/carc/logs" "${ROOT}/results/raw"
+# shellcheck source=/dev/null
+source "${ROOT}/carc/env.sh"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck source=/dev/null
+  source /etc/profile.d/modules.sh
+fi
+module purge 2>/dev/null || true
+module load gcc/11.3.0 2>/dev/null || module load gcc/13.3.0 2>/dev/null || true
+module load cuda/11.8.0 2>/dev/null || module load cuda/12.4.0 2>/dev/null || true
+
+# Prefer project conda; fall back to existing bpref if rmdiag missing
+# shellcheck source=/dev/null
+source "${CARC_CONDA_DIR}/etc/profile.d/conda.sh"
+if conda env list | grep -qE "^${CARC_ENV_NAME}\\s"; then
+  conda activate "${CARC_ENV_NAME}"
+elif conda env list | grep -qE "^bpref\\s"; then
+  conda activate bpref
+else
+  conda activate base
+fi
+
+ENVS=(point_mass point_mass_tight point_mass_wide)
+PROTOCOLS=(oracle decay overopt shared_blindspot)
+SEEDS=(0 1 2 3 4)
+
+EID=$((SLURM_ARRAY_TASK_ID / 20))
+REM=$((SLURM_ARRAY_TASK_ID % 20))
+PID=$((REM / 5))
+SID=$((REM % 5))
+
+ENV_NAME="${ENVS[$EID]}"
+PROTOCOL="${PROTOCOLS[$PID]}"
+SEED="${SEEDS[$SID]}"
+
+cd "${ROOT}"
+export PYTHONUNBUFFERED=1
+python -u src/train.py \
+  --protocol "${PROTOCOL}" \
+  --env "${ENV_NAME}" \
+  --seed "${SEED}" \
+  --num-steps 25000 \
+  --diag-every 8 \
+  --device cuda \
+  --mitigation none \
+  --out-dir "results/raw/${ENV_NAME}_${PROTOCOL}_none_seed${SEED}"

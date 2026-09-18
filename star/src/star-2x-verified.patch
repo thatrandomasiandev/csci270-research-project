@@ -1,0 +1,315 @@
+diff --git a/source/Transcript.cpp b/source/Transcript.cpp
+index 81b2f1c..8e5cc40 100644
+--- a/source/Transcript.cpp
++++ b/source/Transcript.cpp
+@@ -23,6 +23,7 @@ void Transcript::reset() {
+     nGap=0; lGap=0; lDel=0; lIns=0; nDel=0; nIns=0;
+ 
+     nUnique=nAnchor=0;
++    nExons=0; // was left uninitialized; bounded exon copies require a defined value
+ };
+ 
+ void Transcript::add(Transcript *trIn) {
+diff --git a/source/Transcript.h b/source/Transcript.h
+index 9b75975..61bcdbc 100755
+--- a/source/Transcript.h
++++ b/source/Transcript.h
+@@ -6,16 +6,19 @@
+ #include "Variation.h"
+ #include "Genome.h"
+ #include <set>
++#include <cstring>
++#include <utility>
+ 
+-class Transcript {
+-public:
++// CSCI270 rung S1: per-exon arrays are copied only up to nExons rows (see Transcript copy ctor / operator=).
++struct TranscriptExonArrays {
+     uint exons[MAX_N_EXONS][EX_SIZE]; //coordinates of all exons: r-start, g-start, length
+-    vector <array<uint32,2>> cigar; //new way to record alignments, with CIGAR operations. For now, only used by splice-graph
+-    
+     uint shiftSJ[MAX_N_EXONS][2]; //shift of the SJ coordinates due to genomic micro-repeats
+     int canonSJ[MAX_N_EXONS]; //canonicity of each junction
+     uint8 sjAnnot[MAX_N_EXONS]; //anotated or not
+     uint8 sjStr[MAX_N_EXONS]; //strand of the junction
++};
++struct TranscriptScalars {
++    vector <array<uint32,2>> cigar; //new way to record alignments, with CIGAR operations. For now, only used by splice-graph
+     uint intronMotifs[3];
+     uint8 sjMotifStrand;
+     bool sjYes;
+@@ -59,6 +62,54 @@ public:
+     
+     //annotations
+     std::set <uint32> alignGenes;
++};
++
++class Transcript : public TranscriptExonArrays, public TranscriptScalars {
++public:
++    Transcript(const Transcript &t) : TranscriptScalars(t) { copyExonRows(t); };
++    Transcript& operator=(const Transcript &t) { if (this!=&t) { TranscriptScalars::operator=(t); copyExonRows(t); }; return *this; };
++    // Rung S8: move leaf → window slot without cloning STL containers (cigar/var*/alignGenes).
++    Transcript(Transcript &&t) noexcept : TranscriptScalars(std::move(t)) { copyExonRows(t); };
++    Transcript& operator=(Transcript &&t) noexcept {
++        if (this!=&t) { TranscriptScalars::operator=(std::move(t)); copyExonRows(t); };
++        return *this;
++    };
++    inline void copyExonRows(const Transcript &t) {
++        //NOTE: Transcript::reset() never assigns nExons, so a default-constructed Transcript
++        //can hold a garbage nExons. Stock STAR copied all MAX_N_EXONS rows unconditionally and so
++        //was immune; a bounded copy must clamp defensively (n==0 catches nExons==UINT64_MAX).
++        uint n = t.nExons + 1; if (n==0 || n>MAX_N_EXONS) n=MAX_N_EXONS;
++        memcpy(exons,   t.exons,   n*sizeof(exons[0]));
++        memcpy(shiftSJ, t.shiftSJ, n*sizeof(shiftSJ[0]));
++        memcpy(canonSJ, t.canonSJ, n*sizeof(canonSJ[0]));
++        memcpy(sjAnnot, t.sjAnnot, n*sizeof(sjAnnot[0]));
++        memcpy(sjStr,   t.sjStr,   n*sizeof(sjStr[0]));
++    };
++    // Rung S4: leaf finalize copies stitch state without cloning empty STL containers.
++    // During stitchWindowAligns recursion cigar/var*/alignGenes stay empty until
++    // variationAdjust runs on the leaf-local object; skipping those copies removes
++    // millions of empty-vector/set clone costs per sample.
++    inline void adoptStitchState(const Transcript &t) {
++        copyExonRows(t);
++        intronMotifs[0]=t.intronMotifs[0]; intronMotifs[1]=t.intronMotifs[1]; intronMotifs[2]=t.intronMotifs[2];
++        sjMotifStrand=t.sjMotifStrand; sjYes=t.sjYes;
++        nExons=t.nExons;
++        readLengthOriginal=t.readLengthOriginal; readLength=t.readLength;
++        Lread=t.Lread; readLengthPairOriginal=t.readLengthPairOriginal;
++        iRead=t.iRead; readNmates=t.readNmates; readName=t.readName;
++        iFrag=t.iFrag;
++        rStart=t.rStart; roStart=t.roStart; rLength=t.rLength;
++        gStart=t.gStart; gLength=t.gLength; cStart=t.cStart;
++        Chr=t.Chr; Str=t.Str; roStr=t.roStr; haploType=t.haploType;
++        primaryFlag=t.primaryFlag;
++        nMatch=t.nMatch; nMM=t.nMM; mappedLength=t.mappedLength;
++        extendL=t.extendL; maxScore=t.maxScore;
++        nGap=t.nGap; lGap=t.lGap; nDel=t.nDel; nIns=t.nIns; lDel=t.lDel; lIns=t.lIns;
++        nUnique=t.nUnique; nAnchor=t.nAnchor;
++        cigar.clear();
++        varInd.clear(); varGenCoord.clear(); varReadCoord.clear(); varAllele.clear();
++        alignGenes.clear();
++    };
+ 
+     Transcript(); //resets to 0
+     void reset(); //reset to 0
+diff --git a/source/stitchAlignToTranscript.cpp b/source/stitchAlignToTranscript.cpp
+index c6bd9d1..df5fa41 100644
+--- a/source/stitchAlignToTranscript.cpp
++++ b/source/stitchAlignToTranscript.cpp
+@@ -30,28 +30,19 @@ intScore stitchAlignToTranscript(uint rAend, uint gAend, uint rBstart, uint gBst
+         trA->sjStr[trA->nExons-1]=mapGen.sjdbStrand[sjAB];;
+         trA->nExons++;
+         trA->nMatch+=L;
+-        for (uint ii=rBstart;ii<rBstart+L;ii++) Score+=scoreMatch; //add QS for mapped portions
++        Score += (intScore)L * scoreMatch; // S7: closed form
+         Score+=P.pGe.sjdbScore;
+     } else {//general stitching
+-        trA->sjAnnot[trA->nExons-1]=0;
+-        trA->sjStr[trA->nExons-1]=0;
+-
+         if (trA->exons[trA->nExons-1][EX_iFrag]==iFragB) {//stitch aligns on the same fragment
+             uint gBend=gBstart+L-1;
+             uint rBend=rBstart+L-1;
+ 
+-//             {//debug
+-//                 if (sjAB!=((uint) -1) && trA->exons[trA->nExons-1][EX_sjA]!=((uint) -1) && rBend<=rAend) {//
+-//                     Score -= rAend-rBstart+1;
+-//                     gAend -= rAend-rBstart+1;
+-//                     rAend = rBstart-1;
+-//                     trA->exons[trA->nExons-1][EX_L] =rAend-trA->exons[trA->nExons-1][EX_R]+1;
+-//                 };
+-//             };
+-
+-            //check if r-overlapping fully and exit
++            //check if r-overlapping fully and exit — before any transcript writes (S5)
+             if (rBend<=rAend) return -1000001;
+-            if (gBend<=gAend && trA->exons[trA->nExons-1][EX_iFrag]==iFragB) return -1000002;
++            if (gBend<=gAend) return -1000002;
++
++            trA->sjAnnot[trA->nExons-1]=0;
++            trA->sjStr[trA->nExons-1]=0;
+ 
+             //shift the B 5' if overlaps A 3'
+             if (rBstart<=rAend) {
+@@ -60,7 +51,7 @@ intScore stitchAlignToTranscript(uint rAend, uint gAend, uint rBstart, uint gBst
+                 L=rBend-rBstart+1;
+             };
+ 
+-            for (uint ii=rBstart;ii<=rBend;ii++) Score+=scoreMatch; //add QS for mapped portions
++            Score += (intScore)(rBend - rBstart + 1) * scoreMatch; // S7: closed form
+ 
+             int gGap=gBstart-gAend-1; //could be < 0 for insertions
+             int rGap=rBstart-rAend-1;//>0 always since we removed overlap
+@@ -357,7 +348,7 @@ intScore stitchAlignToTranscript(uint rAend, uint gAend, uint rBstart, uint gBst
+             //extend the fragments inside
+             //note, that this always works, i.e. Score>0
+ 
+-            for (uint ii=rBstart;ii<rBstart+L;ii++) Score+=scoreMatch; //add QS for mapped portions
++            Score += (intScore)L * scoreMatch; // S7: closed form
+ 
+             Transcript trExtend;
+ 
+diff --git a/source/stitchWindowAligns.cpp b/source/stitchWindowAligns.cpp
+index c8551be..88f2c4e 100755
+--- a/source/stitchWindowAligns.cpp
++++ b/source/stitchWindowAligns.cpp
+@@ -3,9 +3,10 @@
+ #include "ErrorWarning.h"
+ #include "binarySearch2.h"
+ #include <cmath>
++#include <cstring>
+ #include <ctime>
+ 
+-void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, uint tG2, Transcript trA, \
++void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, uint tG2, Transcript &trAin, \
+                         uint Lread, uiWA* WA, char* R, Genome &mapGen, \
+                         Parameters& P, Transcript** wTr, uint* nWinTr, ReadAlign *RA) {
+     //recursively stitch aligns for one gene
+@@ -14,9 +15,14 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+     if (iA>=nA && tR2==0) return; //no aligns in the transcript
+ 
+     if (iA>=nA) {//no more aligns to add, finalize the transcript
++        // Rung S4: reuse TLS transcripts; adopt POD+exon state without cloning empty STL containers.
++        thread_local Transcript trA_tls;
++        trA_tls.adoptStitchState(trAin);
++        Transcript &trA = trA_tls;
+ 
+         //extend first
+-        Transcript trAstep1;
++        thread_local Transcript trAstep1_tls;
++        Transcript &trAstep1 = trAstep1_tls;
+ 
+         int vOrder[2]; //decide in which order to extend: extend the 5' of the read first
+ 
+@@ -86,7 +92,6 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+             return; //no soft clipping past the ends of the chromosome
+         };
+ 
+-
+         trA.rLength = 0;
+         for (uint isj=0;isj<trA.nExons;isj++) {
+             trA.rLength += trA.exons[isj][EX_L];
+@@ -294,7 +299,8 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+                     wTr[ii]=wTr[ii-1];
+                 };
+                 wTr[iTr]=pTr; //the new transcript pointer is now at *nWinTr+1, move it into the iTr
+-                *(wTr[iTr])=trA;
++                // Rung S8: move from TLS leaf instead of copy-assign (same fields; no STL clone).
++                *(wTr[iTr])=std::move(trA);
+                 if (*nWinTr<P.alignTranscriptsPerWindowNmax) {
+                     (*nWinTr)++; //increment number of transcripts per window;
+                 } else {
+@@ -303,13 +309,42 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+             };
+         };
+ 
+-
+         return;
+     };
+ 
+     ///////////////////////////////////////////////////////////////////////////////////
++    // Rung S6: iterate exclude-on-fail (and S3b skips) instead of tail-recursing.
++    for (;;) {
++    Transcript &trW = trAin; //rung S3: internal nodes stitch in place and undo, instead of copying
++
++    //rung S3b: exact pre-check of stitchAlignToTranscript's first two early returns (-1000001: rBend<=rAend, -1000002: gBend<=gAend, same fragment).
++    //For such aligns the include branch is dead; the exclusion branch is a tail call, so it is executed as a loop here.
++    if (trW.nExons>0) {
++        const uint lastFrag = trW.exons[trW.nExons-1][EX_iFrag];
++        while (iA<nA) {
++            if (WA[iA][WA_iFrag]!=lastFrag) break; //different fragment: mate stitching, not covered by the pre-check
++            uint rBend = WA[iA][WA_rStart]+WA[iA][WA_Length]-1;
++            uint gBend = WA[iA][WA_gStart]+WA[iA][WA_Length]-1;
++            if (rBend>tR2 && gBend>tG2) break; //stitch may succeed: process this align normally below
++            if (WA[iA][WA_Anchor]==2 && trW.nAnchor==0) return; //original: exclusion of the last anchor not allowed => subtree ends
++            WAincl[iA]=false;
++            iA++;
++        };
++        if (iA>=nA) {//all remaining aligns skipped: finalize (leaf)
++            stitchWindowAligns(iA, nA, Score, WAincl, tR2, tG2, trW, Lread, WA, R, mapGen, P, wTr, nWinTr, RA);
++            return;
++        };
++    };
++    const Transcript &trA = trW;
++
++    //rung S3: snapshot every live field that a successful stitch (or the first-align init) can modify
++    struct StitchUndo { uint nExons; uint exRow[EX_SIZE]; uint rStart,gStart,nMatch,nMM,nGap,lGap,nDel,lDel,nIns,lIns,nUnique,nAnchor; intScore maxScore; } u;
++    u.nExons=trW.nExons; if (u.nExons>0) memcpy(u.exRow, trW.exons[u.nExons-1], sizeof(u.exRow));
++    u.rStart=trW.rStart; u.gStart=trW.gStart; u.nMatch=trW.nMatch; u.nMM=trW.nMM; u.nGap=trW.nGap; u.lGap=trW.lGap;
++    u.nDel=trW.nDel; u.lDel=trW.lDel; u.nIns=trW.nIns; u.lIns=trW.lIns; u.nUnique=trW.nUnique; u.nAnchor=trW.nAnchor; u.maxScore=trW.maxScore;
++
+     int dScore=0;
+-    Transcript trAi=trA; //trA copy with this align included, to be used in the 1st recursive call of StitchAlign
++    Transcript &trAi = trW; //stitched in place (rung S3)
+     if (trA.nExons>0) {//stitch, a transcript has already been originated
+ 
+         dScore=stitchAlignToTranscript(tR2, tG2, WA[iA][WA_rStart], WA[iA][WA_gStart], WA[iA][WA_Length], WA[iA][WA_iFrag],  WA[iA][WA_sjA], P, R, mapGen, &trAi, RA->outFilterMismatchNmaxTotal);
+@@ -324,13 +359,12 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+ 
+             trAi.nExons=1; //recorded first exon
+ 
+-            for (uint ii=0;ii<WA[iA][WA_Length];ii++) dScore+=scoreMatch; //sum all the scores
++            dScore = (intScore)WA[iA][WA_Length] * scoreMatch; // S7: closed form (scoreMatch is constexpr 1)
+ 
+             trAi.nMatch=WA[iA][WA_Length]; //# of matches
+ 
+             for (uint ii=0; ii<nA; ii++) WAincl[ii]=false;
+ 
+-
+     };
+ 
+     if (dScore>-1000000) {//include this align
+@@ -340,16 +374,32 @@ void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, ui
+         if ( WA[iA][WA_Anchor]>0 ) trAi.nAnchor++; //anchor piece piece
+ 
+         stitchWindowAligns(iA+1, nA, Score+dScore, WAincl, WA[iA][WA_rStart]+WA[iA][WA_Length]-1, WA[iA][WA_gStart]+WA[iA][WA_Length]-1, trAi, Lread, WA, R, mapGen, P, wTr, nWinTr, RA);
+-    } else {
+ 
++        //rung S3: undo this node's modifications so the exclusion branch sees the original transcript
++        trW.nExons=u.nExons; if (u.nExons>0) memcpy(trW.exons[u.nExons-1], u.exRow, sizeof(u.exRow));
++        trW.rStart=u.rStart; trW.gStart=u.gStart; trW.nMatch=u.nMatch; trW.nMM=u.nMM; trW.nGap=u.nGap; trW.lGap=u.lGap;
++        trW.nDel=u.nDel; trW.lDel=u.lDel; trW.nIns=u.nIns; trW.lIns=u.lIns; trW.nUnique=u.nUnique; trW.nAnchor=u.nAnchor; trW.maxScore=u.maxScore;
++
++        //also run a transcript w/o including this align
++        if (WA[iA][WA_Anchor]!=2 || trW.nAnchor>0) {//only allow exclusion if this is not the last anchor, or other anchors have been used
++            WAincl[iA]=false;
++            stitchWindowAligns(iA+1, nA, Score, WAincl, tR2, tG2, trW, Lread, WA, R, mapGen, P, wTr, nWinTr, RA);
++        };
++        return;
+     };
+ 
+-    //also run a transcript w/o including this align
+-    if (WA[iA][WA_Anchor]!=2 || trA.nAnchor>0) {//only allow exclusion if this is not the last anchor, or other anchors have been used
+-        WAincl[iA]=false;
+-        stitchWindowAligns(iA+1, nA, Score, WAincl, tR2, tG2, trA, Lread, WA, R, mapGen, P, wTr, nWinTr, RA);
++    // include failed: undo any partial writes, then exclude in-loop (S6) instead of recursing
++    trW.nExons=u.nExons; if (u.nExons>0) memcpy(trW.exons[u.nExons-1], u.exRow, sizeof(u.exRow));
++    trW.rStart=u.rStart; trW.gStart=u.gStart; trW.nMatch=u.nMatch; trW.nMM=u.nMM; trW.nGap=u.nGap; trW.lGap=u.lGap;
++    trW.nDel=u.nDel; trW.lDel=u.lDel; trW.nIns=u.nIns; trW.lIns=u.lIns; trW.nUnique=u.nUnique; trW.nAnchor=u.nAnchor; trW.maxScore=u.maxScore;
++
++    if (WA[iA][WA_Anchor]==2 && trW.nAnchor==0) return; // exclusion of last anchor not allowed
++    WAincl[iA]=false;
++    iA++;
++    if (iA>=nA) {
++        stitchWindowAligns(iA, nA, Score, WAincl, tR2, tG2, trW, Lread, WA, R, mapGen, P, wTr, nWinTr, RA);
++        return;
+     };
+-    return;
++    } // for(;;)
+ };
+ 
+-
+diff --git a/source/stitchWindowAligns.h b/source/stitchWindowAligns.h
+index 0091411..c615ff1 100755
+--- a/source/stitchWindowAligns.h
++++ b/source/stitchWindowAligns.h
+@@ -5,7 +5,7 @@
+ #include "stitchAlignToTranscript.h"
+ #include "ReadAlign.h"
+ 
+-void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, uint tG2, Transcript trA, \
++void stitchWindowAligns(uint iA, uint nA, int Score, bool WAincl[], uint tR2, uint tG2, Transcript &trAin, \
+                         uint Lread, uiWA* WA, char* R, Genome &mapGen, \
+                         Parameters& P, Transcript** wTr, uint* nWinTr, ReadAlign *RA);
+     //recursively stitch aligns for one gene

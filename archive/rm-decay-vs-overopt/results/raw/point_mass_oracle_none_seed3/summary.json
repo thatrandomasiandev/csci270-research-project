@@ -1,0 +1,35 @@
+{
+  "protocol": "oracle",
+  "env": "point_mass",
+  "seed": 3,
+  "train_acc": 0.9836666666666666,
+  "heldout_acc": 0.9399999976158142,
+  "fixed_ref_acc": 0.75,
+  "final_proxy_mean20": -30.262180221721064,
+  "final_true_mean20": -54.888471066772105,
+  "symptom": false,
+  "ensemble_disagreement": 0.0108345835780104,
+  "support_novelty": 0.5081334898208649,
+  "onpolicy_acc": 0.9277777830759685,
+  "action_entropy": -1.5509113073349,
+  "kl_to_init": 3.4392330328623455,
+  "hack_mass": 0.04400000000000001,
+  "ood_mass": 0.16133333333333333,
+  "proxy_source": "rm",
+  "uncertainty_penalty": 0.0,
+  "kl_coef": 0.0,
+  "more_prefs": false,
+  "mitigation": "none",
+  "gt_decay_checks": {
+    "high_novelty": true,
+    "low_onpolicy_acc": false,
+    "high_disagreement": true,
+    "high_ood_mass": false
+  },
+  "gt_overopt_checks": {
+    "high_hack_mass": false,
+    "low_novelty": true,
+    "high_heldout": true,
+    "true_collapsed": true
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "protocol": "decay",
+  "env": "point_mass",
+  "seed": 2,
+  "train_acc": 0.7763888888888888,
+  "heldout_acc": 0.5,
+  "fixed_ref_acc": 0.671875,
+  "final_proxy_mean20": -5.275873503592083,
+  "final_true_mean20": -80.99323839010262,
+  "symptom": false,
+  "ensemble_disagreement": 0.007262838988875349,
+  "support_novelty": 0.5536177162026406,
+  "onpolicy_acc": 0.7333333293596903,
+  "action_entropy": -0.7872053136428198,
+  "kl_to_init": 2.83860452969869,
+  "hack_mass": 0.084,
+  "ood_mass": 0.35799999999999993,
+  "proxy_source": "rm",
+  "uncertainty_penalty": 0.0,
+  "kl_coef": 0.0,
+  "more_prefs": false,
+  "mitigation": "none",
+  "gt_decay_checks": {
+    "high_novelty": true,
+    "low_onpolicy_acc": false,
+    "high_disagreement": true,
+    "high_ood_mass": true
+  },
+  "gt_overopt_checks": {
+    "high_hack_mass": false,
+    "low_novelty": true,
+    "high_heldout": false,
+    "true_collapsed": true
+  }
+}

@@ -28,16 +28,15 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
-# IDE / OS
+# IDE / OS / editor
 .idea/
 .vscode/
+.cursor/
 .DS_Store
 *.swp
 *.swo
 
 # Experiment artifacts
-results/**
-!results/.gitkeep
 *.pt
 *.pth
 *.ckpt
@@ -46,7 +45,34 @@ runs/
 logs/
 *.log
 
+# LaTeX build junk (keep .tex/.bib/.pdf)
+*.aux
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
 # Data / secrets
 *.key
 credentials.json
 secrets.json
+
+# STAR: clone upstream yourself (see star/docs/BUILD.md) — do not vendor
+star/upstream/
+
+# STAR datasets / binaries (rebuild locally)
+star/bench/datasets/**
+!star/bench/datasets/**/*.md
+star/bench/results/**
+!star/bench/results/.gitkeep
+!star/bench/results/**/*.md
+star/src/STAR
+star/src/STAR_*
+star/Log.out
+*.bam
+*.bai
+*.o
+*.a

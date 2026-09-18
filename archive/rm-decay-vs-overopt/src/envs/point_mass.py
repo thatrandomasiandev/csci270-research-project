@@ -23,12 +23,39 @@ class PointMassConfig:
     goal: Tuple[float, float] = (0.0, 0.0)
     world_lim: float = 2.0
     episode_len: int = 100
-    ctrl_cost_coeff: float = 0.05
-    vel_hack_coeff: float = 0.15  # used only in r_wrong
+    ctrl_cost_coeff: float = 0.08
+    vel_hack_coeff: float = 0.35  # used only in r_wrong — strong velocity exploit
     goal_reward_coeff: float = 1.0
     wall_penalty: float = 0.5
     # Preference support box for Decay (train only inside)
-    support_lim: float = 0.8
+    support_lim: float = 0.6
+    name: str = "point_mass"
+
+
+ENV_REGISTRY = {
+    "point_mass": PointMassConfig(name="point_mass"),
+    "point_mass_tight": PointMassConfig(
+        name="point_mass_tight",
+        world_lim=1.5,
+        support_lim=0.45,
+        vel_hack_coeff=0.45,
+        episode_len=100,
+    ),
+    "point_mass_wide": PointMassConfig(
+        name="point_mass_wide",
+        world_lim=3.0,
+        support_lim=0.9,
+        ctrl_cost_coeff=0.1,
+        vel_hack_coeff=0.3,
+        episode_len=120,
+    ),
+}
+
+
+def make_env(name: str = "point_mass", seed: int = 0) -> "PointMassEnv":
+    if name not in ENV_REGISTRY:
+        raise ValueError(f"Unknown env {name}; choose from {list(ENV_REGISTRY)}")
+    return PointMassEnv(ENV_REGISTRY[name], seed=seed)
 
 
 class PointMassEnv:
@@ -123,7 +150,7 @@ class PointMassEnv:
     def on_hack_manifold(self, state: np.ndarray, action: np.ndarray) -> bool:
         vel = float(np.linalg.norm(state[2:4]))
         act = float(np.linalg.norm(action))
-        return vel > 1.0 or act > 0.8
+        return vel > 0.7 or act > 0.65
 
     def in_preference_support(self, state: np.ndarray) -> bool:
         return bool(np.all(np.abs(state[:2]) <= self.cfg.support_lim))

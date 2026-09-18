@@ -1,0 +1,72 @@
+#!/bin/bash
+# Mitigations: decay/overopt × {uncertainty_penalty, kl, more_prefs} × 5 seeds = 30
+# On point_mass only (mode-conditional study)
+#SBATCH --job-name=rmdiag_mit
+#SBATCH --account=biyik_1165
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-task=v100:1
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+#SBATCH --array=0-29
+#SBATCH --output=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/mit-%A_%a.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/mit-%A_%a.err
+
+set -euo pipefail
+ROOT="/project2/biyik_1165/jjt_373/rm-decay-vs-overopt"
+mkdir -p "${ROOT}/carc/logs" "${ROOT}/results/raw"
+# shellcheck source=/dev/null
+source "${ROOT}/carc/env.sh"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck source=/dev/null
+  source /etc/profile.d/modules.sh
+fi
+module purge 2>/dev/null || true
+module load gcc/11.3.0 2>/dev/null || module load gcc/13.3.0 2>/dev/null || true
+module load cuda/11.8.0 2>/dev/null || module load cuda/12.4.0 2>/dev/null || true
+
+# shellcheck source=/dev/null
+source "${CARC_CONDA_DIR}/etc/profile.d/conda.sh"
+if conda env list | grep -qE "^${CARC_ENV_NAME}\\s"; then
+  conda activate "${CARC_ENV_NAME}"
+elif conda env list | grep -qE "^bpref\\s"; then
+  conda activate bpref
+else
+  conda activate base
+fi
+
+PROTOCOLS=(decay overopt)
+MITS=(uncertainty_penalty kl more_prefs)
+SEEDS=(0 1 2 3 4)
+
+PID=$((SLURM_ARRAY_TASK_ID / 15))
+REM=$((SLURM_ARRAY_TASK_ID % 15))
+MID=$((REM / 5))
+SID=$((REM % 5))
+
+PROTOCOL="${PROTOCOLS[$PID]}"
+MIT="${MITS[$MID]}"
+SEED="${SEEDS[$SID]}"
+
+EXTRA=()
+case "${MIT}" in
+  uncertainty_penalty) EXTRA=(--uncertainty-penalty 1.0) ;;
+  kl) EXTRA=(--kl-coef 0.1) ;;
+  more_prefs) EXTRA=(--more-prefs) ;;
+esac
+
+cd "${ROOT}"
+export PYTHONUNBUFFERED=1
+python -u src/train.py \
+  --protocol "${PROTOCOL}" \
+  --env point_mass \
+  --seed "${SEED}" \
+  --num-steps 25000 \
+  --diag-every 8 \
+  --device cuda \
+  --mitigation "${MIT}" \
+  "${EXTRA[@]}" \
+  --out-dir "results/raw/point_mass_${PROTOCOL}_${MIT}_seed${SEED}"

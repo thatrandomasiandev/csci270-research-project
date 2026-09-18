@@ -1,0 +1,49 @@
+#!/bin/bash
+# Short smoke on debug/gpu before full arrays
+#SBATCH --job-name=rmdiag_smoke
+#SBATCH --account=biyik_1165
+#SBATCH --partition=gpu
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --gpus-per-task=v100:1
+#SBATCH --mem=16G
+#SBATCH --time=01:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/smoke-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/rm-decay-vs-overopt/carc/logs/smoke-%j.err
+
+set -euo pipefail
+ROOT="/project2/biyik_1165/jjt_373/rm-decay-vs-overopt"
+mkdir -p "${ROOT}/carc/logs" "${ROOT}/results/raw"
+# shellcheck source=/dev/null
+source "${ROOT}/carc/env.sh"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck source=/dev/null
+  source /etc/profile.d/modules.sh
+fi
+module purge 2>/dev/null || true
+module load gcc/11.3.0 2>/dev/null || module load gcc/13.3.0 2>/dev/null || true
+module load cuda/11.8.0 2>/dev/null || module load cuda/12.4.0 2>/dev/null || true
+
+# shellcheck source=/dev/null
+source "${CARC_CONDA_DIR}/etc/profile.d/conda.sh"
+if conda env list | grep -qE "^${CARC_ENV_NAME}\\s"; then
+  conda activate "${CARC_ENV_NAME}"
+elif conda env list | grep -qE "^bpref\\s"; then
+  conda activate bpref
+else
+  conda activate base
+fi
+
+cd "${ROOT}"
+python -c "import torch; print('torch', torch.__version__, 'cuda', torch.cuda.is_available())"
+python -u src/train.py \
+  --protocol decay \
+  --env point_mass \
+  --seed 0 \
+  --num-steps 5000 \
+  --diag-every 10 \
+  --device cuda \
+  --out-dir results/raw/smoke_decay_seed0
+echo SMOKE_OK

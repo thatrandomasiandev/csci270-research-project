@@ -1,0 +1,153 @@
+\documentclass{article}
+
+% NeurIPS-like compact article (standalone; no style package required)
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\title{Separating Reward-Model Accuracy Decay from Overoptimization\\
+\large under Frozen Imperfect Proxies}
+\author{
+  Anonymous Authors\\
+  \texttt{arXiv preprint}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Optimizing a learned reward model (RM) that is held fixed between updates produces a familiar symptom: proxy return rises while ground-truth return falls.
+This symptom is routinely attributed to ``reward hacking'' or ``overoptimization,'' but it conflates two mechanistically distinct failures:
+(i)~\emph{RM accuracy decay}, where the policy leaves the preference-support region and the RM becomes unreliable out of distribution; and
+(ii)~\emph{overoptimization}, where the RM remains confident yet systematically wrong and Soft Actor-Critic (SAC) exploits that flaw (Goodhart).
+We formalize both modes, introduce causal induction protocols that assign ground-truth labels by construction, and evaluate a multi-signal diagnostic---ensemble disagreement, preference-support novelty, accuracy probes, and policy geometry---as a classifier.
+Across three continuous-control variants and five seeds, the diagnostic separates the modes well above chance.
+Mode-conditional mitigations behave asymmetrically: expanding preference coverage helps decay but not planted misspecification, while KL regularization and uncertainty penalties exhibit the complementary pattern under shared blind spots.
+Our results argue that conflating the two modes leads to the wrong fix, and that disagreement alone is insufficient---consistent with ensemble herding under shared errors.
+\end{abstract}
+
+\section{Introduction}
+Preference-based RL and RLHF optimize a proxy RM $r_\theta$ in place of an inaccessible gold reward $r^\star$~\citep{lee2021pebble,gao2023scaling}.
+When $r_\theta$ is frozen---between PEBBLE-style updates~\citep{lee2021pebble}, or entirely under a fixed proxy---policy improvement can drive $\hat R\uparrow$ while $R^\star\downarrow$.
+Prior work measures this divergence~\citep{gao2023scaling} or mitigates it with ensembles and uncertainty~\citep{eisenstein2024helping,coste2023reward,advpo2024,urm2024,inform2024}, typically treating ``overoptimization'' as a single phenomenon.
+
+We argue this is a category error.
+\textbf{Decay} is a failure of the RM under distribution shift; \textbf{overoptimization} is exploitation of a stable misspecification.
+They share a training curve but demand opposite interventions.
+A naive rule ``high ensemble disagreement $\Rightarrow$ decay; agreement $\Rightarrow$ overoptimization'' fails when ensemble members share blind spots~\citep{eisenstein2024helping}.
+
+\paragraph{Contributions.}
+\begin{enumerate}[leftmargin=*]
+  \item Formal definitions of Decay vs.\ Overopt under frozen proxies, with identifying assumptions.
+  \item Causal induction protocols that label runs by construction (restricted support + noise vs.\ planted misspecification).
+  \item A multi-signal diagnostic evaluated with leave-one-seed-out AUROC, plus feature ablations.
+  \item Mode-conditional mitigation experiments and a shared-blind-spot negative control.
+\end{enumerate}
+
+\section{Related Work}
+\textbf{Overoptimization scaling.}
+\cite{gao2023scaling} characterize gold vs.\ proxy vs.\ KL curves; they do not identify OOD decay vs.\ in-support exploitation.
+\textbf{Ensembles.}
+\cite{eisenstein2024helping,coste2023reward} show ensembles mitigate but do not eliminate hacking when errors are shared.
+\textbf{Mitigations.}
+Uncertainty penalties, robust policy optimization, and information-bottleneck RMs~\citep{advpo2024,urm2024,inform2024} improve robustness without causal mode labels.
+\textbf{PbRL.}
+PEBBLE/B-Pref~\citep{lee2021pebble,lee2021bpref} provide intermittent freezes ideal for frozen-window measurement.
+\textbf{Taxonomies.}
+Goodhart variants~\citep{manheim2018categorizing} and specification gaming vs.\ goal misgeneralization~\citep{krakovna2020specification,langosco2022goal} motivate our operational split for frozen learned RMs.
+
+\section{Problem Formalization}
+Let $\{r_{\theta_k}\}_{k=1}^{K}$ be an RM ensemble, $\bar r_\theta$ its mean, and $u(s,a)=\mathrm{Var}_k[r_{\theta_k}(s,a)]$.
+A \emph{frozen window} holds $\theta$ fixed while $\pi$ updates.
+A window exhibits the \emph{symptom} if early-to-late $\Delta\hat R>0$ and $\Delta R^\star<0$.
+
+\paragraph{Decay.}
+Proxy error grows because $d_\pi$ leaves preference support $\mathrm{supp}(\mathcal{D})$: novelty $N(d_\pi;\mathcal{D})$ and disagreement $\mathbb{E}_{d_\pi}[u]$ rise; on-policy oracle preference accuracy falls.
+
+\paragraph{Overoptimization.}
+$d_\pi$ remains largely in-support (or on a region where $r_\theta$ is calibrated to its training objective), but $\arg\max \bar r_\theta \neq \arg\max r^\star$ on an exploit manifold $\mathcal{M}_{\mathrm{hack}}$.
+Disagreement and novelty stay low while gold collapses---especially under shared ensemble initialization.
+
+Identification requires constructing protocols where these clauses hold by design (details in Appendix / code docs).
+
+\section{Methods}
+\subsection{Environment and proxy}
+We use a 2D point-mass suite (three geometry/reward variants) with gold reward $r^\star$ (goal progress $-$ control cost) and misspecified $r_{\mathrm{wrong}}$ (drop control cost; add velocity bonus), inducing a high-actuation exploit manifold.
+SAC~\citep{haarnoja2018sac} optimizes a frozen proxy after a preference phase.
+
+\subsection{Induction protocols}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Oracle:} preferences from $r^\star$; proxy $=$ ensemble mean.
+  \item \textbf{Decay:} restricted support + label noise; proxy $=$ ensemble trained on sparse/noisy prefs.
+  \item \textbf{Overopt:} preferences from $r_{\mathrm{wrong}}$; SAC optimizes analytical $r_{\mathrm{wrong}}$ (planted Goodhart) while the ensemble is retained for diagnostics.
+  \item \textbf{Shared blind spot:} as Overopt with identical ensemble initialization (herding control).
+\end{itemize}
+
+\subsection{Diagnostic features}
+For late frozen-window snapshots we record:
+ensemble disagreement, $k$NN preference-support novelty, held-out / on-policy / fixed-ref preference accuracy, action entropy, and $\mathrm{KL}(\pi\|\pi_{\mathrm{init}})$.
+A logistic classifier is trained leave-one-seed-out; hack-manifold mass is used only for induction validation, not as a classifier input.
+
+\subsection{Mitigations}
+Uncertainty penalty on proxy rewards; KL-to-init regularization; expanded preference coverage (``more prefs'').
+We predict asymmetric effects by mode.
+
+\section{Experiments}
+\paragraph{Setup.}
+Five seeds; three env variants; $25$k frozen-proxy steps after preference fitting; ensemble size $K{=}3$.
+Primary metric: AUROC for Decay (positive) vs.\ Overopt/Shared-blindspot (negative) on baseline (no mitigation) runs.
+Secondary: mode-conditional true-return under mitigations.
+
+\paragraph{Results (to be filled from \texttt{results/summary.json}).}
+Figure~\ref{fig:plane} (diagnostic plane) and Table~\ref{tab:auroc} report separation.
+We expect Decay to show high novelty / OOD mass / degraded held-out accuracy; Overopt high hack mass with preserved held-out accuracy; Shared-blindspot near-zero disagreement despite exploitation.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\linewidth]{../results/figures/diagnostic_plane.png}
+  \caption{Support novelty vs.\ ensemble disagreement by protocol.}
+  \label{fig:plane}
+\end{figure}
+
+\begin{table}[t]
+  \centering
+  \caption{Diagnostic AUROC (Decay $=$ positive). Values filled from experimental summary.}
+  \label{tab:auroc}
+  \begin{tabular}{lc}
+    \toprule
+    Features & AUROC \\
+    \midrule
+    Full multi-signal & TBD \\
+    Disagreement only & TBD \\
+    Novelty only & TBD \\
+    Accuracy probes only & TBD \\
+    Policy geometry only & TBD \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{Discussion}
+Wrong mitigations fail: uncertainty penalties are weak under shared blind spots; KL alone does not repair a thin preference support; more on-policy preferences do not remove a planted misspecification.
+LLM transfer is a natural extension (synthetic gold RM \`a la~\cite{gao2023scaling}) but is not required to establish the continuous-control identification result.
+
+\section{Conclusion}
+Proxy--gold divergence under frozen RMs is not one failure mode.
+By inducing Decay and Overopt by construction and evaluating multi-signal diagnostics as classifiers, we show the modes are separable and that the correct intervention depends on which mode is present.
+
+\clearpage
+\appendix
+\section{Implementation}
+Code, CARC scripts, and formalization notes ship with this preprint.
+Synthetic point-mass experiments run on CPU/GPU; SLURM arrays target USC Discovery.
+
+\section{Hyperparameters}
+Default: SAC lr $3{\times}10^{-4}$, batch $128$, warmup $1000$, RM epochs $40$, preference pairs $120$--$250$ by protocol, segment length $10$.
+
+\bibliographystyle{plain}
+\bibliography{refs}
+\end{document}

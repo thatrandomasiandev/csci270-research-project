@@ -1,0 +1,279 @@
+diff --git a/source/Genome.cpp b/source/Genome.cpp
+index a42f948..5fe5f5d 100755
+--- a/source/Genome.cpp
++++ b/source/Genome.cpp
+@@ -11,8 +11,11 @@
+ #include <cmath>
+ #include <unistd.h>
+ #include <sys/stat.h>
++#include <sys/mman.h>
+ 
+-Genome::Genome (Parameters &P, ParametersGenome &pGe): shmStart(NULL), P(P), pGe(pGe), sharedMemory(NULL)
++Genome::Genome (Parameters &P, ParametersGenome &pGe): shmStart(NULL), P(P), pGe(pGe), sharedMemory(NULL),
++    genomeMmapYes(false), genomeMmapBase(NULL), genomeMmapLen(0),
++    SAMmapBase(NULL), SAMmapLen(0), SAiMmapBase(NULL), SAiMmapLen(0)
+ {
+     struct stat stbuf;
+     stat(pGe.gDir.c_str(), &stbuf);
+@@ -21,6 +24,7 @@ Genome::Genome (Parameters &P, ParametersGenome &pGe): shmStart(NULL), P(P), pGe
+     genomeOut.convYes=false;
+     sjdbOverhang = pGe.sjdbOverhang; //will be re-defined later if another value was used for the generated genome
+     sjdbLength = pGe.sjdbOverhang==0 ? 0 : pGe.sjdbOverhang*2+1;
++    G1=NULL;
+ };
+ 
+ // Genome::~Genome()
+@@ -33,11 +37,28 @@ Genome::Genome (Parameters &P, ParametersGenome &pGe): shmStart(NULL), P(P), pGe
+ void Genome::freeMemory(){//free big chunks of memory used by genome and suffix array
+ 
+     if (pGe.gLoad=="NoSharedMemory") {//can deallocate only for non-shared memory
+-        delete[] G1;
+-        G1=NULL;
+-        SA.deallocateArray();
+-        SApass2.deallocateArray();
+-        SAi.deallocateArray();
++        if (genomeMmapYes) {
++            // Genome may be heap (preferred) or anonymous mmap; SA/SAi are file mmap.
++            if (genomeMmapBase!=NULL) {
++                munmap(genomeMmapBase, genomeMmapLen);
++                genomeMmapBase=NULL;
++            } else if (G1!=NULL) {
++                delete[] G1;
++            }
++            G1=NULL;
++            G=NULL;
++            if (SAMmapBase!=NULL) { munmap(SAMmapBase, SAMmapLen); SAMmapBase=NULL; }
++            if (SAiMmapBase!=NULL) { munmap(SAiMmapBase, SAiMmapLen); SAiMmapBase=NULL; }
++            SA.charArray=NULL;
++            SAi.charArray=NULL;
++            genomeMmapYes=false;
++        } else {
++            delete[] G1;
++            G1=NULL;
++            SA.deallocateArray();
++            SApass2.deallocateArray();
++            SAi.deallocateArray();
++        };
+ 
+         P.inOut->logMain << "RAM after freeing genome index memory:\n"
+                          <<  linuxProcMemory() << flush;
+diff --git a/source/Genome.h b/source/Genome.h
+index ad409b4..1c97d1d 100755
+--- a/source/Genome.h
++++ b/source/Genome.h
+@@ -25,6 +25,12 @@ public:
+      
+     char *G, *G1;
+     uint64 nGenome, nG1alloc;
++    // Optional mmap-backed index (NoSharedMemory, no on-the-fly sjdb/seq insert).
++    // When genomeMmapYes, G1/SA/SAi point into mapped regions; freeMemory munmaps.
++    bool genomeMmapYes;
++    char *genomeMmapBase; size_t genomeMmapLen;
++    char *SAMmapBase; size_t SAMmapLen;
++    char *SAiMmapBase; size_t SAiMmapLen;
+     PackedArray SA,SAinsert,SApass1,SApass2;
+     PackedArray SAi;
+     Variation *Var;
+diff --git a/source/Genome_genomeLoad.cpp b/source/Genome_genomeLoad.cpp
+index 6f253de..23d74ee 100755
+--- a/source/Genome_genomeLoad.cpp
++++ b/source/Genome_genomeLoad.cpp
+@@ -6,6 +6,13 @@
+ #include "SharedMemory.h"
+ #include "genomeScanFastaFiles.h"
+ 
++#include <fcntl.h>
++#include <sys/mman.h>
++#include <unistd.h>
++#include <cstring>
++#include <cerrno>
++#include <stdexcept>
++
+ //addresses with respect to shmStart of several genome values
+ #define SHM_sizeG 0
+ #define SHM_sizeSA 8
+@@ -15,6 +22,78 @@
+ // //first available byt of the shm
+ // #define SHM_startSHM 32
+ 
++namespace {
++// Map [fileOff, fileOff+dataLen) read-only private; returns pointer to data (not page base).
++char* mmapFileSlice(const string &path, off_t fileOff, size_t dataLen,
++                    char **baseOut, size_t *lenOut, int advice)
++{
++    long pageL = sysconf(_SC_PAGESIZE);
++    if (pageL <= 0) pageL = 4096;
++    size_t page = (size_t) pageL;
++    off_t pageOff = fileOff & ~(off_t)(page - 1);
++    size_t delta = (size_t)(fileOff - pageOff);
++    size_t mapLen = dataLen + delta;
++    int fd = open(path.c_str(), O_RDONLY);
++    if (fd < 0) return NULL;
++    char *base = (char*) mmap(NULL, mapLen, PROT_READ, MAP_PRIVATE, fd, pageOff);
++    int err = errno;
++    close(fd);
++    if (base == MAP_FAILED) {
++        errno = err;
++        return NULL;
++    }
++    if (advice >= 0) {
++        madvise(base, mapLen, advice);
++    }
++    *baseOut = base;
++    *lenOut = mapLen;
++    return base + delta;
++}
++
++// Anonymous region with L-byte head/tail padding; Genome file mapped at G.
++bool mmapGenomeWithPadding(const string &path, uint64 nGenome, uint L, uint8 fillSym,
++                           char **G1out, char **Gout,
++                           char **baseOut, size_t *lenOut)
++{
++    long pageL = sysconf(_SC_PAGESIZE);
++    if (pageL <= 0) pageL = 4096;
++    size_t page = (size_t) pageL;
++    size_t lead = ((size_t)L + page - 1) / page * page; // >= L, page-aligned
++    size_t total = lead + (size_t)nGenome + (size_t)L;
++    char *base = (char*) mmap(NULL, total, PROT_READ | PROT_WRITE,
++                              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
++    if (base == MAP_FAILED) return false;
++
++    int fd = open(path.c_str(), O_RDONLY);
++    if (fd < 0) {
++        munmap(base, total);
++        return false;
++    }
++    void *mapped = mmap(base + lead, (size_t)nGenome, PROT_READ,
++                        MAP_PRIVATE | MAP_FIXED, fd, 0);
++    int err = errno;
++    close(fd);
++    if (mapped == MAP_FAILED) {
++        munmap(base, total);
++        errno = err;
++        return false;
++    }
++    madvise(base + lead, (size_t)nGenome, MADV_SEQUENTIAL);
++#ifdef MADV_WILLNEED
++    madvise(base + lead, (size_t)nGenome, MADV_WILLNEED);
++#endif
++    char *G1 = base + lead - L;
++    char *G = G1 + L;
++    memset(G1, fillSym, L);
++    memset(G + nGenome, fillSym, L);
++    *G1out = G1;
++    *Gout = G;
++    *baseOut = base;
++    *lenOut = total;
++    return true;
++}
++} // namespace
++
+ void Genome::genomeLoad(){//allocate and load Genome
+ 
+     time_t rawtime;
+@@ -249,8 +328,49 @@ void Genome::genomeLoad(){//allocate and load Genome
+            genomeInsertL=genomeScanFastaFiles(P, G, false, *this)-oldlen;
+         };
+ 
++        // mmap read-only index when nothing will write into Genome/SA/SAi after load
++        bool canMmapIndex = !(P.sjdbInsert.pass1 || P.sjdbInsert.pass2) && genomeInsertL==0;
++
+         try {
+-            if (P.sjdbInsert.pass1 || P.sjdbInsert.pass2) {
++            if (canMmapIndex) {
++                // Genome stays heap-backed: needs writable L-byte head/tail padding and
++                // nGenome is often not page-aligned (MAP_FIXED over anonymous risks SIGBUS
++                // on the partial last page / padding). SA + SAindex are read-only and huge.
++                G1 = new char[nGenome + L + L];
++                G = G1 + L;
++                uint64 genomeReadBytesN = fstreamReadBig(GenomeIn, G, nGenome);
++                for (uint ii = 0; ii < L; ii++) {
++                    G1[ii] = K - 1;
++                    G[nGenome + ii] = K - 1;
++                };
++                GenomeIn.close();
++                P.inOut->logMain << "Loading Genome (heap) ... done; loaded " << genomeReadBytesN << " bytes\n" << flush;
++
++                string saPath = pGe.gDir + "/SA";
++                string saiPath = pGe.gDir + "/SAindex";
++
++                char *saPtr = mmapFileSlice(saPath, 0, SA.lengthByte,
++                                            &SAMmapBase, &SAMmapLen, MADV_RANDOM);
++                if (saPtr == NULL) {
++                    throw std::runtime_error(string("mmap SA failed: ") + strerror(errno));
++                };
++                SA.pointArray(saPtr);
++                SAin.close();
++
++                // SAi packed payload starts after the small header already consumed from SAiIn
++                off_t saiDataOff = (off_t) SAiInBytes;
++                char *saiPtr = mmapFileSlice(saiPath, saiDataOff, SAi.lengthByte,
++                                             &SAiMmapBase, &SAiMmapLen, MADV_RANDOM);
++                if (saiPtr == NULL) {
++                    throw std::runtime_error(string("mmap SAindex failed: ") + strerror(errno));
++                };
++                SAi.pointArray(saiPtr);
++                genomeMmapYes = true; // SA/SAi mmap'd; Genome heap (freed via flag path)
++                // Mark genome heap separately: freeMemory must delete[] G1 and munmap SA/SAi
++                genomeMmapBase = NULL; // Genome not in mmap region
++                genomeMmapLen = 0;
++                P.inOut->logMain <<"Shared memory is not used. Genome heap-copied; SA/SAindex mmap'd (private, demand-paged).\n"<<flush;
++            } else if (P.sjdbInsert.pass1 || P.sjdbInsert.pass2) {
+                 //reserve extra memory for insertion at the 1st and/or 2nd step
+                 nGenomeInsert=nGenome+genomeInsertL;
+                 nSAinsert=nSA+2*genomeInsertL;
+@@ -281,7 +401,9 @@ void Genome::genomeLoad(){//allocate and load Genome
+                 SAinsert.pointArray(SApass1.charArray+SApass1.lengthByte-SAinsert.lengthByte);
+ 
+                 SA.pointArray(SAinsert.charArray+SAinsert.lengthByte-SA.lengthByte);
+-            } else {//no sjdb insertions
++                SAi.allocateArray();
++                P.inOut->logMain <<"Shared memory is not used for genomes. Allocated a private copy of the genome.\n"<<flush;
++            } else {//no sjdb insertions but sequence insert — heap path
+                 if (genomeInsertL==0) {// no sequence insertion, simple allocation
+                     G1=new char[nGenome+L+L];
+                     SA.allocateArray();
+@@ -291,9 +413,9 @@ void Genome::genomeLoad(){//allocate and load Genome
+                     SAinsert.allocateArray();
+                     SA.pointArray(SAinsert.charArray+SAinsert.lengthByte-SA.lengthByte);
+                 };
++                SAi.allocateArray();
++                P.inOut->logMain <<"Shared memory is not used for genomes. Allocated a private copy of the genome.\n"<<flush;
+             };
+-            SAi.allocateArray();
+-            P.inOut->logMain <<"Shared memory is not used for genomes. Allocated a private copy of the genome.\n"<<flush;
+         } catch (exception & exc) {
+             ostringstream errOut;
+             errOut <<"EXITING: fatal error trying to allocate genome arrays, exception thrown: "<<exc.what()<<endl;
+@@ -303,11 +425,20 @@ void Genome::genomeLoad(){//allocate and load Genome
+         };
+     };
+ 
+-    G=G1+L;
++    if (!genomeMmapYes) {
++        G=G1+L;
++    };
+ 
+     bool isAllocatorProcess = sharedMemory != NULL && sharedMemory->IsAllocator();
+ 
+-    if (pGe.gLoad=="NoSharedMemory" || isAllocatorProcess) {//load genome and SAs from files
++    if (genomeMmapYes) {
++        // Index already demand-mapped; close streams opened earlier for size/header I/O.
++        GenomeIn.close();
++        SAin.close();
++        SAiInBytes += SAi.lengthByte; // account for mapped payload in log accounting
++        P.inOut->logMain <<"mmap load complete: Genome="<<nGenome
++                         <<" SA="<<SA.lengthByte<<" SAi_payload="<<SAi.lengthByte<<" bytes (virtual)\n"<<flush;
++    } else if (pGe.gLoad=="NoSharedMemory" || isAllocatorProcess) {//load genome and SAs from files
+         //load genome
+         P.inOut->logMain <<"Genome file size: "<<nGenome <<" bytes; state: good=" <<GenomeIn.good()\
+                 <<" eof="<<GenomeIn.eof()<<" fail="<<GenomeIn.fail()<<" bad="<<GenomeIn.bad()<<"\n"<<flush;
+@@ -351,6 +482,8 @@ void Genome::genomeLoad(){//allocate and load Genome
+     P.inOut->logMain << "Finished loading the genome: " << asctime (localtime ( &rawtime )) <<"\n"<<flush;
+ 
+     #ifdef COMPILE_FOR_MAC
++    // Full-index checksum forces every page resident — defeats mmap. Skip when mmap'd.
++    if (!genomeMmapYes)
+     {
+         uint sum1=0;
+         for (uint ii=0;ii<nGenome; ii++) sum1 +=  (uint) (unsigned char) G[ii];

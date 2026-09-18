@@ -1,0 +1,85 @@
+#!/bin/bash
+# Genome index + timed STAR baselines + optional perf.
+#SBATCH --job-name=star_baseline
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/baseline-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/baseline-%j.err
+
+set -euo pipefail
+ROOT="/project2/biyik_1165/jjt_373/csci270-star"
+mkdir -p "${ROOT}/carc/logs" "${ROOT}/star/bench/results"
+
+module purge 2>/dev/null || true
+
+cd "${ROOT}"
+STAR_BIN="${ROOT}/star/upstream/bin/Linux_x86_64_static/STAR"
+echo "Using STAR_BIN=${STAR_BIN}"
+"${STAR_BIN}" --version
+
+if [[ ! -f star/bench/datasets/reads_1.fastq.gz ]]; then
+  python3 star/bench/scripts/gen_synthetic_rnaseq.py \
+    --out-dir star/bench/datasets \
+    --n-genes 300 \
+    --n-reads 2000000 \
+    --read-len 100
+fi
+
+GENOME_DIR="${ROOT}/star/bench/datasets/genome"
+if [[ ! -f "${GENOME_DIR}/Genome" ]]; then
+  rm -rf "${GENOME_DIR}"
+  mkdir -p "${GENOME_DIR}"
+  echo "=== genomeGenerate ==="
+  START=$(python3 -c 'import time; print(time.time())')
+  "${STAR_BIN}" \
+    --runMode genomeGenerate \
+    --runThreadN "${SLURM_CPUS_PER_TASK}" \
+    --genomeDir "${GENOME_DIR}" \
+    --genomeFastaFiles star/bench/datasets/raw/genome.fa \
+    --sjdbGTFfile star/bench/datasets/raw/genes.gtf \
+    --sjdbOverhang 99 \
+    --genomeSAindexNbases 8
+  END=$(python3 -c 'import time; print(time.time())')
+  python3 -c "print('GENOME_WALL_SEC', ${END}-${START})"
+else
+  echo "Reusing existing genome index at ${GENOME_DIR}"
+fi
+
+export STAR_BIN GENOME_DIR
+export READ1="${ROOT}/star/bench/datasets/reads_1.fastq.gz"
+export READ2="${ROOT}/star/bench/datasets/reads_2.fastq.gz"
+# Zhang fairness: timed runs are 1 thread; genomeGenerate/perf build above use SLURM CPUs.
+export THREADS=1
+export RUNS=3
+
+echo "=== timed baselines (THREADS=${THREADS}) ==="
+bash star/bench/scripts/run_baseline.sh
+
+grep -E "Uniquely mapped|Number of input|% of reads" \
+  star/bench/results/baseline_Log.final.out || true
+
+if command -v perf >/dev/null 2>&1; then
+  echo "=== perf record (SortedByCoordinate, 1 thread) ==="
+  PERF_DIR="${ROOT}/star/bench/results/perf_align"
+  rm -rf "${PERF_DIR}"
+  mkdir -p "${PERF_DIR}"
+  perf record -o star/bench/results/perf.data -g -- \
+    "${STAR_BIN}" \
+      --runThreadN 1 \
+      --genomeDir "${GENOME_DIR}" \
+      --readFilesIn "${READ1}" "${READ2}" \
+      --readFilesCommand zcat \
+      --outFileNamePrefix "${PERF_DIR}/run_" \
+      --outSAMtype BAM SortedByCoordinate \
+      --limitBAMsortRAM 4000000000 || true
+  perf report -i star/bench/results/perf.data --stdio --no-children 2>/dev/null | head -100 \
+    > star/bench/results/perf_report.txt || true
+fi
+
+echo BASELINE_DONE
+cat star/bench/results/baseline_timings.csv

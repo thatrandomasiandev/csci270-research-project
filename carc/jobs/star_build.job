@@ -1,0 +1,120 @@
+#!/bin/bash
+# Build stock + S1–S7(+PGO) Linux STAR binaries for graded CARC bake-off.
+#SBATCH --job-name=star_build
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/build-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/carc/logs/build-%j.err
+
+set -euo pipefail
+ROOT=/project2/biyik_1165/jjt_373/csci270-star
+SRC="${ROOT}/star/upstream/source"
+PATCH="${ROOT}/star/src/star-2x-verified.patch"
+OUT="${ROOT}/star/src"
+NPROC="${SLURM_CPUS_PER_TASK:-16}"
+
+mkdir -p "${OUT}" "${ROOT}/carc/logs"
+cd "${ROOT}/star/upstream"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0
+
+echo "=== compiler ==="
+g++ --version | head -1
+
+# Restore pristine 2.7.11b sources (synced tree may already have the patch applied).
+git checkout -f 2.7.11b -- source
+git clean -fdx -- source >/dev/null
+
+build_hts() {
+  make -C htslib clean || true
+  make -C htslib lib-static -j"${NPROC}"
+}
+
+build_star() {
+  local extra="${1:-}"
+  make clean || true
+  build_hts
+  # Prefer static binary so bakeoff nodes need no matching libstdc++.
+  make STARstatic -j"${NPROC}" CXXFLAGSextra="${extra}" \
+    || make STAR -j"${NPROC}" CXXFLAGSextra="${extra}" \
+         LDFLAGS_shared='-pthread -static-libstdc++ -static-libgcc -Lhtslib -Bstatic -lhts -Bdynamic -lz'
+}
+
+echo "=== build STOCK (pristine 2.7.11b) ==="
+cd "${SRC}"
+build_star ""
+./STAR --version
+cp -f ./STAR "${OUT}/STAR_stock"
+chmod +x "${OUT}/STAR_stock"
+
+echo "=== apply S1–S7 patch ==="
+cd "${ROOT}/star/upstream"
+git apply --check "${PATCH}"
+git apply "${PATCH}"
+
+echo "=== build OPT (S1–S7, instrumented for PGO) ==="
+cd "${SRC}"
+PGO_GEN="-O3 -march=native -flto -fno-plt -fprofile-generate -fprofile-update=single"
+build_star "${PGO_GEN}"
+cp -f ./STAR "${OUT}/STAR_opt_instr"
+chmod +x "${OUT}/STAR_opt_instr"
+
+echo "=== PGO train on Suite B i01 (locked CLI) ==="
+GENOME="${ROOT}/star/bench/datasets/suiteB/i01/genome_nb10"
+READ1="${ROOT}/star/bench/datasets/suiteB/i01/fastq/SRR1039508_R1.fastq.gz"
+READ2="${ROOT}/star/bench/datasets/suiteB/i01/fastq/SRR1039508_R2.fastq.gz"
+TRAIN_DIR="${ROOT}/star/bench/results/pgo_train_i01"
+rm -rf "${TRAIN_DIR}"
+mkdir -p "${TRAIN_DIR}"
+[[ -f "${GENOME}/Genome" ]] || { echo "missing ${GENOME}" >&2; exit 1; }
+[[ -f "${READ1}" && -f "${READ2}" ]] || { echo "missing FASTQs" >&2; exit 1; }
+
+"${OUT}/STAR_opt_instr" \
+  --runThreadN 1 \
+  --genomeDir "${GENOME}" \
+  --readFilesIn "${READ1}" "${READ2}" \
+  --readFilesCommand zcat \
+  --outFileNamePrefix "${TRAIN_DIR}/run_" \
+  --outSAMtype BAM SortedByCoordinate \
+  --limitBAMsortRAM 4000000000 \
+  --outBAMcompression 0 \
+  >/dev/null
+echo "PGO_TRAIN_OK"
+
+echo "=== rebuild OPT with PGO use + LTO + native ==="
+cd "${SRC}"
+PGO_USE="-O3 -march=native -flto -fno-plt -fprofile-use -fprofile-partial-training -fno-semantic-interposition"
+build_star "${PGO_USE}"
+./STAR --version
+cp -f ./STAR "${OUT}/STAR_optimized"
+cp -f ./STAR "${OUT}/STAR_opt_linux_s7_pgo"
+chmod +x "${OUT}/STAR_optimized" "${OUT}/STAR_opt_linux_s7_pgo"
+
+# Also keep non-PGO algorithmic binary for ablation if needed later.
+echo "=== build OPT algo-only (no PGO) for reference ==="
+cd "${SRC}"
+# Wipe .gcda so a non-PGO rebuild is clean
+find . -name '*.gcda' -delete 2>/dev/null || true
+build_star "-O3 -march=native"
+cp -f ./STAR "${OUT}/STAR_opt_linux_s7"
+chmod +x "${OUT}/STAR_opt_linux_s7"
+
+cat > "${OUT}/run_star_optimized.sh" <<'EOS'
+#!/usr/bin/env bash
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module load gcc/13.3.0 2>/dev/null || true
+exec "${ROOT}/star/src/STAR_optimized" "$@"
+EOS
+chmod +x "${OUT}/run_star_optimized.sh"
+
+echo BUILD_OK
+ls -la "${OUT}/STAR_stock" "${OUT}/STAR_optimized" "${OUT}/STAR_opt_linux_s7_pgo" "${OUT}/STAR_opt_linux_s7"
+file "${OUT}/STAR_stock" "${OUT}/STAR_optimized"
