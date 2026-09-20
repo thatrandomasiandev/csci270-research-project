@@ -72,6 +72,8 @@ star/bench/results/**
 # Track locked reference scoreboard so clones see expected layout/numbers
 !star/bench/results/illumina10_s8j_mac.csv
 !star/bench/results/illumina10_repro.csv
+!star/bench/results/figures/
+!star/bench/results/figures/**
 star/src/STAR
 star/src/STAR_*
 star/Log.out

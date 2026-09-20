@@ -53,6 +53,7 @@ Headline: **`stitchWindowAligns` spent ~half of runtime copying fat `Transcript`
 - [x] Fetch i05–i10 + Mac bakeoffs
 - [x] Fly i05–i08 ≥2× via 2L:1–10Mb teaching index
 - [x] Professor reproduce path — `star/docs/REPRODUCE.md` + `fetch_suiteB.sh` / `build_stock_opt.sh` / `reproduce_all.sh` / `package_for_professor.sh`
+- [x] Figure pack — `star/bench/scripts/plot_all_figures.py` → `star/bench/results/figures/` (+ paper copy)
 - [ ] CARC x86_64 graded timings (build with jemalloc on Linux; maint ends 2026-09-20 18:00)
 - [ ] Flag-matrix §5.3
 - [x] Write-up draft — conference paper at `star/writeup/paper/main.pdf` (update when CARC lands)
