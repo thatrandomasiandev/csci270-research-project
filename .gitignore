@@ -63,12 +63,15 @@ secrets.json
 # STAR: clone upstream yourself (see star/docs/BUILD.md) — do not vendor
 star/upstream/
 
-# STAR datasets / binaries (rebuild locally)
+# STAR datasets / binaries (rebuild locally / pack for professor)
 star/bench/datasets/**
 !star/bench/datasets/**/*.md
 star/bench/results/**
 !star/bench/results/.gitkeep
 !star/bench/results/**/*.md
+# Track locked reference scoreboard so clones see expected layout/numbers
+!star/bench/results/illumina10_s8j_mac.csv
+!star/bench/results/illumina10_repro.csv
 star/src/STAR
 star/src/STAR_*
 star/Log.out
@@ -76,3 +79,6 @@ star/Log.out
 *.bai
 *.o
 *.a
+# Local professor handoff tarballs
+STAR_suiteB_repro*.tar.gz
+**/STAR_2x_reproduce/

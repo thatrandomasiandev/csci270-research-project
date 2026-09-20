@@ -1,39 +1,45 @@
 # Build STAR
 
-Upstream: [alexdobin/STAR](https://github.com/alexdobin/STAR) tag **2.7.11b** cloned to `star/upstream/`.
+Upstream: [alexdobin/STAR](https://github.com/alexdobin/STAR) tag **2.7.11b** → `star/upstream/`.
 
-## Optimized patch (A1 mmap)
+**Professor / full bake-off:** prefer [`REPRODUCE.md`](REPRODUCE.md) and:
+
+```bash
+./star/bench/scripts/build_stock_opt.sh          # stock + S1–S8 opt
+./star/bench/scripts/fetch_suiteB.sh             # data + indexes
+./star/bench/scripts/reproduce_all.sh            # or SKIP_BUILD=1 after the above
+```
+
+## Optimized patch (S1–S8)
 
 ```bash
 cd star/upstream
 git checkout 2.7.11b
-git apply ../src/star-2x.patch   # or keep patched tree in source/
+git apply ../src/star-2x-verified.patch
 ```
 
-## Linux (preferred for graded claim / CARC)
+Extras (jemalloc, PGO, LTO) are applied by `build_stock_opt.sh` — see `star/src/README.md`.
+
+## Linux
 
 ```bash
 cd star/upstream/source
-make STAR
+make STAR          # or make STARstatic
 # binary: star/upstream/source/STAR
-# or use prebuilt stock baseline: star/upstream/bin/Linux_x86_64_static/STAR
 ```
 
-## macOS (dev / non-graded)
+## macOS (dev)
 
-Homebrew gcc 16; clear SIMD flag on Apple Silicon:
+Homebrew gcc + jemalloc; clear SIMD flag on Apple Silicon:
 
 ```bash
 cd star/upstream/source
 make -C htslib clean && make -C htslib lib-static CC=gcc
 make STARforMacStatic CXX=g++-16 CXXFLAGS_SIMD="" -j$(sysctl -n hw.ncpu)
-cp STAR ../../src/STAR_opt_mac_a1
-# clean stock (no patch): stash/revert Genome* changes, rebuild → STAR_stock_mac
 ```
 
-Official docs recommend Homebrew gcc + `make STARforMacStatic CXX=...`.  
-Apple Silicon absolute times are **not** graded; use Discovery/CARC Linux x86_64 for submitted numbers.
+Apple Silicon absolute times are machine-local; use the same machine for stock vs opt (Zhang fairness).
 
 ## Prebuilt binaries
 
-`star/upstream/bin/` may contain static Linux/Mac builds depending on the release checkout.
+Local `star/src/STAR_*` binaries are **gitignored** (architecture-specific). Always rebuild with `build_stock_opt.sh` on the target machine.

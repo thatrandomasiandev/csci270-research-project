@@ -6,24 +6,32 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DS="${1:-i01}"
 STOCK_BIN="${STOCK_BIN:-${ROOT}/src/STAR_stock_mac}"
-OPT_BIN="${OPT_BIN:-${ROOT}/src/STAR_opt_mac_s123}"
+OPT_BIN="${OPT_BIN:-${ROOT}/src/STAR_opt_mac_s8_pgo}"
 GENOME_DIR="${GENOME_DIR:-${ROOT}/bench/datasets/suiteB/${DS}/genome_nb10}"
-# Default FASTQs for suite B i01–i04
+# Default FASTQs for suite B
 case "${DS}" in
   i01) R1n=SRR1039508; ;;
   i02) R1n=SRR1039509; ;;
   i03) R1n=SRR1039512; ;;
   i04) R1n=SRR1039513; ;;
+  i05) R1n=SRR948304; ;;
+  i06) R1n=SRR948305; ;;
+  i07) R1n=SRR948306; ;;
+  i08) R1n=SRR948307; ;;
+  i09) R1n=SRR6357070; ;;
+  i10) R1n=SRR6357071; ;;
   *) R1n=""; ;;
 esac
 READ1="${READ1:-${ROOT}/bench/datasets/suiteB/${DS}/fastq/${R1n}_R1.fastq.gz}"
 READ2="${READ2:-${ROOT}/bench/datasets/suiteB/${DS}/fastq/${R1n}_R2.fastq.gz}"
-OUT_ROOT="${OUT_ROOT:-${ROOT}/bench/results/bakeoff_s123_${DS}}"
+OUT_ROOT="${OUT_ROOT:-${ROOT}/bench/results/bakeoff_s8j_${DS}}"
 THREADS="${THREADS:-1}"
 RUNS="${RUNS:-3}"
 WARMUP="${WARMUP:-1}"
 if command -v gzcat >/dev/null 2>&1; then READCMD="${READCMD:-gzcat}"; else READCMD="${READCMD:-zcat}"; fi
 LIMIT_BAM_SORT_RAM="${LIMIT_BAM_SORT_RAM:-4000000000}"
+# Graded CLI lock: identical on both binaries
+EXTRA_STAR_ARGS="${EXTRA_STAR_ARGS:---outBAMcompression 0}"
 
 CMP="${ROOT}/bench/scripts/compare_outputs.sh"
 CSV="${OUT_ROOT}/timings.csv"

@@ -29,7 +29,20 @@ Raw: `stock_baseline_i01_full_timings.csv`
 
 ## Figures
 
-All under `star/bench/results/figures/`:
+All under `star/bench/results/figures/`.
+
+### Honest (use these)
+
+Regenerate: `python3 star/bench/scripts/plot_bakeoff.py`
+
+| File | Content |
+|------|---------|
+| `honest_stock_vs_opt_wall.png` | Stock vs opt wall (bakeoff_lock i01–i04) |
+| `honest_speedup.png` | Mean speedup + min-pair tick vs 2× |
+| `honest_per_pair_speedup.png` | Per-pair scatter (paper appendix) |
+| `honest_s8j_wall_and_speedup.png` | STATUS S8+jemalloc i01–i03 |
+
+### Withdrawn / directional (800 PE, Nbases=14)
 
 | File | Content |
 |------|---------|

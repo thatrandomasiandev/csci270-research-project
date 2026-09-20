@@ -21,6 +21,10 @@ LDFLAGSextra="... -flto -L/opt/homebrew/lib -ljemalloc"   # Linux: -ljemalloc
 
 ## Apply
 ```bash
+# Preferred (stock + opt + jemalloc + PGO):
+./star/bench/scripts/build_stock_opt.sh
+
+# Or manual:
 cd star/upstream && git checkout 2.7.11b -- source
 git apply ../src/star-2x-verified.patch
 # then build STARforMacStatic / STAR as in docs/BUILD.md (+ jemalloc + PGO)
@@ -31,4 +35,6 @@ git apply ../src/star-2x-verified.patch
 EXTRA_STAR_ARGS='--outBAMcompression 0' \
   OPT_BIN=star/src/STAR_opt_mac_s8_pgo \
   ./star/bench/scripts/run_bakeoff.sh i03
+
+# Full Suite B on another machine: star/docs/REPRODUCE.md
 ```

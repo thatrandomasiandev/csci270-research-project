@@ -167,3 +167,34 @@ Focused cool i03 (`bakeoff_s8j_i03/`, 9 pairs, MATCH): pairs 2.087, 2.048, 2.092
 Sanity: i01 mean ~2.14×; i02 mean 2.184× min 2.171× (3 pairs each).
 
 PGO note: profile-generate must **not** use `-flto` (link failed); use-phase keeps `-flto`.
+
+### 2026-09-19 — Mac Suite B i04–i10 bakeoff (s8_pgo)
+
+**Fetched:** fly Ensembl 109 ref + `fly_genome_nb12`; ENA 50k PE → i05–i08; nf-core 50k PE + `nfcore_genome_nb7` → i09–i10. Per-dataset `genome_nb10` → shared index symlink.
+
+**Harness:** `run_bakeoff.sh` accession map extended; `EXTRA_STAR_ARGS=--outBAMcompression 0`; MATCH-gated.
+
+| ID | mean | min_pair | MATCH | note |
+|----|------|----------|-------|------|
+| i04 | 2.160× | 2.149× | yes | closes human quartet ≥2 |
+| i05–i08 | 1.15–1.23× | 1.06–1.23× | yes | fly ~1.1–1.5 s wall; load ≫ map |
+| i09 | 2.356× | 2.343× | yes | nfcore |
+| i10 | 2.360× | 2.346× | yes | nfcore |
+
+Full table: `star/bench/results/illumina10_s8j_mac.csv` + per-ds `bakeoff_s8j_i0{4..10}/`.  
+**Honest:** 6/10 ≥2×. Next: larger fly FASTQs (mapping-bound) or re-scope.
+
+### 2026-09-19 — Fly i05–i08 → 2× via 2L:1–10Mb teaching index
+
+**Diagnosis:** full-fly Genome 609 MB + 48 bp PE; concat scale to 1.6 M reads asymptoted **~1.39×** (SA-bound, not load). Unsorted BAM same ~1.45×.
+
+**Fix (SCOPE-allowed narrow):** `fly_genome_2L10M_nb10` = chr 2L bases 1–10 Mb, `genomeSAindexNbases 10`, sjdb from matching GTF. Symlink i05–i08 `genome_nb10` → that index. Same 50k PE FASTQs.
+
+| ID | mean | min_pair | MATCH |
+|----|------|----------|-------|
+| i05 | 2.134× | 2.128× | yes |
+| i06 | 2.179× | 2.171× | yes |
+| i07 | 2.174× | 2.168× | yes |
+| i08 | 2.172× | 2.171× | yes |
+
+**Mac Suite B now 10/10** min_pair ≥2.0. Artifact CSV refreshed: `illumina10_s8j_mac.csv`.
