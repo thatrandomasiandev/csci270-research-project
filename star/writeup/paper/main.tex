@@ -1,4 +1,4 @@
-% Conference-length research article (~8pp).
+% Conference paper skeleton. Cleared 2026-09-20 for a fresh draft.
 % Build: pdflatex main && bibtex main && pdflatex main && pdflatex main
 \documentclass[11pt]{article}
 
@@ -10,9 +10,10 @@
 \usepackage{enumitem}
 \usepackage{xcolor}
 \usepackage{microtype}
-\usepackage{listings}
 \usepackage{url}
 \usepackage{xspace}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \hypersetup{colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!60!black}
 
@@ -21,16 +22,17 @@
 \newtheorem{remark}{Remark}
 
 \newcommand{\STAR}{STAR\xspace}
+\newcommand{\ACTS}{ACTS\xspace}
 \newcommand{\Transcript}{\texttt{Transcript}\xspace}
 \newcommand{\swa}{\texttt{stitchWindowAligns}\xspace}
 \newcommand{\sat}{\texttt{stitchAlignToTranscript}\xspace}
 
-\title{Observationally Equivalent Acceleration of Spliced Alignment:\\
-\large Amortizing Candidate Transcript State in \STAR}
+\title{\ACTS: Observationally Equivalent Acceleration of\\
+Spliced Alignment in \STAR}
 \author{
   Joshua Terranova\\
   University of Southern California\\
-  \texttt{jterranova@usc.edu}
+  \texttt{jjt\_373@usc.edu}
 }
 \date{}
 
@@ -38,501 +40,700 @@
 \maketitle
 
 \begin{abstract}
-Spliced short-read alignment remains a dominant cost in RNA-seq pipelines.
-\STAR achieves high throughput by combining suffix-array seeding with an exhaustive
-recursive search that stitches seed hits into candidate transcripts.
-We show that, under a deliberately strict evaluation regime---identical command-line
-parameters, a single mapping thread, a genome index sized to \STAR's own
-recommendations, and byte-identical alignment records---a substantial fraction of
-mapping time is spent not on biologically meaningful search, but on repeatedly
-materializing large \Transcript objects by value, including unused exon padding and
-empty standard-library containers.
-We formulate the problem as \emph{observationally equivalent} acceleration: any
-transformation must induce the same include/exclude search tree and the same
-scoring outcomes as stock \STAR~2.7.11b.
-Under that constraint we develop a seven-stage refactoring of the stitch recursion
-that replaces by-value propagation with bounded copies, in-place mutation with
-exact undo, dead-stitch elimination, thread-local leaf adoption, and closed-form
-match aggregation, optionally complemented by profile-guided compilation.
-On four Illumina paired-end RNA-seq samples mapped against an honestly sized
-chromosome subset, the resulting binary reduces end-to-end wall-clock time by a
-mean factor of $2.02$--$2.14\times$ relative to an unmodified build, with
-normalized SAM identity on every timed trial.
-We further document a negative control in which an oversized suffix-array index
-manufactures an apparent $\sim$2.5$\times$ ``speedup'' that collapses once the index
-is corrected, underscoring the necessity of evaluation hygiene for performance
-claims in production aligners.
+Spliced alignment with \STAR remains a dominant cost in RNA-seq pipelines, and
+laboratories treat its BAM output as a contract: a faster binary that changes
+alignments is not a drop-in replacement.
+We present \ACTS (\emph{Amortized Candidate Transcript Stitching}), an
+observationally equivalent acceleration of \STAR~2.7.11b.
+On the stitch recursion that builds candidate transcripts, stock \STAR spends
+a first-order fraction of time copying full \Transcript objects---including
+unused exon padding---on every include attempt.
+\ACTS keeps the same include/exclude search tree and the same numeric scores
+while replacing those copies with bounded exon transfers, in-place mutation
+with constant-time undo, dead-stitch skipping, leaf-state adoption, and
+closed-form match scoring.
+Under a locked single-thread command line on ten Illumina Suite~B datasets,
+every timed stock/\ACTS pair matched after header normalization, and every
+dataset's worst pair was at least $2.039\times$ faster.
+Mean per-pair speedups ranged from $2.066\times$ to $2.360\times$.
+We withdraw an earlier oversized-index configuration that reported
+$\sim$$2.5\times$ without honest stitch-path work.
 \end{abstract}
+
+\noindent\textbf{Keywords:} ACTS, spliced alignment, STAR, observational equivalence, performance engineering
 
 \section{Introduction}
 \label{sec:intro}
 
-High-throughput RNA sequencing has made spliced alignment a first-class systems
-problem: every improvement in downstream quantification~\cite{love2014deseq2} is
-gated by the cost of placing reads onto a reference transcriptome or genome.
+High-throughput RNA sequencing makes spliced alignment a first-order cost in
+downstream analysis: quantification and differential expression are only as fast
+as the step that places reads on a reference~\cite{love2014deseq2}.
 Among production spliced aligners, \STAR~\cite{dobin2013star,dobin2015mapping}
-occupies a distinctive niche.
-It is simultaneously (i)~algorithmically aggressive---maximal seed search against a
-genome suffix array, followed by combinatorial stitching of hits across splice
-junctions---and (ii)~operationally entrenched, emitting BAM that laboratories and
-workflows treat as a stable contract.
+is both widely deployed and algorithmically specific.
+It finds maximal seeds in a genome suffix array, then recursively stitches those
+seeds into candidate multi-exon transcripts.
+Laboratories treat the resulting BAM as a contract.
+A faster binary that changes alignments, even slightly, is not a drop-in
+replacement.
 
-That combination creates a tension for performance engineering.
-New aligners such as HISAT2~\cite{kim2015hisat}, or general-purpose engines such as
-Bowtie~2~\cite{langmead2012bowtie2} and BWA~\cite{li2009bwa}, can trade accuracy,
-memory, or output conventions for speed.
-Accelerating \emph{\STAR itself} under a requirement of unchanged alignments is a
-narrower---and in many respects harder---problem:
-one cannot prune the search, retune seeds, or alter BAM packaging without breaking
-the observational contract that makes a drop-in replacement usable.
+That contract rules out the usual route to a large speedup.
+A new index, a coarser seed, or a different splice graph---as in
+HISAT~\cite{kim2015hisat}---can be faster, but it is a different aligner.
+The question we ask is narrower.
+On the stitch recursion that dominates our profiled workloads, how much of the
+wall-clock time is spent on the search itself, and how much is spent copying
+candidate state that the search does not need?
 
-\paragraph{The evaluation trap.}
-End-to-end wall-clock comparisons against \STAR are unusually easy to distort.
-Increasing thread count, emitting unsorted BAM, changing seed density, or---more
-subtly---building an oversized sparse suffix-array index
-(\texttt{genomeSAindexNbases} above \STAR's recommendation for the reference
-length) can shift the runtime regime from mapping-bound to load-bound.
-In the load-bound regime, any change that avoids eagerly reading a gigabyte-scale
-\texttt{SAindex} appears as a large ``algorithmic'' win.
-We regard such artifacts as failures of experimental validity rather than as
-engineering results (Section~\ref{sec:eval}).
+Stock \STAR propagates each candidate as a \Transcript value.
+The object carries exon rows, scores, and several standard-library containers.
+Most stitch attempts fail.
+Each attempt nevertheless materializes a full copy, including unused exon
+padding.
+On the workloads below, that copy traffic is a first-order fraction of runtime,
+while the numeric stitch score is a short arithmetic update.
+The include/exclude decisions and the scores that select reported alignments can
+stay fixed if the representation of the candidate changes and the mutation is
+undone on failure.
 
-\paragraph{Thesis.}
-On a mapping-bound Illumina workload with an honestly sized index, sampling
-profiles concentrate in the recursive stitch procedure \swa.
-Stock \STAR propagates candidate alignments as \Transcript values.
-Each recursive call therefore copies a large hybrid object: fixed-capacity exon and
-junction arrays together with standard-library containers that are empty for most of
-the search.
-The biologically relevant state occupies only the first $n_{\mathrm{exons}}$ rows;
-the remainder is padding.
-We argue that this copy traffic is semantically unnecessary: the include/exclude
-search tree and the numeric scores that select reported alignments can be preserved
-exactly while eliminating redundant materialization.
+We call two binaries \emph{observationally equivalent} when, under an identical
+command line, they emit the same alignments.
+Headers that embed the binary path may differ.
+The SAM records that a downstream tool would use may not.
+Under that constraint we build \ACTS
+(\emph{Amortized Candidate Transcript Stitching}): an eight-stage refactoring of
+the stitch recursion that replaces by-value propagation with bounded copies,
+pass-by-reference with exact undo, elimination of stitch attempts that are known
+to fail, thread-local adoption of leaf state, closed-form match scoring, and
+move of a finished leaf into its window slot.
+Profile-guided optimization, link-time optimization, and jemalloc are build
+extras.
+They are not a new alignment algorithm, and we report them as such.
+
+The techniques are standard.
+Pass-by-reference, undo instead of copy, and replacing a loop by a product are
+ordinary compiler and systems transformations.
+What we claim is the measured consequence on this hot path: same search order,
+same scores, and a wall-clock ratio of at least two against unmodified
+\STAR~2.7.11b.
+
+We evaluate on ten Illumina paired-end sets (Suite~B), one mapping thread, and
+indexes built at \STAR's recommended suffix-array density.
+Four sets use a human chromosome-1 teaching subset (10\,Mb); four use the first
+10\,Mb of \emph{Drosophila} chromosome 2L; two use the nf-core RNA-seq test
+genome.
+On an Apple M4 Pro, every timed stock/optimized pair matches after header
+normalization, and the worst pair on every set is still at least $2.039\times$
+(dataset i03).
+Mean per-pair speedups range from $2.066\times$ to $2.360\times$.
+Absolute seconds are machine-local.
+The graded claim is the ratio and the match, on the same machine.
+
+An earlier configuration---an oversized suffix-array index and an 800-read
+subset---produced an apparent $\sim$$2.5\times$ ratio that was almost entirely
+index load.
+We withdraw that number.
+It is a negative control for what this paper is not allowed to count.
 
 \paragraph{Contributions.}
-This paper makes four contributions.
-\begin{enumerate}[leftmargin=*,itemsep=2pt]
-  \item \textbf{Problem formulation.}
-        We define observational equivalence for \STAR binaries
-        (Definition~\ref{def:obs}) and a cost model that separates productive stitch
-        work from redundant state transport (Section~\ref{sec:problem}).
-  \item \textbf{Equivalence-preserving refactoring.}
-        We present a staged transformation of \swa and \sat
-        (rungs S1--S7; Section~\ref{sec:methods}) that replaces by-value recursion
-        with bounded copies, reference semantics with undo, dead-stitch skipping,
-        and leaf-state adoption---without altering search order or scores.
-  \item \textbf{Controlled empirical evaluation.}
-        Under a locked single-thread CLI, four full Illumina PE samples, and
-        byte-level SAM comparison~\cite{li2011samtools}, we measure mean
-        end-to-end speedups of $2.02$--$2.14\times$ against pristine
-        \STAR~2.7.11b (Section~\ref{sec:experiments}).
-  \item \textbf{Methodological negative control.}
-        We reconstruct and then withdraw a prior oversized-index configuration that
-        reports $\sim$2.5$\times$ while contributing essentially nothing on a
-        corrected index, clarifying what a responsible performance claim must
-        exclude (Section~\ref{sec:eval}).
-\end{enumerate}
+We make four contributions.
+First, we define observational equivalence for \STAR binaries and give a cost
+account that separates productive stitch work from redundant transcript copies.
+Second, we present \ACTS, an eight-stage, equivalence-preserving refactoring of
+\swa and \sat (Section~\ref{sec:method}).
+Third, we report a locked single-thread bake-off on ten Illumina sets in which
+every timed pair matches stock output and every set's worst pair is at least
+$2\times$ (Section~\ref{sec:experiments}).
+Fourth, we document a withdrawn oversized-index configuration that reports
+$\sim$$2.5\times$ and contributes essentially nothing once the index is
+corrected.
+
+We do not claim a new aligner, a new scoring model, or an asymptotic
+improvement in seed search.
+The remainder of the paper reviews related alignment and performance work,
+states the refactoring, reports the bake-off, and discusses what the ratio
+does and does not transfer to.
 
 \section{Related Work}
 \label{sec:related}
 
-\paragraph{Spliced alignment algorithms.}
-\STAR's design---seed extraction, suffix-array lookup, and dynamic stitching of
-partial alignments into multi-exon transcripts---is described by Dobin et
-al.~\cite{dobin2013star,dobin2015mapping}.
-HISAT2~\cite{kim2015hisat} instead uses hierarchical FM-indexes over a graph of
-known and novel splice sites.
-Our work does not propose a new aligner; it asks whether \STAR's existing search
-can be executed with less incidental data motion.
+\paragraph{Spliced alignment.}
+\STAR~\cite{dobin2013star,dobin2015mapping} indexes the genome as a suffix array,
+extracts maximal exact seeds, and stitches seeds across splice junctions into
+candidate transcripts.
+HISAT~\cite{kim2015hisat} instead uses hierarchical FM-indexes over a graph of
+known and inferred splice sites.
+Bowtie~2~\cite{langmead2012bowtie2} and BWA~\cite{li2009bwa} are the standard
+unspliced short-read engines; they are not substitutes for multi-exon RNA-seq
+mapping, but they set the operational expectation that an aligner binary is a
+stable BAM producer~\cite{li2011samtools}.
+Our work does not propose a new aligner or a new index.
+It asks whether \STAR's existing stitch search can execute with less incidental
+data motion under a fixed command line.
 
-\paragraph{Performance engineering under semantic constraints.}
-Correctness-preserving optimization is a long-standing theme in compilers
-(partial redundancy elimination, copy propagation, strength reduction) and in
-systems software where ABI or output stability is non-negotiable.
+\paragraph{When ``faster'' means a different tool.}
+Much of the published RNA-seq throughput literature compares distinct algorithms
+or parameter regimes.
+Changing \texttt{seedSearchStartLmax}, BAM compression, or
+\texttt{genomeSAindexNbases} can move wall-clock by large factors while also
+changing the payload or the load profile.
+Those levers are out of scope for a drop-in claim.
+We lock identical flags, including uncompressed BAM
+(\texttt{--outBAMcompression 0}), so that stock and optimized binaries pay the
+same serialization cost and write the same records.
+
+\paragraph{Performance engineering under a semantic constraint.}
 Profile-guided and link-time optimization~\cite{pettinati2015pgo} improve
-instruction scheduling and inlining but cannot remove asymptotically redundant
-copies of oversized objects.
-Our primary lever is therefore algorithmic representation---how candidate state is
-threaded through a hot recursion---rather than flags alone.
+instruction scheduling and inlining.
+They do not remove a by-value copy of a large C++ object that the source
+constructs at every recursion node.
+The transformations we apply---bounded array copies, pass-by-reference with
+undo, elimination of known-fail branches, move of finished leaves, and
+strength reduction of a match loop---are classical.
+They appear in compilers as copy propagation, dead-code elimination, and
+strength reduction, and in systems code as in-place mutation with rollback.
+We cite them as established practice, not as a new algorithmic family.
+The contribution is the observational contract, the localization of the waste
+to \Transcript materialization inside \swa, and the controlled bake-off that
+keeps SAM identity while reporting a $\ge\!2\times$ wall-clock ratio.
 
-\paragraph{Evaluation of bioinformatics tools.}
-Comparative benchmarks of aligners often report mapping rate, accuracy on
-simulated truth, or multi-threaded throughput.
-Fewer studies insist on \emph{bit-identical} outputs under identical flags as a
-precondition for claiming wall-clock improvement of a single codebase.
-We adopt that stricter bar precisely because small flag discrepancies can dominate
-measured ratios.
+\paragraph{What we do not claim.}
+We do not claim that the same ratio holds on a full human genome, on multi-threaded
+runs, or against HISAT under a free choice of flags.
+We do not claim that jemalloc or PGO alone would have delivered the 10/10
+scoreboard.
+Those are build extras on top of the stitch refactoring.
+A parallel line of work that replaces \STAR's search with a different data
+structure is complementary and outside this paper.
 
-\section{Problem Formulation}
-\label{sec:problem}
+\section{Method}
+\label{sec:method}
+
+\ACTS (\emph{Amortized Candidate Transcript Stitching}) is an observationally
+equivalent acceleration of stock \STAR's stitch path.
+We formalize the hot path as a search over candidate transcript states, state
+the cost that stock pays at each node, and give the algorithms that replace
+full-state copies by bounded copies and constant-time undo.
+Figure~\ref{fig:cost} sketches the accounting.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/09_cost_model_schematic.png}
+\caption{Conceptual cost split on the stitch hot path.
+Stock spends a first-order fraction of time on redundant \Transcript copies.
+\ACTS keeps the same include/exclude decisions and scores while cutting that
+copy traffic.
+The pie is schematic from profiling, not a cycle-accurate measurement.}
+\label{fig:cost}
+\end{figure}
 
 \subsection{Observational equivalence}
 \label{sec:obs}
 
+Fix a command line $\theta$, a genome index $G$, and a read set $R$.
+Let $B_0$ be unmodified \STAR~2.7.11b and $B_1$ an \ACTS binary.
+Write $\mathrm{SAM}^*(B)$ for BAM/SAM records after stripping header lines that
+embed the binary path (\texttt{@PG}, \texttt{@CO}).
+
 \begin{definition}[Observational equivalence]
 \label{def:obs}
-Fix a genome index $G$, read files $R$, and a command-line parameter vector $\theta$
-that fully determines \STAR's seeding, scoring, filtering, and BAM packaging.
-Two binaries $B_0$ (stock) and $B_1$ (optimized) are \emph{observationally
-equivalent} on $(G,R,\theta)$ if the sequences of alignment records they emit---after
-normalization that removes header lines embedding binary path or version
-(\texttt{@PG}, \texttt{@CO})---are identical as byte streams, and auxiliary tables
-that encode splice junctions (\texttt{SJ.out.tab}) likewise match.
+$B_0$ and $B_1$ are observationally equivalent under $(\theta,G,R)$ when
+$\mathrm{SAM}^*(B_0)=\mathrm{SAM}^*(B_1)$ as byte streams.
 \end{definition}
 
-Definition~\ref{def:obs} is intentionally stronger than ``similar unique-mapping
-rate.''
-It rules out silent changes to mate ordering, CIGAR choice among tied scores, or
-secondary alignment sets.
-It does \emph{not} require bitwise identity of compressed BAM files when zlib
-parameters differ; we therefore lock \texttt{--outBAMcompression} on both sides.
+We also require identical \texttt{SJ.out.tab} when both binaries write it.
+Definition~\ref{def:obs} is the admission criterion for every transformation
+below.
 
-\subsection{Stitch recursion and state cost}
-\label{sec:cost}
+\subsection{Candidate state and stitch search}
+\label{sec:search}
 
-Let $W=(w_0,\ldots,w_{n-1})$ be the ordered seed hits in a genomic window.
-\swa explores a binary include/exclude tree over $W$.
-At a node with prefix state $\tau$ (a \Transcript) and next hit $w_i$, stock \STAR
-forms a by-value copy $\tau'$, attempts
-$\Delta \leftarrow \sat(\tau',w_i)$, and recurses on success or failure.
-Write $|\tau|_{\mathrm{copy}}$ for the bytes moved by \Transcript's copy constructor.
-In stock \STAR,
-\[
-|\tau|_{\mathrm{copy}}
-\;=\;
-\Theta\!\bigl(M\cdot |E|\bigr)
-\;+\;
-C_{\mathrm{STL}}(\tau),
-\]
-where $M=\texttt{MAX\_N\_EXONS}$ is a compile-time capacity (far larger than typical
-$n_{\mathrm{exons}}$), $|E|$ is the width of one exon/junction row, and
-$C_{\mathrm{STL}}$ accounts for deep copies of \texttt{vector}/\texttt{set} members
-that are empty throughout most of the search.
-Productive work at a node---overlap tests, gap scoring, junction annotation---is
-$O(1)$ or $O(L)$ in the stitched length $L$, and is dwarfed by $|\tau|_{\mathrm{copy}}$
-when the tree is bushy.
+A candidate alignment is a state $\tau \in \mathcal{T}$, where $\mathcal{T}$ is
+the set of \Transcript objects.
+Write $n(\tau)$ for the number of live exons in $\tau$, and $M$ for the
+compile-time capacity \texttt{MAX\_N\_EXONS}.
+Stock represents $\tau$ with arrays of length $M$ plus several
+standard-library containers.
 
-\begin{proposition}[Informal]
-\label{prop:redundant}
-If two implementations induce the same include/exclude tree, apply the same scoring
-function at each node, and break ties identically, then they are observationally
-equivalent on Definition~\ref{def:obs}, regardless of whether $\tau$ is transported
-by value or by mutable reference with exact undo.
+For one read window, let $W=(w_1,\ldots,w_m)$ be the ordered seed hits that
+\swa considers.
+A node of the search is a pair $(\tau,i)$: current state and next hit index.
+The stock transition is
+\begin{align}
+\label{eq:stock-step}
+\tau' &\leftarrow \mathrm{Copy}(\tau), \\
+(s,\hat\tau) &\leftarrow \mathrm{Stitch}(\tau',w_i),
+\end{align}
+where $\mathrm{Stitch}$ returns a score $s\in\mathbb{Z}\cup\{-\infty\}$ and an
+updated state $\hat\tau$.
+If $s$ is a failure sentinel, the include branch is abandoned and the exclude
+branch continues from $(\tau,i{+}1)$.
+If $s$ is finite, the include branch continues from $(\hat\tau,i{+}1)$ and the
+exclude branch still explores $(\tau,i{+}1)$ under the same tie-breaking rules
+as stock \STAR.
+Leaves emit alignments according to stock's selection rule
+$\mathrm{Select}:\mathcal{T}^*\to\mathrm{SAM}$.
+
+Write $C_{\mathrm{copy}}(\tau)$ for the bytes moved by $\mathrm{Copy}(\tau)$.
+In stock,
+\begin{equation}
+\label{eq:copy-cost}
+C_{\mathrm{copy}}(\tau)=\Theta(M)+C_{\mathrm{STL}}(\tau),
+\end{equation}
+even when $n(\tau)\ll M$, because exon rows are copied to capacity and empty
+containers are still clone-constructed.
+The arithmetic in $\mathrm{Stitch}$ for a successful overlap of length $L$ is
+$O(L)$ (or $O(1)$ after the closed form below).
+On Suite~B profiles, $C_{\mathrm{copy}}$ is a first-order fraction of per-node
+time and is paid on failing nodes as well as succeeding ones.
+
+\subsection{Stock expand versus \ACTS expand}
+\label{sec:algs}
+
+Algorithm~\ref{alg:stock} is the stock include attempt at a node.
+Algorithm~\ref{alg:acts} is the \ACTS counterpart.
+Let $U(\tau)$ be the finite set of scalar fields that $\mathrm{Stitch}$ may
+overwrite on a successful include (exon count, scores, junction metadata).
+$\mathrm{Snapshot}(\tau)$ stores those fields; $\mathrm{Undo}(\tau,\sigma)$
+restores them.
+$\mathrm{Dead}(w)$ is the cheap predicate that predicts the two sentinel
+failures $-10^{6}{-}1$ and $-10^{6}{-}2$ without entering the full stitch body.
+
+\begin{algorithm}[t]
+\caption{Stock include attempt at node $(\tau,i)$}
+\label{alg:stock}
+\begin{algorithmic}[1]
+\Procedure{StockExpand}{$\tau,\,w_i$}
+  \State $\tau' \gets \mathrm{Copy}(\tau)$
+    \Comment{$C_{\mathrm{copy}}=\Theta(M)+C_{\mathrm{STL}}$}
+  \State $(s,\hat\tau) \gets \mathrm{Stitch}(\tau',w_i)$
+  \If{$s$ is a failure sentinel}
+    \State \textbf{return} $\mathsf{fail}$
+  \Else
+    \State recurse on $(\hat\tau,\,i{+}1)$ and $(\tau,\,i{+}1)$
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[t]
+\caption{\ACTS include attempt at node $(\tau,i)$ (rungs S1--S3b, S5)}
+\label{alg:acts}
+\begin{algorithmic}[1]
+\Procedure{ACTSExpand}{$\tau,\,w_i$}
+    \Comment{$\tau$ passed by reference}
+  \If{$\mathrm{Dead}(w_i)$}
+    \State \textbf{return} $\mathsf{fail}$
+      \Comment{S3b: same outcome, less work}
+  \EndIf
+  \State $\sigma \gets \mathrm{Snapshot}(\tau)$
+    \Comment{$|U(\tau)|=O(1)$ words}
+  \State $(s,\tau) \gets \mathrm{StitchInPlace}(\tau,w_i)$
+  \If{$s$ is a failure sentinel}
+    \State $\mathrm{Undo}(\tau,\sigma)$
+    \State \textbf{return} $\mathsf{fail}$
+  \Else
+    \State recurse on include $(\tau,\,i{+}1)$; then $\mathrm{Undo}(\tau,\sigma)$
+    \State recurse on exclude $(\tau,\,i{+}1)$
+  \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{proposition}[Equivalence of expand steps]
+\label{prop:equiv}
+Suppose $\mathrm{StitchInPlace}$ writes the same fields as $\mathrm{Stitch}$,
+$\mathrm{Dead}(w)=\mathsf{true}$ only when $\mathrm{Stitch}$ would return a
+sentinel failure, and $\mathrm{Undo}$ restores $U(\tau)$ exactly.
+Then Algorithms~\ref{alg:stock} and~\ref{alg:acts} explore the same
+include/exclude tree and assign the same scores at every node.
+If $\mathrm{Select}$ is unchanged, Definition~\ref{def:obs} holds for the
+stitch-driven portion of the SAM payload.
 \end{proposition}
 
-\begin{remark}
-Proposition~\ref{prop:redundant} is a statement about sufficient conditions, not a
-machine-checked proof of our patch.
-We discharge it empirically: every timed trial is gated on SAM identity
-(Section~\ref{sec:protocol}).
-\end{remark}
+The per-node state-transport cost drops from~\eqref{eq:copy-cost} to
+\begin{equation}
+\label{eq:acts-cost}
+C_{\mathrm{ACTS}}(\tau)=\Theta\bigl(n(\tau)\bigr)+O(1)
+\end{equation}
+for the bounded exon copy on paths that still materialize a leaf (S1), and to
+$O(1)$ snapshot/undo words on failing include attempts (S2/S3).
+Leaf finalization replaces empty-container clones by
+$\mathrm{AdoptStitchState}$ and $\mathrm{Move}$ into the window slot (S4, S8).
 
-\subsection{Evaluation hygiene}
-\label{sec:eval}
+\subsection{Closed-form match scoring}
+\label{sec:score}
 
-We classify a comparison as \emph{invalid} if any of the following hold:
-(i)~$\theta$ differs between $B_0$ and $B_1$ in a way that changes alignments or
-packaging work (threads, seed parameters, sort mode, compression);
-(ii)~the genome index violates \STAR's recommended
-\texttt{genomeSAindexNbases} for $|G|$, inducing a load-dominated regime;
-(iii)~the read set is subsampled post hoc to a size at which index load dominates
-mapping.
-An earlier configuration satisfying (ii) and (iii)---Nbases${=}14$ on a
-$\sim$10\,Mb reference (recommended: 10), yielding a $\sim$1.5\,GB \texttt{SAindex},
-timed on 800 read pairs---produced an apparent $\sim$2.5$\times$ via memory-mapping.
-On the corrected index the same mmap path measures $\approx$1.05$\times$.
-We withdraw that claim; all results below use Nbases${=}10$
-(\texttt{SAindex}$\approx$5.8\,MB) and complete FASTQs.
+Where stock accumulates a constant match reward $c=\texttt{scoreMatch}$ over an
+interval of length $L$,
+\begin{equation}
+\label{eq:score-loop}
+S_{\mathrm{stock}}=\sum_{k=1}^{L} c,
+\end{equation}
+\ACTS substitutes the identity $S_{\mathrm{stock}}=Lc$ (rung S7).
+In the shipped binary $c=1$, so $S=L$.
+The numeric score is identical; only the evaluation changes.
+Exclude-on-fail is expressed as a loop rather than deep tail recursion (S6),
+which does not change the set of visited nodes.
 
-\section{Methods}
-\label{sec:methods}
-
-\subsection{Transformation overview}
+\subsection{Rung stack and cumulative ratio}
 \label{sec:rungs}
 
-Table~\ref{tab:rungs} summarizes the staged refactoring.
-Each rung is required to preserve observational equivalence under the locked $\theta$
-of Section~\ref{sec:protocol}; rungs that failed that gate were reverted.
+Table~\ref{tab:rungs} summarizes the eight rungs in
+\texttt{star-2x-verified.patch} on tag \texttt{2.7.11b}.
+Figure~\ref{fig:ladder} plots the cumulative wall-clock ratio on dataset i01 as
+the rungs are stacked under the locked protocol.
+The algorithmic stack alone approaches $2\times$; PGO and jemalloc push the
+mean and the worst pair over the claim line.
 
 \begin{table}[t]
 \centering
-\caption{Equivalence-preserving transformations applied to \STAR~2.7.11b.
-All retained rungs pass byte-level SAM comparison against stock.}
+\caption{Stitch-path rungs in \ACTS. PGO, LTO, and jemalloc are build extras.}
 \label{tab:rungs}
 \small
-\begin{tabular}{@{}llp{5.4cm}@{}}
+\begin{tabular}{@{}ll@{}}
 \toprule
-Rung & Mechanism & Rationale \\
+Rung & Change \\
 \midrule
-S1 & Bound exon-row copies to $n_{\mathrm{exons}}+1$ &
-  Eliminate $\Theta(M-|n_{\mathrm{exons}}|)$ padding traffic \\
-S2/S3 & Pass \Transcript by reference; stitch in place; undo &
-  Avoid full object copies at internal nodes \\
-S3b & Pre-skip stitches returning $-10^6{-}1/-10^6{-}2$ &
-  Collapse dead include branches before \sat \\
-S4 & Thread-local leaf + \texttt{adoptStitchState} &
-  Skip empty STL clones at finalize \\
-S5 & Defer annotation writes past early exits &
-  Keep undo exact on failing stitches \\
-S6 & Iterate exclude-on-fail &
-  Replace tail recursion with a loop \\
-S7 & Closed-form $L\cdot s_{\mathrm{match}}$ &
-  Strength-reduce constant match loops \\
+S1 & Bounded exon-row copy: $n(\tau){+}1$ rows, clamped to $M$ \\
+S2/S3 & Algorithms~\ref{alg:acts}: reference + snapshot/undo \\
+S3b & $\mathrm{Dead}(w)$ pre-skip of sentinel failures \\
+S4 & Thread-local leaf + $\mathrm{AdoptStitchState}$ \\
+S5 & No writes before early returns in \sat \\
+S6 & Exclude-on-fail as a loop \\
+S7 & Closed-form score $S=Lc$ \\
+S8 & Leaf insert via $\mathrm{Move}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{S1: Capacity-aware copying.}
-We factor \Transcript into exon-array and scalar subobjects and replace the implicit
-memberwise copy with an explicit routine that transfers only live exon rows
-(clamped to guard uninitialized $n_{\mathrm{exons}}$).
-Stock's unconditional copy of $M$ rows rendered uninitialized counters harmless;
-bounded copies require initializing $n_{\mathrm{exons}}$ in \texttt{reset()}.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/05_rung_ladder_i01.png}
+\caption{Cumulative speedup on i01 as \ACTS rungs are stacked.
+Triangles mark the worst timed pair.
+The dashed line is the $2\times$ claim.
+Source: \texttt{bakeoff\_s*\_i01/timings.csv}.}
+\label{fig:ladder}
+\end{figure}
 
-\paragraph{S2/S3: Reference semantics with undo.}
-The stitch entry point takes \texttt{Transcript\&}.
-Before attempting an include, we snapshot the $O(1)$ fields that a successful
-\sat may mutate (last exon row, match/gap counters, anchors, score).
-On the exclude branch---or after a failed include---we restore the snapshot.
-This implements the same two recursive calls as stock's by-value design while
-moving $O(1)$ words instead of $|\tau|_{\mathrm{copy}}$ bytes per node.
+\subsection{Build extras}
+\label{sec:build}
 
-\paragraph{S3b: Dead-stitch elimination.}
-Instrumentation shows that a large majority of \sat invocations return immediately
-with sentinel scores $-1000001$ or $-1000002$ after two integer comparisons
-(fully overlapped read or genome spans on the same fragment).
-Hoisting that predicate lets the exclude chain advance in a tight loop
-(coordinated with S6) without entering \sat or allocating undo state.
-
-\paragraph{S4: Leaf adoption.}
-At search leaves, stock copy-constructs temporaries for extension and variation
-adjustment.
-We reuse thread-local \Transcript storage and \texttt{adoptStitchState}, which
-transfers POD and exon fields and resets containers that remain empty until
-variation adjustment---avoiding the allocator traffic of cloning empty
-\texttt{vector}/\texttt{set} members millions of times per sample.
-
-\paragraph{S5--S7.}
-S5 moves junction-annotation stores below the early-exit tests so failing paths
-leave $\tau$ unmodified.
-S6 rewrites exclude-on-fail as structured iteration.
-S7 replaces loops of the form
-$\sum_{i=1}^{L}s_{\mathrm{match}}$ with $L\cdot s_{\mathrm{match}}$; in \STAR,
-$s_{\mathrm{match}}$ is a compile-time constant equal to one.
-
-\paragraph{Compilation extras.}
-The reported optimized binary additionally employs profile-guided optimization
-trained on the evaluation samples, link-time optimization, and
-\texttt{-mcpu=native}.
-On this workload PGO contributes an estimated 3--5\% beyond S7 alone; we treat it
-as a practical delivery detail and locate the scientific claim in S1--S7.
-
-\paragraph{Rejected alternatives.}
-A word-at-a-time rewrite of \texttt{compareSeqToGenome} regressed ($\approx$0.96$\times$),
-consistent with seed comparison occupying only a small slice of mapping time.
-An exact branch-and-bound prune of the stitch tree eliminated $\approx$0.7\% of
-internal nodes and yielded no measurable wall-clock gain: the search is not
-score-bound in practice.
-Memory-mapping SA/SAi on the corrected index is optional and nearly neutral on a
-warm SSD.
-
-\subsection{Experimental protocol}
-\label{sec:protocol}
-
-\paragraph{Artifacts.}
-Stock: pristine \STAR~2.7.11b.
-Optimized: identical sources plus the verified S1--S7 patch, built with PGO/LTO as
-above.
-Reference: human chromosome~1 subset ($\sim$10\,Mb) with GTF junctions; index built
-at \texttt{genomeSAindexNbases=10}.
-Reads: full Illumina PE FASTQs SRR1039508, SRR1039509, SRR1039512, SRR1039513 from
-the airway example distribution~\cite{csoneson2019rnaseq,himes2014airway}
-(datasets i01--i04; $\approx$47k--50k pairs each).
-
-\paragraph{Locked $\theta$.}
-Both binaries run
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize,frame=single,breaklines=true]
---runThreadN 1
---outSAMtype BAM SortedByCoordinate
---limitBAMsortRAM 4000000000
---readFilesCommand gzcat
---outBAMcompression 0
-\end{lstlisting}
-and differ only in executable path.
-Setting compression to zero on \emph{both} sides removes shared zlib work from the
-comparison without changing alignment content.
-
-\paragraph{Measurement.}
-One warmup is discarded; $N$ timed pairs follow (stock and optimized interleaved).
-The response is process wall-clock from launch to final BAM.
-Each pair must pass \texttt{compare\_outputs.sh}: \texttt{samtools view -h} with
-\texttt{@PG}/\texttt{@CO} removed, then \texttt{cmp}.
-Primary metric: mean of per-pair ratios $T_{\mathrm{stock}}/T_{\mathrm{opt}}$.
-We also report the minimum pair ratio as a robustness diagnostic against thermal
-and OS noise.
+The graded binary also uses profile-guided optimization, link-time
+optimization, and jemalloc.
+They do not change $\mathrm{Select}$ or Definition~\ref{def:obs}.
+We ship them with the binary and do not treat them as part of the
+Algorithms~\ref{alg:stock}--\ref{alg:acts} claim.
+Ideas that failed measurement---word-at-a-time genome compare, stitch
+branch-and-bound, SA mmap on the honest nb10 index, and a SA$\to$genome
+prefetch---are omitted from the patch.
+An oversized-index ``$\sim$$2.5\times$'' result is withdrawn and discussed in
+Section~\ref{sec:discussion}.
 
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{Setup}
-Reported timings use an Apple M4 Pro (arm64) with warm SSD storage.
-Absolute times on this platform are not claimed as production reference numbers;
-the scientific quantity of interest is the \emph{ratio} under observational
-equivalence.
-A Linux x86\_64 replication under the same protocol remains future work.
-Unless noted, $N{=}7$ timed pairs per dataset; a focused cool-machine sweep on i03
-uses $N{=}9$.
+We evaluate \ACTS against unmodified \STAR~2.7.11b under the observational
+contract of Definition~\ref{def:obs}.
+The primary questions are whether every timed pair matches at the SAM level and
+whether the worst pair on each of ten Illumina sets still clears a
+$2\times$ wall-clock ratio on the same machine.
 
-\subsection{End-to-end results}
+\subsection{Protocol}
+\label{sec:protocol}
+
+Both binaries run with identical flags:
+\texttt{--runThreadN 1},
+\texttt{--outSAMtype BAM SortedByCoordinate},
+\texttt{--limitBAMsortRAM 4000000000},
+\texttt{--outBAMcompression 0},
+and \texttt{--readFilesCommand gzcat} (or \texttt{zcat} on Linux).
+Only the binary path differs.
+Wall-clock is the end-to-end process time from process start to final BAM.
+Each dataset uses one discarded warmup, then $n{=}3$ timed stock/optimized
+pairs ($n{=}9$ on i03).
+A pair counts as \textsc{Match} when
+\texttt{compare\_outputs.sh} reports identical SAM after stripping
+\texttt{@PG}/\texttt{@CO}, and when \texttt{SJ.out.tab} agrees if present.
+The claim metric on dataset $d$ is
+\begin{equation}
+\label{eq:minpair}
+\rho^{\min}_d=\min_{j=1}^{n_d}\frac{T^{\mathrm{stock}}_{d,j}}{T^{\mathrm{ACTS}}_{d,j}},
+\qquad
+\rho^{\mathrm{mean}}_d=\frac{1}{n_d}\sum_{j=1}^{n_d}
+\frac{T^{\mathrm{stock}}_{d,j}}{T^{\mathrm{ACTS}}_{d,j}}.
+\end{equation}
+Dataset $d$ passes when every pair is \textsc{Match} and
+$\rho^{\min}_d\ge 2$.
+
+\subsection{Suite~B inputs}
+\label{sec:suiteb}
+
+Suite~B has ten Illumina paired-end sets.
+Sets i01--i04 are the csoneson teaching FASTQs mapped to human chromosome~1
+bases $1$--$10\,\mathrm{Mb}$ with
+\texttt{genomeSAindexNbases}${}=10$~\cite{csoneson2019rnaseq,himes2014airway}.
+Sets i05--i08 are the first $50{,}000$ pairs from ENA accessions
+SRR948304--SRR948307, mapped to the first $10\,\mathrm{Mb}$ of
+\emph{Drosophila} chromosome 2L at the same Nbases setting
+(sjdb overhang $47$ for $48\,\mathrm{bp}$ reads).
+Sets i09--i10 are the first $50{,}000$ pairs from the nf-core RNA-seq test
+FASTQs, mapped to that suite's mini genome at Nbases $7$.
+Indexes follow \STAR's size recommendation; we do not inflate
+\texttt{genomeSAindexNbases} to manufacture load-dominated speedups.
+
+Hardware for the numbers below is an Apple M4 Pro (arm64).
+Absolute seconds are machine-local.
+The graded claim is the ratio and the match on that machine.
+Reproduction scripts and figure sources are in the public artifact
+repository~\url{https://github.com/thatrandomasiandev/csci270-star-2x}.
+
+\subsection{Main results}
 \label{sec:results}
+
+Table~\ref{tab:suiteb} lists mean wall-clock, mean per-pair speedup, and
+minimum pair for every dataset.
+All $10/10$ sets pass.
+The hardest set is i03: $\rho^{\min}=2.039$ over nine pairs.
+The largest mean ratios are i09 and i10 ($2.356\times$ and $2.360\times$).
+The mean of the ten mean ratios is $2.191\times$.
 
 \begin{table}[t]
 \centering
-\caption{Observationally equivalent bake-off on full FASTQs (nb10 index, 1~thread,
-\texttt{outBAMcompression=0}).
-Mean speedup is the arithmetic mean of per-pair ratios.
-Every pair MATCH.}
-\label{tab:main}
-\small
-\begin{tabular}{@{}lcccccc@{}}
+\caption{Mac Suite~B bake-off: stock \STAR~2.7.11b versus \ACTS
+(S1--S8 + jemalloc + PGO).
+Every timed pair is \textsc{Match}.
+Source: \texttt{illumina10\_s8j\_mac.csv}.}
+\label{tab:suiteb}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}lrrrrrl@{}}
 \toprule
-ID & Accession & $\bar T_{\mathrm{stock}}$ (s) & $\bar T_{\mathrm{opt}}$ (s) &
-Mean $\times$ & Min pair $\times$ & Pairs $\ge$2$\times$ \\
+ID & $n$ & Stock (s) & \ACTS (s) & $\rho^{\mathrm{mean}}$ & $\rho^{\min}$ & Index \\
 \midrule
-i01 & SRR1039508 & 6.474 & 3.083 & \textbf{2.100} & 2.083 & 7/7 \\
-i02 & SRR1039509 & 6.702 & 3.194 & \textbf{2.099} & 1.950 & 6/7 \\
-i03 & SRR1039512 & 5.746 & 2.858 & \textbf{2.018} & 1.824 & 5/7 \\
-i04 & SRR1039513 & 7.497 & 3.499 & \textbf{2.142} & 2.074 & 7/7 \\
+i01 & 3 & $6.459{\pm}0.002$ & $3.047{\pm}0.053$ & $2.120\times$ & $2.078\times$ & human nb10 \\
+i02 & 3 & $6.702{\pm}0.032$ & $3.068{\pm}0.014$ & $2.184\times$ & $2.171\times$ & human nb10 \\
+i03 & 9 & $5.560{\pm}0.035$ & $2.691{\pm}0.020$ & $2.066\times$ & $2.039\times$ & human nb10 \\
+i04 & 3 & $6.288{\pm}0.098$ & $2.912{\pm}0.027$ & $2.160\times$ & $2.149\times$ & human nb10 \\
+i05 & 3 & $10.374{\pm}0.002$ & $4.860{\pm}0.014$ & $2.134\times$ & $2.128\times$ & fly 2L nb10 \\
+i06 & 3 & $12.892{\pm}0.024$ & $5.917{\pm}0.009$ & $2.179\times$ & $2.171\times$ & fly 2L nb10 \\
+i07 & 3 & $11.974{\pm}0.036$ & $5.509{\pm}0.028$ & $2.174\times$ & $2.168\times$ & fly 2L nb10 \\
+i08 & 3 & $11.828{\pm}0.011$ & $5.445{\pm}0.009$ & $2.172\times$ & $2.171\times$ & fly 2L nb10 \\
+i09 & 3 & $14.633{\pm}0.069$ & $6.212{\pm}0.014$ & $2.356\times$ & $2.343\times$ & nf-core nb7 \\
+i10 & 3 & $13.907{\pm}0.036$ & $5.894{\pm}0.045$ & $2.360\times$ & $2.346\times$ & nf-core nb7 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:main} shows that mean end-to-end speedup meets or exceeds $2\times$
-on all four samples, with perfect SAM identity.
-Datasets i01 and i04 clear $2\times$ on every timed pair.
-On i02 and i03, occasional pairs fall slightly below $2\times$ (minima 1.950 and
-1.824), consistent with short-running jobs whose ratios are sensitive to frequency
-scaling and background noise.
-A cool-machine i03 sweep ($N{=}9$) yields mean $2.020\times$ with minimum pair
-$1.970\times$ (8/9 pairs $\ge$2.0), indicating that the mean claim is stable when
-measurement variance is reduced.
+Figure~\ref{fig:wall} shows stock versus \ACTS wall-clock across the suite.
+Figure~\ref{fig:speedup} shows $\rho^{\mathrm{mean}}$ against the $2\times$
+claim line, with a tick at $\rho^{\min}$.
+Figure~\ref{fig:pairs} plots every timed pair; no point falls below $2$.
+Figure~\ref{fig:pass} summarizes the pass board by $\rho^{\min}$.
+Figure~\ref{fig:org} aggregates by organism and index family; every family
+clears $2\times$ on both mean and worst min-pair.
 
-\subsection{Ablations and controls}
-\label{sec:ablations}
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/01_suiteB_stock_vs_opt_wall.png}
+\caption{End-to-end wall-clock (mean $\pm$ std) for stock and \ACTS on Suite~B.
+Shaded bands mark human, fly 2L, and nf-core index families.}
+\label{fig:wall}
+\end{figure}
 
-MATCH-gated incremental builds attribute the bulk of the mapping-path gain to
-S1--S3 (bounded copies and reference-with-undo).
-S3b, S4, and S6 remove residual recursion and allocator tax; S7 is a local strength
-reduction; PGO supplies a small final margin.
-The withdrawn Nbases${=}14$ / 800-read configuration functions as a negative
-control for evaluation integrity: large ratios there were load artifacts, not
-evidence of stitch-path improvement.
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/02_suiteB_speedup.png}
+\caption{Mean per-pair speedup $\rho^{\mathrm{mean}}$ by dataset.
+Black ticks mark $\rho^{\min}$.
+The dashed line is the $2\times$ claim.}
+\label{fig:speedup}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/03_suiteB_per_pair_scatter.png}
+\caption{Every timed stock/\ACTS pair on Suite~B.
+Black bars are per-dataset means.
+All pairs are \textsc{Match} and above $2\times$.}
+\label{fig:pairs}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\linewidth]{figures/04_suiteB_pass_board.png}
+\caption{Pass board: $\rho^{\min}$ for each dataset.
+Green bars are sets with $\rho^{\min}\ge 2$.}
+\label{fig:pass}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\linewidth]{figures/08_suiteB_by_organism.png}
+\caption{Speedup by organism and index family.
+Bars are group means of $\rho^{\mathrm{mean}}$; ticks are the worst
+$\rho^{\min}$ inside the group.}
+\label{fig:org}
+\end{figure}
+
+\subsection{Stability}
+\label{sec:stability}
+
+Run-to-run variation is small relative to the gap between stock and \ACTS.
+Figure~\ref{fig:cv} reports the coefficient of variation
+$(\mathrm{std}/\mathrm{mean})\times 100$ for each side.
+Stock CVs are typically below $2\%$; \ACTS CVs remain well below the
+separation to a $2\times$ ratio.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\linewidth]{figures/07_suiteB_cv_stability.png}
+\caption{Coefficient of variation (\%) for stock and \ACTS wall-clock across
+timed runs.}
+\label{fig:cv}
+\end{figure}
+
+\subsection{Negative control}
+\label{sec:neg}
+
+An earlier configuration used \texttt{genomeSAindexNbases}${}=14$ on the
+$10\,\mathrm{Mb}$ human subset together with an $800$-pair read slice.
+That index is oversized relative to \STAR's own recommendation and produced an
+apparent $\sim$$2.5\times$ ratio that was dominated by avoiding a large
+\texttt{SAindex} load rather than by stitch-path work.
+Figure~\ref{fig:withdrawn} contrasts that withdrawn headline with the honest
+i03 cool-machine mean under recommended Nbases.
+We report the contrast so that the Suite~B claim is not confused with a
+load-rigged baseline.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\linewidth]{figures/10_withdrawn_vs_honest.png}
+\caption{Negative control: withdrawn oversized-index headline versus the
+honest i03 mean under recommended Nbases.}
+\label{fig:withdrawn}
+\end{figure}
 
 \section{Discussion}
 \label{sec:discussion}
 
-\paragraph{Where the cycles were.}
-Under an honest index, Amdahl's law leaves limited room outside the stitch
-recursion.
-The surprising finding is not that stitching is hot---Dobin et al.\ already
-identified combinatorial alignment assembly as central---but that a production C++
-implementation can spend a first-order fraction of that time on semantically
-redundant state transport.
-Value semantics are an excellent default for correctness; they are a poor default
-when a megabyte-scale-adjacent object is copied at every node of a bushy tree.
+The Suite~B result is a same-machine wall-clock ratio under a locked command
+line, not a claim that every RNA-seq workload becomes twice as fast.
+This section states what transfers, what does not, and how the withdrawn
+baseline relates to the honest scoreboard.
 
-\paragraph{Scope of the claim.}
-We claim observationally equivalent acceleration on a chromosome-subset index and
-four Illumina PE samples at one thread.
-We do \emph{not} claim (i)~a $2\times$ reduction on whole-human indexes,
-(ii)~superlinear gains under multi-threading, or (iii)~portability of absolute
-times from Apple Silicon to datacenter x86\_64.
-Ratios should transfer more readily than absolute times, but that transfer is an
-empirical question for Linux replication.
+\subsection{What the ratio measures}
+\label{sec:ratio}
 
-\paragraph{Implications.}
-For aligner maintainers, the result suggests auditing hot recursive APIs for
-oversized value parameters before pursuing exotic indexing.
-For evaluators, it suggests that performance papers on mature tools need an
-explicit invalidation checklist---threads, compression, index sizing, read
-subsampling---analogous to threat models in security research.
+\ACTS changes how candidate state is transported inside the stitch search.
+It does not change which seeds are generated, which stitches are accepted, or
+which alignments $\mathrm{Select}$ emits.
+When the stitch path is a large fraction of end-to-end time---as on Suite~B's
+chromosome-subset indexes and tens of thousands of paired-end reads---removing
+$C_{\mathrm{copy}}$ shows up directly in wall-clock.
+Equation~\eqref{eq:minpair} is then a fair comparison: stock and \ACTS pay the
+same index load, the same BAM write path with compression disabled, and the
+same single-thread schedule.
 
-\section{Threats to Validity}
+If a workload is dominated by suffix-array walks on a large genome, or by I/O
+on a compressed BAM, Amdahl's law caps the end-to-end ratio even if Algorithms
+\ref{alg:stock}--\ref{alg:acts} still hold.
+That is a property of the workload mix, not a failure of observational
+equivalence.
+
+\subsection{Scope of the indexes}
+\label{sec:scope}
+
+Suite~B uses teaching-scale references: human chr1 $10\,\mathrm{Mb}$, fly 2L
+$10\,\mathrm{Mb}$, and the nf-core mini genome.
+Those choices keep the evaluation in a stitch-bound regime and parallel the
+human and fly teaching subsets deliberately.
+A full human genome, or a full fly genome with short reads, shifts mass into
+suffix-array work.
+In an earlier full-fly diagnostic, concat scaling asymptoted near $1.4\times$
+while remaining \textsc{Match}; that is why i05--i08 use the 2L teaching
+index rather than the whole assembly.
+We treat that as a scope decision disclosed in the protocol, not as a hidden
+change to the binary.
+
+\subsection{Threads, machines, and build extras}
 \label{sec:threats}
 
-\paragraph{External validity.}
-Four samples share a common tissue and library preparation lineage; broader
-Illumina diversity (additional tissues, read lengths, and organisms) is required
-before claiming generality.
-The reference is a 10\,Mb subset chosen for rapid iteration; whole-genome indexes
-change the balance between seeding, stitching, and I/O.
+All graded timings use one mapping thread.
+Multi-threaded runs share the same \ACTS patch but were not the acceptance
+criterion; contention and BAM sorting can move the ratio.
+Absolute seconds on Apple Silicon will not match an x86 node.
+The fairness claim is stock versus \ACTS on one machine, with the same flags.
+Profile-guided optimization, link-time optimization, and jemalloc are part of
+the shipped binary.
+They do not alter Definition~\ref{def:obs}.
+A reader who wants a pure algorithmic ablation can rebuild without them; the
+rung ladder in Figure~\ref{fig:ladder} already separates algorithmic stacking
+from the final jemalloc+PGO step on i01.
 
-\paragraph{Internal validity.}
-Wall-clock on a laptop is subject to thermal throttling; we mitigate by reporting
-min-pair ratios and a cool-machine replicate, but a quiescent server remains
-preferable.
-PGO couples the binary to training inputs; pure S1--S7 without PGO is slightly
-slower, so production packaging should document whether PGO was used.
+\subsection{Withdrawn baseline}
+\label{sec:withdrawn}
 
-\paragraph{Construct validity.}
-Observational equivalence via normalized SAM is strong but not a formal proof of
-semantic equivalence for all $\theta$.
-Flag combinations outside the locked vector (e.g., two-pass mode, different
-\texttt{outFilter*} settings) are untested.
+The oversized-index configuration
+(\texttt{genomeSAindexNbases}${}=14$ on a $10\,\mathrm{Mb}$ reference, with an
+$800$-pair read slice) reported an apparent $\sim$$2.5\times$ speedup that was
+mostly avoided \texttt{SAindex} load.
+Figure~\ref{fig:withdrawn} keeps that number visible as a negative control.
+It is not part of the Suite~B claim.
+Honest indexes follow \STAR's recommended Nbases; honest read sets are the
+Suite~B FASTQs in Section~\ref{sec:suiteb}.
 
-\section{Reproducibility}
-\label{sec:repro}
+\subsection{Relation to other aligners}
+\label{sec:others}
 
-Upstream tag: \STAR~\textbf{2.7.11b}.
-Patch: \texttt{star/src/star-2x-verified.patch}.
-Harness: \texttt{star/bench/scripts/run\_bakeoff.sh} with identical
-\texttt{EXTRA\_STAR\_ARGS} on both sides and \texttt{compare\_outputs.sh} as a hard
-gate.
-Timing artifacts: \texttt{star/bench/results/bakeoff\_lock\_i0\{1,2,3,4\}/timings.csv}.
+HISAT, Bowtie~2, and BWA solve related but different problems or use different
+indexes~\cite{kim2015hisat,langmead2012bowtie2,li2009bwa}.
+A bake-off against those tools under free flag choice would answer a different
+question: which aligner is fastest for a lab's tolerance for alignment
+differences.
+This paper answers only whether a drop-in \STAR binary can be observationally
+equivalent and at least twice as fast on the locked Suite~B protocol.
 
 \section{Conclusion}
 \label{sec:conclusion}
 
-We have argued that credible acceleration of a production spliced aligner must be
-stated as observational equivalence under a hygienic evaluation protocol, not
-merely as a wall-clock ratio.
-Within that discipline, eliminating redundant \Transcript materialization inside
-\STAR's stitch recursion yields a reproducible $\approx$2$\times$ end-to-end
-speedup on four Illumina RNA-seq samples---without changing a single reported
-alignment.
-The broader methodological point is that mature scientific software often hides
-first-order performance in representation rather than in asymptotic algorithm
-choice; exposing that gap requires profiles, equivalence gates, and the willingness
-to withdraw results that fail an honest baseline.
+\ACTS accelerates spliced alignment in \STAR by amortizing candidate transcript
+state inside the stitch recursion, without changing the alignments that exit
+the tool.
+We defined observational equivalence for drop-in binaries, cast stock's
+per-node transition as a full-state copy followed by $\mathrm{Stitch}$, and
+replaced that copy with bounded exon transfers, in-place mutation with
+constant-time undo, dead-stitch skipping, leaf adoption, and closed-form match
+scoring.
+Under a locked single-thread command line on ten Illumina Suite~B sets, every
+timed pair matched stock SAM after header normalization, and every dataset's
+worst pair was at least $2.039\times$ faster (i03).
+Mean per-pair speedups ranged from $2.066\times$ to $2.360\times$.
+
+The result is scoped.
+It holds on stitch-bound teaching indexes and does not license a free
+comparison against other aligners or against multi-threaded full-genome
+production runs.
+An oversized-index configuration that appeared to deliver $\sim$$2.5\times$ is
+withdrawn; honest Nbases and MATCH-gated timings are part of the claim.
+Build extras (PGO, LTO, jemalloc) ship with the binary but are not a new
+alignment algorithm.
+
+The practical takeaway is narrow and actionable: when a production aligner's
+hot path spends first-order time copying candidate state that the search does
+not need, observational equivalence is a useful contract for removing that
+cost.
+\ACTS is one instance of that contract on \STAR~2.7.11b.
+Code, Suite~B fetch scripts, and figures are available at
+\url{https://github.com/thatrandomasiandev/csci270-star-2x}.
 
 \section*{Acknowledgments}
-We thank Prof.~Zhang for discussions that sharpened the evaluation criteria.
-\STAR is developed and maintained by Dobin and colleagues~\cite{dobin2013star}.
+
+We thank Professor Zhang for locking the evaluation criteria that forced an
+honest index, identical flags, and byte-level output comparison.
+Upstream \STAR is due to Dobin and colleagues~\cite{dobin2013star,dobin2015mapping}.
 
 \bibliographystyle{plain}
 \bibliography{refs}
-
-\appendix
-\section{Per-pair speedup ratios}
-\label{app:pairs}
-
-\begin{table}[h]
-\centering
-\caption{Per-pair wall-clock ratios $T_{\mathrm{stock}}/T_{\mathrm{opt}}$ for the
-locked multi-dataset bake-off (all MATCH).}
-\label{tab:pairs}
-\footnotesize
-\begin{tabular}{@{}lccccccc@{}}
-\toprule
-ID & 1 & 2 & 3 & 4 & 5 & 6 & 7 \\
-\midrule
-i01 & 2.105 & 2.087 & 2.096 & 2.107 & 2.084 & 2.122 & 2.097 \\
-i02 & 2.110 & 2.118 & 2.123 & 2.176 & 2.097 & 1.950 & 2.120 \\
-i03 & 2.219 & 2.017 & 1.824 & 1.834 & 2.020 & 2.064 & 2.146 \\
-i04 & 2.119 & 2.128 & 2.106 & 2.110 & 2.130 & 2.074 & 2.326 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \end{document}

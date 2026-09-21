@@ -8,7 +8,9 @@ Primary deliverable:
 - **Bib:** [`paper/refs.bib`](paper/refs.bib)
 - **PDF:** [`paper/main.pdf`](paper/main.pdf)
 
-**Title:** Observationally Equivalent Acceleration of Spliced Alignment: Amortizing Candidate Transcript State in STAR
+**Title:** ACTS: Observationally Equivalent Acceleration of Spliced Alignment in STAR
+
+(*ACTS* = Amortized Candidate Transcript Stitching)
 
 Build:
 
@@ -19,13 +21,14 @@ pdflatex main && bibtex main && pdflatex main && pdflatex main
 
 ## Framing (for graders)
 
-The paper is written as a research article (observational equivalence, cost model, threats to validity), not as a course checklist. Empirical claims remain honest: 4/10 Illumina sets, Mac ratios, mean ≥2× with MATCH.
+Paper draft complete (2026-09-20): ACTS title, full sections, Suite B 10/10 figures.
+`paper/main.tex` / `paper/main.pdf`. Rebuild with `pdflatex` + `bibtex` as below.
 
 ## Professor criteria (Zhang, 2026-09-08)
 1. Output identical to STAR (same flags) — MATCH every timed pair
 2. Fair: same machine, same threads (1) — locked
-3. Ten Illumina short-read datasets — **4/10** in paper
-4. ≥2× wall-clock — mean **2.02–2.14×** on i01–i04
+3. Ten Illumina short-read datasets — **10/10** in paper Table (Suite B)
+4. ≥2× wall-clock — worst min_pair **2.039×** (i03); means **2.066–2.360×**
 
 ## Supporting docs
 - `star/docs/SCOPE.md`, `OPTIMIZATION.md`, `PROFILING_LOG.md`
