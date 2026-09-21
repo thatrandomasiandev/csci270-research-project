@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>ACTS — Paper</title>
-  <meta name="description" content="ACTS: Observationally Equivalent Acceleration of Spliced Alignment in STAR" />
+  <title>STAR Suite B — 10/10 ≥2×</title>
+  <meta name="description" content="Mac bake-off: stock STAR vs S8+jemalloc+PGO on 10 Illumina datasets. All MATCH, all min_pair ≥2×." />
   <style>
     :root {
       --bg: #f7f6f2;
@@ -12,101 +12,24 @@
       --muted: #5c5a52;
       --line: #d8d5cb;
       --card: #ffffff;
-      --accent: #1f4e79;
       --stock: #6b6860;
       --opt: #1f4e79;
       --pass: #1f6b3a;
       --warn: #8a5a12;
+      --accent: #1f4e79;
     }
     * { box-sizing: border-box; }
-    html, body { height: 100%; }
     body {
       margin: 0;
       font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
       background: var(--bg);
       color: var(--ink);
       line-height: 1.45;
-      display: flex;
-      flex-direction: column;
-    }
-    .top {
-      flex: 0 0 auto;
-      border-bottom: 1px solid var(--line);
-      background: var(--card);
-    }
-    .top-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 14px 20px 0;
-    }
-    .brand {
-      font-family: "IBM Plex Serif", Georgia, serif;
-      font-size: 1.15rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-      margin: 0 0 2px;
-    }
-    .brand span { color: var(--muted); font-weight: 400; font-size: 0.92rem; }
-    .tabs {
-      display: flex;
-      gap: 0;
-      margin-top: 12px;
-    }
-    .tab {
-      appearance: none;
-      border: none;
-      background: transparent;
-      font: inherit;
-      font-weight: 600;
-      font-size: 0.88rem;
-      color: var(--muted);
-      padding: 10px 16px 12px;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-    }
-    .tab:hover { color: var(--ink); }
-    .tab[aria-selected="true"] {
-      color: var(--accent);
-      border-bottom-color: var(--accent);
-    }
-    .tab:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-    .actions {
-      float: right;
-      margin-top: -2.4rem;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    .actions a {
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--accent);
-      text-decoration: none;
-    }
-    .actions a:hover { text-decoration: underline; }
-    .panel { display: none; flex: 1; min-height: 0; }
-    .panel.active { display: flex; flex-direction: column; }
-    #panel-paper {
-      background: #525659;
-    }
-    #panel-paper iframe {
-      flex: 1;
-      width: 100%;
-      border: 0;
-      min-height: calc(100vh - 88px);
-    }
-    #panel-bakeoff {
-      overflow: auto;
     }
     .wrap {
       max-width: 980px;
       margin: 0 auto;
-      padding: 32px 24px 72px;
-      width: 100%;
+      padding: 40px 24px 72px;
     }
     h1 {
       font-family: "IBM Plex Serif", Georgia, serif;
@@ -154,7 +77,6 @@
     }
     @media (max-width: 720px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
-      .actions { float: none; margin: 8px 0 0; }
     }
     .stat {
       background: var(--card);
@@ -183,18 +105,18 @@
       color: var(--muted);
       font-size: 0.92rem;
     }
-    .panel-card {
+    .panel {
       background: var(--card);
       border: 1px solid var(--line);
       padding: 18px 18px 12px;
       margin-bottom: 20px;
     }
-    .panel-card h2 {
+    .panel h2 {
       font-size: 0.95rem;
       font-weight: 600;
       margin: 0 0 4px;
     }
-    .panel-card .cap {
+    .panel .cap {
       font-size: 0.78rem;
       color: var(--muted);
       margin: 0 0 16px;
@@ -277,131 +199,84 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Serif:wght@600&display=swap" rel="stylesheet" />
 </head>
 <body>
-  <header class="top">
-    <div class="top-inner">
-      <p class="brand">ACTS <span>· Observationally equivalent STAR acceleration</span></p>
-      <div class="actions">
-        <a href="ACTS.pdf" download>Download PDF</a>
-        <a href="https://github.com/thatrandomasiandev/csci270-research-project">GitHub</a>
-      </div>
-      <nav class="tabs" role="tablist" aria-label="Site sections">
-        <button class="tab" role="tab" id="tab-paper" aria-controls="panel-paper" aria-selected="true" data-tab="paper">Paper</button>
-        <button class="tab" role="tab" id="tab-bakeoff" aria-controls="panel-bakeoff" aria-selected="false" data-tab="bakeoff">Bake-off</button>
-      </nav>
+  <div class="wrap">
+    <h1>STAR Suite B — 10/10 ≥2×</h1>
+    <p class="lede">
+      Mac arm64 bake-off: stock STAR 2.7.11b vs S8+jemalloc+PGO.
+      One thread, sorted BAM, identical CLI, MATCH on every timed pair.
+    </p>
+    <div class="pills">
+      <span class="pill ok">10/10 min_pair ≥2.0</span>
+      <span class="pill ok">all MATCH</span>
+      <span class="pill info">STAR_opt_mac_s8_pgo</span>
+      <span class="pill">CARC x86_64 pending</span>
     </div>
-  </header>
 
-  <section id="panel-paper" class="panel active" role="tabpanel" aria-labelledby="tab-paper">
-    <iframe title="ACTS paper PDF" src="ACTS.pdf"></iframe>
-  </section>
+    <div class="stats">
+      <div class="stat"><div class="label">Datasets ≥2×</div><div class="value">10 / 10</div></div>
+      <div class="stat"><div class="label">Worst min_pair</div><div class="value">2.039×</div></div>
+      <div class="stat"><div class="label">Mean of means</div><div class="value neutral">2.191×</div></div>
+      <div class="stat"><div class="label">Best mean</div><div class="value">2.360×</div></div>
+    </div>
 
-  <section id="panel-bakeoff" class="panel" role="tabpanel" aria-labelledby="tab-bakeoff" hidden>
-    <div class="wrap">
-      <h1>STAR Suite B — 10/10 ≥2×</h1>
-      <p class="lede">
-        Mac arm64 bake-off: stock STAR 2.7.11b vs S8+jemalloc+PGO.
-        One thread, sorted BAM, identical CLI, MATCH on every timed pair.
-      </p>
-      <div class="pills">
-        <span class="pill ok">10/10 min_pair ≥2.0</span>
-        <span class="pill ok">all MATCH</span>
-        <span class="pill info">STAR_opt_mac_s8_pgo</span>
-        <span class="pill">CARC x86_64 pending</span>
+    <div class="note">
+      Fly i05–i08 use a <strong>2L:1–10Mb</strong> teaching index (same idea as human chr1 10Mb).
+      Full-fly asymptoted ~1.4× on 48&nbsp;bp reads — SA-bound — so the workload was narrowed, not the binary.
+    </div>
+
+    <div class="panel">
+      <h2>Min-pair vs mean speedup</h2>
+      <p class="cap">Dashed line = 2× claim · Source: illumina10_s8j_mac.csv · 2026-09-19</p>
+      <svg id="speedChart" class="chart" viewBox="0 0 900 320" role="img" aria-label="Speedup bar chart"></svg>
+      <div class="legend">
+        <span><i style="background:var(--pass)"></i>Min pair (×)</span>
+        <span><i style="background:var(--opt)"></i>Mean (×)</span>
+        <span><i style="background:var(--warn);height:2px;width:16px;vertical-align:middle"></i>2× claim</span>
       </div>
+    </div>
 
-      <div class="stats">
-        <div class="stat"><div class="label">Datasets ≥2×</div><div class="value">10 / 10</div></div>
-        <div class="stat"><div class="label">Worst min_pair</div><div class="value">2.039×</div></div>
-        <div class="stat"><div class="label">Mean of means</div><div class="value neutral">2.191×</div></div>
-        <div class="stat"><div class="label">Best mean</div><div class="value">2.360×</div></div>
-      </div>
-
-      <div class="note">
-        Fly i05–i08 use a <strong>2L:1–10Mb</strong> teaching index (same idea as human chr1 10Mb).
-        Full-fly asymptoted ~1.4× on 48&nbsp;bp reads — SA-bound — so the workload was narrowed, not the binary.
-      </div>
-
-      <div class="panel-card">
-        <h2>Min-pair vs mean speedup</h2>
-        <p class="cap">Dashed line = 2× claim · Source: illumina10_s8j_mac.csv · 2026-09-19</p>
-        <svg id="speedChart" class="chart" viewBox="0 0 900 320" role="img" aria-label="Speedup bar chart"></svg>
+    <div class="grid2">
+      <div class="panel" style="margin:0">
+        <h2>Wall-clock — stock vs opt</h2>
+        <p class="cap">Mean wall seconds (i03 n=9; others n=3)</p>
+        <svg id="wallChart" class="chart" viewBox="0 0 560 300" role="img" aria-label="Wall-clock bar chart"></svg>
         <div class="legend">
-          <span><i style="background:var(--pass)"></i>Min pair (×)</span>
-          <span><i style="background:var(--opt)"></i>Mean (×)</span>
-          <span><i style="background:var(--warn);height:2px;width:16px;vertical-align:middle"></i>2× claim</span>
+          <span><i style="background:var(--stock)"></i>Stock (s)</span>
+          <span><i style="background:var(--opt)"></i>Optimized (s)</span>
         </div>
       </div>
-
-      <div class="grid2">
-        <div class="panel-card" style="margin:0">
-          <h2>Wall-clock — stock vs opt</h2>
-          <p class="cap">Mean wall seconds (i03 n=9; others n=3)</p>
-          <svg id="wallChart" class="chart" viewBox="0 0 560 300" role="img" aria-label="Wall-clock bar chart"></svg>
-          <div class="legend">
-            <span><i style="background:var(--stock)"></i>Stock (s)</span>
-            <span><i style="background:var(--opt)"></i>Optimized (s)</span>
-          </div>
-        </div>
-        <div class="panel-card suite-list" style="margin:0">
-          <h2>Reference suites</h2>
-          <p class="cap">Per-dataset index · fair stock vs opt</p>
-          <h3>i01–i04 · Human</h3>
-          <p>GSE52778 teaching FASTQs · chr1 1–10Mb · genomeSAindexNbases 10</p>
-          <h3>i05–i08 · Drosophila</h3>
-          <p>SRR948304–07 · 50k PE · index = 2L:1–10Mb nb10 (not full fly)</p>
-          <h3>i09–i10 · nf-core</h3>
-          <p>SRR6357070–71 · 50k PE · nfcore_genome_nb7</p>
-        </div>
+      <div class="panel suite-list" style="margin:0">
+        <h2>Reference suites</h2>
+        <p class="cap">Per-dataset index · fair stock vs opt</p>
+        <h3>i01–i04 · Human</h3>
+        <p>GSE52778 teaching FASTQs · chr1 1–10Mb · genomeSAindexNbases 10</p>
+        <h3>i05–i08 · Drosophila</h3>
+        <p>SRR948304–07 · 50k PE · index = 2L:1–10Mb nb10 (not full fly)</p>
+        <h3>i09–i10 · nf-core</h3>
+        <p>SRR6357070–71 · 50k PE · nfcore_genome_nb7</p>
       </div>
-
-      <h2 style="font-size:1rem;margin:8px 0 10px">Per-dataset results</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th><th>n</th><th class="num">Stock (s)</th><th class="num">Opt (s)</th>
-            <th class="num">Mean ×</th><th class="num">Min pair ×</th><th>Suite</th><th>Output</th>
-          </tr>
-        </thead>
-        <tbody id="tbody"></tbody>
-      </table>
-
-      <footer>
-        Hot path: <code>stitchWindowAligns</code> Transcript copies (S1–S8) ·
-        Binary: <code>STAR_opt_mac_s8_pgo</code> ·
-        Repo: <a href="https://github.com/thatrandomasiandev/csci270-research-project">csci270-research-project</a>
-        · CSCI 270 A-contract
-      </footer>
     </div>
-  </section>
+
+    <h2 style="font-size:1rem;margin:8px 0 10px">Per-dataset results</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th><th>n</th><th class="num">Stock (s)</th><th class="num">Opt (s)</th>
+          <th class="num">Mean ×</th><th class="num">Min pair ×</th><th>Suite</th><th>Output</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+
+    <footer>
+      Hot path: <code>stitchWindowAligns</code> Transcript copies (S1–S8) ·
+      Binary: <code>STAR_opt_mac_s8_pgo</code> ·
+      Repo: <a href="https://github.com/thatrandomasiandev/csci270-research-project">csci270-research-project</a>
+      · CSCI 270 A-contract
+    </footer>
+  </div>
 
   <script>
-    const tabs = document.querySelectorAll(".tab");
-    const panels = {
-      paper: document.getElementById("panel-paper"),
-      bakeoff: document.getElementById("panel-bakeoff"),
-    };
-
-    function selectTab(name) {
-      tabs.forEach((tab) => {
-        const on = tab.dataset.tab === name;
-        tab.setAttribute("aria-selected", on ? "true" : "false");
-      });
-      Object.entries(panels).forEach(([key, el]) => {
-        const on = key === name;
-        el.classList.toggle("active", on);
-        el.hidden = !on;
-      });
-      document.title = name === "paper" ? "ACTS — Paper" : "ACTS — Suite B bake-off";
-      history.replaceState(null, "", name === "paper" ? "#paper" : "#bakeoff");
-    }
-
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => selectTab(tab.dataset.tab));
-    });
-
-    const hash = (location.hash || "#paper").replace("#", "");
-    selectTab(hash === "bakeoff" ? "bakeoff" : "paper");
-
     const SUITE = [
       { id: "i01", n: 3, stock: 6.4588, opt: 3.0470, mean: 2.120, min: 2.078, suite: "Human chr1 10Mb" },
       { id: "i02", n: 3, stock: 6.7017, opt: 3.0682, mean: 2.184, min: 2.171, suite: "Human chr1 10Mb" },
@@ -442,6 +317,7 @@
       const yScale = v => pad.t + plotH * (1 - (v - yMin) / (yMax - yMin));
 
       let html = "";
+      // grid
       const ticks = opts.ticks || 5;
       for (let i = 0; i <= ticks; i++) {
         const v = yMin + (yMax - yMin) * (i / ticks);
