@@ -1,6 +1,6 @@
 # CSCI 270 Research Project — STAR speedup (A-contract)
 
-**Paper (PDF):** [`ACTS.pdf`](ACTS.pdf) — *ACTS: Observationally Equivalent Acceleration of Spliced Alignment in STAR*
+**Paper:** [open the Paper tab](https://thatrandomasiandev.github.io/csci270-research-project/#paper) · [`ACTS.pdf`](ACTS.pdf) — *ACTS: Observationally Equivalent Acceleration of Spliced Alignment in STAR*
 
 **Course contract (Zhang):** improve a widely used solution with a clear measurable win.  
 **Target artifact:** scoped optimization of [STAR](https://github.com/alexdobin/STAR) (RNA-seq aligner) with a reproducible **≥2×** runtime improvement on a fixed benchmark at **equal mapping quality**.
