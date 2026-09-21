@@ -3,7 +3,7 @@
 **Course contract (Zhang):** improve a widely used solution with a clear measurable win.  
 **Target artifact:** scoped optimization of [STAR](https://github.com/alexdobin/STAR) (RNA-seq aligner) with a reproducible **≥2×** runtime improvement on a fixed benchmark at **equal mapping quality**.
 
-**Public reproduce repo:** [thatrandomasiandev/csci270-star-2x](https://github.com/thatrandomasiandev/csci270-star-2x)
+**GitHub repo:** [thatrandomasiandev/csci270-research-project](https://github.com/thatrandomasiandev/csci270-research-project)
 
 **Out of scope for this repo root:** RM-decay / SAC / CARC RL work (archived under [`archive/rm-decay-vs-overopt/`](archive/rm-decay-vs-overopt/); PhD/lab track).
 
@@ -39,7 +39,7 @@ Regenerate locally: `python3 star/bench/scripts/plot_all_figures.py`
 | [Negative control](star/bench/results/figures/10_withdrawn_vs_honest.png) | Withdrawn vs honest |
 
 Full index: [`star/bench/results/figures/README.md`](star/bench/results/figures/README.md)  
-Browse on GitHub: [figures/](https://github.com/thatrandomasiandev/csci270-star-2x/tree/main/star/bench/results/figures)
+Browse on GitHub: [figures/](https://github.com/thatrandomasiandev/csci270-research-project/tree/main/star/bench/results/figures)
 
 ## Success criteria (A package)
 

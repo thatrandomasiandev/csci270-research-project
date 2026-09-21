@@ -2,25 +2,25 @@
 
 This document is the **single entry point** for duplicating the graded STAR bake-off on another machine.
 
-**Public GitHub repo:** [https://github.com/thatrandomasiandev/csci270-star-2x](https://github.com/thatrandomasiandev/csci270-star-2x)
+**Public GitHub repo:** [https://github.com/thatrandomasiandev/csci270-research-project](https://github.com/thatrandomasiandev/csci270-research-project)
 
 ## Figures (Josh’s Mac results — look here first)
 
 Before or after you run the bake-off, browse the locked Suite B plots:
 
-**→ [Figure gallery on GitHub](https://github.com/thatrandomasiandev/csci270-star-2x/tree/main/star/bench/results/figures)**
+**→ [Figure gallery on GitHub](https://github.com/thatrandomasiandev/csci270-research-project/tree/main/star/bench/results/figures)**
 
 Quick links:
 
 | Chart | Link |
 |-------|------|
-| Dashboard (overview) | [00_dashboard.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/00_dashboard.png) |
-| Stock vs opt wall-clock | [01_suiteB_stock_vs_opt_wall.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/01_suiteB_stock_vs_opt_wall.png) |
-| Mean speedup vs 2× | [02_suiteB_speedup.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/02_suiteB_speedup.png) |
-| Every timed pair | [03_suiteB_per_pair_scatter.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/03_suiteB_per_pair_scatter.png) |
-| min_pair pass board | [04_suiteB_pass_board.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/04_suiteB_pass_board.png) |
-| Rung ladder (i01) | [05_rung_ladder_i01.png](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/05_rung_ladder_i01.png) |
-| Index of all plots | [figures/README.md](https://github.com/thatrandomasiandev/csci270-star-2x/blob/main/star/bench/results/figures/README.md) |
+| Dashboard (overview) | [00_dashboard.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/00_dashboard.png) |
+| Stock vs opt wall-clock | [01_suiteB_stock_vs_opt_wall.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/01_suiteB_stock_vs_opt_wall.png) |
+| Mean speedup vs 2× | [02_suiteB_speedup.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/02_suiteB_speedup.png) |
+| Every timed pair | [03_suiteB_per_pair_scatter.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/03_suiteB_per_pair_scatter.png) |
+| min_pair pass board | [04_suiteB_pass_board.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/04_suiteB_pass_board.png) |
+| Rung ladder (i01) | [05_rung_ladder_i01.png](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/05_rung_ladder_i01.png) |
+| Index of all plots | [figures/README.md](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/README.md) |
 
 In a local clone the same files live at `star/bench/results/figures/`.
 
@@ -72,8 +72,8 @@ sudo apt-get install -y g++ make zlib1g-dev libjemalloc-dev samtools python3 git
 ## Alternate path: clone the public repo + fetch
 
 ```bash
-git clone https://github.com/thatrandomasiandev/csci270-star-2x.git
-cd csci270-star-2x
+git clone https://github.com/thatrandomasiandev/csci270-research-project.git
+cd csci270-research-project
 
 # 1) Build stock + opt (clones alexdobin/STAR tag 2.7.11b into star/upstream/)
 ./star/bench/scripts/build_stock_opt.sh
@@ -112,7 +112,7 @@ Only the binary path differs between stock and optimized.
 - Summary: `star/bench/results/illumina10_repro.csv`
 - Printed scoreboard (same shape as Josh’s Mac table in `STATUS.md`)
 - Reference (Josh Mac, for comparison of **ratios** only): `star/bench/results/illumina10_s8j_mac.csv`
-- Figures: `star/bench/results/figures/` (or the [GitHub gallery](https://github.com/thatrandomasiandev/csci270-star-2x/tree/main/star/bench/results/figures))
+- Figures: `star/bench/results/figures/` (or the [GitHub gallery](https://github.com/thatrandomasiandev/csci270-research-project/tree/main/star/bench/results/figures))
 
 ## Optional: match Josh’s Apple Silicon absolute times more closely
 
@@ -139,4 +139,4 @@ That still will not reproduce Josh’s exact seconds unless the CPU is the same.
 - Scope lock: `star/docs/SCOPE.md`
 - Algorithm: `star/docs/OPTIMIZATION.md`
 - Living numbers: `STATUS.md`
-- Figures: [gallery](https://github.com/thatrandomasiandev/csci270-star-2x/tree/main/star/bench/results/figures)
+- Figures: [gallery](https://github.com/thatrandomasiandev/csci270-research-project/tree/main/star/bench/results/figures)
