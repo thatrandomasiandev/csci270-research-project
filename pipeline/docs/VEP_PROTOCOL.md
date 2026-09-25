@@ -104,3 +104,41 @@ predicted speedup = (a + b*N) / (a + b*miss_n + w)
 ### ~1× case (stated in advance)
 
 a is 8.91 s of a predicted 13.34 s stock run. If the measured cached/stock ratio is ~1×, that is Amdahl: startup dominates, the overlap is not thereby fake. A ~1× result does not license rewriting miss_n or the fit.
+
+## Alternating rerun (pre-registered) — 2026-09-24
+
+Written **before** any alternating timed run. Do not edit the locked Timing section or `results/snpeff_timing_fit.json` (commit `701d24b`). Question: does the Part B 1.23× stand, and why did the same stock input mean 13.230899 s in the fit (19:42–19:44) vs 19.566053 s in Part B (19:46–19:48)? Inputs are already known byte-identical (`subsets/HG00099.n52638.vcf` == `cached_work/HG00099.vcf`); both used `run_snpeff` (`-Xmx4g -noStats -noLog`).
+
+### Design
+
+- One Python process. Same full-N file for every stock and cached timed run: `data/vep_chr22/subsets/HG00099.n52638.vcf`.
+- Cache populated from HG00096 then HG00097 **before** timing. Populate wall is recorded, not used in r. Each cached timed run starts from a copy of that 96∪97 cache (SnpEff still sees miss_n = 11,191).
+- 1 discarded warm-up of each path (stock, then cached). Not in r.
+- Then **10 pairs**, order **ABBA** with A = stock, B = cached:
+
+```
+S C | C S | S C | C S | S C | C S | S C | C S | S C | C S
+```
+
+- Per-pair ratio `r_i = stock_i / cached_i`. Report **median r** and a bootstrap **95% CI** on the median (10,000 resamples, seed **20260924**).
+- Every cached-path body must `bodies_equal` the stock body. Any fail → stop; do not time further.
+
+### Decision rule
+
+- CI lower bound **> 1.0** → speedup stands; report median r, **not** 1.23.
+- CI **includes 1.0** → speedup **not established** on this machine.
+
+### Explanation test (same session, after the pairs)
+
+Locked from `snpeff_timing_fit.json` (do not rewrite): b = 8.425687600843582e-05 s/record, w = 0.04422654166531478 s, N = 52,638, miss_n = 11,191.
+
+(a) Stock n=1 (`subsets/HG00099.n1.vcf`), 5 runs, same Python process → **a_now**.
+(b) Stock full-N from a **plain shell loop** (`/usr/bin/time java -Xmx4g … -noStats -noLog`), 5 runs, timed by `/usr/bin/time`, not by Python `perf_counter`.
+
+If run-to-run drift of the fixed cost is the cause of the 6 s shift:
+
+```
+r_from_a_now = (a_now + b*N) / (a_now + b*miss_n + w)
+```
+
+Compare r_from_a_now to measured median r. Also plot stock wall vs run index inside the session. If the 6 s gap remains after (a) and (b), say it is unexplained.
