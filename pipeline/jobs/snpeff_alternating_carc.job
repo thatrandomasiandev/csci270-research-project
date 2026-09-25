@@ -1,0 +1,62 @@
+#!/bin/bash
+# Exclusive-node alternating SnpEff rerun (VEP_PROTOCOL.md, 2026-09-24).
+#SBATCH --job-name=snpeff_alt
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --exclusive
+#SBATCH --mem=16G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/snpeff_alternating_carc-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/snpeff_alternating_carc-%j.err
+
+set -euo pipefail
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/snpeff_alt_${SLURM_JOB_ID}"
+mkdir -p "${SRC}/results" "${SCRATCH}/pipeline"/{acts,scripts,data/vep_chr22/subsets,tools,results}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0
+module load openjdk/21.0.0_35
+
+echo "=== host / java / cpu ==="
+hostname
+date -Is
+uptime
+java -version
+lscpu | grep -E 'Model name|CPU\(s\)|Thread|MHz' || true
+echo "SCRATCH=${SCRATCH}"
+
+echo "=== stage to node-local scratch ==="
+rsync -a "${SRC}/acts/" "${SCRATCH}/pipeline/acts/"
+cp "${SRC}/scripts/run_snpeff_alternating_carc.py" "${SCRATCH}/pipeline/scripts/"
+rsync -a \
+  --exclude galaxy --exclude .claude --exclude examples --exclude '*.zip' \
+  "${SRC}/tools/snpEff/" "${SCRATCH}/pipeline/tools/snpEff/"
+cp "${SRC}/data/vep_chr22/HG00096.c1.vcf.gz" \
+   "${SRC}/data/vep_chr22/HG00097.c1.vcf.gz" \
+   "${SCRATCH}/pipeline/data/vep_chr22/"
+cp "${SRC}/data/vep_chr22/subsets/HG00099.n52638.vcf" \
+   "${SRC}/data/vep_chr22/subsets/HG00099.n1.vcf" \
+   "${SCRATCH}/pipeline/data/vep_chr22/subsets/"
+cp "${SRC}/results/snpeff_timing_fit.json" "${SCRATCH}/pipeline/results/"
+if [[ -f "${SRC}/results/snpeff_alternating.json" ]]; then
+  cp "${SRC}/results/snpeff_alternating.json" "${SCRATCH}/pipeline/results/"
+fi
+
+export ACTS_PIPELINE_ROOT="${SCRATCH}/pipeline"
+export ACTS_ALT_WORK="${SCRATCH}/work"
+export ACTS_ALT_OUT="${SCRATCH}/snpeff_alternating_carc.json"
+export PYTHONPATH="${SCRATCH}/pipeline"
+mkdir -p "${ACTS_ALT_WORK}"
+
+echo "=== run ==="
+python3 "${SCRATCH}/pipeline/scripts/run_snpeff_alternating_carc.py"
+
+cp "${ACTS_ALT_OUT}" "${SRC}/results/snpeff_alternating_carc.json"
+echo "copied result to ${SRC}/results/snpeff_alternating_carc.json"
+echo SNPEFF_ALT_DONE

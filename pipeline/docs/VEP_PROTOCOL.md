@@ -142,3 +142,26 @@ r_from_a_now = (a_now + b*N) / (a_now + b*miss_n + w)
 ```
 
 Compare r_from_a_now to measured median r. Also plot stock wall vs run index inside the session. If the 6 s gap remains after (a) and (b), say it is unexplained.
+
+## Alternating rerun, CARC (pre-registered) — 2026-09-24
+
+Written **before** the CARC job is submitted. Do not edit the locked Timing section, `results/snpeff_timing_fit.json` (commit `701d24b`), the Mac alternating section above, `results/snpeff_alternating.json`, or the Mac figures.
+
+The Mac run (`ddf0807`, `results/snpeff_alternating.json`) met its decision rule (median r = 1.29, 95% CI [1.17, 1.33]) but broke the machine-idle precondition (load 5 → 27; Google Drive >100% CPU). The shell-loop and n=1-after-block conclusions in that report are **withdrawn**. This section re-runs the wall-time experiment on a dedicated CARC node.
+
+### What stays (ddf0807)
+
+- 1 discarded warm-up per path (stock, then cached). Not in r.
+- Then **10 pairs**, order **ABBA** (A = stock, B = cached), one Python process.
+- Same HG00099 full-N input: `data/vep_chr22/subsets/HG00099.n52638.vcf`.
+- Cache pre-populated from HG00096 then HG00097. Populate is recorded, not timed in r. Each cached timed run starts from a copy of that 96∪97 cache (miss_n = 11,191).
+- Every cached-path body must `bodies_equal` the stock body. Any fail → stop.
+- Decision rule unchanged: bootstrap 95% CI of the per-pair **wall** ratio (10,000 resamples, seed **20260924**). Lower bound > 1.0 → the speedup stands; report the median. CI includes 1.0 → speedup not established on this machine.
+
+### What changes
+
+- **Machine:** one exclusive CARC `main` node (same account/partition as STAR jobs 12159614/12159615). Java major 21. Record `java -version`, `lscpu` model, hostname. Log `uptime` before every pair.
+- **Secondary metric:** user+sys CPU seconds per timed run via `resource.getrusage(RUSAGE_CHILDREN)` deltas. Per-pair `r_cpu_i = stock_cpu_i / cached_cpu_i`. Report the median CPU-time ratio (same bootstrap) next to the wall-time ratio. The wall-time rule stays primary.
+- **a_now:** stock n=1 (`subsets/HG00099.n1.vcf`), 5 runs, **interleaved** with the pairs — one n=1 run after each even-numbered pair (after pairs 2, 4, 6, 8, 10). Not after the block of 10 pairs. The Mac after-block n=1 and the shell loop are not repeated.
+
+Output: `results/snpeff_alternating_carc.json` (numbers only; include a side-by-side with the Mac JSON, which is not edited).
