@@ -60,3 +60,47 @@ chr22 only. No plugins until independence SHIPs.
 python3 scripts/run_snpeff_identity.py
 python3 scripts/run_c1_overlap.py
 ```
+
+## Timing (pre-registered) — 2026-09-24
+
+Written from `results/snpeff_timing_fit.json` **before** any cached-path MATCH or timing. Do not edit this section after seeing Part B.
+
+Tool: SnpEff 5.4c, GRCh38.86, flags `-noStats -noLog` (same as `scripts/run_snpeff_identity.py`). Sample 3 = HG00099 chr22 `joint_called_c1`, N = 52,638 records. Machine: same as the fit; nothing else heavy during the 15 stock runs + 3 wrapper runs. JVM / database load time: **not logged** (`-noLog`; `jvm_or_db_load_s` is null).
+
+### Fit `t = a + b*n`
+
+Nested prefixes of HG00099, 3 runs each. OLS on per-size **mean** wall times.
+
+| n | run1 s | run2 s | run3 s | mean s | stdev s |
+| ---: | ---: | ---: | ---: | ---: | ---: |
+| 1 | 8.468642708001425 | 8.504416708001372 | 8.590933874998882 | 8.52133109700056 | 0.06287570912372939 |
+| 1,000 | 8.955383333999634 | 8.47388391700224 | 8.540532417002396 | 8.656599889334757 | 0.2608910993928792 |
+| 5,000 | 9.654292374998477 | 10.042541124999843 | 10.369244333000097 | 10.022025944332805 | 0.3579172111549521 |
+| 20,000 | 10.746701874999417 | 10.346336000002339 | 11.070879874998354 | 10.721305916666703 | 0.3629389380092583 |
+| 52,638 | 14.186916499998915 | 12.793811250001454 | 12.711970124997606 | 13.230899291665992 | 0.828945818137097 |
+
+- a = **8.905257133314686** s (fixed / startup)
+- b = **8.425687600843582e-05** s/record
+
+### miss_n and wrapper w
+
+```
+miss_n = records of HG00099 not in HG00096 ∪ HG00097
+       = 11,191
+       ≈ 0.212603062426384 × 52,638
+       ≈ 0.213 × 52,638
+```
+
+w = wrapper overhead (split + cache lookup + reassembly) with SnpEff replaced by `cat`, same HG00099 input, same 96∪97 key set, 3 runs: 0.04844520799815655, 0.04264554199835402, 0.041588874999433756 s. **w = 0.04422654166531478** s.
+
+### Predicted speedup (locked)
+
+```
+predicted speedup = (a + b*N) / (a + b*miss_n + w)
+                  = 13.34037057264673 / 9.892402374390407
+                  = 1.3485471039049597
+```
+
+### ~1× case (stated in advance)
+
+a is 8.91 s of a predicted 13.34 s stock run. If the measured cached/stock ratio is ~1×, that is Amdahl: startup dominates, the overlap is not thereby fake. A ~1× result does not license rewriting miss_n or the fit.

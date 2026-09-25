@@ -1,0 +1,115 @@
+{
+  "tool": "SnpEff 5.4c GRCh38.86",
+  "flags": [
+    "-noStats",
+    "-noLog"
+  ],
+  "sample": "HG00099",
+  "extract": "chr22 joint_called_c1",
+  "n_full": 52638,
+  "miss_n": 11191,
+  "miss_frac": 0.212603062426384,
+  "prev": "HG00096\u222aHG00097",
+  "runs_per_size": 3,
+  "raw": [
+    {
+      "n": 1,
+      "runs_s": [
+        8.468642708001425,
+        8.504416708001372,
+        8.590933874998882
+      ],
+      "mean_s": 8.52133109700056,
+      "stdev_s": 0.06287570912372939,
+      "snpeff_stderr": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "n": 1000,
+      "runs_s": [
+        8.955383333999634,
+        8.47388391700224,
+        8.540532417002396
+      ],
+      "mean_s": 8.656599889334757,
+      "stdev_s": 0.2608910993928792,
+      "snpeff_stderr": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "n": 5000,
+      "runs_s": [
+        9.654292374998477,
+        10.042541124999843,
+        10.369244333000097
+      ],
+      "mean_s": 10.022025944332805,
+      "stdev_s": 0.3579172111549521,
+      "snpeff_stderr": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "n": 20000,
+      "runs_s": [
+        10.746701874999417,
+        10.346336000002339,
+        11.070879874998354
+      ],
+      "mean_s": 10.721305916666703,
+      "stdev_s": 0.3629389380092583,
+      "snpeff_stderr": [
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "n": 52638,
+      "runs_s": [
+        14.186916499998915,
+        12.793811250001454,
+        12.711970124997606
+      ],
+      "mean_s": 13.230899291665992,
+      "stdev_s": 0.828945818137097,
+      "snpeff_stderr": [
+        null,
+        null,
+        null
+      ]
+    }
+  ],
+  "fit": {
+    "model": "t = a + b*n",
+    "a_s": 8.905257133314686,
+    "b_s_per_record": 8.425687600843582e-05,
+    "note": "OLS on per-size mean wall times"
+  },
+  "wrapper_cat": {
+    "n_miss": 11191,
+    "runs_s": [
+      0.04844520799815655,
+      0.04264554199835402,
+      0.041588874999433756
+    ],
+    "mean_s": 0.04422654166531478
+  },
+  "prediction": {
+    "t_stock_s": 13.34037057264673,
+    "t_cached_s": 9.892402374390407,
+    "speedup": 1.3485471039049597,
+    "formula": "(a + b*N) / (a + b*miss_n + w)",
+    "amdahl_note": "if a dominates, measured ~1x means startup, not fake overlap"
+  },
+  "jvm_or_db_load_s": null,
+  "jvm_or_db_load_note": "-noLog: SnpEff did not print load time"
+}
