@@ -1,0 +1,7 @@
+strategy: record_memo
+decision: REFUSE_IDENTITY
+tool: STAR
+why: BAM QNAME is not a function of the sequence; SortedByCoordinate is a global order; headers and multimappers couple records; Oculus (2012) was nearly lossless, not cmp-identical.
+suiteB: results/suiteB_dups.csv
+best_max_speedup_if_pure: 1.153 (i03)
+note: we did not run STAR on deduplicated FASTQs. Identity fails a priori. A cmp-identical BAM would contradict how STAR writes names and sort order.

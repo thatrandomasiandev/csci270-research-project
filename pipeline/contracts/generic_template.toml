@@ -1,0 +1,31 @@
+# Copy this for a new Method (BWA, Bowtie, your binary). Fill every field.
+# If you cannot write match, the pipeline must refuse — do not invent a timer-only claim.
+
+[contract]
+name = "your_method"
+root = "/absolute/path/to/that/repo"
+target_speedup = 2.0
+threads = 1
+runs = 3
+warmup = 1
+allow_t4_assist = true
+# profile = "path/to/perf.json"
+
+[method]
+kind = "generic"
+stock_build = "make stock"
+opt_build = "make opt"
+stock_bin = "{root}/stock"
+opt_bin = "{root}/opt"
+run = "{bin} {args} > {output}"
+match = "cmp -s {stock_out} {opt_out}"
+
+[[workloads]]
+id = "dev"
+args = ""
+held_out = false
+
+[[workloads]]
+id = "held"
+args = ""
+held_out = true

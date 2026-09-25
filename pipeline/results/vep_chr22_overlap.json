@@ -1,0 +1,51 @@
+{
+  "label": "joint_called_c1",
+  "key": "CHROM POS REF ALT (full ALT)",
+  "chrom": "22",
+  "cohort": "1000G GRCh38 phased 20190312",
+  "population_note": "HG00096/97/99 are CEU in 1000G",
+  "n_multiallelic": {
+    "HG00096": 0,
+    "HG00097": 0,
+    "HG00099": 0
+  },
+  "rows": [
+    {
+      "prev": "HG00096",
+      "new": "HG00097",
+      "n_prev": 51086,
+      "n_new": 52269,
+      "n_shared": 32428,
+      "recall_in_new": 0.620406,
+      "jaccard": 0.457202
+    },
+    {
+      "prev": "HG00097",
+      "new": "HG00099",
+      "n_prev": 52269,
+      "n_new": 52638,
+      "n_shared": 33527,
+      "recall_in_new": 0.636935,
+      "jaccard": 0.469697
+    },
+    {
+      "prev": "HG00096",
+      "new": "HG00099",
+      "n_prev": 51086,
+      "n_new": 52638,
+      "n_shared": 33302,
+      "recall_in_new": 0.632661,
+      "jaccard": 0.472892
+    }
+  ],
+  "growing_cohort": {
+    "prev": "HG00096\u222aHG00097",
+    "new": "HG00099",
+    "n_prev": 70927,
+    "n_new": 52638,
+    "n_shared": 41447,
+    "recall_in_new": 0.787397,
+    "miss_frac": 0.212603
+  },
+  "note": "carried ALTs only (-c1). Not separately-called per-sample VCFs."
+}

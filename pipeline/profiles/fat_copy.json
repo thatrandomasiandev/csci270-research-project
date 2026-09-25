@@ -1,0 +1,8 @@
+{
+  "tool": "fixture",
+  "regions": [
+    {"symbol": "work", "fraction": 0.82, "legal": true, "file": "stock.c"},
+    {"symbol": "main", "fraction": 0.10, "legal": true},
+    {"symbol": "memcpy", "fraction": 0.08, "legal": false}
+  ]
+}

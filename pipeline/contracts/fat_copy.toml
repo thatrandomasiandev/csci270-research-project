@@ -1,0 +1,30 @@
+# In-repo smoke Method. Proves the driver, not a paper claim.
+
+[contract]
+name = "fat_copy"
+root = "../fixtures/fat_copy"
+target_speedup = 2.0
+threads = 1
+runs = 3
+warmup = 1
+allow_t4_assist = true
+profile = "../profiles/fat_copy.json"
+
+[method]
+kind = "generic"
+stock_build = "make stock"
+opt_build = "make opt"
+stock_bin = "{root}/stock"
+opt_bin = "{root}/opt"
+run = "{bin} {args} > {output}"
+match = "cmp -s {stock_out} {opt_out}"
+
+[[workloads]]
+id = "dev"
+args = "8000000"
+held_out = false
+
+[[workloads]]
+id = "held"
+args = "12000000"
+held_out = true

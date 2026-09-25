@@ -1,0 +1,26 @@
+{
+  "tool": "instruments/perf (documented Suite B autopsy)",
+  "regions": [
+    {
+      "symbol": "stitchWindowAligns",
+      "fraction": 0.50,
+      "legal": true,
+      "file": "stitchWindowAligns.cpp"
+    },
+    {
+      "symbol": "compareSeqToGenome",
+      "fraction": 0.12,
+      "legal": true
+    },
+    {
+      "symbol": "BAM_sort_zlib",
+      "fraction": 0.18,
+      "legal": false
+    },
+    {
+      "symbol": "gzcat",
+      "fraction": 0.08,
+      "legal": false
+    }
+  ]
+}

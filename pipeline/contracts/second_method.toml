@@ -1,0 +1,32 @@
+# Census contract — 2026-09-24.
+# Not a bake-off. No second scientific Method is on disk (see SECOND_METHOD.md).
+# If you cannot write match, stop. We cannot: there is no program.
+
+[contract]
+name = "second_method"
+root = "../fixtures/second_method_absent"
+target_speedup = 2.0
+threads = 1
+runs = 3
+warmup = 1
+allow_t4_assist = true
+# no profile — gate must refuse
+
+[method]
+kind = "generic"
+# no stock_build / opt_build — do not compile a fake Method
+stock_bin = "{root}/stock"
+opt_bin = "{root}/opt"
+run = "{bin} {args} > {output}"
+# Closed: MATCH is not defined until a real Method exists.
+match = "false"
+
+[[workloads]]
+id = "dev"
+args = ""
+held_out = false
+
+[[workloads]]
+id = "held"
+args = ""
+held_out = true

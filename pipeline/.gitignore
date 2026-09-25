@@ -1,0 +1,9 @@
+egas_out/
+acts_out/
+data/
+tools/
+__pycache__/
+*.pyc
+fixtures/fat_copy/stock
+fixtures/fat_copy/opt
+.DS_Store

@@ -1,0 +1,11 @@
+{
+  "tool": "SnpEff 5.4c GRCh38.86",
+  "input": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/vep_chr22/HG00096.c1.head200.vcf",
+  "n_input_records": 200,
+  "n_out_run1": 200,
+  "full_file_identical": false,
+  "body_identical": true,
+  "shuffle_body_identical": true,
+  "decision": "IDENTITY_OK",
+  "why": "body MATCH on two stock runs and on shuffled input; full-file cmp differs (header only, expected)"
+}

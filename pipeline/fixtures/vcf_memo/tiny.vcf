@@ -1,0 +1,8 @@
+##fileformat=VCFv4.2
+##fileDate=19700101
+##cmdline=fake
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+22	16050075	.	A	G	.	PASS	.
+22	16050075	.	A	G	.	PASS	.
+22	16050115	.	G	T	.	PASS	.
+22	16050200	.	C	A	.	PASS	.

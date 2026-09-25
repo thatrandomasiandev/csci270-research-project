@@ -1,0 +1,61 @@
+# STAR Suite B — first Method. Graded claim remains star/docs/SCOPE.md.
+
+[contract]
+name = "star_suiteB"
+root = "../.."
+target_speedup = 2.0
+threads = 1
+runs = 3
+warmup = 1
+amdahl_min_fraction = 0.50
+allow_t4_assist = true
+profile = "../profiles/star_stitch.json"
+
+[method]
+kind = "star"
+stock_build = "star/bench/scripts/build_stock_opt.sh"
+opt_build = "WITH_PGO=1 WITH_JEMALLOC=1 star/bench/scripts/build_stock_opt.sh"
+stock_bin = "{root}/star/src/STAR_stock_mac"
+opt_bin = "{root}/star/src/STAR_opt_mac_s8_pgo"
+run = "run_bakeoff.sh {workload_id}"
+match = "compare_outputs.sh"
+
+[[workloads]]
+id = "i01"
+held_out = false
+
+[[workloads]]
+id = "i02"
+held_out = true
+
+[[workloads]]
+id = "i03"
+held_out = true
+
+[[workloads]]
+id = "i04"
+held_out = true
+
+[[workloads]]
+id = "i05"
+held_out = true
+
+[[workloads]]
+id = "i06"
+held_out = true
+
+[[workloads]]
+id = "i07"
+held_out = true
+
+[[workloads]]
+id = "i08"
+held_out = true
+
+[[workloads]]
+id = "i09"
+held_out = true
+
+[[workloads]]
+id = "i10"
+held_out = true
