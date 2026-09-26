@@ -58,8 +58,11 @@ if [[ -f "${SRC}/data/hmmer/Pfam-A.hmm.gz" ]]; then
 elif [[ -f "${SRC}/data/hmmer/Pfam-A.hmm" ]]; then
   cp "${SRC}/data/hmmer/Pfam-A.hmm" "${SCRATCH}/pipeline/data/hmmer/"
 else
-  echo "Pfam-A missing under ${SRC}/data/hmmer" >&2
-  exit 1
+  echo "=== fetch Pfam-A (399 MB) on the compute node ==="
+  curl -L --fail --retry 3 -o "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz" \
+    https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+  curl -L --fail --retry 3 -o "${SCRATCH}/pipeline/data/hmmer/Pfam.version.gz" \
+    https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam.version.gz || true
 fi
 if [[ -f "${SRC}/data/hmmer/Pfam.version.gz" ]]; then
   cp "${SRC}/data/hmmer/Pfam.version.gz" "${SCRATCH}/pipeline/data/hmmer/"
