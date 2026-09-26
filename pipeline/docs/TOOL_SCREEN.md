@@ -49,3 +49,8 @@ python3 scripts/run_tool_screen.py
 ```
 
 Report: `results/tool_screen.json`.
+
+Erratum 2026-09-25 (after the screen): future screens (1) use the tool's own best
+mode as the baseline (built-in cache on), (2) include wrapper overhead w in the
+ceiling, (3) report absolute time saved and reject jobs under a few seconds.
+ruff passed the locked formula but is rejected on (1)–(3).
