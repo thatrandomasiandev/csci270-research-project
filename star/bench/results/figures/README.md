@@ -26,6 +26,9 @@ python3 star/bench/scripts/plot_all_figures.py
 | `08_suiteB_by_organism.png` | Human / fly / nf-core | [open](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/08_suiteB_by_organism.png) |
 | `09_cost_model_schematic.png` | Copy vs productive (conceptual) | [open](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/09_cost_model_schematic.png) |
 | `10_withdrawn_vs_honest.png` | Negative control | [open](https://github.com/thatrandomasiandev/csci270-research-project/blob/main/star/bench/results/figures/10_withdrawn_vs_honest.png) |
+| `11_carc_i01_i04_wall.png` | CARC wall-clock i01–i04 | (local; sync when pushing) |
+| `12_carc_i01_i04_speedup.png` | CARC speedup i01–i04 | (local) |
+| `13_mac_vs_carc_i01_i04.png` | Mac vs CARC cross-check | (local) |
 | `honest_*.png` | Legacy lock / early s8j plots | (same folder) |
 
-Reference CSV: [`../illumina10_s8j_mac.csv`](../illumina10_s8j_mac.csv)
+Reference CSVs: [`../illumina10_s8j_mac.csv`](../illumina10_s8j_mac.csv) · [`../illumina10_carc_i01_i04.csv`](../illumina10_carc_i01_i04.csv)

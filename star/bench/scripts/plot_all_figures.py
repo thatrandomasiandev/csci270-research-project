@@ -474,6 +474,116 @@ def plot_dashboard(summary: list[dict], results: Path, out: Path) -> None:
     plt.close(fig)
 
 
+def plot_carc_wall(carc: list[dict], out: Path) -> None:
+    ids = [r["id"] for r in carc]
+    x = np.arange(len(ids))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    ax.bar(
+        x - w / 2,
+        [r["stock_mean"] for r in carc],
+        w,
+        yerr=[r["stock_std"] for r in carc],
+        capsize=2.5,
+        color=STOCK,
+        label="Stock STAR 2.7.11b",
+        zorder=2,
+    )
+    ax.bar(
+        x + w / 2,
+        [r["opt_mean"] for r in carc],
+        w,
+        yerr=[r["opt_std"] for r in carc],
+        capsize=2.5,
+        color=OPT,
+        label="Opt S1–S8 + PGO (no jemalloc)",
+        zorder=2,
+    )
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{r['id']}\nn={r['n']}" for r in carc])
+    ax.set_ylabel("Wall-clock time (s)")
+    ax.set_xlabel("Illumina Suite B dataset (human nb10)")
+    ax.set_title("CARC x86_64: stock vs optimized wall-clock (1 thread, BAM comp=0)")
+    ax.legend(frameon=False, loc="upper left")
+    ax.grid(axis="y", linestyle=":", alpha=0.45, zorder=0)
+    caption(fig, "Source: illumina10_carc_i01_i04.csv · jobs 12159614/12159615 · a01-14 · all MATCH")
+    fig.savefig(out / "11_carc_i01_i04_wall.png")
+    plt.close(fig)
+
+
+def plot_carc_speedup(carc: list[dict], out: Path) -> None:
+    ids = [r["id"] for r in carc]
+    x = np.arange(len(ids))
+    means = [r["speedup"] for r in carc]
+    mins = [r["min_pair"] for r in carc]
+    fig, ax = plt.subplots(figsize=(8.5, 4.6))
+    ax.bar(x, means, color=HUMAN, width=0.65, zorder=2, alpha=0.9)
+    for i, r in enumerate(carc):
+        ax.plot([x[i] - 0.22, x[i] + 0.22], [mins[i], mins[i]], color="#1A202C", lw=2.4, zorder=3)
+        ax.text(x[i], means[i] + 0.04, f"{means[i]:.2f}×", ha="center", va="bottom", fontsize=10, fontweight="bold")
+    ax.axhline(2.0, color=CLAIM, linestyle="--", lw=1.6, label="2× claim", zorder=1)
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"{r['id']}\nn={r['n']}" for r in carc])
+    ax.set_ylabel("Speedup (stock / opt)")
+    ax.set_xlabel("Dataset (black tick = min pair)")
+    ax.set_title("CARC i01–i04 mean speedup — 4/4 min_pair ≥ 2.0")
+    ax.set_ylim(0, max(means) * 1.22)
+    ax.legend(frameon=False, loc="upper left")
+    ax.grid(axis="y", linestyle=":", alpha=0.45, zorder=0)
+    caption(fig, "Source: illumina10_carc_i01_i04.csv · S1–S8 + PGO/LTO/-march=native · jemalloc not linked")
+    fig.savefig(out / "12_carc_i01_i04_speedup.png")
+    plt.close(fig)
+
+
+def plot_mac_vs_carc(mac: list[dict], carc: list[dict], out: Path) -> None:
+    """Compare Mac S8+jemalloc vs CARC S8+PGO (no jemalloc) on shared i01–i04."""
+    mac_by = {r["id"]: r for r in mac}
+    carc_by = {r["id"]: r for r in carc}
+    ids = [i for i in ["i01", "i02", "i03", "i04"] if i in mac_by and i in carc_by]
+    x = np.arange(len(ids))
+    w = 0.38
+    mac_spd = [mac_by[i]["speedup"] for i in ids]
+    carc_spd = [carc_by[i]["speedup"] for i in ids]
+    mac_min = [mac_by[i]["min_pair"] for i in ids]
+    carc_min = [carc_by[i]["min_pair"] for i in ids]
+
+    fig, axes = plt.subplots(1, 2, figsize=(11.5, 4.6))
+
+    ax = axes[0]
+    ax.bar(x - w / 2, mac_spd, w, color=OPT, label="Mac S8+jem+PGO", zorder=2)
+    ax.bar(x + w / 2, carc_spd, w, color=FLY, label="CARC S8+PGO (no jem)", zorder=2)
+    for i, (mm, cm) in enumerate(zip(mac_min, carc_min)):
+        ax.plot([x[i] - w / 2 - 0.12, x[i] - w / 2 + 0.12], [mm, mm], color="#1A202C", lw=2, zorder=3)
+        ax.plot([x[i] + w / 2 - 0.12, x[i] + w / 2 + 0.12], [cm, cm], color="#1A202C", lw=2, zorder=3)
+    ax.axhline(2.0, color=CLAIM, linestyle="--", lw=1.4, zorder=1)
+    ax.set_xticks(x)
+    ax.set_xticklabels(ids)
+    ax.set_ylabel("Mean speedup (×)")
+    ax.set_title("Mean speedup: Mac vs CARC (i01–i04)")
+    ax.legend(frameon=False, fontsize=9)
+    ax.grid(axis="y", linestyle=":", alpha=0.45, zorder=0)
+
+    ax = axes[1]
+    mac_stock = [mac_by[i]["stock_mean"] for i in ids]
+    carc_stock = [carc_by[i]["stock_mean"] for i in ids]
+    ax.bar(x - w / 2, mac_stock, w, color=STOCK, label="Mac stock", zorder=2)
+    ax.bar(x + w / 2, carc_stock, w, color="#A0AEC0", label="CARC stock", zorder=2)
+    ax.set_xticks(x)
+    ax.set_xticklabels(ids)
+    ax.set_ylabel("Stock wall-clock (s)")
+    ax.set_title("Absolute stock runtime differs by machine")
+    ax.legend(frameon=False, fontsize=9)
+    ax.grid(axis="y", linestyle=":", alpha=0.45, zorder=0)
+
+    fig.suptitle("Cross-platform check: claim is ≥2× on each machine, not equal absolute times", fontsize=11, y=1.02)
+    caption(
+        fig,
+        "Mac: illumina10_s8j_mac.csv · CARC: illumina10_carc_i01_i04.csv · black ticks = min_pair · do not pool machines",
+    )
+    fig.savefig(out / "13_mac_vs_carc_i01_i04.png")
+    plt.close(fig)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument(
@@ -500,6 +610,13 @@ def main() -> None:
     plot_group_means(summary, out)
     plot_cost_model_schematic(out)
     plot_withdrawn_vs_honest(out)
+
+    carc_path = args.results / "illumina10_carc_i01_i04.csv"
+    if carc_path.exists():
+        carc = load_summary(carc_path)
+        plot_carc_wall(carc, out)
+        plot_carc_speedup(carc, out)
+        plot_mac_vs_carc(summary, carc, out)
 
     # also emit legacy lock / early-s8j trio plots when present
     import importlib.util
