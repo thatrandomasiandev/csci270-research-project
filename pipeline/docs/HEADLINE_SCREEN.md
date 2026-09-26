@@ -264,3 +264,48 @@ python3 scripts/run_headline_screen.py   # does not exist yet; do not write it h
 ```
 
 Report: `results/headline_screen.json`.
+
+---
+
+## Erratum 2026-09-26 — HMMER E-values are not per-record
+
+Written **before** any headline-screen timing run. Do not edit the 2026-09-25
+locked text above. This addendum replaces the single locked `hmmsearch`
+command; VEP and ESM-2 are unchanged (still Josh-gated).
+
+`hmmsearch` output is **not** a function of one sequence. Sequence E-values
+scale with `-Z` (number of targets in the file); domain E-values scale with
+`--domZ`. A cache filled on MG1655∪W3110 and replayed on BW25113 would fail
+MATCH whenever the proteome sizes differ, even if every amino-acid MD5
+hits. The 2026-09-25 “do not use `hmmscan`” line is therefore wrong for a
+record-memo headline.
+
+Screen **both** modes below. Both must pass the 2026-09-26 subset-invariance
+probe (INFERENCE_PROTOCOL.md addendum (b2)) **before any cache is built**.
+The paper uses the first mode that both (1) passes (b2) and (2) advances
+the ceiling rule; if both do, the paper uses (ii), which is the documented
+faster orientation once Z is held fixed.
+
+**(i) `hmmscan` — Z is the number of models (fixed for a given Pfam-A):**
+
+```
+hmmscan --cpu "$NPROC" --cut_ga --noali --tblout OUT.tbl Pfam-A.hmm INPUT.faa
+```
+
+**(ii) `hmmsearch` with `-Z` and `--domZ` fixed (best-mode baseline):**
+
+```
+hmmsearch --cpu "$NPROC" --noali -Z 1000000 --domZ 1000000 \
+    --tblout OUT.tbl Pfam-A.hmm INPUT.faa
+```
+
+`Z_FIXED = 1000000` and `DOMZ_FIXED = 1000000` are the declared constants.
+They do not change across subset sizes or proteomes. Implicit `-Z` (file
+size) is not a legal baseline.
+
+Sizes, seed, exclusive node, user+sys CPU, measured `w`, and the
+`ceiling(m)` / `saved(m) ≥ 60 s` gate are unchanged. `m` is the K-12
+value in `results/kprot_overlap.json` (MG1655 ∪ W3110 → BW25113).
+
+No ACTS cache is built in this screen. A mode that fails (b2) is reported
+and does not advance, even if the timing ceiling would have passed.
