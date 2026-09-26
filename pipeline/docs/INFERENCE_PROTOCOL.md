@@ -163,3 +163,69 @@ skip. Do not fetch.
 - Not an LLM grammar. Probes only.
 - Not STAR. Not `lines` (that runner is unchanged).
 - Not a rewrite of `results/snpeff_cached_identity.json`.
+
+## Addendum 2026-09-26 — subset-invariance and unprobed keys
+
+Written **before** implementing either probe. Do not edit this addendum after
+seeing the new fixture or real-tool JSON.
+
+Two holes in the 2026-09-25 algorithm:
+
+1. The shuffle test cannot catch a value that depends on the **size of the
+   file** (HMMER E-values with implicit `-Z` / `--domZ`; any rank/count
+   annotation). Neighbors can stay independent while the whole-file
+   denominator moves.
+2. `extract_produced` cached any output INFO key that was not in the query,
+   even if the 500-record probe never saw it (SnpEff LOF/NMD). That is
+   silent per-key invention.
+
+### (b2) Subset-invariance (all formats)
+
+After (b) Independence, before (c) field roles. On the same probe sample
+of `k` records:
+
+- Run the tool once on the full probe (already done in (a)).
+- For each of the `k` records, write a one-record file (same header) and
+  run the tool on that file alone.
+- Align by the format key (`variant_key` for VCF). If that record’s output
+  **body line** differs from the full-probe line → `REFUSE_GLOBAL`
+  (“output depends on the rest of the file”).
+
+This is not optional and is not sampled. A tool that fails (b2) does not
+get a cache.
+
+New decision:
+
+| Decision | When |
+|----------|------|
+| REFUSE_GLOBAL | (b2) singleton output ≠ full-probe output for any probe record |
+
+New fixture `fixtures/vcf_memo/annotate_global.py`: writes
+`RANK=<i>/<N>` into INFO, where `N` is the number of body records in
+**this** invocation. Expected: **REFUSE_GLOBAL**. `tiny.vcf` is the input.
+
+### Unprobed output keys
+
+When a later run (miss batch or a new file) emits an INFO key that is
+**not** in `contract.info_roles`:
+
+- Do **not** cache that key.
+- Collect up to **200** records whose output carries the new key.
+- Re-run (c) field-role perturbation on that subset; merge the new roles
+  into the contract; append the key name to `late_key_probes`; save the
+  contract.
+- Then extract. If the new key is DEPENDS-ON-NON-KEY, apply the same
+  one-widen rule as (c). If still ambiguous → `REFUSE_AMBIGUOUS`.
+
+New fixture `annotate_rare_key.py`: every record gets `ANN=…`; a record
+with `POS=99999999` also gets `RARE=1`. Infer on `tiny.vcf` (no rare
+POS), then run a file that adds one `POS=99999999` record. Expected:
+`RARE` is **not** cached on first sight; the late probe classifies it
+**PRODUCED**; SHIP + MATCH; `late_key_probes` contains `RARE`.
+
+### Real-tool check added
+
+`bcftools +fill-tags -t AF,AC` on the locked chr22 `-c1` files:
+populate HG00096 then HG00097, MATCH HG00099. Report hits/misses under
+the genotype-widened key. SnpEff numbers in the 2026-09-25 table still
+hold: MATCH 52,638; hits/misses 41,447 / 11,191.
