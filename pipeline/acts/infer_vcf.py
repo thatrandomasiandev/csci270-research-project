@@ -50,6 +50,7 @@ class RecordContract:
     produced_info_order: list[str]
     sample_role: str
     widen_history: list[str] = field(default_factory=list)
+    late_key_probes: list[str] = field(default_factory=list)
     probe_n: int = 0
     decision: str = "OK"
     reason: str = ""
@@ -60,7 +61,10 @@ class RecordContract:
 
     @classmethod
     def load(cls, path: Path) -> RecordContract:
-        return cls(**json.loads(path.read_text()))
+        raw = json.loads(path.read_text())
+        raw.setdefault("late_key_probes", [])
+        raw.setdefault("widen_history", [])
+        return cls(**raw)
 
 
 def substitute_argv(argv: list[str], vcf_path: Path) -> list[str]:
@@ -115,8 +119,13 @@ def _classify(val_o: str | None, val_p: str | None, in_o: str | None, in_p: str 
     if val_o is None or val_p is None:
         return None
     in_present = in_p is not None
+    # Output changed while this input field did not: it depends on some
+    # *other* perturbed group (fill-tags AF/AC from SAMPLES). That is
+    # DEPENDS, not "no information."
     if in_present and in_o == in_p:
-        return None
+        if val_o == val_p:
+            return None
+        return "depends"
     if in_present and val_p == in_p:
         return "pass"
     if val_o == val_p and (not in_present or val_p != in_p):
@@ -213,6 +222,125 @@ def _depends_fields(classified: dict) -> list[str]:
     return bad
 
 
+def assert_subset_invariant(
+    argv: list[str],
+    header: list[str],
+    probe: list[str],
+    full_out_body: list[str],
+    work: Path,
+    *,
+    workers: int = 8,
+) -> None:
+    """Each record alone must match its line from the full-probe run."""
+    pairs = align_by_key(probe, full_out_body)
+    solo = work / "singleton"
+    solo.mkdir(parents=True, exist_ok=True)
+
+    def _one(item: tuple[int, str, str]) -> tuple[int, str, str, str]:
+        i, rec_in, rec_full = item
+        path = write_vcf(solo / f"{i}.vcf", header, [rec_in])
+        out = run_vcf_tool(argv, path)
+        body = body_lines(out)
+        got = body[0] if len(body) == 1 else ""
+        return i, rec_full, got, f"n_out={len(body)}"
+
+    items = list(enumerate((a, b) for a, b in pairs))
+    packed = [(i, rec_in, rec_full) for i, (rec_in, rec_full) in items]
+    if workers <= 1 or len(packed) <= 1:
+        results = [_one(p) for p in packed]
+    else:
+        from concurrent.futures import ThreadPoolExecutor
+
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            results = list(pool.map(_one, packed))
+    for i, rec_full, got, extra in results:
+        if got != rec_full:
+            raise InferError(
+                "REFUSE_GLOBAL",
+                f"output depends on the rest of the file (singleton {i}: {extra})",
+            )
+
+
+def unclassified_info_keys(out_body: list[str], contract: RecordContract) -> list[str]:
+    seen: list[str] = []
+    known = set(contract.info_roles)
+    for ln in out_body:
+        parts = split_record(ln)
+        if len(parts) <= COL_INFO:
+            continue
+        for key, _val in parse_info(parts[COL_INFO]):
+            if key not in known and key not in seen:
+                seen.append(key)
+    return seen
+
+
+def probe_new_info_keys(
+    argv: list[str],
+    header: list[str],
+    carriers: list[str],
+    contract: RecordContract,
+    work: Path,
+    new_keys: list[str],
+) -> None:
+    """Classify previously unseen INFO keys. May widen the cache key once."""
+    if not carriers or not new_keys:
+        return
+    subset = carriers[:200]
+    work.mkdir(parents=True, exist_ok=True)
+    types = info_types(header)
+    remaining = [g for g in NONKEY_GROUPS if g not in contract.cache_key_fields]
+    orig = write_vcf(work / "late_orig.vcf", header, subset)
+    out_o = run_vcf_tool(argv, orig)
+    pert = [perturb_record(ln, i, remaining, info_types_map=types) for i, ln in enumerate(subset)]
+    out_p = run_vcf_tool(argv, write_vcf(work / "late_pert.vcf", header, pert))
+    classified = classify_pairs(align_by_key(subset, body_lines(out_o)), align_by_key(pert, body_lines(out_p)))
+    depends = [k for k in new_keys if classified["info_roles"].get(k) in {"depends", "ambiguous"}]
+    if depends:
+        group_hits: dict[str, list[str]] = {}
+        for group in remaining:
+            g_pert = [perturb_record(ln, i, [group], info_types_map=types) for i, ln in enumerate(subset)]
+            g_out = run_vcf_tool(argv, write_vcf(work / f"late_pert_{group.lower()}.vcf", header, g_pert))
+            g_class = classify_pairs(
+                align_by_key(subset, body_lines(out_o)),
+                align_by_key(g_pert, body_lines(g_out)),
+            )
+            hit = [k for k in new_keys if g_class["info_roles"].get(k) in {"depends", "ambiguous"}]
+            if hit:
+                group_hits[group] = hit
+        if not group_hits:
+            raise InferError(
+                "REFUSE_AMBIGUOUS",
+                f"late keys {depends} DEPENDS-ON-NON-KEY but no group reproduced it",
+            )
+        for group in group_hits:
+            if group not in contract.cache_key_fields:
+                contract.cache_key_fields.append(group)
+                contract.widen_history.append(f"late:{group}")
+        still_groups = [g for g in NONKEY_GROUPS if g not in contract.cache_key_fields]
+        if still_groups:
+            p2 = [perturb_record(ln, i, still_groups, info_types_map=types) for i, ln in enumerate(subset)]
+            out2 = run_vcf_tool(argv, write_vcf(work / "late_pert_after_widen.vcf", header, p2))
+            classified = classify_pairs(
+                align_by_key(subset, body_lines(out_o)),
+                align_by_key(p2, body_lines(out2)),
+            )
+            still = [k for k in new_keys if classified["info_roles"].get(k) in {"depends", "ambiguous"}]
+            if still:
+                raise InferError(
+                    "REFUSE_AMBIGUOUS",
+                    f"late keys still DEPENDS-ON-NON-KEY after widen: {still}",
+                )
+    for key in new_keys:
+        role = classified["info_roles"].get(key) or "produced"
+        if role in {"depends", "ambiguous"}:
+            role = "produced"
+        contract.info_roles[key] = role
+        if role == "produced" and key not in contract.produced_info_order:
+            contract.produced_info_order.append(key)
+        if key not in contract.late_key_probes:
+            contract.late_key_probes.append(key)
+
+
 def infer_contract(
     argv: list[str],
     header: list[str],
@@ -220,6 +348,7 @@ def infer_contract(
     work: Path,
     *,
     probe_n: int = PROBE_N,
+    singleton_workers: int = 8,
 ) -> RecordContract:
     probe = body[: min(probe_n, len(body))]
     if not probe:
@@ -237,6 +366,10 @@ def infer_contract(
     out_sh = run_vcf_tool(argv, p_sh)
     if not bodies_equal(out1, out_sh):
         raise InferError("REFUSE_NEIGHBORS", "shuffle test failed; neighbors leak")
+
+    assert_subset_invariant(
+        argv, header, probe, body_lines(out1), work, workers=singleton_workers
+    )
 
     key_fields = list(KEY_FIELDS)
     widen_history: list[str] = []
@@ -337,7 +470,7 @@ def extract_produced(line: str, contract: RecordContract, query: str | None = No
             role = contract.info_roles.get(key)
             if role == "pass":
                 continue
-            if role == "produced" or key not in qmap:
+            if role == "produced":
                 out["info_items"].append([key, val])
     return out
 
@@ -354,10 +487,27 @@ def reassemble_record(query: str, produced: dict, contract: RecordContract) -> s
         extra_items = produced.get("info_items")
         if extra_items is None:
             extra_items = [[k, v] for k, v in produced.get("info", {}).items()]
-        extra_keys = {k for k, _ in extra_items}
-        produced_set = set(contract.produced_info_order) | extra_keys
-        kept = [(k, v) for k, v in parse_info(parts[COL_INFO]) if k not in produced_set]
-        kept.extend((k, v) for k, v in extra_items)
+        extra = {k: v for k, v in extra_items}
+        produced_set = set(contract.produced_info_order) | set(extra)
+        # Overwrite produced keys in the query's existing slots (fill-tags
+        # rewrites AC/AF in place). Append produced keys the query lacks
+        # in the order the probe saw them (SnpEff ANN/LOF/NMD).
+        kept: list[tuple[str, str | None]] = []
+        seen: set[str] = set()
+        for key, val in parse_info(parts[COL_INFO]):
+            if key in extra:
+                kept.append((key, extra[key]))
+                seen.add(key)
+            elif key not in produced_set:
+                kept.append((key, val))
+        for key in contract.produced_info_order:
+            if key not in seen and key in extra:
+                kept.append((key, extra[key]))
+                seen.add(key)
+        for key, val in extra_items:
+            if key not in seen:
+                kept.append((key, val))
+                seen.add(key)
         parts[COL_INFO] = format_info(kept)
     return "\t".join(parts)
 
@@ -387,6 +537,7 @@ def refuse_result(exc: InferError, argv: list[str]) -> RecordContract:
         info_roles={},
         produced_info_order=[],
         sample_role="pass",
+        late_key_probes=[],
         decision=exc.decision,
         reason=exc.reason,
     )

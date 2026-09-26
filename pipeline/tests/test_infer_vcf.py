@@ -124,6 +124,46 @@ class InferVcfFixtureTests(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertIn("SHIP", (Path(td) / "decision.txt").read_text())
 
+    def test_global_rank_refuses(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            rec = RecordMemo(
+                kind="vcf",
+                argv=_argv("annotate_global.py"),
+                input_path=TINY,
+                out_dir=Path(td),
+            ).run()
+            self.assertEqual(rec.decision, "REFUSE_GLOBAL", rec.reason)
+
+    def test_rare_key_is_late_probed(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            first = RecordMemo(
+                kind="vcf",
+                argv=_argv("annotate_rare_key.py"),
+                input_path=TINY,
+                out_dir=Path(td) / "a",
+                cache_path=Path(td) / "cache.jsonl",
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            c1 = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
+            self.assertNotIn("RARE", c1.get("info_roles", {}))
+            rare = Path(td) / "with_rare.vcf"
+            rare.write_text(TINY.read_text() + "22\t99999999\t.\tA\tG\t.\tPASS\t.\n")
+            second = RecordMemo(
+                kind="vcf",
+                argv=_argv("annotate_rare_key.py"),
+                input_path=rare,
+                out_dir=Path(td) / "b",
+                cache_path=Path(td) / "cache.jsonl",
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            c2 = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
+            self.assertEqual(c2["info_roles"].get("RARE"), "produced")
+            self.assertIn("RARE", c2.get("late_key_probes", []))
+            rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
+            rare_lines = [ln for ln in body_lines(rebuilt) if "\t99999999\t" in ln]
+            self.assertEqual(len(rare_lines), 1)
+            self.assertIn("RARE=1", rare_lines[0])
+
 
 @unittest.skipUnless(shutil.which("bcftools"), "bcftools not on PATH")
 class InferVcfBcftoolsTests(unittest.TestCase):

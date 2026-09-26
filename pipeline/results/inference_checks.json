@@ -37,13 +37,23 @@
         "SAS_AF": "pass",
         "VT": "pass",
         "NS": "pass",
-        "ANN": "produced"
+        "ANN": "produced",
+        "EX_TARGET": "pass",
+        "LOF": "produced",
+        "NMD": "produced"
       },
       "produced_info_order": [
-        "ANN"
+        "ANN",
+        "LOF",
+        "NMD"
       ],
       "sample_role": "pass",
       "widen_history": [],
+      "late_key_probes": [
+        "EX_TARGET",
+        "LOF",
+        "NMD"
+      ],
       "probe_n": 500
     },
     "populate": {
@@ -128,6 +138,7 @@
       "widen_history": [
         "SAMPLES"
       ],
+      "late_key_probes": [],
       "probe_n": 3
     },
     "bodies_equal": true,
@@ -147,6 +158,103 @@
     },
     "same_site_hits_collapse": true,
     "note": "AF/AC depend on genotypes; key widened so same-site hits collapse"
+  },
+  "fill_tags_real": {
+    "tool": "bcftools +fill-tags AF,AC on chr22 -c1",
+    "contract": {
+      "decision": "OK",
+      "reason": "probe passed",
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT",
+        "SAMPLES"
+      ],
+      "column_roles": {
+        "CHROM": "key",
+        "POS": "key",
+        "REF": "key",
+        "ALT": "key",
+        "ID": "pass",
+        "QUAL": "pass",
+        "FILTER": "pass"
+      },
+      "info_roles": {
+        "AC": "produced",
+        "AN": "pass",
+        "DP": "pass",
+        "AF": "produced",
+        "EAS_AF": "pass",
+        "EUR_AF": "pass",
+        "AFR_AF": "pass",
+        "AMR_AF": "pass",
+        "SAS_AF": "pass",
+        "VT": "pass",
+        "NS": "pass",
+        "EX_TARGET": "pass"
+      },
+      "produced_info_order": [
+        "AC",
+        "AF"
+      ],
+      "sample_role": "pass",
+      "widen_history": [
+        "SAMPLES"
+      ],
+      "late_key_probes": [
+        "EX_TARGET"
+      ],
+      "probe_n": 500
+    },
+    "populate": {
+      "HG00096": {
+        "n_records": 51086,
+        "n_hits": 0,
+        "n_misses": 51086,
+        "n_cache_holes": 0,
+        "cache_size_after": 51086,
+        "cache_key_fields": [
+          "CHROM",
+          "POS",
+          "REF",
+          "ALT",
+          "SAMPLES"
+        ]
+      },
+      "HG00097": {
+        "n_records": 52269,
+        "n_hits": 15860,
+        "n_misses": 36409,
+        "n_cache_holes": 0,
+        "cache_size_after": 87495,
+        "cache_key_fields": [
+          "CHROM",
+          "POS",
+          "REF",
+          "ALT",
+          "SAMPLES"
+        ]
+      }
+    },
+    "HG00099": {
+      "n_records": 52638,
+      "n_hits": 23072,
+      "n_misses": 29566,
+      "n_cache_holes": 0,
+      "cache_size_after": 117061,
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT",
+        "SAMPLES"
+      ]
+    },
+    "n_reassembled": 52638,
+    "n_stock": 52638,
+    "bodies_equal": true,
+    "same_site_hits_collapse": true
   },
   "annotate": {
     "tool": "bcftools annotate INFO/NOTE",
@@ -177,6 +285,7 @@
       ],
       "sample_role": "pass",
       "widen_history": [],
+      "late_key_probes": [],
       "probe_n": 3
     },
     "bodies_equal": true,

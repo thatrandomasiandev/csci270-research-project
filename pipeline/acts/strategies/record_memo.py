@@ -17,7 +17,7 @@ from acts.infer_vcf import InferError, run_vcf_tool
 from acts.records import DupReport, probe_fastq_pe, probe_lines
 from acts.strategies.base import Strategy, StrategyResult
 from acts.vcf import bodies_equal, body_lines
-from acts.vcf_memo import cached_annotate, prepare_contract, read_vcf_parts
+from acts.vcf_memo import cached_annotate, contract_path_for, prepare_contract, read_vcf_parts
 
 RARE = 0.95
 
@@ -131,8 +131,15 @@ class RecordMemo(Strategy):
         extra["widen"] = ",".join(contract.widen_history)
         try:
             rebuilt, stats = cached_annotate(
-                header, body, cache, contract, self.argv, self.out_dir / "memo"
+                header,
+                body,
+                cache,
+                contract,
+                self.argv,
+                self.out_dir / "memo",
+                contract_path=contract_path_for(cache_path),
             )
+            extra["late_key_probes"] = ",".join(contract.late_key_probes)
         except InferError as exc:
             rec = StrategyResult(self.name, exc.decision, exc.reason, {**extra, **{}})
             rec.write(self.out_dir / "decision.txt")

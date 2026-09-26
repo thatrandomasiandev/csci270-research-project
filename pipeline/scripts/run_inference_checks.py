@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 from acts.cache import RecordCache
 from acts.infer_vcf import InferError, infer_contract, run_vcf_tool, write_vcf
 from acts.vcf import bodies_equal, body_lines
-from acts.vcf_memo import cached_annotate, read_vcf_parts
+from acts.vcf_memo import cached_annotate, contract_path_for, read_vcf_parts
 
 OUT = ROOT / "results" / "inference_checks.json"
 JAR = ROOT / "tools" / "snpEff" / "snpEff.jar"
@@ -51,6 +51,7 @@ def contract_payload(c) -> dict:
         "produced_info_order": c.produced_info_order,
         "sample_role": c.sample_role,
         "widen_history": c.widen_history,
+        "late_key_probes": getattr(c, "late_key_probes", []),
         "probe_n": c.probe_n,
     }
 
@@ -73,12 +74,21 @@ def check_snpeff() -> dict:
     except InferError as exc:
         return {"tool": "SnpEff", "decision": exc.decision, "reason": exc.reason}
 
-    cache = RecordCache(work / "cache.jsonl", argv=argv, kind="vcf")
+    cache_path = work / "cache.jsonl"
+    cache = RecordCache(cache_path, argv=argv, kind="vcf")
+    cpath = contract_path_for(cache_path)
+    contract.save(cpath)
     populate = {}
     for name in ("HG00096", "HG00097"):
         rec = inputs[name]
         _text, stats = cached_annotate(
-            rec["header"], rec["body"], cache, contract, argv, work / f"pop_{name}"
+            rec["header"],
+            rec["body"],
+            cache,
+            contract,
+            argv,
+            work / f"pop_{name}",
+            contract_path=cpath,
         )
         populate[name] = stats
         print(
@@ -89,7 +99,13 @@ def check_snpeff() -> dict:
 
     rec99 = inputs["HG00099"]
     rebuilt, match_stats = cached_annotate(
-        rec99["header"], rec99["body"], cache, contract, argv, work / "match_99"
+        rec99["header"],
+        rec99["body"],
+        cache,
+        contract,
+        argv,
+        work / "match_99",
+        contract_path=cpath,
     )
     stock = run_vcf_tool(argv, rec99["path"])
     match = bodies_equal(rebuilt, stock) and match_stats["n_cache_holes"] == 0
@@ -145,6 +161,63 @@ def check_fill_tags() -> dict:
     }
 
 
+def check_fill_tags_real() -> dict:
+    """HG00096 → HG00097 → HG00099 with genotype-widened key."""
+    if not shutil.which("bcftools") or not all(p.is_file() for p in (S96, S97, S99)):
+        return {"skipped": True, "why": "bcftools or chr22 VCFs missing"}
+    argv = ["bcftools", "+fill-tags", "{input}", "-Ov", "--", "-t", "AF,AC"]
+    work = WORKDIR / "fill_tags_real"
+    work.mkdir(parents=True, exist_ok=True)
+    inputs = {}
+    for name, src in (("HG00096", S96), ("HG00097", S97), ("HG00099", S99)):
+        header, body = read_vcf_parts(src)
+        dest = write_vcf(work / f"{name}.vcf", header, body)
+        inputs[name] = {"header": header, "body": body, "path": dest}
+    try:
+        contract = infer_contract(
+            argv, inputs["HG00096"]["header"], inputs["HG00096"]["body"], work / "probe"
+        )
+    except InferError as exc:
+        return {"tool": "bcftools +fill-tags real", "decision": exc.decision, "reason": exc.reason}
+    cache_path = work / "cache.jsonl"
+    cache = RecordCache(cache_path, argv=argv, kind="vcf")
+    cpath = contract_path_for(cache_path)
+    contract.save(cpath)
+    populate = {}
+    for name in ("HG00096", "HG00097"):
+        rec = inputs[name]
+        _text, stats = cached_annotate(
+            rec["header"], rec["body"], cache, contract, argv, work / f"pop_{name}", contract_path=cpath
+        )
+        populate[name] = stats
+        print(
+            f"fill-tags populate {name}: n={stats['n_records']} hits={stats['n_hits']} "
+            f"misses={stats['n_misses']}",
+            flush=True,
+        )
+    rec99 = inputs["HG00099"]
+    rebuilt, match_stats = cached_annotate(
+        rec99["header"], rec99["body"], cache, contract, argv, work / "match_99", contract_path=cpath
+    )
+    stock = run_vcf_tool(argv, rec99["path"])
+    match = bodies_equal(rebuilt, stock) and match_stats["n_cache_holes"] == 0
+    print(
+        f"fill-tags MATCH HG00099: bodies_equal={match} hits={match_stats['n_hits']} "
+        f"misses={match_stats['n_misses']} key={contract.cache_key_fields}",
+        flush=True,
+    )
+    return {
+        "tool": "bcftools +fill-tags AF,AC on chr22 -c1",
+        "contract": contract_payload(contract),
+        "populate": populate,
+        "HG00099": match_stats,
+        "n_reassembled": len(body_lines(rebuilt)),
+        "n_stock": len(body_lines(stock)),
+        "bodies_equal": match,
+        "same_site_hits_collapse": "SAMPLES" in contract.cache_key_fields,
+    }
+
+
 def check_annotate() -> dict:
     if not (shutil.which("bcftools") and shutil.which("bgzip") and shutil.which("tabix")):
         return {"skipped": True, "why": "bcftools/bgzip/tabix missing"}
@@ -196,6 +269,7 @@ def main() -> int:
         "protocol": "pipeline/docs/INFERENCE_PROTOCOL.md",
         "snpeff": check_snpeff(),
         "fill_tags": check_fill_tags(),
+        "fill_tags_real": check_fill_tags_real(),
         "annotate": check_annotate(),
     }
     OUT.parent.mkdir(parents=True, exist_ok=True)
@@ -205,6 +279,9 @@ def main() -> int:
     if not snp.get("skipped") and not snp.get("bodies_equal"):
         return 1
     if not payload["annotate"].get("skipped") and not payload["annotate"].get("bodies_equal"):
+        return 1
+    real = payload["fill_tags_real"]
+    if not real.get("skipped") and not real.get("bodies_equal"):
         return 1
     return 0
 

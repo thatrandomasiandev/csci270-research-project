@@ -11,13 +11,15 @@ from acts.infer_vcf import (
     RecordContract,
     extract_produced,
     load_or_infer,
+    probe_new_info_keys,
     reassemble_record,
     refuse_result,
     run_vcf_tool,
+    unclassified_info_keys,
     write_vcf,
 )
 from acts.vcf import body_lines, is_header, read_maybe_gz
-from acts.vcf_fields import cache_key
+from acts.vcf_fields import COL_INFO, cache_key, parse_info, split_record
 
 
 def read_vcf_parts(path: Path) -> tuple[list[str], list[str]]:
@@ -33,6 +35,7 @@ def cached_annotate(
     contract: RecordContract,
     argv: list[str],
     work: Path,
+    contract_path: Path | None = None,
 ) -> tuple[str, dict]:
     hits: list[str] = []
     misses: list[str] = []
@@ -57,6 +60,23 @@ def cached_annotate(
                 "REFUSE_MATCH",
                 f"tool is not 1:1 on misses ({len(out_body)} outs / {len(misses)} ins)",
             )
+        unseen = unclassified_info_keys(out_body, contract)
+        if unseen:
+            carriers: list[str] = []
+            for rec_in, rec_out in zip(misses, out_body):
+                parts = split_record(rec_out)
+                keys_here = (
+                    {k for k, _ in parse_info(parts[COL_INFO])}
+                    if len(parts) > COL_INFO
+                    else set()
+                )
+                if keys_here.intersection(unseen):
+                    carriers.append(rec_in)
+                if len(carriers) >= 200:
+                    break
+            probe_new_info_keys(argv, header, carriers, contract, work / "late", unseen)
+            if contract_path is not None:
+                contract.save(contract_path)
         for rec_in, rec_out in zip(misses, out_body):
             k = cache_key(rec_in, contract.cache_key_fields)
             cache.put(k, json.dumps(extract_produced(rec_out, contract, rec_in)))
