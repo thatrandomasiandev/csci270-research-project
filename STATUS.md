@@ -1,12 +1,14 @@
 # STATUS — STAR ≥2× (CSCI 270 A-contract)
 
-**Updated:** 2026-09-20
+**Updated:** 2026-09-26
 
 ## Scope — LOCKED (Zhang)
 
 Same output · fair (1 thread) · 10 Illumina datasets · ≥2× wall-clock.
 
 ## Honest benchmark (locked)
+
+**Graded claim:** S1–S8 + disclosed build extras (jemalloc + PGO/LTO/`-mcpu=native`).
 
 | Knob | Value |
 |------|-------|
@@ -45,6 +47,10 @@ Headline: **`stitchWindowAligns` spent ~half of runtime copying fat `Transcript`
 
 **Scoreboard:** **10/10** datasets with min_pair ≥2.0 (all MATCH).
 
+## CARC x86_64 (partial)
+
+`star/bench/results/illumina10_carc_i01_i04.csv`: i01–i04 only (s7pgo/no jemalloc; **S7≠S8 confound** — not Mac-parity). i05–i10 + jemalloc-linked Linux build remain open.
+
 ## In flight
 
 - [x] Withdraw rigged claim; rebuild nb10; land S1–S8; MATCH-gated harness
@@ -54,8 +60,9 @@ Headline: **`stitchWindowAligns` spent ~half of runtime copying fat `Transcript`
 - [x] Fly i05–i08 ≥2× via 2L:1–10Mb teaching index
 - [x] Professor reproduce path — `star/docs/REPRODUCE.md` + `fetch_suiteB.sh` / `build_stock_opt.sh` / `reproduce_all.sh` / `package_for_professor.sh`
 - [x] Figure pack — `star/bench/scripts/plot_all_figures.py` → `star/bench/results/figures/` (+ paper copy)
-- [ ] CARC x86_64 graded timings (build with jemalloc on Linux; maint ends 2026-09-20 18:00)
-- [ ] Flag-matrix §5.3
+- [x] CARC x86_64 i01–i04 (s7pgo/no jemalloc — S7≠S8 confound noted below)
+- [ ] CARC i05–i10 + jemalloc-linked Linux parity (open: sync fly 2L10M + nf-core to CARC)
+- [ ] Flag-matrix §5.3 (DEFERRED: fairness claimed within locked CLI `--outBAMcompression 0` both sides; sensitivity vs default zlib BAM is out of graded claim)
 - [x] Write-up draft — conference paper at `star/writeup/paper/main.pdf` (update when CARC lands)
 
 ## Blockers

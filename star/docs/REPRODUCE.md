@@ -97,6 +97,7 @@ One-shot from a clean tree (build + fetch + all 10):
 |------|-------|
 | STAR tag | `2.7.11b` |
 | Patch | `star/src/star-2x-verified.patch` (S1–S8) |
+| Build extras | **jemalloc + PGO/LTO** (required for graded ≥2× claim; use `ALLOW_NO_JEMALLOC=1` only for ablation) |
 | Threads | `--runThreadN 1` |
 | BAM | `SortedByCoordinate`, `--outBAMcompression 0` |
 | RAM | `--limitBAMsortRAM 4000000000` |
@@ -129,7 +130,8 @@ That still will not reproduce Josh’s exact seconds unless the CPU is the same.
 | Symptom | Fix |
 |---------|-----|
 | `samtools required` | Install samtools (MATCH check) |
-| jemalloc WARN at build | Install jemalloc; rebuild opt — speedup may fall below 2× without it |
+| jemalloc ERROR at build | Install jemalloc (required for graded claim); rebuild opt. Use `ALLOW_NO_JEMALLOC=1` only for intentional ablation builds. |
+| jemalloc ERROR at bake-off | Graded opt binary must be jemalloc-linked; rebuild with `WITH_JEMALLOC=1` or set `ALLOW_NO_JEMALLOC=1` for ablation only. |
 | `missing genome` | Unpack the data package, or re-run `fetch_suiteB.sh` |
 | Output `DIFF` | Do not change CLI; confirm both binaries are 2.7.11b stock vs patched |
 | Speedup &lt; 2× on one ID | Note machine + CSV row; try `NATIVE=1` + confirm jemalloc linked (`otool -L` / `ldd`) |
