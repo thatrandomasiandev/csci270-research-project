@@ -13,8 +13,11 @@ from pathlib import Path
 from acts.audit import AuditReport, sample_hits
 from acts.cache import RecordCache
 from acts.infer import identity_risk_for_argv
+from acts.infer_vcf import InferError, run_vcf_tool
 from acts.records import DupReport, probe_fastq_pe, probe_lines
 from acts.strategies.base import Strategy, StrategyResult
+from acts.vcf import bodies_equal, body_lines
+from acts.vcf_memo import cached_annotate, prepare_contract, read_vcf_parts
 
 RARE = 0.95
 
@@ -56,6 +59,10 @@ class RecordMemo(Strategy):
             if self.input_path is None:
                 raise ValueError("lines needs --input")
             return probe_lines(self.input_path)
+        if self.kind == "vcf":
+            if self.input_path is None:
+                raise ValueError("vcf needs --input")
+            return probe_lines(self.input_path)
         raise ValueError(f"unknown kind {self.kind!r}")
 
     def run(self) -> StrategyResult:
@@ -79,6 +86,8 @@ class RecordMemo(Strategy):
             "max_speedup_if_pure": f"{report.max_speedup_if_pure:.3f}",
         }
 
+        if self.kind == "vcf" and self.argv:
+            return self._run_vcf(extra)
         if self.kind != "lines" or not self.argv:
             if report.unique_frac >= self.unique_frac_refuse:
                 rec = StrategyResult(
@@ -101,6 +110,62 @@ class RecordMemo(Strategy):
             return rec
 
         return self._run_lines(report, extra)
+
+    def _run_vcf(self, extra: dict) -> StrategyResult:
+        assert self.input_path is not None
+        header, body = read_vcf_parts(self.input_path)
+        cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
+        cache = RecordCache(cache_path, argv=self.argv, kind="vcf")
+        extra.update({"n": len(body), "cache_size": len(cache)})
+        try:
+            contract = prepare_contract(
+                self.argv, header, body, self.out_dir / "infer", cache_path
+            )
+        except InferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra["cache_key_fields"] = ",".join(contract.cache_key_fields)
+        extra["produced_info"] = ",".join(contract.produced_info_order)
+        extra["widen"] = ",".join(contract.widen_history)
+        try:
+            rebuilt, stats = cached_annotate(
+                header, body, cache, contract, self.argv, self.out_dir / "memo"
+            )
+        except InferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, {**extra, **{}})
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
+        (self.out_dir / "reassembled.out").write_text(rebuilt)
+        stock = run_vcf_tool(self.argv, self.input_path)
+        (self.out_dir / "full.out").write_text(stock)
+        extra["n_reassembled"] = len(body_lines(rebuilt))
+        extra["n_stock"] = len(body_lines(stock))
+        if not bodies_equal(rebuilt, stock) or stats["n_cache_holes"]:
+            rec = StrategyResult(
+                self.name,
+                "REFUSE_MATCH",
+                "reassembled body is not MATCH to a full run",
+                extra,
+            )
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        cache.save()
+        rec = StrategyResult(
+            self.name,
+            "SHIP",
+            (
+                f"MATCH body; hits={stats['n_hits']} misses={stats['n_misses']}; "
+                f"key={','.join(contract.cache_key_fields)}"
+            ),
+            extra,
+        )
+        rec.write(self.out_dir / "decision.txt")
+        return rec
 
     def _run_lines(self, report: DupReport, extra: dict) -> StrategyResult:
         assert self.input_path is not None

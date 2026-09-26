@@ -1,4 +1,7 @@
-"""SnpEff ANN/LOF/NMD only. ID, FORMAT, and GT stay on the query record."""
+"""Oracle: the retired hand-built SnpEff ANN/LOF/NMD splicer.
+
+Kept only to compare against the generic VCF contract. Not on the runtime path.
+"""
 
 from __future__ import annotations
 

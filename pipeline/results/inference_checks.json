@@ -1,0 +1,197 @@
+{
+  "protocol": "pipeline/docs/INFERENCE_PROTOCOL.md",
+  "snpeff": {
+    "tool": "SnpEff 5.4c GRCh38.86",
+    "flags": [
+      "-noStats",
+      "-noLog"
+    ],
+    "path": "generic",
+    "contract": {
+      "decision": "OK",
+      "reason": "probe passed",
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT"
+      ],
+      "column_roles": {
+        "CHROM": "key",
+        "POS": "key",
+        "REF": "key",
+        "ALT": "key",
+        "ID": "pass",
+        "QUAL": "pass",
+        "FILTER": "pass"
+      },
+      "info_roles": {
+        "AC": "pass",
+        "AN": "pass",
+        "DP": "pass",
+        "AF": "pass",
+        "EAS_AF": "pass",
+        "EUR_AF": "pass",
+        "AFR_AF": "pass",
+        "AMR_AF": "pass",
+        "SAS_AF": "pass",
+        "VT": "pass",
+        "NS": "pass",
+        "ANN": "produced"
+      },
+      "produced_info_order": [
+        "ANN"
+      ],
+      "sample_role": "pass",
+      "widen_history": [],
+      "probe_n": 500
+    },
+    "populate": {
+      "HG00096": {
+        "n_records": 51086,
+        "n_hits": 0,
+        "n_misses": 51086,
+        "n_cache_holes": 0,
+        "cache_size_after": 51086,
+        "cache_key_fields": [
+          "CHROM",
+          "POS",
+          "REF",
+          "ALT"
+        ]
+      },
+      "HG00097": {
+        "n_records": 52269,
+        "n_hits": 32428,
+        "n_misses": 19841,
+        "n_cache_holes": 0,
+        "cache_size_after": 70927,
+        "cache_key_fields": [
+          "CHROM",
+          "POS",
+          "REF",
+          "ALT"
+        ]
+      }
+    },
+    "HG00099": {
+      "n_records": 52638,
+      "n_hits": 41447,
+      "n_misses": 11191,
+      "n_cache_holes": 0,
+      "cache_size_after": 82118,
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT"
+      ]
+    },
+    "n_reassembled": 52638,
+    "n_stock": 52638,
+    "bodies_equal": true,
+    "expected_hits": 41447,
+    "expected_misses": 11191,
+    "hits_match_handbuilt": true
+  },
+  "fill_tags": {
+    "tool": "bcftools +fill-tags AF,AC",
+    "contract": {
+      "decision": "OK",
+      "reason": "probe passed",
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT",
+        "SAMPLES"
+      ],
+      "column_roles": {
+        "CHROM": "key",
+        "POS": "key",
+        "REF": "key",
+        "ALT": "key",
+        "ID": "pass",
+        "QUAL": "pass",
+        "FILTER": "pass"
+      },
+      "info_roles": {
+        "AF": "produced",
+        "AC": "produced",
+        "DP": "pass"
+      },
+      "produced_info_order": [
+        "AF",
+        "AC"
+      ],
+      "sample_role": "pass",
+      "widen_history": [
+        "SAMPLES"
+      ],
+      "probe_n": 3
+    },
+    "bodies_equal": true,
+    "stats": {
+      "n_records": 3,
+      "n_hits": 0,
+      "n_misses": 3,
+      "n_cache_holes": 0,
+      "cache_size_after": 3,
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT",
+        "SAMPLES"
+      ]
+    },
+    "same_site_hits_collapse": true,
+    "note": "AF/AC depend on genotypes; key widened so same-site hits collapse"
+  },
+  "annotate": {
+    "tool": "bcftools annotate INFO/NOTE",
+    "contract": {
+      "decision": "OK",
+      "reason": "probe passed",
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT"
+      ],
+      "column_roles": {
+        "CHROM": "key",
+        "POS": "key",
+        "REF": "key",
+        "ALT": "key",
+        "ID": "pass",
+        "QUAL": "pass",
+        "FILTER": "pass"
+      },
+      "info_roles": {
+        "NOTE": "produced",
+        "DP": "pass"
+      },
+      "produced_info_order": [
+        "NOTE"
+      ],
+      "sample_role": "pass",
+      "widen_history": [],
+      "probe_n": 3
+    },
+    "bodies_equal": true,
+    "stats": {
+      "n_records": 3,
+      "n_hits": 0,
+      "n_misses": 3,
+      "n_cache_holes": 0,
+      "cache_size_after": 3,
+      "cache_key_fields": [
+        "CHROM",
+        "POS",
+        "REF",
+        "ALT"
+      ]
+    }
+  }
+}

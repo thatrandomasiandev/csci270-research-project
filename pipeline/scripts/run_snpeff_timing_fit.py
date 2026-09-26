@@ -11,8 +11,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "tests"))
 
-from acts.snpeff_ann import run_snpeff
+from oracle_snpeff_ann import run_snpeff
 from acts.vcf import body_lines, is_header, read_maybe_gz, variant_key
 
 S99 = ROOT / "data" / "vep_chr22" / "HG00099.c1.vcf.gz"

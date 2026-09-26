@@ -15,8 +15,9 @@ from pathlib import Path
 
 ROOT = Path(os.environ.get("ACTS_PIPELINE_ROOT", Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "tests"))
 
-from acts.snpeff_ann import added_by_key, apply_added, run_snpeff
+from oracle_snpeff_ann import added_by_key, apply_added, run_snpeff
 from acts.vcf import bodies_equal, body_lines, is_header, read_maybe_gz, variant_key
 
 PRED = ROOT / "results" / "snpeff_timing_fit.json"
