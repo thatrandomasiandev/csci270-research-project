@@ -5,6 +5,8 @@
 
 **GitHub repo:** [thatrandomasiandev/csci270-research-project](https://github.com/thatrandomasiandev/csci270-research-project)
 
+**What we are building (STAR course object vs record-memo strategies):** [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md)
+
 **Out of scope for this repo root:** RM-decay / SAC / CARC RL work (archived under [`archive/rm-decay-vs-overopt/`](archive/rm-decay-vs-overopt/); PhD/lab track).
 
 ## Layout
@@ -16,6 +18,7 @@ star/
   bench/        # datasets notes, scripts, results, figures/
   docs/         # design notes, profiling logs, REPRODUCE.md
   writeup/      # course submission LaTeX/Markdown + paper/figures/
+pipeline/       # ACTS strategies (record memo first) + kept EGAS driver. Not the graded claim.
 AGENTS.md       # agent workflow instructions
 STATUS.md       # living target vs current
 ```

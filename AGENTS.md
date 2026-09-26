@@ -1,6 +1,13 @@
-# Agent workflow — STAR ≥2× for CSCI 270 A
+# Agent workflow — STAR ≥2× (course) + ACTS strategies
 
-You are working on Josh’s **course A-contract** project, not the archived RL research.
+Two objects. Do not mix them.
+
+1. **Zhang A-contract:** STAR ≥2×, Suite B, MATCH, one thread. Sealed Mac 10/10. Do not delete `star/` or invent a second timer.
+2. **Research method:** `python3 -m acts` — first strategy is record memoization (Survivor 1). More strategies later, only when named. EGAS stays as the source-edit driver; it is not a new method.
+
+You are **not** on the archived RL research.
+
+Orientation: [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md).
 
 ## Non-negotiables
 
