@@ -1,0 +1,514 @@
+{
+  "protocol": "pipeline/docs/TOOL_SCREEN.md",
+  "seed": 20260925,
+  "runs_per_size": 3,
+  "sizes": [
+    1,
+    1000,
+    5000,
+    20000
+  ],
+  "machine_before": {
+    "iso_utc": "2026-09-25T17:06:53.912813+00:00",
+    "iso_local": "2026-09-25T10:06:53.912999",
+    "uptime": "10:06  up 23:06, 1 user, load averages: 4.47 10.45 10.14",
+    "load": [
+      4.47,
+      10.45,
+      10.14
+    ],
+    "google_drive": {
+      "before": "994 /Applications/Google Drive.app/Contents/MacOS/Google Drive --auto_restart_count=1 --first_auto_restart_timestamp=0\n1027 /Applications/Google Drive.app/Contents/MacOS/crashpad_handler --database=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad --url=https://clients2.google.com/cr/report --annotation=always_send_feedback_unauthenticated=on --annotation=anonymous_feedback_submit_api_key=AIzaSyCejQEszExWuVHsgk8YElDTlbbrhzeRISc --annotation=anonymous_feedback_submit_url=https://feedback-pa.googleapis.com/v1/feedback/products/1633926/web:anonymous_submit --annotation=ask_to_copy_files_for_pending_uploads=on --annotation=automatic_error_reporting_trigger_assert_ids=0xFE7C4002;0xFE7C4006;0xFE7C4011 --annotation=bandwidth_throttling=on --annotation=browser_auth_wait_for_client_timeout_ms=300000 --annotation=browser_auth_with_signup_wait_for_client_timeout_ms=1200000 --annotation=casita_add_more_folders_to_sync_url=https://support.google.com/drive/?p=errorlist --annotation=casita_faq_url=https://support.google.com/drive?p=d4d_redesign_beta --annotation=casita_force_enable=off --annotation=casita_hide_disconnect_for_loading_account=on --annotation=casita_milestone=2 --annotation=casita_rename_sign_out_button_to_disconnect_account=on --annotation=casita_search=off --annotation=casita_startup_prompt_for_opt_in=0 --annotation=collect_ms_office_meet_integration_metrics=off --annotation=com_api_thread_stuck_threshold_sec=0 --annotation=compress_regular_log_files=off --annotation=confirm_quit_during_system_logout=off --annotation=context_menu_create_editor_files=on --annotation=context_menu_force_refresh_folder=on --annotation=context_menu_show_create_new_shared_drive_dialog=on --annotation=crash_oom_threshold_mb=1048576 --annotation=crash_throttle_percentage=0 --annotation=create_encrypted_editor_file=on --annotation=cse_guest_access_enabled=on --annotation=curl_allows_user_provided_content_length=off --annotation=current_drive_fs_version=131.0.2.0 --annotation=current_os_version=macOS/Version 27.0.0 (Build 26A428) (arm64) --annotation=decore_authoritative_global_fetcher=on --annotation=decore_automatic_rollback=on --annotation=dedupe_interval_ms=2000 --annotation=deprecation_date=2027-09-08 --annotation=deprecation_warning_threshold=30 --annotation=directory_log_max_byte_size=524288000 --annotation=disable_non_static_file_provider_event_metrics=off --annotation=disable_unified_buffer_cache=off --annotation=drive_dot=on --annotation=enable_ai_process_detection=on --annotation=enable_automatic_error_reporting=on --annotation=enable_casita_shared_drives_ui=off --annotation=enable_casita_sign_out_flow=off --annotation=enable_external_file_provider_volume=off --annotation=enable_internal_cello_metrics=on --annotation=enable_mac_os_context_menu=on --annotation=enable_mcp_ipc_server=off --annotation=enable_metrics=on --annotation=enable_ransomware_dialog=on --annotation=enable_search_hot_key=on --annotation=enable_windows_tray_icon_context_menu=on --annotation=encrypt_and_upload=off --annotation=encrypt_and_upload_folder=on --annotation=exception_enabled_apps=.* --annotation=file_provider_add_items_to_ws_on_listing=on --annotation=file_provider_create_existing_file_id_succeeds=off --annotation=file_provider_cse_target_id_scheme=off --annotation=file_provider_detect_remaining_domain_with_api_timeout_ms=10000 --annotation=file_provider_disable_movein_user_interaction=off --annotation=file_provider_disable_moveout_user_interaction=off --annotation=file_provider_disabled_notification_interval_mins=1440 --annotation=file_provider_enable_deny_copy_activation_rule=on --annotation=file_provider_enable_deny_shared_drive_root_manipulation=on --annotation=file_provider_enable_read_ahead=on --annotation=file_provider_max_retry_backoff_per_api_call_ms=30000 --annotation=file_provider_min_partial_read_size=4194304 --annotation=file_provider_mirror_switch_unpinned_item_batch_size=2000 --annotation=file_provider_notify_mount_point_changed=on --annotation=file_provider_posix_symlink_path_max_size=1024 --annotation=file_provider_quick_access_polling_interval_sec=43200 --annotation=file_provider_quit_grace_period_ms=0 --annotation=file_provider_remove_domain_flush_timeout_ms=300000 --annotation=file_provider_support_string_search=on --annotation=file_revisions_virtual_folder=off --annotation=fileprovider_signal_debounce_ms=250 --annotation=force_file_provider_materialization=on --annotation=force_refresh_folder_normal_menu=off --annotation=gemini_extra_included_mimetypes= --annotation=gui_autostart_option=on --annotation=hide_inaccessible_inheritance_break_folders=on --annotation=inform_users_of_pending_uploads=on --annotation=local_file_reading_buffer_size=8388608 --annotation=log_app_stability=off --annotation=logging_on_cello_thread_startup=off --annotation=mac_smb_dialect_mode=0 --annotation=mac_smb_nodatacache=on --annotation=mac_smb_port=-1 --annotation=manage_file_revisions_in_web=on --annotation=max_connection_idle_time_msec=600000 --annotation=max_core_restarts_after_db_corruption=10 --annotation=max_feedback_payload_size=209715200 --annotation=max_file_provider_ipc_connections=100 --annotation=max_item_events_buffer_size_casita=50 --annotation=max_metrics_per_event_code_per_batch=200 --annotation=max_status_source_locations_count_per_metric_event=3 --annotation=max_syncing_status_change_events_casita=50 --annotation=max_thumbnail_dimension=768 --annotation=meet_live_stream_info_uri= --annotation=meet_outlook_addin=off --annotation=meet_uri=https://meetings.clients6.google.com/v1/spaces --annotation=metrics_store_reset_counter=0 --annotation=min_duration_hours_between_any_surveys=24 --annotation=min_duration_hours_between_automatic_error_reports=720 --annotation=min_duration_hours_between_same_surveys=720 --annotation=min_duration_seconds_wait_after_close_for_survey=30 --annotation=min_duration_seconds_wait_after_cores_startup_for_survey=30 --annotation=min_supported_os_version=13.0.0 --annotation=mojave_overlays_fix=off --annotation=multi_account_max_accounts=4 --annotation=nondownloadable_files_as_gdrive_files=on --annotation=nondownloadable_files_as_gdrive_files_migration=on --annotation=num_metrics_batches_per_request=70 --annotation=outlook_addin=off --annotation=pause_syncing_option=on --annotation=phenotype_sync_timeout_ms=500 --annotation=photos_check_apl_icloud_import=on --annotation=photos_deprecation_date=2026-08-10 --annotation=photos_deprecation_soft_date=2026-06-15 --annotation=photos_feature_unsupported=on --annotation=photos_feature_unsupported_soon=off --annotation=prod=DriveFS --annotation=read_only_mode=off --annotation=read_only_ransomware=on --annotation=reconnected_nas_polling_interval_seconds=60 --annotation=reset_content_cache_location=off --annotation=restart_on_browser_request=on --annotation=same_content_dedupe_interval_ms=600000 --annotation=seconds_per_metrics_batch=20 --annotation=share_dialog=on --annotation=show_live_stream_frame_in_outlook_onboarding=off --annotation=slurp_poll_path_frequency_min=240 --annotation=smb_allowed=on --annotation=soon_to_be_min_supported_os_version=13.0.0 --annotation=soon_to_be_unsupported_os_learn_more=https://support.google.com/drive/answer/2375082 --annotation=spotlight_timestamp_fsctl_support=on --annotation=structured_log_max_file_count=30 --annotation=structured_log_max_file_size_kbytes=5120 --annotation=structured_log_zip_logs=on --annotation=structured_logging=on --annotation=survey_api_key=AIzaSyAWGrfCCr7albM3lmCc937gx4uIphbpeKQ --annotation=survey_configurations= --annotation=survey_listnr_product_id=1633926 --annotation=survey_url=https://www.gstatic.com/drive-fs/survey.html --annotation=switchblade_dss=off --annotation=switchblade_on_websockets=on --annotation=thread_stuck_report_sampling_percentage=10 --annotation=thread_stuck_threshold_sec=60 --annotation=throttling_algorithm=1 --annotation=unlocked_mac_getxattr_v2=off --annotation=upload_folder=off --annotation=use_correct_size_option_for_put=on --annotation=use_cros_http_client=off --annotation=use_mac_fileprovider=on --annotation=use_moonshine=on --annotation=use_win32_fibers=off --annotation=ver=131.0.2.0 --annotation=webview2_requirement_notification=0 --annotation=webview2_requirement_url=https://support.google.com/drive?p=d4d_webview2_rollout --annotation=win_dpi_aware_per_monitor=off --attachment=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad/account_features --handshake-fd=5\n1097 /Applications/Google Drive.app/Contents/MacOS/crashpad_handler --database=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad --url=https://clients2.google.com/cr/report --annotation=always_send_feedback_unauthenticated=on --annotation=anonymous_feedback_submit_api_key=AIzaSyCejQEszExWuVHsgk8YElDTlbbrhzeRISc --annotation=anonymous_feedback_submit_url=https://feedback-pa.googleapis.com/v1/feedback/products/1633926/web:anonymous_submit --annotation=ask_to_copy_files_for_pending_uploads=on --annotation=automatic_error_reporting_trigger_assert_ids=0xFE7C4002;0xFE7C4011 --annotation=bandwidth_throttling=on --annotation=browser_auth_wait_for_client_timeout_ms=300000 --annotation=browser_auth_with_signup_wait_for_client_timeout_ms=1200000 --annotation=casita_add_more_folders_to_sync_url=https://support.google.com/drive/?p=errorlist --annotation=casita_faq_url=https://support.google.com/drive?p=d4d_redesign_beta --annotation=casita_force_enable=off --annotation=casita_hide_disconnect_for_loading_account=on --annotation=casita_milestone=2 --annotation=casita_rename_sign_out_button_to_disconnect_account=on --annotation=casita_search=off --annotation=casita_startup_prompt_for_opt_in=0 --annotation=collect_ms_office_meet_integration_metrics=off --annotation=com_api_thread_stuck_threshold_sec=0 --annotation=compress_regular_log_files=off --annotation=confirm_quit_during_system_logout=off --annotation=context_menu_create_editor_files=on --annotation=context_menu_force_refresh_folder=on --annotation=context_menu_show_create_new_shared_drive_dialog=on --annotation=crash_oom_threshold_mb=1048576 --annotation=crash_throttle_percentage=0 --annotation=create_encrypted_editor_file=on --annotation=cse_guest_access_enabled=on --annotation=curl_allows_user_provided_content_length=off --annotation=current_drive_fs_version=131.0.2.0 --annotation=current_os_version=macOS/Version 27.0.0 (Build 26A428) (arm64) --annotation=decore_authoritative_global_fetcher=on --annotation=decore_automatic_rollback=on --annotation=dedupe_interval_ms=2000 --annotation=deprecation_date=2027-09-08 --annotation=deprecation_warning_threshold=30 --annotation=directory_log_max_byte_size=524288000 --annotation=disable_non_static_file_provider_event_metrics=off --annotation=disable_unified_buffer_cache=off --annotation=drive_dot=on --annotation=enable_ai_process_detection=on --annotation=enable_automatic_error_reporting=on --annotation=enable_casita_shared_drives_ui=off --annotation=enable_casita_sign_out_flow=off --annotation=enable_external_file_provider_volume=off --annotation=enable_internal_cello_metrics=on --annotation=enable_mac_os_context_menu=on --annotation=enable_mcp_ipc_server=off --annotation=enable_metrics=on --annotation=enable_ransomware_dialog=on --annotation=enable_search_hot_key=on --annotation=enable_windows_tray_icon_context_menu=on --annotation=encrypt_and_upload=off --annotation=encrypt_and_upload_folder=on --annotation=exception_enabled_apps=.* --annotation=file_provider_add_items_to_ws_on_listing=on --annotation=file_provider_create_existing_file_id_succeeds=off --annotation=file_provider_cse_target_id_scheme=off --annotation=file_provider_detect_remaining_domain_with_api_timeout_ms=10000 --annotation=file_provider_disable_movein_user_interaction=off --annotation=file_provider_disable_moveout_user_interaction=off --annotation=file_provider_disabled_notification_interval_mins=1440 --annotation=file_provider_enable_deny_copy_activation_rule=on --annotation=file_provider_enable_deny_shared_drive_root_manipulation=on --annotation=file_provider_enable_read_ahead=on --annotation=file_provider_max_retry_backoff_per_api_call_ms=30000 --annotation=file_provider_min_partial_read_size=4194304 --annotation=file_provider_mirror_switch_unpinned_item_batch_size=2000 --annotation=file_provider_notify_mount_point_changed=on --annotation=file_provider_posix_symlink_path_max_size=1024 --annotation=file_provider_quick_access_polling_interval_sec=43200 --annotation=file_provider_quit_grace_period_ms=0 --annotation=file_provider_remove_domain_flush_timeout_ms=300000 --annotation=file_provider_support_string_search=on --annotation=file_revisions_virtual_folder=off --annotation=fileprovider_signal_debounce_ms=250 --annotation=force_file_provider_materialization=on --annotation=force_refresh_folder_normal_menu=off --annotation=gemini_extra_included_mimetypes= --annotation=gui_autostart_option=on --annotation=hide_inaccessible_inheritance_break_folders=on --annotation=inform_users_of_pending_uploads=on --annotation=local_file_reading_buffer_size=8388608 --annotation=log_app_stability=off --annotation=logging_on_cello_thread_startup=off --annotation=mac_smb_dialect_mode=0 --annotation=mac_smb_nodatacache=on --annotation=mac_smb_port=-1 --annotation=manage_file_revisions_in_web=on --annotation=max_connection_idle_time_msec=600000 --annotation=max_core_restarts_after_db_corruption=10 --annotation=max_feedback_payload_size=209715200 --annotation=max_file_provider_ipc_connections=100 --annotation=max_item_events_buffer_size_casita=50 --annotation=max_metrics_per_event_code_per_batch=200 --annotation=max_status_source_locations_count_per_metric_event=3 --annotation=max_syncing_status_change_events_casita=50 --annotation=max_thumbnail_dimension=768 --annotation=meet_live_stream_info_uri= --annotation=meet_outlook_addin=off --annotation=meet_uri=https://meetings.clients6.google.com/v1/spaces --annotation=metrics_store_reset_counter=0 --annotation=min_duration_hours_between_any_surveys=24 --annotation=min_duration_hours_between_automatic_error_reports=720 --annotation=min_duration_hours_between_same_surveys=720 --annotation=min_duration_seconds_wait_after_close_for_survey=30 --annotation=min_duration_seconds_wait_after_cores_startup_for_survey=30 --annotation=min_supported_os_version=13.0.0 --annotation=mojave_overlays_fix=off --annotation=multi_account_max_accounts=4 --annotation=nondownloadable_files_as_gdrive_files=on --annotation=nondownloadable_files_as_gdrive_files_migration=on --annotation=num_metrics_batches_per_request=70 --annotation=outlook_addin=off --annotation=pause_syncing_option=on --annotation=phenotype_sync_timeout_ms=500 --annotation=photos_check_apl_icloud_import=on --annotation=photos_deprecation_date=2026-08-10 --annotation=photos_deprecation_soft_date=2026-06-15 --annotation=photos_feature_unsupported=on --annotation=photos_feature_unsupported_soon=off --annotation=prod=DriveFS --annotation=read_only_mode=off --annotation=read_only_ransomware=on --annotation=reconnected_nas_polling_interval_seconds=60 --annotation=reset_content_cache_location=off --annotation=restart_on_browser_request=on --annotation=same_content_dedupe_interval_ms=600000 --annotation=seconds_per_metrics_batch=20 --annotation=share_dialog=on --annotation=show_live_stream_frame_in_outlook_onboarding=off --annotation=slurp_poll_path_frequency_min=240 --annotation=smb_allowed=on --annotation=soon_to_be_min_supported_os_version=13.0.0 --annotation=soon_to_be_unsupported_os_learn_more=https://support.google.com/drive/answer/2375082 --annotation=spotlight_timestamp_fsctl_support=on --annotation=structured_log_max_file_count=30 --annotation=structured_log_max_file_size_kbytes=5120 --annotation=structured_log_zip_logs=on --annotation=structured_logging=on --annotation=survey_api_key=AIzaSyAWGrfCCr7albM3lmCc937gx4uIphbpeKQ --annotation=survey_configurations= --annotation=survey_listnr_product_id=1633926 --annotation=survey_url=https://www.gstatic.com/drive-fs/survey.html --annotation=switchblade_dss=off --annotation=switchblade_on_websockets=on --annotation=thread_stuck_report_sampling_percentage=10 --annotation=thread_stuck_threshold_sec=60 --annotation=throttling_algorithm=1 --annotation=unlocked_mac_getxattr_v2=off --annotation=upload_folder=off --annotation=use_correct_size_option_for_put=on --annotation=use_cros_http_client=off --annotation=use_mac_fileprovider=on --annotation=use_moonshine=on --annotation=use_win32_fibers=off --annotation=ver=131.0.2.0 --annotation=webview2_requirement_notification=0 --annotation=webview2_requirement_url=https://support.google.com/drive?p=d4d_webview2_rollout --annotation=win_dpi_aware_per_monitor=off --attachment=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad/account_features --handshake-fd=5\n1098 /Applications/Google Drive.app/Contents/MacOS/Google Drive --auto_restart_count=1 --first_auto_restart_timestamp=0 --single_process --parent_version=131.0.2.0 --crash_handler_token=inherited\n1110 /Applications/Google Drive.app/Contents/Applications/FinderHelper.app/Contents/PlugIns/FinderSyncExtension.appex/Contents/MacOS/FinderSyncExtension -AppleLanguages (\"en-US\")\n1405 /Applications/Google Drive.app/Contents/PlugIns/DFSFileProviderExtension.appex/Contents/MacOS/DFSFileProviderExtension -BSServiceDomains {\"XPCService\":{\"Services\":{\"MainService\":{}}}} -LaunchArguments eyJzZXJ2aWNlTmFtZSI6ImNvbS5nb29nbGUuZHJpdmVmcy5mcGV4dCIsImVuaGFuY2VkU2VjdXJpdHkiOmZhbHNlLCJ0eXBlIjoxfQ==\n4398 /Applications/Google Drive.app/Contents/Applications/FinderHelper.app/Contents/PlugIns/FinderSyncExtension.appex/Contents/MacOS/FinderSyncExtension -AppleLanguages (\"en\", \"en-US\")",
+      "quit_returncode": 0,
+      "after": "994 /Applications/Google Drive.app/Contents/MacOS/Google Drive --auto_restart_count=1 --first_auto_restart_timestamp=0\n1027 /Applications/Google Drive.app/Contents/MacOS/crashpad_handler --database=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad --url=https://clients2.google.com/cr/report --annotation=always_send_feedback_unauthenticated=on --annotation=anonymous_feedback_submit_api_key=AIzaSyCejQEszExWuVHsgk8YElDTlbbrhzeRISc --annotation=anonymous_feedback_submit_url=https://feedback-pa.googleapis.com/v1/feedback/products/1633926/web:anonymous_submit --annotation=ask_to_copy_files_for_pending_uploads=on --annotation=automatic_error_reporting_trigger_assert_ids=0xFE7C4002;0xFE7C4006;0xFE7C4011 --annotation=bandwidth_throttling=on --annotation=browser_auth_wait_for_client_timeout_ms=300000 --annotation=browser_auth_with_signup_wait_for_client_timeout_ms=1200000 --annotation=casita_add_more_folders_to_sync_url=https://support.google.com/drive/?p=errorlist --annotation=casita_faq_url=https://support.google.com/drive?p=d4d_redesign_beta --annotation=casita_force_enable=off --annotation=casita_hide_disconnect_for_loading_account=on --annotation=casita_milestone=2 --annotation=casita_rename_sign_out_button_to_disconnect_account=on --annotation=casita_search=off --annotation=casita_startup_prompt_for_opt_in=0 --annotation=collect_ms_office_meet_integration_metrics=off --annotation=com_api_thread_stuck_threshold_sec=0 --annotation=compress_regular_log_files=off --annotation=confirm_quit_during_system_logout=off --annotation=context_menu_create_editor_files=on --annotation=context_menu_force_refresh_folder=on --annotation=context_menu_show_create_new_shared_drive_dialog=on --annotation=crash_oom_threshold_mb=1048576 --annotation=crash_throttle_percentage=0 --annotation=create_encrypted_editor_file=on --annotation=cse_guest_access_enabled=on --annotation=curl_allows_user_provided_content_length=off --annotation=current_drive_fs_version=131.0.2.0 --annotation=current_os_version=macOS/Version 27.0.0 (Build 26A428) (arm64) --annotation=decore_authoritative_global_fetcher=on --annotation=decore_automatic_rollback=on --annotation=dedupe_interval_ms=2000 --annotation=deprecation_date=2027-09-08 --annotation=deprecation_warning_threshold=30 --annotation=directory_log_max_byte_size=524288000 --annotation=disable_non_static_file_provider_event_metrics=off --annotation=disable_unified_buffer_cache=off --annotation=drive_dot=on --annotation=enable_ai_process_detection=on --annotation=enable_automatic_error_reporting=on --annotation=enable_casita_shared_drives_ui=off --annotation=enable_casita_sign_out_flow=off --annotation=enable_external_file_provider_volume=off --annotation=enable_internal_cello_metrics=on --annotation=enable_mac_os_context_menu=on --annotation=enable_mcp_ipc_server=off --annotation=enable_metrics=on --annotation=enable_ransomware_dialog=on --annotation=enable_search_hot_key=on --annotation=enable_windows_tray_icon_context_menu=on --annotation=encrypt_and_upload=off --annotation=encrypt_and_upload_folder=on --annotation=exception_enabled_apps=.* --annotation=file_provider_add_items_to_ws_on_listing=on --annotation=file_provider_create_existing_file_id_succeeds=off --annotation=file_provider_cse_target_id_scheme=off --annotation=file_provider_detect_remaining_domain_with_api_timeout_ms=10000 --annotation=file_provider_disable_movein_user_interaction=off --annotation=file_provider_disable_moveout_user_interaction=off --annotation=file_provider_disabled_notification_interval_mins=1440 --annotation=file_provider_enable_deny_copy_activation_rule=on --annotation=file_provider_enable_deny_shared_drive_root_manipulation=on --annotation=file_provider_enable_read_ahead=on --annotation=file_provider_max_retry_backoff_per_api_call_ms=30000 --annotation=file_provider_min_partial_read_size=4194304 --annotation=file_provider_mirror_switch_unpinned_item_batch_size=2000 --annotation=file_provider_notify_mount_point_changed=on --annotation=file_provider_posix_symlink_path_max_size=1024 --annotation=file_provider_quick_access_polling_interval_sec=43200 --annotation=file_provider_quit_grace_period_ms=0 --annotation=file_provider_remove_domain_flush_timeout_ms=300000 --annotation=file_provider_support_string_search=on --annotation=file_revisions_virtual_folder=off --annotation=fileprovider_signal_debounce_ms=250 --annotation=force_file_provider_materialization=on --annotation=force_refresh_folder_normal_menu=off --annotation=gemini_extra_included_mimetypes= --annotation=gui_autostart_option=on --annotation=hide_inaccessible_inheritance_break_folders=on --annotation=inform_users_of_pending_uploads=on --annotation=local_file_reading_buffer_size=8388608 --annotation=log_app_stability=off --annotation=logging_on_cello_thread_startup=off --annotation=mac_smb_dialect_mode=0 --annotation=mac_smb_nodatacache=on --annotation=mac_smb_port=-1 --annotation=manage_file_revisions_in_web=on --annotation=max_connection_idle_time_msec=600000 --annotation=max_core_restarts_after_db_corruption=10 --annotation=max_feedback_payload_size=209715200 --annotation=max_file_provider_ipc_connections=100 --annotation=max_item_events_buffer_size_casita=50 --annotation=max_metrics_per_event_code_per_batch=200 --annotation=max_status_source_locations_count_per_metric_event=3 --annotation=max_syncing_status_change_events_casita=50 --annotation=max_thumbnail_dimension=768 --annotation=meet_live_stream_info_uri= --annotation=meet_outlook_addin=off --annotation=meet_uri=https://meetings.clients6.google.com/v1/spaces --annotation=metrics_store_reset_counter=0 --annotation=min_duration_hours_between_any_surveys=24 --annotation=min_duration_hours_between_automatic_error_reports=720 --annotation=min_duration_hours_between_same_surveys=720 --annotation=min_duration_seconds_wait_after_close_for_survey=30 --annotation=min_duration_seconds_wait_after_cores_startup_for_survey=30 --annotation=min_supported_os_version=13.0.0 --annotation=mojave_overlays_fix=off --annotation=multi_account_max_accounts=4 --annotation=nondownloadable_files_as_gdrive_files=on --annotation=nondownloadable_files_as_gdrive_files_migration=on --annotation=num_metrics_batches_per_request=70 --annotation=outlook_addin=off --annotation=pause_syncing_option=on --annotation=phenotype_sync_timeout_ms=500 --annotation=photos_check_apl_icloud_import=on --annotation=photos_deprecation_date=2026-08-10 --annotation=photos_deprecation_soft_date=2026-06-15 --annotation=photos_feature_unsupported=on --annotation=photos_feature_unsupported_soon=off --annotation=prod=DriveFS --annotation=read_only_mode=off --annotation=read_only_ransomware=on --annotation=reconnected_nas_polling_interval_seconds=60 --annotation=reset_content_cache_location=off --annotation=restart_on_browser_request=on --annotation=same_content_dedupe_interval_ms=600000 --annotation=seconds_per_metrics_batch=20 --annotation=share_dialog=on --annotation=show_live_stream_frame_in_outlook_onboarding=off --annotation=slurp_poll_path_frequency_min=240 --annotation=smb_allowed=on --annotation=soon_to_be_min_supported_os_version=13.0.0 --annotation=soon_to_be_unsupported_os_learn_more=https://support.google.com/drive/answer/2375082 --annotation=spotlight_timestamp_fsctl_support=on --annotation=structured_log_max_file_count=30 --annotation=structured_log_max_file_size_kbytes=5120 --annotation=structured_log_zip_logs=on --annotation=structured_logging=on --annotation=survey_api_key=AIzaSyAWGrfCCr7albM3lmCc937gx4uIphbpeKQ --annotation=survey_configurations= --annotation=survey_listnr_product_id=1633926 --annotation=survey_url=https://www.gstatic.com/drive-fs/survey.html --annotation=switchblade_dss=off --annotation=switchblade_on_websockets=on --annotation=thread_stuck_report_sampling_percentage=10 --annotation=thread_stuck_threshold_sec=60 --annotation=throttling_algorithm=1 --annotation=unlocked_mac_getxattr_v2=off --annotation=upload_folder=off --annotation=use_correct_size_option_for_put=on --annotation=use_cros_http_client=off --annotation=use_mac_fileprovider=on --annotation=use_moonshine=on --annotation=use_win32_fibers=off --annotation=ver=131.0.2.0 --annotation=webview2_requirement_notification=0 --annotation=webview2_requirement_url=https://support.google.com/drive?p=d4d_webview2_rollout --annotation=win_dpi_aware_per_monitor=off --attachment=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad/account_features --handshake-fd=5\n1097 /Applications/Google Drive.app/Contents/MacOS/crashpad_handler --database=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad --url=https://clients2.google.com/cr/report --annotation=always_send_feedback_unauthenticated=on --annotation=anonymous_feedback_submit_api_key=AIzaSyCejQEszExWuVHsgk8YElDTlbbrhzeRISc --annotation=anonymous_feedback_submit_url=https://feedback-pa.googleapis.com/v1/feedback/products/1633926/web:anonymous_submit --annotation=ask_to_copy_files_for_pending_uploads=on --annotation=automatic_error_reporting_trigger_assert_ids=0xFE7C4002;0xFE7C4011 --annotation=bandwidth_throttling=on --annotation=browser_auth_wait_for_client_timeout_ms=300000 --annotation=browser_auth_with_signup_wait_for_client_timeout_ms=1200000 --annotation=casita_add_more_folders_to_sync_url=https://support.google.com/drive/?p=errorlist --annotation=casita_faq_url=https://support.google.com/drive?p=d4d_redesign_beta --annotation=casita_force_enable=off --annotation=casita_hide_disconnect_for_loading_account=on --annotation=casita_milestone=2 --annotation=casita_rename_sign_out_button_to_disconnect_account=on --annotation=casita_search=off --annotation=casita_startup_prompt_for_opt_in=0 --annotation=collect_ms_office_meet_integration_metrics=off --annotation=com_api_thread_stuck_threshold_sec=0 --annotation=compress_regular_log_files=off --annotation=confirm_quit_during_system_logout=off --annotation=context_menu_create_editor_files=on --annotation=context_menu_force_refresh_folder=on --annotation=context_menu_show_create_new_shared_drive_dialog=on --annotation=crash_oom_threshold_mb=1048576 --annotation=crash_throttle_percentage=0 --annotation=create_encrypted_editor_file=on --annotation=cse_guest_access_enabled=on --annotation=curl_allows_user_provided_content_length=off --annotation=current_drive_fs_version=131.0.2.0 --annotation=current_os_version=macOS/Version 27.0.0 (Build 26A428) (arm64) --annotation=decore_authoritative_global_fetcher=on --annotation=decore_automatic_rollback=on --annotation=dedupe_interval_ms=2000 --annotation=deprecation_date=2027-09-08 --annotation=deprecation_warning_threshold=30 --annotation=directory_log_max_byte_size=524288000 --annotation=disable_non_static_file_provider_event_metrics=off --annotation=disable_unified_buffer_cache=off --annotation=drive_dot=on --annotation=enable_ai_process_detection=on --annotation=enable_automatic_error_reporting=on --annotation=enable_casita_shared_drives_ui=off --annotation=enable_casita_sign_out_flow=off --annotation=enable_external_file_provider_volume=off --annotation=enable_internal_cello_metrics=on --annotation=enable_mac_os_context_menu=on --annotation=enable_mcp_ipc_server=off --annotation=enable_metrics=on --annotation=enable_ransomware_dialog=on --annotation=enable_search_hot_key=on --annotation=enable_windows_tray_icon_context_menu=on --annotation=encrypt_and_upload=off --annotation=encrypt_and_upload_folder=on --annotation=exception_enabled_apps=.* --annotation=file_provider_add_items_to_ws_on_listing=on --annotation=file_provider_create_existing_file_id_succeeds=off --annotation=file_provider_cse_target_id_scheme=off --annotation=file_provider_detect_remaining_domain_with_api_timeout_ms=10000 --annotation=file_provider_disable_movein_user_interaction=off --annotation=file_provider_disable_moveout_user_interaction=off --annotation=file_provider_disabled_notification_interval_mins=1440 --annotation=file_provider_enable_deny_copy_activation_rule=on --annotation=file_provider_enable_deny_shared_drive_root_manipulation=on --annotation=file_provider_enable_read_ahead=on --annotation=file_provider_max_retry_backoff_per_api_call_ms=30000 --annotation=file_provider_min_partial_read_size=4194304 --annotation=file_provider_mirror_switch_unpinned_item_batch_size=2000 --annotation=file_provider_notify_mount_point_changed=on --annotation=file_provider_posix_symlink_path_max_size=1024 --annotation=file_provider_quick_access_polling_interval_sec=43200 --annotation=file_provider_quit_grace_period_ms=0 --annotation=file_provider_remove_domain_flush_timeout_ms=300000 --annotation=file_provider_support_string_search=on --annotation=file_revisions_virtual_folder=off --annotation=fileprovider_signal_debounce_ms=250 --annotation=force_file_provider_materialization=on --annotation=force_refresh_folder_normal_menu=off --annotation=gemini_extra_included_mimetypes= --annotation=gui_autostart_option=on --annotation=hide_inaccessible_inheritance_break_folders=on --annotation=inform_users_of_pending_uploads=on --annotation=local_file_reading_buffer_size=8388608 --annotation=log_app_stability=off --annotation=logging_on_cello_thread_startup=off --annotation=mac_smb_dialect_mode=0 --annotation=mac_smb_nodatacache=on --annotation=mac_smb_port=-1 --annotation=manage_file_revisions_in_web=on --annotation=max_connection_idle_time_msec=600000 --annotation=max_core_restarts_after_db_corruption=10 --annotation=max_feedback_payload_size=209715200 --annotation=max_file_provider_ipc_connections=100 --annotation=max_item_events_buffer_size_casita=50 --annotation=max_metrics_per_event_code_per_batch=200 --annotation=max_status_source_locations_count_per_metric_event=3 --annotation=max_syncing_status_change_events_casita=50 --annotation=max_thumbnail_dimension=768 --annotation=meet_live_stream_info_uri= --annotation=meet_outlook_addin=off --annotation=meet_uri=https://meetings.clients6.google.com/v1/spaces --annotation=metrics_store_reset_counter=0 --annotation=min_duration_hours_between_any_surveys=24 --annotation=min_duration_hours_between_automatic_error_reports=720 --annotation=min_duration_hours_between_same_surveys=720 --annotation=min_duration_seconds_wait_after_close_for_survey=30 --annotation=min_duration_seconds_wait_after_cores_startup_for_survey=30 --annotation=min_supported_os_version=13.0.0 --annotation=mojave_overlays_fix=off --annotation=multi_account_max_accounts=4 --annotation=nondownloadable_files_as_gdrive_files=on --annotation=nondownloadable_files_as_gdrive_files_migration=on --annotation=num_metrics_batches_per_request=70 --annotation=outlook_addin=off --annotation=pause_syncing_option=on --annotation=phenotype_sync_timeout_ms=500 --annotation=photos_check_apl_icloud_import=on --annotation=photos_deprecation_date=2026-08-10 --annotation=photos_deprecation_soft_date=2026-06-15 --annotation=photos_feature_unsupported=on --annotation=photos_feature_unsupported_soon=off --annotation=prod=DriveFS --annotation=read_only_mode=off --annotation=read_only_ransomware=on --annotation=reconnected_nas_polling_interval_seconds=60 --annotation=reset_content_cache_location=off --annotation=restart_on_browser_request=on --annotation=same_content_dedupe_interval_ms=600000 --annotation=seconds_per_metrics_batch=20 --annotation=share_dialog=on --annotation=show_live_stream_frame_in_outlook_onboarding=off --annotation=slurp_poll_path_frequency_min=240 --annotation=smb_allowed=on --annotation=soon_to_be_min_supported_os_version=13.0.0 --annotation=soon_to_be_unsupported_os_learn_more=https://support.google.com/drive/answer/2375082 --annotation=spotlight_timestamp_fsctl_support=on --annotation=structured_log_max_file_count=30 --annotation=structured_log_max_file_size_kbytes=5120 --annotation=structured_log_zip_logs=on --annotation=structured_logging=on --annotation=survey_api_key=AIzaSyAWGrfCCr7albM3lmCc937gx4uIphbpeKQ --annotation=survey_configurations= --annotation=survey_listnr_product_id=1633926 --annotation=survey_url=https://www.gstatic.com/drive-fs/survey.html --annotation=switchblade_dss=off --annotation=switchblade_on_websockets=on --annotation=thread_stuck_report_sampling_percentage=10 --annotation=thread_stuck_threshold_sec=60 --annotation=throttling_algorithm=1 --annotation=unlocked_mac_getxattr_v2=off --annotation=upload_folder=off --annotation=use_correct_size_option_for_put=on --annotation=use_cros_http_client=off --annotation=use_mac_fileprovider=on --annotation=use_moonshine=on --annotation=use_win32_fibers=off --annotation=ver=131.0.2.0 --annotation=webview2_requirement_notification=0 --annotation=webview2_requirement_url=https://support.google.com/drive?p=d4d_webview2_rollout --annotation=win_dpi_aware_per_monitor=off --attachment=/Users/joshuaterranova/Library/Application Support/Google/DriveFS/Crashpad/account_features --handshake-fd=5\n1098 /Applications/Google Drive.app/Contents/MacOS/Google Drive --auto_restart_count=1 --first_auto_restart_timestamp=0 --single_process --parent_version=131.0.2.0 --crash_handler_token=inherited\n1110 /Applications/Google Drive.app/Contents/Applications/FinderHelper.app/Contents/PlugIns/FinderSyncExtension.appex/Contents/MacOS/FinderSyncExtension -AppleLanguages (\"en-US\")\n1405 /Applications/Google Drive.app/Contents/PlugIns/DFSFileProviderExtension.appex/Contents/MacOS/DFSFileProviderExtension -BSServiceDomains {\"XPCService\":{\"Services\":{\"MainService\":{}}}} -LaunchArguments eyJzZXJ2aWNlTmFtZSI6ImNvbS5nb29nbGUuZHJpdmVmcy5mcGV4dCIsImVuaGFuY2VkU2VjdXJpdHkiOmZhbHNlLCJ0eXBlIjoxfQ==\n4398 /Applications/Google Drive.app/Contents/Applications/FinderHelper.app/Contents/PlugIns/FinderSyncExtension.appex/Contents/MacOS/FinderSyncExtension -AppleLanguages (\"en\", \"en-US\")"
+    }
+  },
+  "machine_after": {
+    "iso_utc": "2026-09-25T17:09:46.545706+00:00",
+    "iso_local": "2026-09-25T10:09:46.545724",
+    "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+    "load": [
+      5.49,
+      8.61,
+      9.45
+    ]
+  },
+  "tools": [
+    {
+      "tool": "VEP offline chr22",
+      "skipped": true,
+      "why": "vep not on PATH; no ~/.vep cache; full human cache not downloaded",
+      "advances": false
+    },
+    {
+      "tool": "SnpSift dbNSFP",
+      "skipped": true,
+      "why": "dbNSFP TSV not on disk; only make_dbNSFP.sh; not fetched",
+      "advances": false
+    },
+    {
+      "tool": "SnpEff 5.4c GRCh38.86 heavier (stats on, -ud 20000)",
+      "N": 52638,
+      "a_s": 10.015500661330044,
+      "b_s_per_record": 7.633449032525374e-05,
+      "ceiling_m0.2": 1.2971106733129683,
+      "ceiling_m0": 1.401187622826946,
+      "advances": false,
+      "advance_rule": "ceiling(0.2) >= 3.0 and a>0 and b>0",
+      "raw": [
+        {
+          "n": 1,
+          "runs": [
+            {
+              "wall_s": 12.606623583000328,
+              "cpu_s": 17.237227,
+              "uptime": "10:06  up 23:06, 1 user, load averages: 4.47 10.45 10.14",
+              "load": [
+                4.47,
+                10.45,
+                10.14
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 9.291922208001779,
+              "cpu_s": 16.232096,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 5.45 10.47 10.15",
+              "load": [
+                5.45,
+                10.47,
+                10.15
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 9.428685958002461,
+              "cpu_s": 17.604875,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 5.47 10.31 10.10",
+              "load": [
+                5.47,
+                10.31,
+                10.1
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 10.442410583001523,
+          "stdev_s": 1.875510467273226,
+          "mean_cpu_s": 17.024732666666665
+        },
+        {
+          "n": 1000,
+          "runs": [
+            {
+              "wall_s": 9.810570124995138,
+              "cpu_s": 19.22887399999999,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 6.08 10.28 10.09",
+              "load": [
+                6.08,
+                10.28,
+                10.09
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 9.672114042004978,
+              "cpu_s": 18.024179000000004,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 6.15 10.15 10.05",
+              "load": [
+                6.15,
+                10.15,
+                10.05
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 9.712655791998259,
+              "cpu_s": 16.666067000000012,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 6.43 10.08 10.02",
+              "load": [
+                6.43,
+                10.08,
+                10.02
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 9.731779986332791,
+          "stdev_s": 0.07118161866629098,
+          "mean_cpu_s": 17.97304
+        },
+        {
+          "n": 5000,
+          "runs": [
+            {
+              "wall_s": 10.598194375001185,
+              "cpu_s": 20.187854,
+              "uptime": "10:07  up 23:07, 1 user, load averages: 6.63 10.01 10.00",
+              "load": [
+                6.63,
+                10.01,
+                10.0
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 10.264050707999559,
+              "cpu_s": 19.660416999999995,
+              "uptime": "10:08  up 23:08, 1 user, load averages: 6.32 9.83 9.93",
+              "load": [
+                6.32,
+                9.83,
+                9.93
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 10.231847166003718,
+              "cpu_s": 19.102124000000003,
+              "uptime": "10:08  up 23:08, 1 user, load averages: 6.27 9.70 9.89",
+              "load": [
+                6.27,
+                9.7,
+                9.89
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 10.36469741633482,
+          "stdev_s": 0.20285435491776108,
+          "mean_cpu_s": 19.650131666666667
+        },
+        {
+          "n": 20000,
+          "runs": [
+            {
+              "wall_s": 11.435035250004148,
+              "cpu_s": 24.008008000000018,
+              "uptime": "10:08  up 23:08, 1 user, load averages: 6.23 9.58 9.84",
+              "load": [
+                6.23,
+                9.58,
+                9.84
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 11.473773666999477,
+              "cpu_s": 24.162957000000006,
+              "uptime": "10:08  up 23:08, 1 user, load averages: 6.04 9.43 9.78",
+              "load": [
+                6.04,
+                9.43,
+                9.78
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 11.503812458999164,
+              "cpu_s": 24.183392999999995,
+              "uptime": "10:08  up 23:08, 1 user, load averages: 6.31 9.33 9.74",
+              "load": [
+                6.31,
+                9.33,
+                9.74
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 11.47087379200093,
+          "stdev_s": 0.034480183809565496,
+          "mean_cpu_s": 24.11811933333334
+        },
+        {
+          "n": 52638,
+          "runs": [
+            {
+              "wall_s": 14.33902400000079,
+              "cpu_s": 28.58139700000001,
+              "uptime": "10:09  up 23:08, 1 user, load averages: 6.25 9.22 9.70",
+              "load": [
+                6.25,
+                9.22,
+                9.7
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 13.62237350000214,
+              "cpu_s": 28.007699999999943,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.90 8.99 9.61",
+              "load": [
+                5.9,
+                8.99,
+                9.61
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 14.250431041000411,
+              "cpu_s": 29.23300999999998,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 6.08 8.93 9.58",
+              "load": [
+                6.08,
+                8.93,
+                9.58
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 14.070609513667781,
+          "stdev_s": 0.3907029831678518,
+          "mean_cpu_s": 28.607368999999977
+        }
+      ],
+      "flags": [
+        "-ud",
+        "20000"
+      ],
+      "stats": true,
+      "input": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/vep_chr22/HG00099.c1.vcf.gz",
+      "subset_seed": 20260925
+    },
+    {
+      "tool": "ruff check --no-cache 0.8.4",
+      "N": 16259,
+      "a_s": 0.0187289685840204,
+      "b_s_per_record": 4.214752613032523e-05,
+      "ceiling_m0.2": 4.519105088284324,
+      "ceiling_m0": 37.58912792120531,
+      "advances": true,
+      "advance_rule": "ceiling(0.2) >= 3.0 and a>0 and b>0",
+      "raw": [
+        {
+          "n": 1,
+          "runs": [
+            {
+              "wall_s": 0.04164233399933437,
+              "cpu_s": 0.015242000000000644,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1
+            },
+            {
+              "wall_s": 0.009877208998659626,
+              "cpu_s": 0.00863499999996975,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2
+            },
+            {
+              "wall_s": 0.011397334004868753,
+              "cpu_s": 0.008681999999964773,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3
+            }
+          ],
+          "mean_s": 0.020972292334287584,
+          "stdev_s": 0.017916909941022286,
+          "mean_cpu_s": 0.010852999999978389
+        },
+        {
+          "n": 1000,
+          "runs": [
+            {
+              "wall_s": 0.07279183300124714,
+              "cpu_s": 0.3708730000000173,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid rule code provided to `# ruff: noqa` at /tmp/acts_tool_screen/ruff/n1000/00342__MMRankingA100.py:1: B950\n",
+              "run": 1
+            },
+            {
+              "wall_s": 0.05623183299758239,
+              "cpu_s": 0.3035669999999868,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid rule code provided to `# ruff: noqa` at /tmp/acts_tool_screen/ruff/n1000/00342__MMRankingA100.py:1: B950\n",
+              "run": 2
+            },
+            {
+              "wall_s": 0.05471762499655597,
+              "cpu_s": 0.3224870000000237,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid rule code provided to `# ruff: noqa` at /tmp/acts_tool_screen/ruff/n1000/00342__MMRankingA100.py:1: B950\n",
+              "run": 3
+            }
+          ],
+          "mean_s": 0.061247096998461835,
+          "stdev_s": 0.010026659638089776,
+          "mean_cpu_s": 0.3323090000000093
+        },
+        {
+          "n": 5000,
+          "runs": [
+            {
+              "wall_s": 0.24533308299578493,
+              "cpu_s": 1.5686589999999683,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "oqa` directive on /tmp/acts_tool_screen/ruff/n5000/03405_exc.py:768: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/03405_exc.py:770: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/03405_exc.py:774: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 1
+            },
+            {
+              "wall_s": 0.21578054199926555,
+              "cpu_s": 1.4918989999999894,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "ool_screen/ruff/n5000/02675___init__.py:1: expected `:` followed by a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/04334_lowering.py:221: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/04334_lowering.py:745: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 2
+            },
+            {
+              "wall_s": 0.21624387500196462,
+              "cpu_s": 1.4573280000000182,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/03405_exc.py:774: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid rule code provided to `# ruff: noqa` at /tmp/acts_tool_screen/ruff/n5000/00342__MMRankingA100.py:1: B950\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n5000/04975_cudagraph_trees.py:2150: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 3
+            }
+          ],
+          "mean_s": 0.22578583333233837,
+          "stdev_s": 0.01692999989432018,
+          "mean_cpu_s": 1.505961999999992
+        },
+        {
+          "n": 16259,
+          "runs": [
+            {
+              "wall_s": 0.7821078749984736,
+              "cpu_s": 5.084581000000014,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "mp/acts_tool_screen/ruff/n16259/11153_nested_tensor.py:359: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/07138_triton.py:918: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/07138_triton.py:7028: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 1
+            },
+            {
+              "wall_s": 0.6736997499974677,
+              "cpu_s": 4.746174999999994,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "on /tmp/acts_tool_screen/ruff/n16259/05884_guards.py:2353: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/05884_guards.py:3671: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/05884_guards.py:4319: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 2
+            },
+            {
+              "wall_s": 0.6595361250001588,
+              "cpu_s": 4.69713500000006,
+              "uptime": "10:09  up 23:09, 1 user, load averages: 5.49 8.61 9.45",
+              "load": [
+                5.49,
+                8.61,
+                9.45
+              ],
+              "returncode": 1,
+              "stderr_tail": "n /tmp/acts_tool_screen/ruff/n16259/03405_exc.py:770: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/03405_exc.py:774: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n\u001b[1;33mwarning\u001b[0m\u001b[1m:\u001b[0m Invalid `# noqa` directive on /tmp/acts_tool_screen/ruff/n16259/04975_cudagraph_trees.py:2150: expected a comma-separated list of codes (e.g., `# noqa: F401, F841`).\n",
+              "run": 3
+            }
+          ],
+          "mean_s": 0.7051145833320334,
+          "stdev_s": 0.06705316763204588,
+          "mean_cpu_s": 4.842630333333356
+        }
+      ],
+      "flags": [
+        "check",
+        "--no-cache"
+      ],
+      "n_files_listed": 16259,
+      "roots": [
+        "/Users/joshuaterranova/Desktop/Coding Projects",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS"
+      ],
+      "subset_seed": 20260925
+    }
+  ]
+}

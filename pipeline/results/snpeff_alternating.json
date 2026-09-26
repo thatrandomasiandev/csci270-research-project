@@ -1,0 +1,279 @@
+{
+  "tool": "SnpEff 5.4c GRCh38.86",
+  "flags": [
+    "-noStats",
+    "-noLog"
+  ],
+  "prediction_commit": "701d24b",
+  "same_bytes_full_vs_cached_work": true,
+  "input": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/vep_chr22/subsets/HG00099.n52638.vcf",
+  "machine_before": {
+    "label": "before",
+    "iso_utc": "2026-09-25T03:01:29.992652+00:00",
+    "iso_local": "2026-09-24T20:01:29.992815",
+    "uptime": "20:01  up  9:01, 1 user, load averages: 4.88 5.00 5.41",
+    "pmset_batt": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23330915)\t99%; finishing charge; 0:05 remaining present: true",
+    "pmset_therm": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded",
+    "memory_pressure_tail": "System-wide memory free percentage: 42%"
+  },
+  "machine_after": {
+    "label": "after",
+    "iso_utc": "2026-09-25T03:15:48.724134+00:00",
+    "iso_local": "2026-09-24T20:15:48.724174",
+    "uptime": "20:15  up  9:15, 1 user, load averages: 20.09 26.66 17.04",
+    "pmset_batt": "Now drawing from 'AC Power'\n -InternalBattery-0 (id=23330915)\t100%; finishing charge; 0:00 remaining present: true",
+    "pmset_therm": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded",
+    "memory_pressure_tail": "System-wide memory free percentage: 37%"
+  },
+  "populate": {
+    "HG00096": {
+      "n_records": 51086,
+      "n_hits": 0,
+      "n_misses": 51086,
+      "n_cache_holes": 0,
+      "snpeff_miss_s": 10.879731209002784,
+      "wall_s": 11.12526170899946
+    },
+    "HG00097": {
+      "n_records": 52269,
+      "n_hits": 32428,
+      "n_misses": 19841,
+      "n_cache_holes": 0,
+      "snpeff_miss_s": 10.0507877500022,
+      "wall_s": 10.347525624998525
+    }
+  },
+  "warmup": {
+    "stock_s": 15.719239000001835,
+    "cached_s": 13.091763290998642,
+    "bodies_equal": true
+  },
+  "pairs": [
+    {
+      "pair": 1,
+      "order": "AB",
+      "stock_s": 16.26787954199972,
+      "cached_s": 12.13083129199731,
+      "r": 1.3410358408604373,
+      "stock_iso_local": "2026-09-24T20:02:20.485024",
+      "cached_iso_local": "2026-09-24T20:02:36.866297",
+      "stock_run_index": 1,
+      "cached_run_index": 2,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 2,
+      "order": "BA",
+      "stock_s": 14.552608666999731,
+      "cached_s": 11.23451629199917,
+      "r": 1.295348040695227,
+      "stock_iso_local": "2026-09-24T20:03:00.671421",
+      "cached_iso_local": "2026-09-24T20:02:49.314296",
+      "stock_run_index": 4,
+      "cached_run_index": 3,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 3,
+      "order": "AB",
+      "stock_s": 14.695284291999997,
+      "cached_s": 11.054364250001527,
+      "r": 1.3293649421763867,
+      "stock_iso_local": "2026-09-24T20:03:15.504941",
+      "cached_iso_local": "2026-09-24T20:03:30.306859",
+      "stock_run_index": 5,
+      "cached_run_index": 6,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 4,
+      "order": "BA",
+      "stock_s": 14.201421458998084,
+      "cached_s": 10.727742792001663,
+      "r": 1.3238033139260486,
+      "stock_iso_local": "2026-09-24T20:03:52.583915",
+      "cached_iso_local": "2026-09-24T20:03:41.746227",
+      "stock_run_index": 8,
+      "cached_run_index": 7,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 5,
+      "order": "AB",
+      "stock_s": 14.851776416002394,
+      "cached_s": 11.547500458000286,
+      "r": 1.286146423636888,
+      "stock_iso_local": "2026-09-24T20:04:07.067932",
+      "cached_iso_local": "2026-09-24T20:04:22.025034",
+      "stock_run_index": 9,
+      "cached_run_index": 10,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 6,
+      "order": "BA",
+      "stock_s": 19.03282520799985,
+      "cached_s": 13.471812083000259,
+      "r": 1.4127887986217453,
+      "stock_iso_local": "2026-09-24T20:04:47.571128",
+      "cached_iso_local": "2026-09-24T20:04:33.945888",
+      "stock_run_index": 12,
+      "cached_run_index": 11,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 7,
+      "order": "AB",
+      "stock_s": 16.573724333000428,
+      "cached_s": 14.781596500000887,
+      "r": 1.121240478523374,
+      "stock_iso_local": "2026-09-24T20:05:06.990228",
+      "cached_iso_local": "2026-09-24T20:05:23.711505",
+      "stock_run_index": 13,
+      "cached_run_index": 14,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 8,
+      "order": "BA",
+      "stock_s": 18.067861542000173,
+      "cached_s": 14.61158174999946,
+      "r": 1.2365438493338232,
+      "stock_iso_local": "2026-09-24T20:05:53.658313",
+      "cached_iso_local": "2026-09-24T20:05:38.908707",
+      "stock_run_index": 16,
+      "cached_run_index": 15,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 9,
+      "order": "AB",
+      "stock_s": 20.10347866700249,
+      "cached_s": 23.32686499999909,
+      "r": 0.8618165650207723,
+      "stock_iso_local": "2026-09-24T20:06:12.154605",
+      "cached_iso_local": "2026-09-24T20:06:32.389515",
+      "stock_run_index": 17,
+      "cached_run_index": 18,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    },
+    {
+      "pair": 10,
+      "order": "BA",
+      "stock_s": 68.9209880419985,
+      "cached_s": 58.807910583000194,
+      "r": 1.1719679777557295,
+      "stock_iso_local": "2026-09-24T20:07:56.229229",
+      "cached_iso_local": "2026-09-24T20:06:56.940667",
+      "stock_run_index": 20,
+      "cached_run_index": 19,
+      "bodies_equal_pair": true,
+      "bodies_equal_vs_warmup_stock": true
+    }
+  ],
+  "median_r": 1.2907472321660576,
+  "bootstrap": {
+    "n": 10000,
+    "seed": 20260924,
+    "ci95_lo": 1.1719679777557295,
+    "ci95_hi": 1.3324195773932428
+  },
+  "decision": "speedup_stands",
+  "decision_rule": "ci_lo>1 speedup_stands; ci includes 1 speedup_not_established",
+  "a_now": {
+    "n": 1,
+    "runs_s": [
+      30.729956667000806,
+      7.974563292002131,
+      28.880532541999855,
+      49.8179260830002,
+      51.743012708000606
+    ],
+    "mean_s": 33.82919825840072,
+    "stdev_s": 17.882260103550113
+  },
+  "locked": {
+    "b_s_per_record": 8.425687600843582e-05,
+    "w_s": 0.04422654166531478,
+    "N": 52638,
+    "miss_n": 11191
+  },
+  "r_from_a_now": 1.0990330359736993,
+  "r_from_a_now_minus_median_r": -0.1917141961923583,
+  "python_stock_full": {
+    "n": 10,
+    "runs_s": [
+      16.26787954199972,
+      14.552608666999731,
+      14.695284291999997,
+      14.201421458998084,
+      14.851776416002394,
+      19.03282520799985,
+      16.573724333000428,
+      18.067861542000173,
+      20.10347866700249,
+      68.9209880419985
+    ],
+    "mean_s": 21.726784816800137,
+    "stdev_s": 16.705735526085295
+  },
+  "shell_usr_bin_time": {
+    "n": 5,
+    "runs_s": [
+      104.57,
+      33.17,
+      32.81,
+      31.09,
+      31.31
+    ],
+    "mean_s": 46.589999999999996,
+    "stdev_s": 32.42450308023239,
+    "raw": [
+      {
+        "time_real_s": 104.57,
+        "time_user_s": 121.29,
+        "time_sys_s": 15.89,
+        "python_parent_s": 104.60080341699722,
+        "stderr": "real 104.57\nuser 121.29\nsys 15.89\n"
+      },
+      {
+        "time_real_s": 33.17,
+        "time_user_s": 49.35,
+        "time_sys_s": 3.3,
+        "python_parent_s": 33.19086908299869,
+        "stderr": "real 33.17\nuser 49.35\nsys 3.30\n"
+      },
+      {
+        "time_real_s": 32.81,
+        "time_user_s": 51.12,
+        "time_sys_s": 3.64,
+        "python_parent_s": 32.8261402499993,
+        "stderr": "real 32.81\nuser 51.12\nsys 3.64\n"
+      },
+      {
+        "time_real_s": 31.09,
+        "time_user_s": 51.12,
+        "time_sys_s": 3.79,
+        "python_parent_s": 31.10742625000057,
+        "stderr": "real 31.09\nuser 51.12\nsys 3.79\n"
+      },
+      {
+        "time_real_s": 31.31,
+        "time_user_s": 49.91,
+        "time_sys_s": 3.57,
+        "python_parent_s": 31.32224624999799,
+        "stderr": "real 31.31\nuser 49.91\nsys 3.57\n"
+      }
+    ]
+  },
+  "drift_plot": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/results/snpeff_alternating_drift.png"
+}

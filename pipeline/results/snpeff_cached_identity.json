@@ -1,0 +1,81 @@
+{
+  "tool": "SnpEff 5.4c GRCh38.86",
+  "flags": [
+    "-noStats",
+    "-noLog"
+  ],
+  "cache_value": "ANN/LOF/NMD keyed by CHROM POS REF ALT (full ALT)",
+  "query_fields_kept": [
+    "ID",
+    "QUAL",
+    "FILTER",
+    "non-SnpEff INFO",
+    "FORMAT",
+    "GT"
+  ],
+  "populate": {
+    "HG00096": {
+      "n_records": 51086,
+      "n_hits": 0,
+      "n_misses": 51086,
+      "n_cache_holes": 0,
+      "cache_size_after": 51086,
+      "snpeff_miss_s": 20.10864191699875,
+      "wall_s": 20.599235083998792
+    },
+    "HG00097": {
+      "n_records": 52269,
+      "n_hits": 32428,
+      "n_misses": 19841,
+      "n_cache_holes": 0,
+      "cache_size_after": 70927,
+      "snpeff_miss_s": 18.3216770839972,
+      "wall_s": 18.709853750002367
+    }
+  },
+  "cache_size_after_96_97": 70927,
+  "HG00099": {
+    "n_records": 52638,
+    "n_hits": 41447,
+    "n_misses": 11191,
+    "n_cache_holes": 0,
+    "cache_size_after": 82118,
+    "snpeff_miss_s": 19.45317379199696,
+    "wall_s": 19.764821917000518
+  },
+  "stock_match_run_s": 22.51077279099991,
+  "n_reassembled": 52638,
+  "n_stock": 52638,
+  "bodies_equal": true,
+  "diffs": null,
+  "prediction_locked": {
+    "source": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/results/snpeff_timing_fit.json",
+    "speedup": 1.3485471039049597,
+    "t_stock_s": 13.34037057264673,
+    "t_cached_s": 9.892402374390407,
+    "a_s": 8.905257133314686,
+    "b_s_per_record": 8.425687600843582e-05,
+    "miss_n": 11191,
+    "w_s": 0.04422654166531478
+  },
+  "timing": {
+    "runs": 3,
+    "cached_s": [
+      16.645547708998492,
+      15.679437666000013,
+      15.418058707997261
+    ],
+    "cached_mean_s": 15.914348027665255,
+    "cached_stdev_s": 0.646582918431984,
+    "stock_s": [
+      20.657146707999345,
+      19.205734334002045,
+      18.835279332997743
+    ],
+    "stock_mean_s": 19.566053458333045,
+    "stock_stdev_s": 0.9628980146115168,
+    "measured_speedup": 1.2294599454730863,
+    "predicted_speedup": 1.3485471039049597,
+    "measured_minus_predicted": -0.11908715843187334
+  }
+}
