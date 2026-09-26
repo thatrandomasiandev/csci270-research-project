@@ -1,0 +1,47 @@
+{
+  "protocol": "pipeline/docs/HEADLINE_SCREEN.md",
+  "key": "MD5 of uppercase amino-acid sequence, headers ignored",
+  "prev": "MG1655 \u222a W3110",
+  "later": "BW25113",
+  "proteomes": {
+    "MG1655": {
+      "role": "prev_A",
+      "accession": "GCF_000005845.2",
+      "assembly": "ASM584v2",
+      "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/005/845/GCF_000005845.2_ASM584v2/GCF_000005845.2_ASM584v2_protein.faa.gz",
+      "path": "data/kprot/MG1655.faa.gz",
+      "bytes": 902395,
+      "n_records": 4300,
+      "n_unique": 4259
+    },
+    "W3110": {
+      "role": "prev_B",
+      "accession": "GCF_000010245.2",
+      "assembly": "ASM1024v1",
+      "note": "HEADLINE_SCREEN locked GCF_000010245.1; NCBI no longer ships protein.faa.gz in that directory. Same assembly ASM1024v1, current RefSeq increment.",
+      "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/010/245/GCF_000010245.2_ASM1024v1/GCF_000010245.2_ASM1024v1_protein.faa.gz",
+      "path": "data/kprot/W3110.faa.gz",
+      "bytes": 897975,
+      "n_records": 4189,
+      "n_unique": 4189
+    },
+    "BW25113": {
+      "role": "later",
+      "accession": "GCF_000750555.1",
+      "assembly": "ASM75055v1",
+      "url": "https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/000/750/555/GCF_000750555.1_ASM75055v1/GCF_000750555.1_ASM75055v1_protein.faa.gz",
+      "path": "data/kprot/BW25113.faa.gz",
+      "bytes": 898248,
+      "n_records": 4192,
+      "n_unique": 4192
+    }
+  },
+  "n_prev_union": 4400,
+  "n_later": 4192,
+  "n_shared": 4184,
+  "recall_in_new": 0.9980916030534351,
+  "miss_frac": 0.001908396946564861,
+  "jaccard": 0.9491833030852994,
+  "refuse_m": false,
+  "refuse_m_rule": "m > 1/3 cannot pass ceiling \u2265 3 even at a = w = 0"
+}
