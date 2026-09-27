@@ -62,3 +62,33 @@ reader can audit why two runs did or did not share cache rows.
 
 Existing results are unaffected: they were produced in fresh work
 directories, and the cache namespaces are only an internal key.
+
+## Addendum 2026-09-27 (review; locked text above is unchanged)
+
+### Concurrent save()
+
+`RecordCache.save()`, `<cache>.fingerprints.json`, and
+`<cache>.namespaces.json` are last-writer-wins if two processes write
+the same cache file. Each process snapshots other namespaces at load
+and truncates on write, so a later save can drop rows the other
+process added. TODO in `acts/cache.py`. Locking is not implemented.
+
+### SnpEff smoke (HG00096.c1.head200)
+
+Cache `/tmp/ckey/c.jsonl`. Fingerprinted inputs (from
+`<cache>.namespaces.json`):
+
+- binary `/Library/Java/JavaVirtualMachines/jdk-21.jdk/Contents/Home/bin/java`
+- file `pipeline/tools/snpEff/snpEff.jar`
+- dir `pipeline/tools/snpEff/data`
+
+The per-run VCF is not in that list (`{input}` is substituted only
+inside `run_vcf_tool` / `run_table_tool` after `RecordCache` is built
+from the template argv).
+
+Fingerprint wall time: **0.017316 s** on the first run, **0.000698 s**
+on the second (sidecar memo). run1 SHIP hits=0 misses=200; run2 SHIP
+hits=200 misses=0, same namespace `11a295d1a5b7d21d`. After `touch`
+of `tools/snpEff/data/GRCh38.86/snpEffectPredictor.bin`: new namespace
+`776994566f66c961`, hits=0 misses=200; the old namespace's rows stay
+in the file.
