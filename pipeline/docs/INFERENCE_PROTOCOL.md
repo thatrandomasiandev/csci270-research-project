@@ -229,3 +229,127 @@ POS), then run a file that adds one `POS=99999999` record. Expected:
 populate HG00096 then HG00097, MATCH HG00099. Report hits/misses under
 the genotype-widened key. SnpEff numbers in the 2026-09-25 table still
 hold: MATCH 52,638; hits/misses 41,447 / 11,191.
+
+---
+
+## Addendum 2026-09-26 — format `fasta->table`
+
+Written **before** implementing the parser or any fixture. Do not edit
+this addendum after seeing `results/inference_*.json` or the new tests.
+
+Per-**format** only. The code must not contain tool names, family-DB
+names, or hard-coded output column titles. `{input}` substitution is the
+same as VCF.
+
+```
+python3 -m acts run --kind fasta --cache C --input X -- <tool argv>
+```
+
+Stdout is a text table. That is format wiring, not a per-tool parser.
+
+### Locked algorithm
+
+- **Input record** = one FASTA entry (`name`, optional description after
+  the first header token, sequence).
+- **Cache key** = MD5 of the uppercase amino-acid sequence, every `*`
+  stripped, whitespace ignored. The header (name and description) is
+  **not** part of the key. Same object as `docs/RECURRENCE_PROTOCOL.md`.
+- **Output** = text table. Lines starting with `#` are metadata (version,
+  command, date) and are treated like a VCF header: MATCH is body-only.
+  Split body lines on tab if any body line contains a tab; otherwise on
+  whitespace.
+- **A record’s output** = the body lines whose **query-name column**
+  equals that record’s name. Find the column by probe: rename every
+  query and see which column follows the new names. Do not assume a
+  column index.
+- **Zero-hit records** produce no body lines. Cache that as an explicit
+  `EMPTY` result (`rows: []`). `cache.get` is a hit. Never treat empty
+  as a miss.
+- **Reassembly** writes the new record’s name into the query-name
+  column of each cached row, and the new description into any column
+  the perturbation probe classified as echoing the description.
+  PRODUCED cells come from the cache.
+- **Order probe** (after the query-name column is known):
+  - **Grouped:** each query’s lines are contiguous, and the first
+    appearance of each name follows input order (skipping zero-hit
+    names). MATCH is **byte-order** on the body (header ignored).
+  - **Global:** any other order (including interleaving or a score
+    sort). MATCH is a **multiset** of body lines. The paper must say
+    “order-insensitive MATCH” for that tool. Reassembly may still emit
+    groups in input order; only the compare is a multiset.
+
+### Probes (same battery as VCF)
+
+On the first 500 FASTA records, or the whole file if shorter:
+
+**a) Determinism.** Two runs on the same probe file. Body bytes differ
+→ `REFUSE_NONDETERMINISTIC`.
+
+**b) Independence.** Shuffle record order. Group output by the
+query-name column. If any record’s lines differ → `REFUSE_NEIGHBORS`.
+
+**b2) Subset-invariance.** Each record alone must emit the same body
+lines as it did in the full probe (aligned by name). Any difference →
+`REFUSE_GLOBAL`. This is the E-value / file-size hole.
+
+**c) Perturbation.** Rename every query and replace every description.
+Per output column:
+
+| Observation | Role |
+|-------------|------|
+| follows the (new) name | **PASS-THROUGH name** |
+| follows the (new) description | **PASS-THROUGH description** |
+| unchanged across the two runs | **PRODUCED** — cache it |
+| changes but equals neither name nor description | **DEPENDS-ON-NON-KEY** |
+
+Sequence is the only cache-key field. If a column is still
+DEPENDS-ON-NON-KEY after one widen attempt that is not possible here
+(there is no extra FASTA field to add) → `REFUSE_AMBIGUOUS`.
+
+**d) Late columns.** A later miss batch that emits more columns than
+the contract saw: do not cache the new indices; re-run (c) on up to
+200 rows that carry them; merge. Same as VCF unprobed INFO keys.
+
+### Decisions (added)
+
+| Decision | When |
+|----------|------|
+| SHIP | probes passed; body MATCH vs a full run (byte-order or multiset as contracted) |
+| REFUSE_GLOBAL | (b2) failed |
+| REFUSE_MATCH | reassembly body ≠ full-run body under the contracted MATCH |
+| REFUSE_AMBIGUOUS | no query-name column, or a column still DEPENDS |
+
+Existing VCF decisions still apply.
+
+### Expected outcomes — fixtures (`fixtures/fasta_memo/`)
+
+Written before the fixtures exist. Input: `tiny.fa`.
+
+| Fixture | Probe | Decision | MATCH | Notes |
+|---------|-------|----------|-------|-------|
+| `per_query_table.py` | grouped; 0–3 lines per query; echoes the name | **SHIP** | byte-order | PRODUCED score; name PASS-THROUGH |
+| `global_evalue.py` | a score scaled by the total query count | **REFUSE_GLOBAL** | — | (b2) singleton ≠ full-probe |
+| `sorted_output.py` | global sort by score | **SHIP** | **multiset** | order-insensitive MATCH |
+| `zero_hit.py` | some queries emit no lines | **SHIP** | byte-order | `EMPTY` cached; a later file with a new name and the same sequence must hit, not miss |
+
+### Expected outcomes — real search (if binaries exist locally)
+
+No download. Use `data/hmmer/Pfam-A.hmm.gz` already on disk and a few
+fetched models. 200 K-12 proteins already on disk. If the binary is
+absent, fixtures only; record INCOMPLETE. No speedup numbers.
+
+| Mode | Expected |
+|------|----------|
+| scan vs a small model set, gathering threshold, table out, Z = number of models | grouped by query; subset-invariant; **SHIP**; byte-order MATCH |
+| search, default Z | **REFUSE_GLOBAL** (E-values scale with the number of targets) |
+| search, Z and domain-Z fixed at `1e6` | subset-invariant; order is global → **SHIP** with **multiset** MATCH |
+
+Do not put those flag names or column titles in `acts/`.
+
+### What this is not
+
+- Not a timing run.
+- Not permission to special-case a search binary.
+- Not a rewrite of `results/snpeff_cached_identity.json` or
+  `results/headline_*`.
+- Not CARC. A headline screen may already be running; leave it alone.
