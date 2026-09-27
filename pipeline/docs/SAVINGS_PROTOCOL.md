@@ -240,3 +240,43 @@ Do not submit if the allocation cannot absorb 56 h.
 - Not byte-identical tblout.
 - Not collection C, and not A genomes 31–100.
 - Not STAR.
+
+---
+
+## Addendum 2026-09-27 — same node for stock and cached
+
+Written **before** the paired CARC submit. Do not edit the locked
+sections above. This addendum only changes **how** the already-locked
+stock samples and cached collection are executed.
+
+**Why.** Separate stock and cached jobs can land on different nodes.
+That confounds the speedup with hardware. Stock and cached for the
+same workload and mode must share one exclusive node.
+
+**Jobs.** Four jobs, not eight. One job per (collection, mode):
+
+| Job | Collection | Mode | Pred. wall (cached + stock sample) | `--time` |
+|-----|------------|------|-------------------------------------|----------|
+| `sav_A_scan` | A | hmmscan | 8.69 h + 5.10 h = 13.79 h | **22:00:00** |
+| `sav_A_search` | A | hmmsearch | 2.49 h + 1.05 h = 3.54 h | **07:00:00** |
+| `sav_B_scan` | B | hmmscan | 1.85 h + 5.10 h = 6.95 h | **12:00:00** |
+| `sav_B_search` | B | hmmsearch | 1.72 h + 1.05 h = 2.77 h | **06:00:00** |
+
+`--time` = 1.5× (cached + stock-sample predicted wall) + 1 h setup,
+snapped up. Requested node-hours: **47** (under the approved 56).
+
+**Interleave.** For each genome *k* in the locked order: if *k* is a
+stock-sample position, run **stock immediately before** the cached
+run for that same genome. Other genomes: cached only (predicted stock
+as locked). MATCH and the Dune-style audit are unchanged and still
+STOP the job.
+
+**Node.** Exclusive `main`, account `biyik_1165`,
+`--constraint=epyc-7542` (b22, EPYC 7542 — same model as screen job
+12377262 on `b22-16`). Record hostname and `lscpu` in every job
+output.
+
+**Resume.** JSON after every genome. Restart skips complete genomes
+and reloads the persistent cache. A timeout loses at most one genome.
+
+Everything else in the locked text is unchanged.
