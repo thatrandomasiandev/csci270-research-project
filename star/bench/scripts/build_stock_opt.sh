@@ -9,6 +9,7 @@ TAG="${STAR_TAG:-2.7.11b}"
 JOBS="${JOBS:-$( (sysctl -n hw.ncpu 2>/dev/null || nproc) )}"
 WITH_PGO="${WITH_PGO:-1}"
 WITH_JEMALLOC="${WITH_JEMALLOC:-1}"
+ALLOW_NO_JEMALLOC="${ALLOW_NO_JEMALLOC:-0}"
 # Portable graded builds: leave empty. Set NATIVE=1 to allow -mcpu/-march=native.
 NATIVE="${NATIVE:-0}"
 
@@ -90,7 +91,15 @@ if [[ "${WITH_JEMALLOC}" == "1" ]]; then
     EXTRA_CXX+=("-I${JEMALLOC_INCDIR}")
     EXTRA_LD+=("-L${JEMALLOC_LIBDIR}" "-ljemalloc")
   else
-    echo "WARN: jemalloc not found under ${JEMALLOC_LIBDIR}; building without it (speedup may drop)." >&2
+    if [[ "${ALLOW_NO_JEMALLOC}" == "1" ]]; then
+      echo "WARN: jemalloc not found under ${JEMALLOC_LIBDIR}; building without it (ALLOW_NO_JEMALLOC=1, speedup may drop)." >&2
+    else
+      echo "ERROR: WITH_JEMALLOC=1 but jemalloc not found under ${JEMALLOC_LIBDIR}." >&2
+      echo "       The graded ≥2× claim requires jemalloc." >&2
+      echo "       Install jemalloc (brew install jemalloc on macOS, apt install libjemalloc-dev on Linux)" >&2
+      echo "       or set ALLOW_NO_JEMALLOC=1 for intentional ablation builds." >&2
+      exit 1
+    fi
   fi
 fi
 if [[ "${NATIVE}" == "1" ]]; then

@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 # Fair bake-off: stock vs opt on one dataset, MATCH-gated.
 # Usage: run_bakeoff.sh [dataset_id]
-# Env: STOCK_BIN OPT_BIN GENOME_DIR READ1 READ2 RUNS THREADS
+# Env: STOCK_BIN OPT_BIN GENOME_DIR READ1 READ2 RUNS THREADS ALLOW_NO_JEMALLOC
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 DS="${1:-i01}"
-STOCK_BIN="${STOCK_BIN:-${ROOT}/src/STAR_stock_mac}"
-OPT_BIN="${OPT_BIN:-${ROOT}/src/STAR_opt_mac_s8_pgo}"
+OS="$(uname -s)"
+# Binary-path guard: default to *_mac names only on Darwin
+if [[ "$OS" == Darwin ]]; then
+  STOCK_BIN="${STOCK_BIN:-${ROOT}/src/STAR_stock_mac}"
+  OPT_BIN="${OPT_BIN:-${ROOT}/src/STAR_opt_mac_s8_pgo}"
+else
+  STOCK_BIN="${STOCK_BIN:-${ROOT}/src/STAR_stock}"
+  OPT_BIN="${OPT_BIN:-${ROOT}/src/STAR_opt}"
+fi
 GENOME_DIR="${GENOME_DIR:-${ROOT}/bench/datasets/suiteB/${DS}/genome_nb10}"
 # Default FASTQs for suite B
 case "${DS}" in
@@ -32,6 +39,26 @@ if command -v gzcat >/dev/null 2>&1; then READCMD="${READCMD:-gzcat}"; else READ
 LIMIT_BAM_SORT_RAM="${LIMIT_BAM_SORT_RAM:-4000000000}"
 # Graded CLI lock: identical on both binaries
 EXTRA_STAR_ARGS="${EXTRA_STAR_ARGS:---outBAMcompression 0}"
+
+# Hard jemalloc preflight for graded opt binary
+ALLOW_NO_JEMALLOC="${ALLOW_NO_JEMALLOC:-0}"
+if [[ "${ALLOW_NO_JEMALLOC}" != "1" ]]; then
+  if [[ "$OS" == Darwin ]]; then
+    if ! otool -L "${OPT_BIN}" 2>/dev/null | grep -q jemalloc; then
+      echo "ERROR: Graded opt binary ${OPT_BIN} is not jemalloc-linked." >&2
+      echo "       The graded ≥2× claim requires S1-S8 + jemalloc + PGO/LTO." >&2
+      echo "       Rebuild with WITH_JEMALLOC=1 or set ALLOW_NO_JEMALLOC=1 for ablation." >&2
+      exit 1
+    fi
+  else
+    if ! ldd "${OPT_BIN}" 2>/dev/null | grep -q jemalloc; then
+      echo "ERROR: Graded opt binary ${OPT_BIN} is not jemalloc-linked." >&2
+      echo "       The graded ≥2× claim requires S1-S8 + jemalloc + PGO/LTO." >&2
+      echo "       Rebuild with WITH_JEMALLOC=1 or set ALLOW_NO_JEMALLOC=1 for ablation." >&2
+      exit 1
+    fi
+  fi
+fi
 
 CMP="${ROOT}/bench/scripts/compare_outputs.sh"
 CSV="${OUT_ROOT}/timings.csv"
