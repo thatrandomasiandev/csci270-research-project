@@ -1,0 +1,515 @@
+=== host / cpu ===
+b22-16.hpc.usc.edu
+2026-09-26T21:07:19-07:00
+ 21:07:19 up 8 days,  1:07,  0 users,  load average: 0.08, 0.64, 14.44
+64
+Python 3.11.9
+CPU(s):              64
+On-line CPU(s) list: 0-63
+Thread(s) per core:  1
+Model name:          AMD EPYC 7542 32-Core Processor
+CPU MHz:             2894.389
+NUMA node0 CPU(s):   0-31
+NUMA node1 CPU(s):   32-63
+SCRATCH=/tmp/SLURM_12377262/acts_headline_12377262
+=== build HMMER 3.4 on the compute node ===
+configure: Configuring HMMER3 for your system.
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking whether to compile using MPI... no
+checking for gcc... /apps/generic/gcc/13.3.0/bin/gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C... yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc accepts -g... yes
+checking for /apps/generic/gcc/13.3.0/bin/gcc option to enable C11 features... none needed
+checking for gcc... (cached) /apps/generic/gcc/13.3.0/bin/gcc
+checking whether the compiler supports GNU C... (cached) yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc accepts -g... (cached) yes
+checking for /apps/generic/gcc/13.3.0/bin/gcc option to enable C11 features... (cached) none needed
+checking how to run the C preprocessor... /apps/generic/gcc/13.3.0/bin/gcc -E
+checking for a BSD-compatible install... /usr/bin/install -c
+checking for strip... strip
+checking for ranlib... ranlib
+checking for ar... /usr/bin/ar
+checking whether ln -s works... yes
+checking for a sed that does not truncate output... /usr/bin/sed
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking whether /apps/generic/gcc/13.3.0/bin/gcc is Clang... no
+checking whether pthreads work with "-pthread" and "-lpthread"... yes
+checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+checking whether more special flags are required for pthreads... no
+checking for PTHREAD_PRIO_INHERIT... yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our NEON code... no
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our Altivec/VMX code... no
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our SSE code... yes
+configure: Activating Intel/AMD SSE vector DP implementation
+checking whether _MM_SET_FLUSH_ZERO_MODE is supported... yes
+checking compiler support --start-group... yes
+checking for gzip... /usr/bin/gzip
+checking for python3... yes
+checking for library containing clock_gettime... none required
+checking for stdio.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
+checking for unistd.h... yes
+checking for endian.h... yes
+checking for inttypes.h... (cached) yes
+checking for stdint.h... (cached) yes
+checking for unistd.h... (cached) yes
+checking for sys/types.h... (cached) yes
+checking for netinet/in.h... yes
+checking for sys/param.h... yes
+checking for sys/sysctl.h... yes
+checking for uint8_t... yes
+checking for uint16_t... yes
+checking for uint32_t... yes
+checking for uint64_t... yes
+checking for off_t... yes
+checking whether byte ordering is bigendian... no
+checking for __attribute__((noreturn))... yes
+checking for __attribute__((format))... yes
+checking for mkstemp... yes
+checking for popen... yes
+checking for putenv... yes
+checking for strcasecmp... yes
+checking for strsep... yes
+checking for times... yes
+checking for getpid... yes
+checking for sysctl... yes
+checking for sysconf... yes
+checking for getcwd... yes
+checking for chmod... yes
+checking for stat... yes
+checking for fstat... yes
+checking for erfc... no
+checking for library containing ntohs... none required
+checking for library containing ntohl... none required
+checking for library containing htons... none required
+checking for library containing htonl... none required
+checking for library containing socket... none required
+checking for library containing inet_pton... none required
+checking for _LARGEFILE_SOURCE value needed for large files... no
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating src/Makefile
+config.status: creating testsuite/Makefile
+config.status: creating profmark/Makefile
+config.status: creating src/impl_sse/Makefile
+config.status: creating documentation/Makefile
+config.status: creating documentation/man/Makefile
+config.status: creating documentation/userguide/Makefile
+config.status: creating documentation/userguide/inclusions/Makefile
+config.status: creating libdivsufsort/Makefile
+config.status: creating easel/Makefile
+config.status: creating easel/miniapps/Makefile
+config.status: creating easel/testsuite/Makefile
+config.status: creating easel/documentation/Makefile
+config.status: creating documentation/userguide/titlepage.tex
+config.status: creating documentation/userguide/titlepage_daemon.tex
+config.status: creating documentation/userguide/copyright.tex
+config.status: creating documentation/man/alimask.man
+config.status: creating documentation/man/hmmalign.man
+config.status: creating documentation/man/hmmbuild.man
+config.status: creating documentation/man/hmmc2.man
+config.status: creating documentation/man/hmmconvert.man
+config.status: creating documentation/man/hmmemit.man
+config.status: creating documentation/man/hmmer.man
+config.status: creating documentation/man/hmmfetch.man
+config.status: creating documentation/man/hmmlogo.man
+config.status: creating documentation/man/hmmpgmd.man
+config.status: creating documentation/man/hmmpgmd_shard.man
+config.status: creating documentation/man/hmmpress.man
+config.status: creating documentation/man/hmmscan.man
+config.status: creating documentation/man/hmmsearch.man
+config.status: creating documentation/man/hmmsim.man
+config.status: creating documentation/man/hmmstat.man
+config.status: creating documentation/man/jackhmmer.man
+config.status: creating documentation/man/makehmmerdb.man
+config.status: creating documentation/man/nhmmer.man
+config.status: creating documentation/man/nhmmscan.man
+config.status: creating documentation/man/phmmer.man
+config.status: creating easel/miniapps/esl-afetch.man
+config.status: creating easel/miniapps/esl-alimanip.man
+config.status: creating easel/miniapps/esl-alimap.man
+config.status: creating easel/miniapps/esl-alimask.man
+config.status: creating easel/miniapps/esl-alimerge.man
+config.status: creating easel/miniapps/esl-alipid.man
+config.status: creating easel/miniapps/esl-alirev.man
+config.status: creating easel/miniapps/esl-alistat.man
+config.status: creating easel/miniapps/esl-compalign.man
+config.status: creating easel/miniapps/esl-compstruct.man
+config.status: creating easel/miniapps/esl-construct.man
+config.status: creating easel/miniapps/esl-histplot.man
+config.status: creating easel/miniapps/esl-mask.man
+config.status: creating easel/miniapps/esl-mixdchlet.man
+config.status: creating easel/miniapps/esl-reformat.man
+config.status: creating easel/miniapps/esl-selectn.man
+config.status: creating easel/miniapps/esl-seqrange.man
+config.status: creating easel/miniapps/esl-seqstat.man
+config.status: creating easel/miniapps/esl-sfetch.man
+config.status: creating easel/miniapps/esl-shuffle.man
+config.status: creating easel/miniapps/esl-ssdraw.man
+config.status: creating easel/miniapps/esl-translate.man
+config.status: creating easel/miniapps/esl-weight.man
+config.status: creating easel/decoy_config.h
+config.status: creating src/p7_config.h
+config.status: creating easel/esl_config.h
+config.status: creating libdivsufsort/divsufsort.h
+config.status: linking src/impl_sse to src/impl
+
+
+HMMER configuration:
+   compiler:             /apps/generic/gcc/13.3.0/bin/gcc -O3    -pthread 
+   host:                 x86_64-pc-linux-gnu
+   linker:               
+   libraries:              -lpthread
+   DP implementation:    sse
+
+Now do 'make'  to build HMMER, and optionally:
+       'make check'  to run self tests,
+       'make install'  to install programs and man pages,
+       '(cd easel; make install)'  to install Easel tools.
+
+     SUBDIR easel
+     CC easel.o
+     CC esl_alloc.o
+     CC esl_alphabet.o
+     CC esl_bitfield.o
+     CC esl_buffer.o
+     CC esl_arr2.o
+     CC esl_arr3.o
+     CC esl_dirichlet.o
+     CC esl_cpu.o
+     CC esl_cluster.o
+     CC esl_composition.o
+     CC esl_dsqdata.o
+     CC esl_distance.o
+     CC esl_dmatrix.o
+     CC esl_fileparser.o
+     CC esl_exponential.o
+     CC esl_gamma.o
+     CC esl_getopts.o
+     CC esl_gencode.o
+     CC esl_gumbel.o
+     CC esl_graph.o
+     CC esl_gev.o
+     CC esl_histogram.o
+     CC esl_heap.o
+     CC esl_hmm.o
+     CC esl_huffman.o
+     CC esl_hyperexp.o
+     CC esl_keyhash.o
+     CC esl_json.o
+     CC esl_iset.o
+     CC esl_matrixops.o
+     CC esl_lognormal.o
+     CC esl_mem.o
+     CC esl_mixdchlet.o
+     CC esl_minimizer.o
+     CC esl_mixgev.o
+     CC esl_mpi.o
+     CC esl_msa.o
+     CC esl_msacluster.o
+     CC esl_msafile.o
+     CC esl_msafile2.o
+     CC esl_msafile_a2m.o
+     CC esl_msafile_afa.o
+     CC esl_msafile_clustal.o
+     CC esl_msafile_phylip.o
+     CC esl_msafile_psiblast.o
+     CC esl_msafile_selex.o
+     CC esl_msafile_stockholm.o
+     CC esl_msashuffle.o
+     CC esl_msaweight.o
+     CC esl_normal.o
+     CC esl_paml.o
+     CC esl_quicksort.o
+     CC esl_random.o
+     CC esl_rand64.o
+     CC esl_randomseq.o
+     CC esl_ratematrix.o
+     CC esl_recorder.o
+     CC esl_red_black.o
+     CC esl_regexp.o
+     CC esl_rootfinder.o
+     CC esl_scorematrix.o
+     CC esl_sq.o
+     CC esl_sqio.o
+     CC esl_sqio_ascii.o
+     CC esl_sqio_ncbi.o
+     CC esl_ssi.o
+     CC esl_stack.o
+     CC esl_stats.o
+     CC esl_stopwatch.o
+     CC esl_stretchexp.o
+     CC esl_subcmd.o
+     CC esl_threads.o
+     CC esl_tree.o
+     CC esl_varint.o
+     CC esl_vectorops.o
+     CC esl_weibull.o
+     CC esl_workqueue.o
+     CC esl_wuss.o
+     CC esl_sse.o
+     CC esl_avx.o
+     CC esl_avx512.o
+     CC esl_neon.o
+     CC esl_vmx.o
+     AR libeasel.a
+     SUBDIR miniapps
+     GEN esl-afetch
+     GEN esl-alimanip
+     GEN esl-alimask
+     GEN esl-alimap
+     GEN esl-alirev
+     GEN esl-alistat
+     GEN esl-alimerge
+     GEN esl-alipid
+     GEN esl-construct
+     GEN esl-compstruct
+     GEN esl-compalign
+     GEN esl-mixdchlet
+     GEN esl-mask
+     GEN esl-histplot
+     GEN esl-reformat
+     GEN esl-seqrange
+     GEN esl-selectn
+     GEN esl-seqstat
+     GEN esl-sfetch
+     GEN esl-shuffle
+     GEN esl-ssdraw
+     GEN esl-translate
+     GEN esl-weight
+     CC cmd_alistat.o
+     CC cmd_downsample.o
+     CC cmd_index.o
+     CC cmd_filter.o
+     GEN easel
+     SUBDIR libdivsufsort
+     CC divsufsort.o
+     AR libdivsufsort.a
+     SUBDIR src
+     CC alimask.o
+     CC build.o
+     CC errors.o
+     CC emit.o
+     CC evalues.o
+     CC cachedb_shard.o
+     CC cachedb.o
+     CC eweight.o
+     CC generic_fwdback.o
+     CC generic_decoding.o
+     CC generic_fwdback_banded.o
+     CC generic_fwdback_chk.o
+     CC generic_optacc.o
+     CC generic_msv.o
+     CC generic_null2.o
+     CC generic_vtrace.o
+     CC generic_stotrace.o
+     CC generic_viterbi.o
+     CC h2_io.o
+     CC heatmap.o
+     CC hmmdmstr.o
+     CC hmmlogo.o
+     CC hmmdmstr_shard.o
+     CC hmmer.o
+     CC hmmdwrkr_shard.o
+     CC hmmdwrkr.o
+     CC hmmd_search_status.o
+     CC logsum.o
+     CC modelconfig.o
+     CC hmmdutils.o
+     CC modelstats.o
+     CC mpisupport.o
+     CC seqmodel.o
+     CC tracealign.o
+     CC p7_alidisplay.o
+     CC p7_bg.o
+     CC p7_builder.o
+     CC p7_domain.o
+     CC p7_domaindef.o
+     CC p7_gbands.o
+     CC p7_gmx.o
+     CC p7_gmxb.o
+     CC p7_gmxchk.o
+     CC p7_hit.o
+     CC p7_hmm.o
+     CC p7_hmmcache.o
+     CC p7_hmmd_search_stats.o
+     CC p7_hmmfile.o
+     CC p7_hmmwindow.o
+     CC p7_pipeline.o
+     CC p7_prior.o
+     CC p7_profile.o
+     CC p7_spensemble.o
+     CC p7_tophits.o
+     CC p7_trace.o
+     CC p7_scoredata.o
+     CC hmmpgmd2msa.o
+     CC fm_alphabet.o
+     CC fm_general.o
+     CC fm_sse.o
+     CC fm_ssv.o
+     CC hmmalign.o
+     CC hmmbuild.o
+     CC hmmconvert.o
+     CC hmmemit.o
+     CC hmmfetch.o
+     CC hmmpgmd.o
+     CC hmmpgmd_shard.o
+     CC hmmpress.o
+     CC hmmscan.o
+     CC hmmsearch.o
+     CC hmmsim.o
+     CC hmmstat.o
+     CC jackhmmer.o
+     CC phmmer.o
+     CC nhmmer.o
+     CC nhmmscan.o
+     CC makehmmerdb.o
+     CC hmmc2.o
+     CC hmmerfm-exactmatch.o
+     AR libhmmer-src.stamp
+     SUBDIR impl_sse
+     CC ssvfilter.o
+     CC null2.o
+     CC fwdback.o
+     CC io.o
+     CC vitfilter.o
+     CC msvfilter.o
+     CC stotrace.o
+     CC p7_omx.o
+     CC optacc.o
+     CC decoding.o
+     CC mpi.o
+     CC p7_oprofile.o
+     AR libhmmer-impl.stamp
+     GEN alimask
+     GEN hmmconvert
+     GEN hmmalign
+     GEN hmmemit
+     GEN hmmbuild
+     GEN hmmlogo
+     GEN hmmpgmd
+     GEN hmmfetch
+     GEN hmmpgmd_shard
+     GEN hmmscan
+     GEN hmmsearch
+     GEN hmmpress
+     GEN hmmsim
+     GEN hmmstat
+     GEN nhmmer
+     GEN nhmmscan
+     GEN phmmer
+     GEN jackhmmer
+     GEN makehmmerdb
+     GEN hmmc2
+     GEN hmmerfm-exactmatch
+     SUBDIR profmark
+     CC create-profmark.o
+     CC rocplot.o
+     GEN rocplot
+     GEN create-profmark
+     SUBDIR easel
+     SUBDIR miniapps
+     SUBDIR libdivsufsort
+     SUBDIR src
+     SUBDIR impl_sse
+     SUBDIR profmark
+if [ ! -d /tmp/SLURM_12377262/acts_headline_12377262/bin ]; then /usr/bin/install -c -d /tmp/SLURM_12377262/acts_headline_12377262/bin; fi
+if [ ! -d /tmp/SLURM_12377262/acts_headline_12377262/share/man/man1 ]; then /usr/bin/install -c -d /tmp/SLURM_12377262/acts_headline_12377262/share/man/man1; fi
+make -C src install
+make[1]: Entering directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/src'
+for file in alimask hmmalign hmmbuild hmmconvert hmmemit hmmfetch hmmlogo hmmpgmd hmmpgmd_shard hmmpress hmmscan hmmsearch hmmsim hmmstat jackhmmer phmmer nhmmer nhmmscan makehmmerdb; do \
+   /usr/bin/install -c -m 0755 $file /tmp/SLURM_12377262/acts_headline_12377262/bin/ ;\
+done
+make[1]: Leaving directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/src'
+make -C documentation install
+make[1]: Entering directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/documentation'
+make -C man install
+make[2]: Entering directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/documentation/man'
+for file in hmmer hmmalign hmmbuild hmmconvert hmmemit hmmfetch hmmlogo hmmpgmd hmmpgmd_shard hmmpress hmmscan hmmsearch hmmsim hmmstat jackhmmer makehmmerdb phmmer nhmmer nhmmscan alimask; do \
+   /usr/bin/install -c -m 0664 $file.man /tmp/SLURM_12377262/acts_headline_12377262/share/man/man1/${file}.1 ;\
+done
+make[2]: Leaving directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/documentation/man'
+make[1]: Leaving directory '/tmp/SLURM_12377262/acts_headline_12377262/hmmer-3.4/documentation'
+/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmsearch
+# hmmsearch :: search profile(s) against a sequence database
+# HMMER 3.4 (Aug 2023); http://hmmer.org/
+# Copyright (C) 2023 Howard Hughes Medical Institute.
+=== stage inputs to node-local scratch ===
+=== fetch Pfam-A (399 MB) on the compute node ===
+=== run ===
+{
+  "hostname": "b22-16.hpc.usc.edu",
+  "nproc": 32,
+  "cpu_model": "AMD EPYC 7542 32-Core Processor",
+  "uptime": " 21:10:21 up 8 days,  1:10,  0 users,  load average: 0.31, 0.73, 12.00"
+}
+gunzip /tmp/SLURM_12377262/acts_headline_12377262/pipeline/data/hmmer/Pfam-A.hmm.gz -> /tmp/SLURM_12377262/acts_headline_12377262/work/Pfam-A.hmm
+N=4192 cpu=32 m=0.001908396946564861 pfam=/tmp/SLURM_12377262/acts_headline_12377262/work/Pfam-A.hmm
+=== hmmscan subset-invariance k=8 ===
+  OK: subset-invariant
+=== hmmscan measure w ===
+  w=0.019064s
+  hmmscan n=1 run=1 wall_s=1.0208 cpu_s=1.7459 load=[0.91, 0.83, 11.38]
+  hmmscan n=1 run=2 wall_s=0.9891 cpu_s=1.6905 load=[0.92, 0.83, 11.33]
+  hmmscan n=1 run=3 wall_s=1.0179 cpu_s=1.7319 load=[0.92, 0.83, 11.33]
+  hmmscan n=50 run=1 wall_s=43.0069 cpu_s=75.4464 load=[0.92, 0.83, 11.33]
+  hmmscan n=50 run=2 wall_s=45.1308 cpu_s=76.7318 load=[1.25, 0.93, 10.86]
+  hmmscan n=50 run=3 wall_s=45.9101 cpu_s=77.8172 load=[1.44, 1.02, 10.42]
+  hmmscan n=200 run=1 wall_s=181.0076 cpu_s=305.4031 load=[1.73, 1.17, 10.02]
+  hmmscan n=200 run=2 wall_s=176.5039 cpu_s=303.0010 load=[1.65, 1.39, 8.54]
+  hmmscan n=200 run=3 wall_s=181.0801 cpu_s=305.2225 load=[1.71, 1.55, 7.37]
+  hmmscan n=800 run=1 wall_s=783.8710 cpu_s=1285.6356 load=[1.53, 1.64, 6.38]
+  hmmscan n=800 run=2 wall_s=708.3240 cpu_s=1214.6683 load=[1.61, 1.6, 3.62]
+  hmmscan n=800 run=3 wall_s=531.1419 cpu_s=897.6925 load=[1.74, 1.77, 2.61]
+  hmmscan n=4192 run=1 wall_s=3225.6422 cpu_s=5309.4231 load=[1.46, 1.66, 2.18]
+  hmmscan n=4192 run=2 wall_s=2939.7666 cpu_s=4776.6717 load=[1.62, 1.75, 1.75]
+  hmmscan n=4192 run=3 wall_s=2984.7742 cpu_s=4872.8254 load=[1.72, 1.86, 1.79]
+=== hmmsearch subset-invariance k=8 ===
+  OK: subset-invariant
+=== hmmsearch measure w ===
+  w=0.018339s
+  hmmsearch n=1 run=1 wall_s=117.6555 cpu_s=777.1224 load=[9.26, 8.07, 6.24]
+  hmmsearch n=1 run=2 wall_s=115.1519 cpu_s=770.4977 load=[7.35, 7.71, 6.32]
+  hmmsearch n=1 run=3 wall_s=115.1605 cpu_s=697.6363 load=[12.34, 8.83, 6.85]
+  hmmsearch n=50 run=1 wall_s=130.0704 cpu_s=871.0355 load=[7.94, 8.1, 6.81]
+  hmmsearch n=50 run=2 wall_s=123.5599 cpu_s=710.1078 load=[5.55, 7.56, 6.8]
+  hmmsearch n=50 run=3 wall_s=122.0060 cpu_s=715.4489 load=[7.18, 7.04, 6.68]
+  hmmsearch n=200 run=1 wall_s=147.0049 cpu_s=884.9142 load=[4.88, 6.61, 6.59]
+  hmmsearch n=200 run=2 wall_s=148.0844 cpu_s=791.8856 load=[4.95, 6.51, 6.59]
+  hmmsearch n=200 run=3 wall_s=147.7518 cpu_s=856.9617 load=[6.46, 6.43, 6.54]
+  hmmsearch n=800 run=1 wall_s=271.3326 cpu_s=964.5518 load=[4.79, 5.54, 6.18]
+  hmmsearch n=800 run=2 wall_s=275.3980 cpu_s=952.5578 load=[4.8, 5.11, 5.83]
+  hmmsearch n=800 run=3 wall_s=277.6298 cpu_s=1050.9409 load=[3.91, 4.6, 5.46]
+  hmmsearch n=4192 run=1 wall_s=617.5521 cpu_s=1796.9634 load=[5.84, 4.4, 5.11]
+  hmmsearch n=4192 run=2 wall_s=621.7049 cpu_s=1797.8546 load=[2.63, 2.79, 3.88]
+  hmmsearch n=4192 run=3 wall_s=628.4062 cpu_s=1890.2785 load=[2.25, 2.87, 3.44]
+{
+  "m": {
+    "m": 0.001908396946564861,
+    "recall_in_new": 0.9980916030534351,
+    "n_later": 4192,
+    "n_shared": 4184,
+    "source": "/tmp/SLURM_12377262/acts_headline_12377262/pipeline/results/kprot_overlap.json"
+  },
+  "paper_uses": "hmmsearch"
+}
+hmmscan: a=31.9596 b=0.722855 w=0.019064 ceiling=81.09226374839734 saved=3024.408 ADVANCE
+hmmsearch: a=132.5576 b=0.118895 w=0.018339 ceiling=4.725382045981242 saved=497.440 ADVANCE
+wrote /tmp/SLURM_12377262/acts_headline_12377262/headline_screen.json
+copied result to /project2/biyik_1165/jjt_373/csci270-star/pipeline/results/headline_screen.json
+HEADLINE_HMMER_DONE

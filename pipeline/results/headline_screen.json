@@ -1,0 +1,814 @@
+{
+  "protocol": "pipeline/docs/HEADLINE_SCREEN.md",
+  "erratum": "2026-09-26",
+  "seed": 20260926,
+  "host": {
+    "hostname": "b22-16.hpc.usc.edu",
+    "date": "2026-09-27T04:10:21.472095+00:00",
+    "uptime": " 21:10:21 up 8 days,  1:10,  0 users,  load average: 0.31, 0.73, 12.00",
+    "nproc": 32,
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "lscpu": "Architecture:        x86_64\nCPU op-mode(s):      32-bit, 64-bit\nByte Order:          Little Endian\nCPU(s):              64\nOn-line CPU(s) list: 0-63\nThread(s) per core:  1\nCore(s) per socket:  32\nSocket(s):           2\nNUMA node(s):        2\nVendor ID:           AuthenticAMD\nCPU family:          23\nModel:               49\nModel name:          AMD EPYC 7542 32-Core Processor\nStepping:            0\nCPU MHz:             2894.389\nBogoMIPS:            5788.77\nVirtualization:      AMD-V\nL1d cache:           32K\nL1i cache:           32K\nL2 cache:            512K\nL3 cache:            16384K\nNUMA node0 CPU(s):   0-31\nNUMA node1 CPU(s):   32-63\nFlags:               fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr wbnoinvd amd_ppin arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif v_spec_ctrl umip rdpid overflow_recov succor smca sme sev sev_es",
+    "slurm_job_id": "12377262",
+    "slurm_nodelist": "b22-16"
+  },
+  "hmmer": {
+    "hmmscan": "/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmscan",
+    "hmmsearch": "/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmsearch",
+    "hmmpress": "/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmpress",
+    "version_head": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute."
+  },
+  "pfam": "/tmp/SLURM_12377262/acts_headline_12377262/work/Pfam-A.hmm",
+  "pfam_version": "Pfam release       : 38.2\nPfam-A families    : 30134\nDate               : 2026-01\nBased on UniProtKB : 2025_03",
+  "input": "/tmp/SLURM_12377262/acts_headline_12377262/pipeline/data/kprot/BW25113.faa.gz",
+  "N": 4192,
+  "m": {
+    "m": 0.001908396946564861,
+    "recall_in_new": 0.9980916030534351,
+    "n_later": 4192,
+    "n_shared": 4184,
+    "source": "/tmp/SLURM_12377262/acts_headline_12377262/pipeline/results/kprot_overlap.json"
+  },
+  "Z_FIXED": 1000000,
+  "DOMZ_FIXED": 1000000,
+  "modes": [
+    {
+      "mode": "hmmscan",
+      "argv_template": [
+        "/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmscan",
+        "--cpu",
+        "32",
+        "--cut_ga",
+        "--noali",
+        "--tblout",
+        "OUT.tbl",
+        "Pfam-A.hmm",
+        "INPUT.faa"
+      ],
+      "cpu": 32,
+      "Z_FIXED": "n_models",
+      "DOMZ_FIXED": "n_models",
+      "subset_invariance": {
+        "decision": "OK",
+        "reason": "subset-invariant",
+        "k": 8,
+        "n_mismatch": 0
+      },
+      "w": {
+        "runs": [
+          {
+            "run": 1,
+            "wall_s": 0.019334360025823116,
+            "cpu_s": 0.0,
+            "uptime": " 21:11:20 up 8 days,  1:11,  0 users,  load average: 0.91, 0.83, 11.38",
+            "load": [
+              0.91,
+              0.83,
+              11.38
+            ]
+          },
+          {
+            "run": 2,
+            "wall_s": 0.01911109103821218,
+            "cpu_s": 0.0,
+            "uptime": " 21:11:20 up 8 days,  1:11,  0 users,  load average: 0.91, 0.83, 11.38",
+            "load": [
+              0.91,
+              0.83,
+              11.38
+            ]
+          },
+          {
+            "run": 3,
+            "wall_s": 0.01874557603150606,
+            "cpu_s": 0.0,
+            "uptime": " 21:11:20 up 8 days,  1:11,  0 users,  load average: 0.91, 0.83, 11.38",
+            "load": [
+              0.91,
+              0.83,
+              11.38
+            ]
+          }
+        ],
+        "w_s": 0.019063675698513787,
+        "stdev_s": 0.00029724200379492463,
+        "note": "cat-equivalent FASTA read + empty tblout header; 3 runs at full N"
+      },
+      "N": 4192,
+      "a_s": 31.959641573764316,
+      "b_s_per_record": 0.7228553909794854,
+      "m": 0.001908396946564861,
+      "ceiling": 81.09226374839734,
+      "saved_s": 3024.407892182468,
+      "advances": true,
+      "decision": "ADVANCE",
+      "reject_reasons": [],
+      "advance_rule": "a>0 and b>0 and ceiling(m)>=3 and saved>=60s and subset-invariant",
+      "raw": [
+        {
+          "n": 1,
+          "n_records": 1,
+          "seed": 20260926,
+          "subset_indices_head": [
+            597
+          ],
+          "runs": [
+            {
+              "wall_s": 1.020775128970854,
+              "cpu_s": 1.7458600000000075,
+              "uptime": " 21:11:20 up 8 days,  1:11,  0 users,  load average: 0.91, 0.83, 11.38",
+              "load": [
+                0.91,
+                0.83,
+                11.38
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 7
+            },
+            {
+              "wall_s": 0.9890635729534552,
+              "cpu_s": 1.6905280000000147,
+              "uptime": " 21:11:21 up 8 days,  1:11,  0 users,  load average: 0.92, 0.83, 11.33",
+              "load": [
+                0.92,
+                0.83,
+                11.33
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 7
+            },
+            {
+              "wall_s": 1.0178580350475386,
+              "cpu_s": 1.7318620000000067,
+              "uptime": " 21:11:22 up 8 days,  1:11,  0 users,  load average: 0.92, 0.83, 11.33",
+              "load": [
+                0.92,
+                0.83,
+                11.33
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 7
+            }
+          ],
+          "mean_s": 1.0092322456572826,
+          "stdev_s": 0.017527375109095654,
+          "mean_cpu_s": 1.7227500000000096
+        },
+        {
+          "n": 50,
+          "n_records": 50,
+          "seed": 20260926,
+          "subset_indices_head": [
+            379,
+            129,
+            1876,
+            4141,
+            1514,
+            295,
+            943,
+            3042,
+            4057,
+            2020
+          ],
+          "runs": [
+            {
+              "wall_s": 43.00693587400019,
+              "cpu_s": 75.44635199999999,
+              "uptime": " 21:11:23 up 8 days,  1:11,  0 users,  load average: 0.92, 0.83, 11.33",
+              "load": [
+                0.92,
+                0.83,
+                11.33
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 84
+            },
+            {
+              "wall_s": 45.1308247189736,
+              "cpu_s": 76.73175800000001,
+              "uptime": " 21:12:06 up 8 days,  1:12,  0 users,  load average: 1.25, 0.93, 10.86",
+              "load": [
+                1.25,
+                0.93,
+                10.86
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 84
+            },
+            {
+              "wall_s": 45.91010763193481,
+              "cpu_s": 77.81719400000006,
+              "uptime": " 21:12:51 up 8 days,  1:12,  0 users,  load average: 1.44, 1.02, 10.42",
+              "load": [
+                1.44,
+                1.02,
+                10.42
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 84
+            }
+          ],
+          "mean_s": 44.6826227416362,
+          "stdev_s": 1.5025862116311852,
+          "mean_cpu_s": 76.66510133333335
+        },
+        {
+          "n": 200,
+          "n_records": 200,
+          "seed": 20260926,
+          "subset_indices_head": [
+            2454,
+            3514,
+            319,
+            893,
+            1041,
+            2868,
+            842,
+            963,
+            487,
+            1814
+          ],
+          "runs": [
+            {
+              "wall_s": 181.00763167301193,
+              "cpu_s": 305.403087,
+              "uptime": " 21:13:37 up 8 days,  1:13,  0 users,  load average: 1.73, 1.17, 10.02",
+              "load": [
+                1.73,
+                1.17,
+                10.02
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 428
+            },
+            {
+              "wall_s": 176.5039006989682,
+              "cpu_s": 303.0009950000001,
+              "uptime": " 21:16:38 up 8 days,  1:16,  0 users,  load average: 1.65, 1.39, 8.54",
+              "load": [
+                1.65,
+                1.39,
+                8.54
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 428
+            },
+            {
+              "wall_s": 181.0801367260283,
+              "cpu_s": 305.2225159999998,
+              "uptime": " 21:19:35 up 8 days,  1:19,  0 users,  load average: 1.71, 1.55, 7.37",
+              "load": [
+                1.71,
+                1.55,
+                7.37
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 428
+            }
+          ],
+          "mean_s": 179.5305563660028,
+          "stdev_s": 2.621411383353005,
+          "mean_cpu_s": 304.5421993333333
+        },
+        {
+          "n": 800,
+          "n_records": 800,
+          "seed": 20260926,
+          "subset_indices_head": [
+            3637,
+            1105,
+            1918,
+            1908,
+            1661,
+            900,
+            3284,
+            163,
+            3194,
+            3415
+          ],
+          "runs": [
+            {
+              "wall_s": 783.8709872140316,
+              "cpu_s": 1285.6355800000001,
+              "uptime": " 21:22:36 up 8 days,  1:22,  0 users,  load average: 1.53, 1.64, 6.38",
+              "load": [
+                1.53,
+                1.64,
+                6.38
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 1579
+            },
+            {
+              "wall_s": 708.3240040189121,
+              "cpu_s": 1214.6682960000003,
+              "uptime": " 21:35:40 up 8 days,  1:35,  0 users,  load average: 1.61, 1.60, 3.62",
+              "load": [
+                1.61,
+                1.6,
+                3.62
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 1579
+            },
+            {
+              "wall_s": 531.1418850050541,
+              "cpu_s": 897.6924979999999,
+              "uptime": " 21:47:28 up 8 days,  1:47,  0 users,  load average: 1.74, 1.77, 2.61",
+              "load": [
+                1.74,
+                1.77,
+                2.61
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 1579
+            }
+          ],
+          "mean_s": 674.4456254126659,
+          "stdev_s": 129.72589632983878,
+          "mean_cpu_s": 1132.6654580000002
+        },
+        {
+          "n": 4192,
+          "n_records": 4192,
+          "seed": 20260926,
+          "subset_indices_head": [
+            739,
+            483,
+            957,
+            2186,
+            4185,
+            3631,
+            2313,
+            1990,
+            4024,
+            260
+          ],
+          "runs": [
+            {
+              "wall_s": 3225.6421753439354,
+              "cpu_s": 5309.42315,
+              "uptime": " 21:56:20 up 8 days,  1:56,  0 users,  load average: 1.46, 1.66, 2.18",
+              "load": [
+                1.46,
+                1.66,
+                2.18
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 8359
+            },
+            {
+              "wall_s": 2939.7665831230115,
+              "cpu_s": 4776.671732000001,
+              "uptime": " 22:50:05 up 8 days,  2:50,  0 users,  load average: 1.62, 1.75, 1.75",
+              "load": [
+                1.62,
+                1.75,
+                1.75
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 8359
+            },
+            {
+              "wall_s": 2984.7741995579563,
+              "cpu_s": 4872.825444,
+              "uptime": " 23:39:05 up 8 days,  3:39,  0 users,  load average: 1.72, 1.86, 1.79",
+              "load": [
+                1.72,
+                1.86,
+                1.79
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 8359
+            }
+          ],
+          "mean_s": 3050.060986008301,
+          "stdev_s": 153.71397763598364,
+          "mean_cpu_s": 4986.3067753333335
+        }
+      ]
+    },
+    {
+      "mode": "hmmsearch",
+      "argv_template": [
+        "/tmp/SLURM_12377262/acts_headline_12377262/bin/hmmsearch",
+        "--cpu",
+        "32",
+        "--noali",
+        "-Z",
+        "1000000",
+        "--domZ",
+        "1000000",
+        "--tblout",
+        "OUT.tbl",
+        "Pfam-A.hmm",
+        "INPUT.faa"
+      ],
+      "cpu": 32,
+      "Z_FIXED": 1000000,
+      "DOMZ_FIXED": 1000000,
+      "subset_invariance": {
+        "decision": "OK",
+        "reason": "subset-invariant",
+        "k": 8,
+        "n_mismatch": 0
+      },
+      "w": {
+        "runs": [
+          {
+            "run": 1,
+            "wall_s": 0.01811602001544088,
+            "cpu_s": 0.0,
+            "uptime": " 00:46:14 up 8 days,  4:46,  0 users,  load average: 9.26, 8.07, 6.24",
+            "load": [
+              9.26,
+              8.07,
+              6.24
+            ]
+          },
+          {
+            "run": 2,
+            "wall_s": 0.018318088026717305,
+            "cpu_s": 0.0,
+            "uptime": " 00:46:14 up 8 days,  4:46,  0 users,  load average: 9.26, 8.07, 6.24",
+            "load": [
+              9.26,
+              8.07,
+              6.24
+            ]
+          },
+          {
+            "run": 3,
+            "wall_s": 0.018581902026198804,
+            "cpu_s": 0.0,
+            "uptime": " 00:46:15 up 8 days,  4:46,  0 users,  load average: 9.26, 8.07, 6.24",
+            "load": [
+              9.26,
+              8.07,
+              6.24
+            ]
+          }
+        ],
+        "w_s": 0.018338670022785664,
+        "stdev_s": 0.00023362197222988218,
+        "note": "cat-equivalent FASTA read + empty tblout header; 3 runs at full N"
+      },
+      "N": 4192,
+      "a_s": 132.55764028895294,
+      "b_s_per_record": 0.11889530446294444,
+      "m": 0.001908396946564861,
+      "ceiling": 4.725382045981242,
+      "saved_s": 497.4396152029368,
+      "advances": true,
+      "decision": "ADVANCE",
+      "reject_reasons": [],
+      "advance_rule": "a>0 and b>0 and ceiling(m)>=3 and saved>=60s and subset-invariant",
+      "raw": [
+        {
+          "n": 1,
+          "n_records": 1,
+          "seed": 20260926,
+          "subset_indices_head": [
+            597
+          ],
+          "runs": [
+            {
+              "wall_s": 117.6554627061123,
+              "cpu_s": 777.122365999996,
+              "uptime": " 00:46:15 up 8 days,  4:46,  0 users,  load average: 9.26, 8.07, 6.24",
+              "load": [
+                9.26,
+                8.07,
+                6.24
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 19
+            },
+            {
+              "wall_s": 115.15194967901334,
+              "cpu_s": 770.4976629999983,
+              "uptime": " 00:48:12 up 8 days,  4:48,  0 users,  load average: 7.35, 7.71, 6.32",
+              "load": [
+                7.35,
+                7.71,
+                6.32
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 19
+            },
+            {
+              "wall_s": 115.16048609896097,
+              "cpu_s": 697.6362749999971,
+              "uptime": " 00:50:07 up 8 days,  4:50,  0 users,  load average: 12.34, 8.83, 6.85",
+              "load": [
+                12.34,
+                8.83,
+                6.85
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 19
+            }
+          ],
+          "mean_s": 115.98929949469554,
+          "stdev_s": 1.4429459805984934,
+          "mean_cpu_s": 748.4187679999972
+        },
+        {
+          "n": 50,
+          "n_records": 50,
+          "seed": 20260926,
+          "subset_indices_head": [
+            379,
+            129,
+            1876,
+            4141,
+            1514,
+            295,
+            943,
+            3042,
+            4057,
+            2020
+          ],
+          "runs": [
+            {
+              "wall_s": 130.07037396205124,
+              "cpu_s": 871.0354619999998,
+              "uptime": " 00:52:03 up 8 days,  4:52,  0 users,  load average: 7.94, 8.10, 6.81",
+              "load": [
+                7.94,
+                8.1,
+                6.81
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 173
+            },
+            {
+              "wall_s": 123.55992717703339,
+              "cpu_s": 710.1077860000005,
+              "uptime": " 00:54:13 up 8 days,  4:54,  0 users,  load average: 5.55, 7.56, 6.80",
+              "load": [
+                5.55,
+                7.56,
+                6.8
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 173
+            },
+            {
+              "wall_s": 122.005970732891,
+              "cpu_s": 715.4489219999996,
+              "uptime": " 00:56:16 up 8 days,  4:56,  0 users,  load average: 7.18, 7.04, 6.68",
+              "load": [
+                7.18,
+                7.04,
+                6.68
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 173
+            }
+          ],
+          "mean_s": 125.21209062399187,
+          "stdev_s": 4.278537472340497,
+          "mean_cpu_s": 765.5307233333333
+        },
+        {
+          "n": 200,
+          "n_records": 200,
+          "seed": 20260926,
+          "subset_indices_head": [
+            2454,
+            3514,
+            319,
+            893,
+            1041,
+            2868,
+            842,
+            963,
+            487,
+            1814
+          ],
+          "runs": [
+            {
+              "wall_s": 147.0049311419716,
+              "cpu_s": 884.9141579999996,
+              "uptime": " 00:58:18 up 8 days,  4:58,  0 users,  load average: 4.88, 6.61, 6.59",
+              "load": [
+                4.88,
+                6.61,
+                6.59
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 942
+            },
+            {
+              "wall_s": 148.08435670495965,
+              "cpu_s": 791.8855770000046,
+              "uptime": " 01:00:45 up 8 days,  5:00,  0 users,  load average: 4.95, 6.51, 6.59",
+              "load": [
+                4.95,
+                6.51,
+                6.59
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 942
+            },
+            {
+              "wall_s": 147.7517747520469,
+              "cpu_s": 856.9617469999939,
+              "uptime": " 01:03:13 up 8 days,  5:03,  0 users,  load average: 6.46, 6.43, 6.54",
+              "load": [
+                6.46,
+                6.43,
+                6.54
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 942
+            }
+          ],
+          "mean_s": 147.6136875329927,
+          "stdev_s": 0.5528028098314978,
+          "mean_cpu_s": 844.587160666666
+        },
+        {
+          "n": 800,
+          "n_records": 800,
+          "seed": 20260926,
+          "subset_indices_head": [
+            3637,
+            1105,
+            1918,
+            1908,
+            1661,
+            900,
+            3284,
+            163,
+            3194,
+            3415
+          ],
+          "runs": [
+            {
+              "wall_s": 271.33257605996914,
+              "cpu_s": 964.5517910000053,
+              "uptime": " 01:05:41 up 8 days,  5:05,  0 users,  load average: 4.79, 5.54, 6.18",
+              "load": [
+                4.79,
+                5.54,
+                6.18
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 3881
+            },
+            {
+              "wall_s": 275.3979766840348,
+              "cpu_s": 952.5578339999993,
+              "uptime": " 01:10:13 up 8 days,  5:10,  0 users,  load average: 4.80, 5.11, 5.83",
+              "load": [
+                4.8,
+                5.11,
+                5.83
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 3881
+            },
+            {
+              "wall_s": 277.62980276194867,
+              "cpu_s": 1050.9409109999979,
+              "uptime": " 01:14:48 up 8 days,  5:14,  0 users,  load average: 3.91, 4.60, 5.46",
+              "load": [
+                3.91,
+                4.6,
+                5.46
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 3881
+            }
+          ],
+          "mean_s": 274.78678516865085,
+          "stdev_s": 3.1927938134788727,
+          "mean_cpu_s": 989.3501786666675
+        },
+        {
+          "n": 4192,
+          "n_records": 4192,
+          "seed": 20260926,
+          "subset_indices_head": [
+            739,
+            483,
+            957,
+            2186,
+            4185,
+            3631,
+            2313,
+            1990,
+            4024,
+            260
+          ],
+          "runs": [
+            {
+              "wall_s": 617.5521231560269,
+              "cpu_s": 1796.963413999998,
+              "uptime": " 01:19:26 up 8 days,  5:19,  0 users,  load average: 5.84, 4.40, 5.11",
+              "load": [
+                5.84,
+                4.4,
+                5.11
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 1,
+              "n_tblout": 19888
+            },
+            {
+              "wall_s": 621.7049044399755,
+              "cpu_s": 1797.854554000005,
+              "uptime": " 01:29:43 up 8 days,  5:29,  0 users,  load average: 2.63, 2.79, 3.88",
+              "load": [
+                2.63,
+                2.79,
+                3.88
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 2,
+              "n_tblout": 19888
+            },
+            {
+              "wall_s": 628.4062321749516,
+              "cpu_s": 1890.2785129999975,
+              "uptime": " 01:40:05 up 8 days,  5:40,  0 users,  load average: 2.25, 2.87, 3.44",
+              "load": [
+                2.25,
+                2.87,
+                3.44
+              ],
+              "returncode": 0,
+              "stderr_tail": "",
+              "run": 3,
+              "n_tblout": 19888
+            }
+          ],
+          "mean_s": 622.5544199236514,
+          "stdev_s": 5.476694081873578,
+          "mean_cpu_s": 1828.365493666667
+        }
+      ]
+    }
+  ],
+  "paper_uses": "hmmsearch",
+  "paper_rule": "first mode that passes (b2) and the ceiling; if both, hmmsearch (ii)",
+  "note": "No ACTS cache. No speedup claim. Timing is stock CLI only."
+}
