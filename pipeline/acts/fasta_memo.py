@@ -19,7 +19,7 @@ from acts.infer_fasta import (
     unclassified_cols,
 )
 from acts.infer_fasta import _group, _group_raw, _split_body
-from acts.table import body_lines, meta_lines
+from acts.table import align_body, body_lines, meta_lines
 
 
 def cached_search(
@@ -79,6 +79,8 @@ def cached_search(
             continue
         rebuilt_body.extend(reassemble_rows(rec, json.loads(raw), contract))
 
+    if contract.pad_widths:
+        rebuilt_body = align_body(rebuilt_body, contract.delim, contract.pad_widths)
     text = "\n".join(header + rebuilt_body) + ("\n" if header or rebuilt_body else "")
     stats = {
         "n_records": len(recs),

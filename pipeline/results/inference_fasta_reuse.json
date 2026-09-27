@@ -1,0 +1,118 @@
+{
+  "status": "RAN",
+  "protocol": "pipeline/docs/INFERENCE_PROTOCOL.md",
+  "addendum": "2026-09-27 reuse test",
+  "seed": 20260927,
+  "n": 500,
+  "n_models": 6,
+  "paper": "MATCH on whitespace tables is whitespace-normalized (split()); tblout column padding and right-aligned numbers are not reproduced byte-for-byte. No per-tool parser.",
+  "models": [
+    "ABC_tran",
+    "GTP_EFTU",
+    "Response_reg",
+    "AAA",
+    "HATPase_c",
+    "Helicase_C"
+  ],
+  "work": "/var/folders/_4/rcvyxl616130ts3z3dl812y40000gn/T/acts_fasta_reuse_rq_6hqhf",
+  "genome1": {
+    "source": "data/kprot/MG1655.faa.gz",
+    "n": 500
+  },
+  "genome2": {
+    "accession": "GCF_001515725.1",
+    "strain": "ACN002",
+    "path": "data/recurrence/A/GCF_001515725.1_protein.faa.gz",
+    "n": 500,
+    "n_shared_constructed": 202,
+    "overlap": 202,
+    "overlap_frac": 0.404
+  },
+  "modes": {
+    "scan_cut_ga": {
+      "decision": "SHIP",
+      "reason": "MATCH order; hits=202 misses=298",
+      "match": "order",
+      "match_ws": true,
+      "pad_widths": [
+        21,
+        11,
+        21,
+        15,
+        10,
+        8,
+        8,
+        10,
+        8,
+        6,
+        6,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        11,
+        56
+      ],
+      "empty_desc": "",
+      "match_result": true,
+      "query_col": 2,
+      "overlap": 202,
+      "n_hits": 202,
+      "n_misses": 298,
+      "n_empty_hits": 192,
+      "empty_hit_called_tool": [],
+      "populate": {
+        "n_hits": 0,
+        "n_misses": 500,
+        "n_empty_cached": 477
+      },
+      "first_diffs": [],
+      "diagnose": ""
+    },
+    "search_fixed_Z": {
+      "decision": "SHIP",
+      "reason": "MATCH multiset; hits=202 misses=298",
+      "match": "multiset",
+      "match_ws": true,
+      "pad_widths": [
+        21,
+        11,
+        21,
+        19,
+        10,
+        8,
+        12,
+        11,
+        8,
+        6,
+        6,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        2,
+        1
+      ],
+      "empty_desc": "-",
+      "match_result": true,
+      "query_col": 0,
+      "overlap": 202,
+      "n_hits": 202,
+      "n_misses": 298,
+      "n_empty_hits": 190,
+      "empty_hit_called_tool": [],
+      "populate": {
+        "n_hits": 0,
+        "n_misses": 500,
+        "n_empty_cached": 468
+      },
+      "first_diffs": [],
+      "diagnose": ""
+    }
+  }
+}

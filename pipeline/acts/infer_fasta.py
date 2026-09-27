@@ -14,9 +14,14 @@ from acts.table import (
     bodies_equal,
     detect_delim,
     join_row,
+    measure_widths,
+    merge_widths,
     meta_lines,
     split_body_rows,
+    ws_line,
 )
+
+MISSING_DESC = ("", "-", ".")
 
 PROBE_N = 500
 
@@ -33,6 +38,9 @@ class TableContract:
     delim: str
     match: str
     n_cols: int
+    pad_widths: list[int] = field(default_factory=list)
+    empty_desc: str = ""
+    match_ws: bool = False
     widen_history: list[str] = field(default_factory=list)
     late_key_probes: list[str] = field(default_factory=list)
     probe_n: int = 0
@@ -48,6 +56,9 @@ class TableContract:
         raw = json.loads(path.read_text())
         raw.setdefault("late_key_probes", [])
         raw.setdefault("widen_history", [])
+        raw.setdefault("pad_widths", [])
+        raw.setdefault("empty_desc", "")
+        raw.setdefault("match_ws", False)
         return cls(**raw)
 
 
@@ -115,6 +126,14 @@ def find_query_col(
     return hits[0]
 
 
+def _echoes_desc(val: str | None, desc: str) -> bool:
+    if val is None:
+        return False
+    if desc:
+        return val == desc
+    return val in MISSING_DESC
+
+
 def _remainder(line: str, name: str, desc: str) -> str:
     out = _subst_token(line, name, " ")
     if desc:
@@ -163,7 +182,7 @@ def classify_columns(
                 if vb == p and va == n:
                     roles.append("name")
                     continue
-                if d1 and vb == d1 and va == d0:
+                if _echoes_desc(va, d0) and _echoes_desc(vb, d1):
                     roles.append("desc")
                     continue
                 if va == vb:
@@ -280,6 +299,14 @@ def infer_table_contract(
         pert_raw=body_lines(out_p),
     )
     match = order_kind(names, rows1, query_col)
+    empty_desc = _infer_empty_desc(rows1, desc_cols)
+    hit_names = {row[query_col] for row in rows1}
+    pad_widths, pad_detected = infer_alignment(
+        argv, probe, query_col, delim, work / "align", hit_names=hit_names
+    )
+    # Numeric columns are right-aligned in some tools; generic left-just
+    # cannot reproduce those bytes. Whitespace MATCH is the locked fallback.
+    match_ws = delim != "tab" and (pad_detected or bool(pad_widths) or bool(hit_names))
     return TableContract(
         kind="fasta",
         argv=list(argv),
@@ -289,6 +316,9 @@ def infer_table_contract(
         delim=delim,
         match=match,
         n_cols=_max_cols(rows1),
+        pad_widths=pad_widths,
+        empty_desc=empty_desc,
+        match_ws=match_ws,
         probe_n=len(probe),
         decision="OK",
         reason="probe passed",
@@ -342,13 +372,18 @@ def extract_rows(
 
 def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> list[str]:
     lines: list[str] = []
+    use_raw = not contract.pad_widths
     for item in payload.get("rows", []):
         raw = item.get("raw")
-        if raw:
+        if raw and use_raw:
             ln = raw
             old = item.get("name") or ""
             if old and old != rec.name:
                 ln = _subst_token(ln, old, rec.name)
+            for i in contract.desc_cols:
+                old_desc = item.get("desc") or ""
+                if old_desc and rec.description and old_desc != rec.description:
+                    ln = _subst_token(ln, old_desc, rec.description)
             lines.append(ln)
             continue
         n = max(item.get("n", 0), contract.n_cols, contract.query_col + 1)
@@ -362,7 +397,7 @@ def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> li
         for i in contract.desc_cols:
             while len(cells) <= i:
                 cells.append("")
-            cells[i] = rec.description
+            cells[i] = rec.description or contract.empty_desc
         lines.append(join_row(cells, contract.delim))
     return lines
 
@@ -429,6 +464,58 @@ def load_or_infer_table(
     contract = infer_table_contract(argv, recs, work)
     contract.save(contract_path)
     return contract
+
+
+def _infer_empty_desc(rows: list[list[str]], desc_cols: list[int]) -> str:
+    for i in desc_cols:
+        for row in rows:
+            if i < len(row) and row[i] in MISSING_DESC:
+                return row[i]
+    return ""
+
+
+def infer_alignment(
+    argv: list[str],
+    recs: list[FastaRec],
+    query_col: int,
+    delim: str,
+    work: Path,
+    hit_names: set[str] | None = None,
+) -> tuple[list[int], bool]:
+    """Infer column pad floors from short vs long names. Fall back to ws MATCH."""
+    if delim == "tab" or not recs:
+        return [], False
+    carriers = [r for r in recs if not hit_names or r.name in hit_names][:16]
+    if not carriers:
+        carriers = recs[: min(16, len(recs))]
+    work.mkdir(parents=True, exist_ok=True)
+    short = [FastaRec(chr(65 + i) if i < 26 else f"S{i}", "", r.seq) for i, r in enumerate(carriers)]
+    long = [FastaRec(f"L{i:024d}", "", r.seq) for i, r in enumerate(carriers)]
+    out_s = run_table_tool(argv, write_fasta(work / "short.fa", short))
+    out_l = run_table_tool(argv, write_fasta(work / "long.fa", long))
+    raw_s, raw_l = body_lines(out_s), body_lines(out_l)
+    _, rows_s = _split_body(out_s, delim)
+    _, rows_l = _split_body(out_l, delim)
+    if not raw_s or not raw_l:
+        return [], False
+    def drop_q(lines: list[str], rows: list[list[str]]) -> list[str]:
+        out = []
+        for ln, row in zip(lines, rows):
+            if query_col < len(row):
+                out.append(ws_line(_subst_token(ln, row[query_col], " ")))
+            else:
+                out.append(ws_line(ln))
+        return out
+
+    rem_s, rem_l = drop_q(raw_s, rows_s), drop_q(raw_l, rows_l)
+    if rem_s != rem_l and sorted(rem_s) != sorted(rem_l):
+        return [], False
+    if raw_s == raw_l:
+        return [], False
+    measured = [w for ln, row in zip(raw_s, rows_s) if (w := measure_widths(ln, row))]
+    if not measured:
+        return [], True
+    return merge_widths(measured), False
 
 
 def refuse_table(exc: InferError, argv: list[str]) -> TableContract:

@@ -19,8 +19,7 @@ from acts.infer_fasta import InferError as FastaInferError
 from acts.infer_fasta import run_table_tool
 from acts.records import DupReport, probe_fasta, probe_fastq_pe, probe_lines
 from acts.strategies.base import Strategy, StrategyResult
-from acts.table import bodies_equal as table_bodies_equal
-from acts.table import bodies_multiset_equal
+from acts.table import tables_match
 from acts.vcf import bodies_equal, body_lines
 from acts.vcf_memo import cached_annotate, contract_path_for, prepare_contract, read_vcf_parts
 
@@ -224,10 +223,8 @@ class RecordMemo(Strategy):
         stock = run_table_tool(self.argv, self.input_path)
         (self.out_dir / "full.out").write_text(stock)
         extra["n_reassembled"] = len(rebuilt.splitlines())
-        matched = (
-            table_bodies_equal(rebuilt, stock)
-            if contract.match == "order"
-            else bodies_multiset_equal(rebuilt, stock)
+        matched = tables_match(
+            rebuilt, stock, contract.match, match_ws=contract.match_ws
         )
         if not matched or stats["n_cache_holes"]:
             rec = StrategyResult(

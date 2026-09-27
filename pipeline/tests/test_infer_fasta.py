@@ -104,6 +104,40 @@ class InferFastaFixtureTests(unittest.TestCase):
             self.assertFalse(any(ln.startswith("skip") for ln in body_lines(rebuilt)))
             self.assertTrue(any(ln.startswith("N0") for ln in body_lines(rebuilt)))
 
+    def test_padded_names_and_empty_desc_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td) / "cache.jsonl"
+            bare = Path(td) / "bare.fa"
+            write_fasta(bare, [FastaRec(r.name, "", r.seq) for r in read_fasta(TINY)])
+            first = RecordMemo(
+                kind="fasta",
+                argv=_argv("padded_table.py"),
+                input_path=bare,
+                out_dir=Path(td) / "a",
+                cache_path=cache,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            contract = json.loads((cache.parent / (cache.name + ".contract.json")).read_text())
+            self.assertTrue(contract["pad_widths"] or contract["match_ws"], contract)
+            self.assertEqual(contract["empty_desc"], "-")
+
+            other = Path(td) / "long.fa"
+            recs = read_fasta(TINY)
+            recs = [FastaRec(f"LONGNAME{i:04d}", "", r.seq) for i, r in enumerate(recs)]
+            write_fasta(other, recs)
+            second = RecordMemo(
+                kind="fasta",
+                argv=_argv("padded_table.py"),
+                input_path=other,
+                out_dir=Path(td) / "b",
+                cache_path=cache,
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(int(second.extra["n_misses"]), 0)
+            rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
+            full = (Path(td) / "b" / "full.out").read_text()
+            self.assertEqual(body_lines(rebuilt), body_lines(full))
+
     def test_cli_fasta_kind(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             code = acts_main(
