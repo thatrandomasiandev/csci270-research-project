@@ -1,6 +1,6 @@
 # STATUS — STAR ≥2× (CSCI 270 A-contract)
 
-**Updated:** 2026-09-25
+**Updated:** 2026-09-26
 
 ## Scope — LOCKED (Zhang)
 
@@ -19,6 +19,10 @@ Same output · fair (1 thread) · 10 Illumina datasets · ≥2× wall-clock.
 
 **Withdrawn:** Nbases=14 / 800-read “2.5×” (rigged oversized index).  
 **Fly note:** full-fly 143 Mb index asymptoted ~1.4× (SA-bound, 48 bp reads). Narrowed to **2L:1–10Mb** teaching subset (parallel to human chr1 10Mb) → ≥2×.
+
+## Graded claim framing (2026-09-26)
+
+**Redefine:** ≥2× is **S1–S8 + disclosed build extras** (jemalloc + PGO/LTO/`-mcpu=native`) on the sealed Mac binary `STAR_opt_mac_s8_pgo`. Algorithm-only (pure S1–S8) ≥2× is **UNSUPPORTED** (i03 pure-S8 min_pair 1.986×, MATCH). Do not chase a 10/10 pure-S8 Suite B table for the graded claim.
 
 ## Algorithm (S1–S8) + jemalloc + PGO
 
@@ -63,7 +67,7 @@ Source: `pipeline/results/snpeff_alternating_carc.json` (job **12345442**, exclu
 - SnpEff is capped by startup cost: ceiling about **1.3×** even at 100% hits (`a_now` + locked `b`, `N` in the same JSON).
 - Mac **1.29×** (`pipeline/results/snpeff_alternating.json`, also copied under `mac_side_by_side` in the CARC JSON) is **withdrawn as a headline**: the run broke its idle precondition (load 5 → 27). Keep it as a recorded result, not the claim.
 
-Record inference is **not** automatic yet (`pipeline/acts/infer.py` matches `"star"` in argv; the VCF path is SnpEff-specific `pipeline/acts/snpeff_ann.py`, hard-coded ANN/LOF/NMD). Until that is generic, this is a hand-built per-tool cache.
+Record inference is **generic for VCF** (`8540926`, probes `3f47a00`). STAR argv still refuses identity. FASTA→table is not on disk yet.
 
 ### Tool screen (2026-09-25)
 
@@ -82,10 +86,10 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] Fly i05–i08 ≥2× via 2L:1–10Mb teaching index
 - [x] Professor reproduce path — `star/docs/REPRODUCE.md` + `fetch_suiteB.sh` / `build_stock_opt.sh` / `reproduce_all.sh` / `package_for_professor.sh`
 - [x] Figure pack — `star/bench/scripts/plot_all_figures.py` → `star/bench/results/figures/` (+ CARC panels 11–13)
-- [x] CARC i01–i04 bakeoff (jobs 12159614/12159615 COMPLETED; all MATCH min_pair ≥2.25×; **no jemalloc**)
+- [x] CARC i01–i04 bakeoff (jobs 12159614/12159615 COMPLETED; all MATCH min_pair ≥2.25×; CSV notes `s7pgo` / **S7≠S8** vs Mac sealed S8+jemalloc+PGO; **no jemalloc** — not Mac-parity)
 - [ ] CARC i05–i10 (sync fly/nf-core Suite B data; extend bakeoff job)
 - [ ] CARC jemalloc-linked rebuild (parity with Mac sealed binary)
-- [ ] Flag-matrix §5.3
+- [~] Flag-matrix §5.3 — **DEFERRED** (2026-09-26): fairness is claimed **within** the locked CLI (`--outBAMcompression 0` both sides). Sensitivity vs default zlib BAM is out of the graded claim for now. Professor path stays `package_for_professor.sh` / `fetch_suiteB.sh` (bare clone ≠ repro).
 - [x] EGAS second Method — **none on disk** (2026-09-24). Parked. Not STAR, not `fat_copy`; 2048 rejected. Record: `pipeline/SECOND_METHOD.md`
 - [x] Pivot research front door to Survivor 1 (`python3 -m acts`) — record memoization; STAR source 2× untouched
 - [x] Suite B PE uniqueness (`pipeline/results/suiteB_dups.csv`): best 1.15× if per-read (i03); i05/i07/i08 dups rare. STAR instance dead (identity + budget).
@@ -98,7 +102,8 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] Timed SnpEff miss-vs-full — MATCH 52,638 (`results/snpeff_cached_identity.json`); Mac timing recorded, not the claim
 - [x] CARC exclusive SnpEff alternating rerun — job 12345442, `b22-02`, median **1.1668×** (`results/snpeff_alternating_carc.json`)
 - [x] Tool screen (`c51ed61`) — SnpEff heavier fails; ruff formula-pass rejected (`results/tool_screen.json`)
-- [ ] Generic record inference (today: `"star"` in argv + hard-coded ANN/LOF/NMD)
+- [x] Generic VCF record inference (`8540926` + `3f47a00`); SnpEff MATCH 52,638 via probes
+- [ ] FASTA→table record format (HMMER tblout)
 - [ ] Headline tool (SnpEff capped ~1.3×; ruff rejected; VEP / dbNSFP skipped)
 - [ ] Running baselines (the tool’s own cache; Riker / ProcessCache)
 - [ ] Read ProcessCache thesis + vCache (ICLR 2026) before a paper draft (`literature/READING.md`)

@@ -2485,8 +2485,9 @@
       },
       "empty_later_flagged": false,
       "K": 100,
-      "reading": "Collection A crosses median m < 1/3 at k = 10 prior genomes; a diverse E. coli workload can clear the HMMER m gate after that memory depth (no speedup claimed).",
-      "figure": "results/figures/12_recurrence_A_ecoli.png"
+      "reading": "Collection A stays below median m < 1/3 from k = 10 (first dip at k = 10); a diverse E. coli workload can clear the HMMER m gate after that memory depth (no speedup claimed).",
+      "figure": "results/figures/12_recurrence_A_ecoli.png",
+      "stays_below_k": 10
     },
     "B": {
       "id": "B_o157h7_eppinger",
@@ -3528,8 +3529,9 @@
       },
       "empty_later_flagged": false,
       "K": 40,
-      "reading": "Collection B crosses median m < 1/3 at k = 1; the O157:H7 outbreak/surveillance workload can clear the HMMER m gate (no speedup claimed).",
-      "figure": "results/figures/13_recurrence_B_o157.png"
+      "reading": "Collection B stays below median m < 1/3 from k = 1; the O157:H7 outbreak/surveillance workload can clear the HMMER m gate (no speedup claimed).",
+      "figure": "results/figures/13_recurrence_B_o157.png",
+      "stays_below_k": 1
     },
     "C": {
       "id": "C_saureus",
@@ -4811,8 +4813,9 @@
       },
       "empty_later_flagged": false,
       "K": 50,
-      "reading": "Collection C crosses median m < 1/3 at k = 5; exact-sequence memory on S. aureus can clear the HMMER m gate (no speedup claimed).",
-      "figure": "results/figures/14_recurrence_C_saureus.png"
+      "reading": "Collection C stays below median m < 1/3 from k = 12. Median m first dips below 1/3 at k = 5 but rises back to 0.38 at k = 10. Exact-sequence memory on S. aureus clears the HMMER m gate at that depth (no speedup claimed).",
+      "figure": "results/figures/14_recurrence_C_saureus.png",
+      "stays_below_k": 12
     }
   },
   "finished_utc": "2026-09-27T05:45:13.518542+00:00"

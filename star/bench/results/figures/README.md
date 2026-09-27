@@ -29,6 +29,7 @@ python3 star/bench/scripts/plot_all_figures.py
 | `11_carc_i01_i04_wall.png` | CARC wall-clock i01–i04 | (local; sync when pushing) |
 | `12_carc_i01_i04_speedup.png` | CARC speedup i01–i04 | (local) |
 | `13_mac_vs_carc_i01_i04.png` | Mac vs CARC cross-check | (local) |
+| `14_i03_claim_cliff.png` | i03 extras lock (S8 vs S8+jemalloc) | (local; 2026-09-26 notebook) |
 | `honest_*.png` | Legacy lock / early s8j plots | (same folder) |
 
 Reference CSVs: [`../illumina10_s8j_mac.csv`](../illumina10_s8j_mac.csv) · [`../illumina10_carc_i01_i04.csv`](../illumina10_carc_i01_i04.csv)

@@ -354,6 +354,16 @@ def miss_curves(keysets: list[set[str]], n_orders: int = N_ORDERS) -> dict:
         if float(val) < GATE:
             crossing = k
             break
+    last_ge = None
+    for k, val in enumerate(median, start=1):
+        if float(val) >= GATE:
+            last_ge = k
+    if last_ge is None:
+        stays = 1
+    elif last_ge == k_max:
+        stays = None
+    else:
+        stays = last_ge + 1
     snaps = {}
     for k in snapshot_ks(k_max):
         snaps[str(k)] = float(median[k - 1])
@@ -366,45 +376,55 @@ def miss_curves(keysets: list[set[str]], n_orders: int = N_ORDERS) -> dict:
         "m_p10": [float(x) for x in p10],
         "m_p90": [float(x) for x in p90],
         "crossing_k": crossing,
+        "stays_below_k": stays,
         "snapshot_median_m": snaps,
         "empty_later_flagged": bool(np.any(matrix == 1.0) and any(len(s) == 0 for s in keysets)),
     }
 
 
-def reading(name: str, crossing: int | None, k_max: int) -> str:
+def reading(name: str, crossing: int | None, stays: int | None, snaps: dict, k_max: int) -> str:
+    """Read the gate on stays_below_k, not the first dip."""
     if name == "A":
-        if crossing is None:
+        if stays is None:
             return (
-                "Collection A never reaches median m < 1/3 by k = "
+                "Collection A never keeps median m < 1/3 through k = "
                 f"{k_max}: the diverse-species HMMER headline fails; "
                 "only clonal or surveillance workloads remain eligible."
             )
         return (
-            f"Collection A crosses median m < 1/3 at k = {crossing} "
-            "prior genomes; a diverse E. coli workload can clear the "
-            "HMMER m gate after that memory depth (no speedup claimed)."
+            f"Collection A stays below median m < 1/3 from k = {stays} "
+            f"(first dip at k = {crossing}); a diverse E. coli workload "
+            "can clear the HMMER m gate after that memory depth "
+            "(no speedup claimed)."
         )
     if name == "B":
-        if crossing is None:
+        if stays is None:
             return (
-                "Collection B never reaches median m < 1/3: outbreak / "
+                "Collection B never keeps median m < 1/3: outbreak / "
                 "surveillance O157:H7 does not clear the HMMER m gate "
                 "on this lineage."
             )
         return (
-            f"Collection B crosses median m < 1/3 at k = {crossing}; "
+            f"Collection B stays below median m < 1/3 from k = {stays}; "
             "the O157:H7 outbreak/surveillance workload can clear the "
             "HMMER m gate (no speedup claimed)."
         )
-    if crossing is None:
+    if stays is None:
         return (
-            "Collection C never reaches median m < 1/3: S. aureus "
+            "Collection C never keeps median m < 1/3: S. aureus "
             "generality fails the HMMER m gate."
         )
+    m10 = snaps.get("10")
+    extra = ""
+    if m10 is not None and m10 >= GATE:
+        extra = (
+            f" Median m first dips below 1/3 at k = {crossing} but rises "
+            f"back to {m10:.2f} at k = 10."
+        )
     return (
-        f"Collection C crosses median m < 1/3 at k = {crossing}; "
-        "exact-sequence memory on S. aureus can clear the HMMER m "
-        "gate (no speedup claimed)."
+        f"Collection C stays below median m < 1/3 from k = {stays}."
+        f"{extra} Exact-sequence memory on S. aureus clears the HMMER "
+        "m gate at that depth (no speedup claimed)."
     )
 
 
@@ -618,7 +638,13 @@ def main() -> int:
         curves = miss_curves(keysets)
         k_max = len(rows) - 1
         curves["K"] = len(rows)
-        curves["reading"] = reading(label, curves["crossing_k"], k_max)
+        curves["reading"] = reading(
+            label,
+            curves["crossing_k"],
+            curves["stays_below_k"],
+            curves["snapshot_median_m"],
+            k_max,
+        )
         accession_payload["collections"][label] = {
             "id": cid,
             "genomes": recs,

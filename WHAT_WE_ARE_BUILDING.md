@@ -1,6 +1,8 @@
 # What we are building
 
-**Updated:** 2026-09-25
+**Updated:** 2026-09-26
+
+Plain-language companion: [`WHAT_THIS_IS.md`](WHAT_THIS_IS.md).
 
 Two objects share this repo. They are not the same claim.
 
@@ -54,7 +56,7 @@ Ensembl VEP’s official `--cache` is a **reference-data** store (transcripts, k
 
 Reference timing is the CARC exclusive alternating run (`pipeline/results/snpeff_alternating_carc.json`, job 12345442, node `b22-02`): median **1.1668×**, 95% CI **[1.1595, 1.1705]**; MATCH on all 52,638 records; 10/10 pairs `bodies_equal`. `a_now` = 15.98 s predicts **1.203×** vs measured **1.167×**. Startup caps the tool at about **1.3×** even at 100% hits. The Mac **1.29×** (`pipeline/results/snpeff_alternating.json`) is a recorded result, not the claim — idle precondition failed (load 5 → 27). Cached-identity MATCH is `pipeline/results/snpeff_cached_identity.json`.
 
-**Known gap — record inference is not automatic.** `pipeline/acts/infer.py` only special-cases `"star"` in argv. The VCF path goes through SnpEff-specific `pipeline/acts/snpeff_ann.py` (hard-coded ANN/LOF/NMD). Until inference is generic, the SnpEff result is a hand-built per-tool cache, not the paper method. That is the next research step. Do not paper over it.
+**Record inference is generic for VCF** (since `8540926`; subset-invariance and late keys in `3f47a00`). `pipeline/acts/infer_vcf.py` classifies field roles by probe. `snpeff_ann.py` is a test oracle, not the runtime path. The SnpEff 1.17× is that method. STAR argv still refuses identity. The open format gap is FASTA-in / table-out (HMMER tblout), not VCF.
 
 The **line_memo** pair (`run_a.txt` → `run_b.txt`, 50% recall) is the wiring proof of the headline. SHIP there is not a paper result.
 
@@ -78,12 +80,12 @@ Mac 10/10. [`STATUS.md`](STATUS.md). [`star/docs/REPRODUCE.md`](star/docs/REPROD
 | SnpEff cached identity | Body MATCH, 52,638 records | `pipeline/results/snpeff_cached_identity.json` |
 | SnpEff CARC exclusive | Median 1.1668×; Mac 1.29× withdrawn as headline | `pipeline/results/snpeff_alternating_carc.json` |
 | Tool screen | SnpEff heavier fails; ruff formula-pass rejected | `pipeline/results/tool_screen.json` |
-| Record inference | **Not automatic** (`"star"` argv + hard-coded ANN/LOF/NMD) | `pipeline/acts/infer.py`, `pipeline/acts/snpeff_ann.py` |
+| Record inference | VCF generic (probe roles). FASTA→table not yet. | `pipeline/acts/infer_vcf.py` |
 | Reading list | ProcessCache + vCache unread | personal store `literature/READING.md` |
 
 ## 4. What we are building next
 
-1. **Generic record inference.** Until `infer.py` does more than match `"star"` in argv, and the VCF path is more than `snpeff_ann.py`’s ANN/LOF/NMD, the SnpEff 1.17× is a hand-built cache. Make inference automatic. Do not wrap a second tool by hard-coding its INFO keys.
+1. **FASTA→table record format.** VCF inference is done. Do not wrap a second tool by hard-coding its table columns.
 2. **A headline tool.** SnpEff is capped (~1.3× at 100% hits). The 2026-09-25 screen (`pipeline/results/tool_screen.json`) rejected heavier SnpEff and rejected ruff (strawman `--no-cache`, 0.7 s job, omitted `w`). VEP and dbNSFP were skipped (not installed). The question is still open.
 3. **Running baselines** — the tool’s own cache, then Riker / ProcessCache — and read ProcessCache + vCache before a paper draft.
 4. Suite B overlap, VEP protocol lock, timed SnpEff miss-vs-full, CARC exclusive rerun, and the tool screen are **done**. Do not call 0.79 recall a speedup. Do not add tracing or an LLM grammar. Do not run STAR on deduplicated FASTQs. VEP still absent (full cache not pulled).

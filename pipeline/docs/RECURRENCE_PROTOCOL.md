@@ -286,3 +286,14 @@ homology. No “almost 1/3.”
 | `results/figures/14_recurrence_C_saureus.png` | Same. |
 
 FASTAs stay under `data/recurrence/` (gitignored).
+
+---
+
+## Addendum 2026-09-26 — `stays_below_k`
+
+Written after seeing collection C: median `m` first dips below 1/3 at
+`k = 5` and rises back to 0.38 at `k = 10`. The locked **crossing `k`**
+is still the first dip. The **reading** now uses `stays_below_k` =
+smallest `k` after which every later median `m` stays `< 1/3` (or `null`
+if the last point is still ≥ 1/3). Report both fields. Do not quote the
+first dip as the gate.
