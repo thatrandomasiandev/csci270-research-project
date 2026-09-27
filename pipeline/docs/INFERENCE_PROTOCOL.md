@@ -353,3 +353,85 @@ Do not put those flag names or column titles in `acts/`.
 - Not a rewrite of `results/snpeff_cached_identity.json` or
   `results/headline_*`.
 - Not CARC. A headline screen may already be running; leave it alone.
+
+---
+
+## Addendum 2026-09-27 — Reuse test (FASTA→table)
+
+Written **before** sampling the two genomes or running HMMER through
+the cache. Do not edit this addendum after seeing
+`results/inference_fasta_reuse.json`.
+
+`results/inference_fasta_local.json` only populated (hits=0 every
+mode). Reusing cached lines on a **new** genome, with **different
+names and name widths**, is untested. RefSeq gives identical proteins
+the same `WP_` accession, so name substitution never moved. Real
+users have locus tags that change between assemblies, and `--tblout`
+pads columns to name widths.
+
+Local only. No CARC. No speedup numbers. No rewrite of
+`results/inference_checks.json` or `results/inference_fasta_local.json`.
+
+### Data (locked)
+
+- Models: the same six as `inference_fasta_local.json`, fetched with
+  `hmmfetch` from `data/hmmer/Pfam-A.hmm.gz`: `ABC_tran`, `GTP_EFTU`,
+  `Response_reg`, `AAA`, `HATPase_c`, `Helicase_C`.
+- Seed `20260927`. `N = 500`.
+- **Genome 1:** 500 proteins sampled without replacement from
+  `data/kprot/MG1655.faa.gz` (`Random(seed).sample`).
+- **Genome 2:** 500 proteins from one collection-A *E. coli* already
+  on disk (`results/recurrence_accessions.json`, collection A, first
+  assembly in listed order whose shared-key count with genome 1 lands
+  in **30–70%** under the construction below). Record the accession.
+  Construction: take every collection-A protein whose sequence key is
+  in genome 1 (first occurrence of each key); if that shared set is
+  larger than `0.70 N`, subsample it with the seed down to `350`; if
+  smaller than `0.30 N`, skip that assembly and try the next. Fill to
+  500 from proteins whose keys are **not** in genome 1, shuffled by
+  the seed.
+- Then **rename every header** in both genomes to synthetic locus
+  tags of varied lengths (`G1_1`, `G1_02`, `G1_0003`,
+  `G1_00000123`, `G2_7`, …), assignment shuffled so identical
+  sequences have different names and different name widths. Strip the
+  original accession and description. Cache key remains the sequence
+  MD5 (headers are not in the key).
+
+### Modes and checks
+
+For each mode, populate the cache from genome 1, then run genome 2
+through the same cache. MATCH genome 2 against a stock tool run on
+genome 2, using the MATCH type the contract inferred.
+
+| Mode | Expected MATCH type | Expected |
+|------|---------------------|----------|
+| scan vs the six models, gathering threshold, table out | byte-order (as in the local SHIP) | hits ≈ overlap count; MATCH true |
+| search, Z and domain-Z fixed at `1e6` | multiset | hits ≈ overlap count; MATCH true |
+
+Queries with **zero hits** in genome 1 that recur in genome 2 must
+come back as cached **EMPTY** (no tool call) and still MATCH. Report
+`n_empty_hits` separately from ordinary hits.
+
+Do not put those flag names or column titles in `acts/`.
+
+### Padding (pre-registered fix)
+
+`--tblout` pads columns to name widths in **that** invocation. A
+cached raw line from genome 1 will not be byte-identical to the
+genome-2 stock line after a naïve name substitution.
+
+The fix, if padding breaks byte identity, is to **re-render** cached
+rows at the widths the tool would use, inferred by probe from runs
+with short names and long names. Per-format only — no per-tool code.
+If that cannot be done generically (widths that depend on a `#`
+header template, or a last field that contains spaces), the contract
+falls back to **whitespace-normalized MATCH** (body lines equal after
+`split()`), and the paper states that. Do not invent a HMMER parser.
+
+### What this is not
+
+- Not a timing run.
+- Not permission to special-case a search binary.
+- Not a claim about collection-A recurrence `m(k)` (that is
+  `docs/RECURRENCE_PROTOCOL.md`).
+- Not a rewrite of the VCF SnpEff / fill-tags numbers.
