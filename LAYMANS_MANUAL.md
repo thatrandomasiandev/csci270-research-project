@@ -122,7 +122,7 @@ For that to be a real method — not a one-off hack — the wrapper has to **fig
 
 - A toy “remember each line” demo works. That only proves the wiring.
 - On a real annotator (SnpEff), the glued answers matched, and a later run was a bit faster — about 17% on the careful cluster timing. The program spends so long just starting up that even a perfect memory would only get you to roughly 30% faster. So SnpEff is the wrong headline tool, even though the idea is alive there.
-- The next jobs are: teach the wrapper the FASTA-to-table format, then find a program whose per-row work is expensive enough that remembering actually matters.
+- The next job is to find a program whose per-row work is expensive enough that remembering actually matters (SnpEff is too startup-heavy; the FASTA-to-table wrapper is now on disk).
 
 ---
 

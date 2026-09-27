@@ -14,8 +14,13 @@ from acts.audit import AuditReport, sample_hits
 from acts.cache import RecordCache
 from acts.infer import identity_risk_for_argv
 from acts.infer_vcf import InferError, run_vcf_tool
-from acts.records import DupReport, probe_fastq_pe, probe_lines
+from acts.fasta import read_fasta
+from acts.infer_fasta import InferError as FastaInferError
+from acts.infer_fasta import run_table_tool
+from acts.records import DupReport, probe_fasta, probe_fastq_pe, probe_lines
 from acts.strategies.base import Strategy, StrategyResult
+from acts.table import bodies_equal as table_bodies_equal
+from acts.table import bodies_multiset_equal
 from acts.vcf import bodies_equal, body_lines
 from acts.vcf_memo import cached_annotate, contract_path_for, prepare_contract, read_vcf_parts
 
@@ -63,6 +68,10 @@ class RecordMemo(Strategy):
             if self.input_path is None:
                 raise ValueError("vcf needs --input")
             return probe_lines(self.input_path)
+        if self.kind == "fasta":
+            if self.input_path is None:
+                raise ValueError("fasta needs --input")
+            return probe_fasta(self.input_path)
         raise ValueError(f"unknown kind {self.kind!r}")
 
     def run(self) -> StrategyResult:
@@ -88,6 +97,8 @@ class RecordMemo(Strategy):
 
         if self.kind == "vcf" and self.argv:
             return self._run_vcf(extra)
+        if self.kind == "fasta" and self.argv:
+            return self._run_fasta(extra)
         if self.kind != "lines" or not self.argv:
             if report.unique_frac >= self.unique_frac_refuse:
                 rec = StrategyResult(
@@ -168,6 +179,73 @@ class RecordMemo(Strategy):
             (
                 f"MATCH body; hits={stats['n_hits']} misses={stats['n_misses']}; "
                 f"key={','.join(contract.cache_key_fields)}"
+            ),
+            extra,
+        )
+        rec.write(self.out_dir / "decision.txt")
+        return rec
+
+    def _run_fasta(self, extra: dict) -> StrategyResult:
+        from acts.fasta_memo import cached_search, contract_path_for, prepare_table_contract
+
+        assert self.input_path is not None
+        recs = read_fasta(self.input_path)
+        cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
+        cache = RecordCache(cache_path, argv=self.argv, kind="fasta")
+        extra.update({"n": len(recs), "cache_size": len(cache)})
+        try:
+            contract = prepare_table_contract(
+                self.argv, recs, self.out_dir / "infer", cache_path
+            )
+        except FastaInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra["match"] = contract.match
+        extra["query_col"] = str(contract.query_col)
+        try:
+            rebuilt, stats = cached_search(
+                recs,
+                cache,
+                contract,
+                self.argv,
+                self.out_dir / "memo",
+                contract_path=contract_path_for(cache_path),
+            )
+            extra["late_key_probes"] = ",".join(contract.late_key_probes)
+        except FastaInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
+        (self.out_dir / "reassembled.out").write_text(rebuilt)
+        stock = run_table_tool(self.argv, self.input_path)
+        (self.out_dir / "full.out").write_text(stock)
+        extra["n_reassembled"] = len(rebuilt.splitlines())
+        matched = (
+            table_bodies_equal(rebuilt, stock)
+            if contract.match == "order"
+            else bodies_multiset_equal(rebuilt, stock)
+        )
+        if not matched or stats["n_cache_holes"]:
+            rec = StrategyResult(
+                self.name,
+                "REFUSE_MATCH",
+                "reassembled body is not MATCH to a full run",
+                extra,
+            )
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        cache.save()
+        rec = StrategyResult(
+            self.name,
+            "SHIP",
+            (
+                f"MATCH {contract.match}; hits={stats['n_hits']} "
+                f"misses={stats['n_misses']}"
             ),
             extra,
         )

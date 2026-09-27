@@ -103,7 +103,7 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] CARC exclusive SnpEff alternating rerun — job 12345442, `b22-02`, median **1.1668×** (`results/snpeff_alternating_carc.json`)
 - [x] Tool screen (`c51ed61`) — SnpEff heavier fails; ruff formula-pass rejected (`results/tool_screen.json`)
 - [x] Generic VCF record inference (`8540926` + `3f47a00`); SnpEff MATCH 52,638 via probes
-- [ ] FASTA→table record format (HMMER tblout)
+- [x] FASTA→table record format (`2ef93ff` protocol; fixtures + local search in `results/inference_fasta_local.json`)
 - [ ] Headline tool (SnpEff capped ~1.3×; ruff rejected; VEP / dbNSFP skipped)
 - [ ] Running baselines (the tool’s own cache; Riker / ProcessCache)
 - [ ] Read ProcessCache thesis + vCache (ICLR 2026) before a paper draft (`literature/READING.md`)

@@ -80,12 +80,12 @@ Mac 10/10. [`STATUS.md`](STATUS.md). [`star/docs/REPRODUCE.md`](star/docs/REPROD
 | SnpEff cached identity | Body MATCH, 52,638 records | `pipeline/results/snpeff_cached_identity.json` |
 | SnpEff CARC exclusive | Median 1.1668×; Mac 1.29× withdrawn as headline | `pipeline/results/snpeff_alternating_carc.json` |
 | Tool screen | SnpEff heavier fails; ruff formula-pass rejected | `pipeline/results/tool_screen.json` |
-| Record inference | VCF generic (probe roles). FASTA→table not yet. | `pipeline/acts/infer_vcf.py` |
+| Record inference | VCF generic. FASTA→table generic (order or multiset MATCH). | `infer_vcf.py`, `infer_fasta.py` |
 | Reading list | ProcessCache + vCache unread | personal store `literature/READING.md` |
 
 ## 4. What we are building next
 
-1. **FASTA→table record format.** VCF inference is done. Do not wrap a second tool by hard-coding its table columns.
+1. **A headline tool.** FASTA→table inference is on disk (`results/inference_fasta_local.json`). Do not wrap a second tool by hard-coding its table columns.
 2. **A headline tool.** SnpEff is capped (~1.3× at 100% hits). The 2026-09-25 screen (`pipeline/results/tool_screen.json`) rejected heavier SnpEff and rejected ruff (strawman `--no-cache`, 0.7 s job, omitted `w`). VEP and dbNSFP were skipped (not installed). The question is still open.
 3. **Running baselines** — the tool’s own cache, then Riker / ProcessCache — and read ProcessCache + vCache before a paper draft.
 4. Suite B overlap, VEP protocol lock, timed SnpEff miss-vs-full, CARC exclusive rerun, and the tool screen are **done**. Do not call 0.79 recall a speedup. Do not add tracing or an LLM grammar. Do not run STAR on deduplicated FASTQs. VEP still absent (full cache not pulled).

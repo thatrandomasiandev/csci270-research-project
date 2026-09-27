@@ -161,7 +161,7 @@ def main(argv: list[str] | None = None) -> int:
 
     rn = sub.add_parser("run", help="run a strategy; refuse when MATCH cannot hold")
     rn.add_argument("--strategy", default="record_memo")
-    rn.add_argument("--kind", default="lines", choices=("fastq_pe", "lines", "vcf"))
+    rn.add_argument("--kind", default="lines", choices=("fastq_pe", "lines", "vcf", "fasta"))
     rn.add_argument("--input")
     rn.add_argument("--r1")
     rn.add_argument("--r2")

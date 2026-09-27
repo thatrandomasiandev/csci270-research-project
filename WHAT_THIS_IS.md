@@ -26,8 +26,8 @@ It is not “2× any program.” It is not “first automatic cache keys.” It 
 
 - **STAR as an instance of the cache** is dead. BAM is not a per-read function (identity fails). Cross-sample read overlap is too rare to matter.
 - **SnpEff on chr22 variants** is a live instance, timed and capped. Body MATCH on 52,638 records. CARC exclusive median **1.17×**. Startup cost caps the tool at about **1.3×** even at 100% hits.
-- Record inference is **generic for VCF** (since `8540926`; subset-invariance and late-key probes in `3f47a00`). Field roles come from probes, not hard-coded ANN/LOF/NMD. The SnpEff 1.17× is that path. STAR argv still refuses identity. The next format is FASTA-in / table-out.
-- The next research step is that FASTA table format, then a headline tool that is not capped the way SnpEff is.
+- Record inference is **generic for VCF** (since `8540926`) and **FASTA→table**. Field roles come from probes, not hard-coded columns. STAR argv still refuses identity.
+- The next research step is a headline tool that is not capped the way SnpEff is.
 
 ## How to talk about it
 

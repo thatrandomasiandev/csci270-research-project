@@ -82,3 +82,9 @@ def probe_fastq_pe(r1: Path, r2: Path) -> DupReport:
 
 def probe_lines(path: Path) -> DupReport:
     return count_keys(iter_lines(path), kind="lines")
+
+
+def probe_fasta(path: Path) -> DupReport:
+    from acts.fasta import read_fasta
+
+    return count_keys((rec.key for rec in read_fasta(path)), kind="fasta")

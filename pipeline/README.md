@@ -25,6 +25,10 @@ python3 -m acts run --strategy record_memo --kind lines \
 # STAR: refuses identity (BAM is not a per-read function)
 python3 -m acts run -- STAR --runThreadN 1
 
+# FASTA → table (fixtures)
+python3 -m acts run --kind fasta --input fixtures/fasta_memo/tiny.fa \
+  -- python3 fixtures/fasta_memo/per_query_table.py
+
 # Suite B PE uniqueness (kill test for the STAR *instance*)
 python3 -m acts probe-suiteB
 # → results/suiteB_dups.csv  (best 1.15× if per-read, on i03)
