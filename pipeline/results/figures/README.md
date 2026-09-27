@@ -1,6 +1,6 @@
 # Pipeline figures (2026-09-24)
 
-Source numbers only: `../snpeff_timing_fit.json`, `../snpeff_cached_identity.json`, `../vep_chr22_overlap.json`, `../snpeff_identity/report.json`, `../suiteB_dups.csv`, `../suiteB_overlap.csv`, `../snpeff_alternating_carc.json`.
+Source numbers only: `../snpeff_timing_fit.json`, `../snpeff_cached_identity.json`, `../vep_chr22_overlap.json`, `../snpeff_identity/report.json`, `../suiteB_dups.csv`, `../suiteB_overlap.csv`, `../snpeff_alternating_carc.json`, `../recurrence_curves.json`.
 
 ```bash
 cd pipeline && python3 scripts/plot_pipeline_figures.py
@@ -22,3 +22,6 @@ STAR ≥2× Suite B plots are a different object: `star/bench/results/figures/`.
 | `09_match_board.png` | Body MATCH; header cmp expected DIFF |
 | `10_suiteB_max_speedup_if_pure.png` | Uniqueness bound only; STAR REFUSE_IDENTITY |
 | `11_snpeff_alternating_carc.png` | CARC exclusive 10-pair wall + median r with bootstrap CI |
+| `12_recurrence_A_ecoli.png` | Diverse *E. coli* median m(k) + 10–90% band; 1/3 gate |
+| `13_recurrence_B_o157.png` | O157:H7 (Eppinger lineage / B1) median m(k) |
+| `14_recurrence_C_saureus.png` | *S. aureus* median m(k) |
