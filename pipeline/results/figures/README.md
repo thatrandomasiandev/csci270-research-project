@@ -29,6 +29,9 @@ STAR ≥2× Suite B plots are a different object: `star/bench/results/figures/`.
 | `20_probe_eval_subset_singleton.png` | Catch-rate plot, old singleton subset-invariance (comparison) |
 | `15_hmmer_predicted_speedup.png` | Predicted HMMER speedup vs recurrence (no probe cost P) |
 | `21_hmmer_predicted_speedup_with_probe.png` | Cumulative HMMER speedup with batched probe cost P (`probe_n=500`) |
+| `22_probe_eval_subset_batched_stash.png` | Pre-merge stash duplicate of 19 (`f723379`; do not use as the committed eval) |
+| `23_probe_eval_subset_singleton_stash.png` | Pre-merge stash duplicate of 20 |
+| `24_hmmer_predicted_speedup_with_probe_stash.png` | Pre-merge stash *P* figure (20-call FASTA schedule; archived) |
 | `12_recurrence_A_ecoli.png` | Diverse *E. coli* median m(k) + 10–90% band; 1/3 gate |
 | `13_recurrence_B_o157.png` | O157:H7 (Eppinger lineage / B1) median m(k) |
 | `14_recurrence_C_saureus.png` | *S. aureus* median m(k) |

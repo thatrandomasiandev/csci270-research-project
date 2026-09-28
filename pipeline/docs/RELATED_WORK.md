@@ -433,7 +433,7 @@ RL memoization) are omitted.
 
 | Work | Year / venue | Overlap | Verdict |
 |------|----------------|---------|---------|
-| **INCR** (Xie, Lamprou, Xia, Vasilakis). *Faster Re-execution via Bolt-on Incrementalization.* OSDI 2026. https://www.usenix.org/system/files/osdi26-xie-yizheng.pdf · https://github.com/atlas-brown/incr | 2026 / OSDI | Unmodified shell programs; syscall + OverlayFS probes; persist command effects across re-execs. Optional PaSh/POSH annotations chunk *declared-stateless* stdin or split per argument. 14 scripts, mean 34.2× / max 373× re-exec; 10,279/10,282 Bash-suite lines. | **Closest 2023–2026 neighbor.** Default grain is still the **command** (and its subprocesses). A lone `hmmsearch -i proteome.faa` is one probe; one new sequence changes the file → rerun. Chunk memo requires a crowdsourced “stateless” annotation, not inferred VCF/FASTA field roles. Does **not** occupy claim 1. Must cite. |
+| **INCR** (Xie, Lamprou, Xia, Vasilakis). *Faster Re-execution via Bolt-on Incrementalization.* OSDI 2026. https://www.usenix.org/system/files/osdi26-xie-yizheng.pdf · https://github.com/atlas-brown/incr | 2026 / OSDI | Unmodified shell programs; syscall + OverlayFS probes; persist command effects across re-execs. Optional PaSh/POSH annotations chunk *declared-stateless* stdin or split per argument. 14 scripts, mean 34.2× / max 373× re-exec; 10,279/10,282 Bash-suite lines. | **Closest 2023–2026 neighbor.** Default grain is still the **command** (and its subprocesses). A lone `hmmsearch -i proteome.faa` is one probe; one new sequence changes the file → rerun. Chunk memo uses INCR’s “crowdsourced command annotations” (§7), not an inferred statelessness test. Does **not** occupy claim 1. Must cite. |
 | Try / semisolate (Lamprou et al., OSDI 2026) | 2026 / OSDI | Isolation primitive INCR uses. | Mechanism, not a record cache. |
 | Fractal (Huang et al., NSDI 2026) | 2026 / NSDI | Fault-tolerant shell *distribution*. | Parallel/distribute, not memo. KumQuat/PaSh family. |
 | Koala benchmarks (Lamprou et al., ATC 2025) | 2025 / ATC | Shell workload suite INCR evaluates. | Benchmark, not a method. |
@@ -479,8 +479,11 @@ Three claims, judged after the reads.
   hard-code one grammar.
 - INCR’s optional chunking is the sharpest 2026 objection. It
   still needs a crowdsourced “stateless” / “argument-independent”
-  annotation and applies to Unix stream utilities, not inferred
-  `CHROM,POS,REF,ALT` vs `INFO/ANN`.
+  annotation (“crowdsourced command annotations”, Xie et al. §7)
+  and applies to Unix stream utilities, not inferred
+  `CHROM,POS,REF,ALT` vs `INFO/ANN`. Confirmed on a reread of
+  the chunking/memoization section (2026-09-27). The claim is
+  correct: INCR does not infer statelessness.
 - What we actually own: per-**format** probes (determinism,
   shuffle, subset-invariance, field-role perturbation, late keys)
   that produce a cache key and a reassembly contract for an

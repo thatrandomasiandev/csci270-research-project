@@ -280,3 +280,59 @@ output.
 and reloads the persistent cache. A timeout loses at most one genome.
 
 Everything else in the locked text is unchanged.
+
+---
+
+## Addendum 2026-09-27 — probe_n gap and probe cost P
+
+Locked sections above are unchanged. The queued jobs are not rewritten.
+
+The runner that was submitted uses `PROBE_N = 8`
+(`scripts/run_hmmer_savings.py:37`) and the **singleton** subset-invariance
+probe that was on disk when those jobs were queued (`427fcbb`, before
+batched subset-invariance was implemented). That is **not** the
+`probe_n = 500` size that first reaches 0/56 in-scope unsafe-ship in
+`results/probe_eval_audit.json`, and it is not the batched probe
+pre-registered in `docs/INFERENCE_PROTOCOL.md` (addendum 2026-09-27).
+
+After `agent/probe` landed, the default inference path is batched
+(**18** FASTA→table calls: 4 full-probe + 2 halves + 4 quarters + 8
+singletons; no alignment extras on tab-delimited tblout). At
+`probe_n = 8` singleton is cheaper (12 vs 18). The queued jobs do not
+silently pick up that default.
+
+### What the paper reports
+
+1. The jobs used `probe_n = 8`. Report that number next to the probe-eval
+   miss rates at the same size (audit mode, in-scope = not F6-env / F6-file).
+2. Cumulative savings **without** probe cost *P* (the locked formula:
+   sum of per-genome cached times) **and** **with** *P*:
+
+```
+P = Σ_j (a + b · n_j)
+cumulative cached = P + Σ_i cached_i
+```
+
+   *P* is paid once per namespace (once per HMMER mode). `a`, `b` are the
+   screen fits. `n_j` is the record count of inference tool call *j*.
+3. Source for the with-*P* numbers on **main**:
+   `results/hmmer_predicted_speedup_with_probe.json`
+   (keys `singleton_8`, `batched_500`, …).
+   Do not overwrite `results/hmmer_predicted_speedup.json`.
+
+Two accounts in that file:
+
+| Account | What it models | Calls (main) |
+|---------|----------------|--------------|
+| `singleton_8` | The queued jobs | 12 |
+| `batched_500` | Recommended deployable probe | 18 |
+
+Do not claim the jobs used `probe_n = 500`. Do not silently drop *P*
+from a cumulative headline that includes first-infer time.
+
+A pre-merge duplicate prediction (20 batched / 14 singleton-8 calls,
+because it added FASTA alignment extras) is archived as
+`results/hmmer_predicted_speedup_with_probe_stash.json`
+(stash `f723379` / `backup/pre-merge-stash`). See
+`docs/PROBE_COST_RECONCILE.md`.
+

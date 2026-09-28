@@ -287,3 +287,28 @@ pre-registered change.
 
 This recommendation is data-dependent and was not locked in
 `b4c878f` or `4679264`.
+
+---
+
+## Addendum 2026-09-27 — batched vs singleton subset-invariance
+
+Locked text above is unchanged. Comparison pre-registered in
+`docs/INFERENCE_PROTOCOL.md` (batched subset-invariance).
+
+Main (`agent/probe`, merge `e24370f`) re-ran audit-mode probe_eval for
+both subset probes. Files:
+
+| File | What |
+|------|------|
+| `results/probe_eval_subset_batched.json` | default batched (b2) |
+| `results/probe_eval_subset_singleton.json` | old *k* singletons |
+| `results/figures/19_probe_eval_subset_batched.png` | catch plot |
+| `results/figures/20_probe_eval_subset_singleton.png` | catch plot |
+
+Do not overwrite `probe_eval.json`, `probe_eval_audit.json`, or figures
+17 / 18.
+
+A pre-merge duplicate eval (different in-scope denominator: 224 vs
+main’s 256) is archived under `*_stash` names from stash `f723379`.
+See `docs/PROBE_COST_RECONCILE.md`.
+

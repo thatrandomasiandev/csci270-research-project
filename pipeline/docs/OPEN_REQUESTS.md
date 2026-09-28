@@ -16,14 +16,17 @@ Done items stay here so we do not re-open them.
 
 ### Savings / CARC (do not sbatch from here)
 
-- Dated addendum to `docs/SAVINGS_PROTOCOL.md` (locked text
-  untouched): queued jobs use `probe_n = 8`
+- Dated addendum to `docs/SAVINGS_PROTOCOL.md` — **ported 2026-09-27**
+  (locked text untouched). Queued jobs use `probe_n = 8`
   (`scripts/run_hmmer_savings.py:37`). After the probe merge, the
   **default** inference path is batched (**18** calls). At `n = 8`
   singleton is cheaper (12 vs 18). The queued jobs were submitted
   from `427fcbb` (singleton-only implementation), so they are not
   silently paying batched-18. Paper reports `probe_n = 8` miss rates
-  alongside cumulative savings with and without *P*.
+  alongside cumulative savings with and without *P*. Duplicate
+  stash *P* JSON archived as
+  `results/hmmer_predicted_speedup_with_probe_stash.json`
+  (`docs/PROBE_COST_RECONCILE.md`).
 - Collect the four interleaved savings jobs when they finish; land
   `results/savings_*`. Keep hmmsearch as primary; do not promote
   hmmscan after seeing numbers (`SAVINGS_PROTOCOL` / paper §5.3).
