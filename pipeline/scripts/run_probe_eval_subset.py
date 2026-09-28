@@ -11,6 +11,7 @@ import argparse
 import json
 import os
 import shutil
+import subprocess
 import sys
 import tempfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -84,6 +85,43 @@ def _contract_stats(kind: str, cache: Path) -> dict:
     }
 
 
+def _run_one_memo(
+    *,
+    kind: str,
+    cache: Path,
+    inp: Path,
+    out: Path,
+    tool: list[str],
+    probe_n: int,
+    subset_mode: str,
+) -> dict:
+    _install_subset_mode(subset_mode)
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    rec = RecordMemo(
+        kind=kind,
+        argv=tool,
+        input_path=inp,
+        out_dir=out,
+        cache_path=cache,
+        probe_n=probe_n,
+        probe_seed=SEED,
+        verify="audit",
+    ).run()
+    extra = dict(rec.extra)
+    extra.update(_contract_stats(kind, cache))
+    payload = {
+        "decision": rec.decision,
+        "reason": rec.reason,
+        "extra": extra,
+        "returncode": 0,
+        "stderr_tail": "",
+    }
+    (out / "cell_result.json").write_text(json.dumps(payload) + "\n")
+    return payload
+
+
 def acts_run_memo(
     *,
     kind: str,
@@ -93,42 +131,52 @@ def acts_run_memo(
     tool: list[str],
     probe_n: int,
     env: dict[str, str],
+    subset_mode: str,
 ) -> dict:
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
-    old = {k: os.environ.get(k) for k in ("ACTS_PROBE_EVAL_ENV", "ACTS_PROBE_EVAL_SEED")}
-    os.environ["ACTS_PROBE_EVAL_ENV"] = env.get("ACTS_PROBE_EVAL_ENV", "base")
-    os.environ["ACTS_PROBE_EVAL_SEED"] = env.get("ACTS_PROBE_EVAL_SEED", str(SEED))
-    try:
-        rec = RecordMemo(
-            kind=kind,
-            argv=tool,
-            input_path=inp,
-            out_dir=out,
-            cache_path=cache,
-            probe_n=probe_n,
-            probe_seed=SEED,
-            verify="audit",
-        ).run()
-        extra = dict(rec.extra)
-        extra.update(_contract_stats(kind, cache))
+    """Run one RecordMemo in a subprocess so F6 env and subset_mode do not race."""
+    cmd = [
+        sys.executable,
+        str(Path(__file__).resolve()),
+        "--cell-worker",
+        "--subset-mode",
+        subset_mode,
+        "--kind",
+        kind,
+        "--cache",
+        str(cache),
+        "--input",
+        str(inp),
+        "--out",
+        str(out),
+        "--probe-n",
+        str(probe_n),
+        "--",
+        *tool,
+    ]
+    proc = subprocess.run(
+        cmd,
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        env=env,
+        check=False,
+    )
+    sidecar = out / "cell_result.json"
+    if proc.returncode != 0 or not sidecar.is_file():
         return {
-            "decision": rec.decision,
-            "reason": rec.reason,
-            "extra": extra,
-            "returncode": 0,
-            "stderr_tail": "",
+            "decision": "MISSING",
+            "reason": (proc.stderr or "")[-400:],
+            "extra": {},
+            "returncode": proc.returncode,
+            "stderr_tail": (proc.stderr or "")[-400:],
         }
-    finally:
-        for k, v in old.items():
-            if v is None:
-                os.environ.pop(k, None)
-            else:
-                os.environ[k] = v
+    rec = json.loads(sidecar.read_text())
+    rec.setdefault("returncode", 0)
+    rec.setdefault("stderr_tail", "")
+    return rec
 
 
-def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int) -> dict:
+def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int, subset_mode: str) -> dict:
     cell = work / f"{kind}_{cls}_{p}_{probe_n}"
     cell.mkdir(parents=True, exist_ok=True)
     paths = write_inputs(cell / "data", kind, cls)
@@ -140,7 +188,14 @@ def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int) -> dict:
     env["ACTS_PROBE_EVAL_SEED"] = str(SEED)
 
     d1 = acts_run_memo(
-        kind=kind, cache=cache, inp=paths["in1"], out=cell / "r1", tool=tool, probe_n=probe_n, env=env
+        kind=kind,
+        cache=cache,
+        inp=paths["in1"],
+        out=cell / "r1",
+        tool=tool,
+        probe_n=probe_n,
+        env=env,
+        subset_mode=subset_mode,
     )
     d2 = {"decision": "SKIP", "reason": "input1 did not SHIP"}
     if d1["decision"] == "SHIP":
@@ -152,6 +207,7 @@ def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int) -> dict:
             tool=tool,
             probe_n=probe_n,
             env=env,
+            subset_mode=subset_mode,
         )
 
     env3 = dict(env)
@@ -254,7 +310,6 @@ def _write_payload(
 
 
 def run_mode(mode: str) -> dict:
-    _install_subset_mode(mode)
     work = Path(tempfile.mkdtemp(prefix=f"acts_probe_subset_{mode}_"))
     dest = DEST_FOR[mode]
     fig = FIG_FOR[mode]
@@ -264,7 +319,7 @@ def run_mode(mode: str) -> dict:
     print(f"mode={mode} cells={len(jobs)} workers={workers} work={work}", flush=True)
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futs = {
-            pool.submit(run_cell, work, kind, cls, p, n): (kind, cls, p, n)
+            pool.submit(run_cell, work, kind, cls, p, n, mode): (kind, cls, p, n)
             for kind, cls, p, n in jobs
         }
         for i, fut in enumerate(as_completed(futs), 1):
@@ -292,8 +347,28 @@ def run_mode(mode: str) -> dict:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--cell-worker", action="store_true")
     parser.add_argument("--mode", choices=("batched", "singleton", "both"), default="both")
-    args = parser.parse_args()
+    parser.add_argument("--subset-mode", choices=("batched", "singleton"), default="batched")
+    parser.add_argument("--kind")
+    parser.add_argument("--cache")
+    parser.add_argument("--input")
+    parser.add_argument("--out")
+    parser.add_argument("--probe-n", type=int, default=500)
+    args, rest = parser.parse_known_args()
+    if rest[:1] == ["--"]:
+        rest = rest[1:]
+    if args.cell_worker:
+        _run_one_memo(
+            kind=args.kind,
+            cache=Path(args.cache),
+            inp=Path(args.input),
+            out=Path(args.out),
+            tool=rest,
+            probe_n=args.probe_n,
+            subset_mode=args.subset_mode,
+        )
+        return 0
     modes = ("batched", "singleton") if args.mode == "both" else (args.mode,)
     for mode in modes:
         run_mode(mode)
