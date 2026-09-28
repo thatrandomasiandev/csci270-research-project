@@ -1,0 +1,82 @@
+{
+  "protocol": "pipeline/docs/SAVINGS_PROTOCOL.md",
+  "addendum": "2026-09-27 same node",
+  "git": "synthetic",
+  "collection": "A",
+  "mode": "hmmsearch",
+  "path": "paired",
+  "paper": "token / whitespace-normalized identity, not byte identity",
+  "primary": true,
+  "post_hoc": false,
+  "host": {"hostname": "synthetic"},
+  "cpu": 32,
+  "fit": {
+    "a": 132.55764028895294,
+    "b": 0.11889530446294444,
+    "w": 0.018338670022785664,
+    "N_screen": 4192
+  },
+  "resumed": false,
+  "genomes": [
+    {
+      "position": 1,
+      "index": 9,
+      "accession": "GCF_SYNTH_000001.1",
+      "strain": "synth-1",
+      "N_i": 200,
+      "n_unique": 200,
+      "stock_wall_s": 156.33670098154183,
+      "stock_cpu_s": 5003.774431409338,
+      "cached_wall_s": 156.33670098154183,
+      "cached_cpu_s": 5003.774431409338,
+      "n_hits": 0,
+      "n_misses": 200,
+      "n_empty_hits": 0,
+      "n_nonempty_hits": 0,
+      "match": true,
+      "audit": null
+    },
+    {
+      "position": 2,
+      "index": 5,
+      "accession": "GCF_SYNTH_000002.1",
+      "strain": "synth-2",
+      "N_i": 200,
+      "n_unique": 200,
+      "stock_wall_s": 156.33670098154183,
+      "stock_cpu_s": 5003.774431409338,
+      "cached_wall_s": 80.0,
+      "cached_cpu_s": 2560.0,
+      "n_hits": 120,
+      "n_misses": 80,
+      "n_empty_hits": 100,
+      "n_nonempty_hits": 20,
+      "match": true,
+      "audit": null
+    },
+    {
+      "position": 3,
+      "index": 2,
+      "accession": "GCF_SYNTH_000003.1",
+      "strain": "synth-3",
+      "N_i": 200,
+      "n_unique": 200,
+      "stock_source": "predicted a+b*N_i",
+      "cached_wall_s": 50.0,
+      "cached_cpu_s": 1600.0,
+      "n_hits": 150,
+      "n_misses": 50,
+      "n_empty_hits": 130,
+      "n_nonempty_hits": 20,
+      "match": null,
+      "audit": {
+        "n_hits": 150,
+        "n_checked": 20,
+        "n_nonempty_checked": 20,
+        "ok": true
+      }
+    }
+  ],
+  "stopped": null,
+  "decision": null
+}
