@@ -3,7 +3,9 @@ acts_out/
 data/
 data_cache/
 data_probe/
+data_compare/
 tools/
+builds/
 __pycache__/
 *.pyc
 fixtures/fat_copy/stock
