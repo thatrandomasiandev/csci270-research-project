@@ -1,11 +1,24 @@
-# Open requests from the 2026-09-27 agent round
+# Open requests from the 2026-09-27 agent rounds
 
-Collected from each agent report after merging `agent/cache`,
-`agent/probe`, `agent/usability`, `agent/compare`, `agent/fourth`,
-`agent/baselines`, and `agent/paper` into `main`. Not a protocol.
-Done items stay here so we do not re-open them.
+Not a protocol. Done items stay here so we do not re-open them.
 
-## Done in the integrator pass
+Round 2 merged `agent/analysis`, `agent/formats`, and `agent/carcjobs`
+into `main` (after round 1: cache, probe, usability, compare, fourth,
+baselines, paper).
+
+## Done in the 2026-09-27b integrator pass
+
+- **Pre-commit savings analysis** (`00f9403`, locked in
+  `SAVINGS_PROTOCOL.md` addendum `17bb5bc`). Do not rewrite
+  `scripts/analyze_savings.py` after job JSON lands unless that
+  rewrite is a **declared deviation**.
+- **`--kind files` and `--kind linetable`** (`lines->table`) on
+  `acts run`. Fixtures as pre-registered. Mordred correctness run
+  **skipped** (`pip install mordred rdkit` = 227 MB > ~200 MB cap).
+- **CARC jobs written, not submitted.** Comparison / Mordred / F6
+  in `docs/CARC_PLAN.md`. Whisper job exists but is **BLOCKED**.
+
+## Done in the integrator pass (round 1)
 
 - **Wire Agent A’s *P* into `acts predict`.** `acts/predict.py` now
   uses `P = Σ (a + b·n_i)` over the batched inference schedule.
@@ -13,6 +26,21 @@ Done items stay here so we do not re-open them.
   includes *P*. `lines` have `P = 0`.
 
 ## Still open
+
+### Josh: CARC_PLAN totals (do not sbatch until approved)
+
+Source: `docs/CARC_PLAN.md` (account `biyik_1165`). After the four
+savings jobs finish; do not overlap with their 47 h request.
+
+| Bucket | `--time` sum | Est. actual |
+|--------|----------------|-------------|
+| Comparison + Mordred exclusive | **101 h** | **56.7 h** |
+| Whisper | **0 (BLOCKED)** | 0 |
+| F6 (shared, not exclusive) | 0.5 h wall | 0.1 h |
+
+Dry-run only: `pipeline/scripts/submit_{compare,fourth,f6}.sh --dry-run`.
+`sbatch --test-only` lines are in the plan as text. Local F6 still
+needs Docker Desktop; the CARC F6 job is the backup.
 
 ### Savings / CARC (do not sbatch from here)
 
@@ -27,11 +55,32 @@ Done items stay here so we do not re-open them.
   stash *P* JSON archived as
   `results/hmmer_predicted_speedup_with_probe_stash.json`
   (`docs/PROBE_COST_RECONCILE.md`).
-- Collect the four interleaved savings jobs when they finish; land
-  `results/savings_*`. Keep hmmsearch as primary; do not promote
-  hmmscan after seeing numbers (`SAVINGS_PROTOCOL` / paper §5.3).
-- Comparison HMMER rankings are **predictions** against that
-  cumulative metric. Timing is a later CARC job, not this round.
+- Collect the four interleaved savings jobs when they finish.
+  Analyzer (`scripts/analyze_savings.py`, committed `00f9403`)
+  expects `results/savings/{A,B}_{hmmsearch,hmmscan}.json` (directory
+  + mode names, **not** `savings_A*` / `savings_B*` dumps). Then:
+
+  ```
+  python3 scripts/analyze_savings.py \
+    --jobs results/savings \
+    --out-json results/savings_summary.json \
+    --out-md results/savings_summary.md \
+    --fig-dir results/figures
+  ```
+
+  Do not hand-edit totals. Do not change `run_hmmer_savings.py`
+  schema without a protocol addendum. Keep hmmsearch as primary;
+  hmmscan is post-hoc. If A / hmmscan kill trips (cached ≥ 50% of
+  stock), stop talking about 3× on A.
+- Paper: `paper_uses = hmmsearch`. Report `probe_n = 8` and
+  singleton_8 (12 calls), not `batched_500`. Include *P* in any
+  cumulative headline that includes first-infer time. No 3×
+  sentence until this analyzer says so on a **complete** collection.
+- Comparison jobs are written (`jobs/compare_*.job`) but **not**
+  submitted. CARC PGO is GCC; Mac `compare_build.py` is Clang —
+  do not treat Mac prefixes as the CARC binaries. Comparison
+  re-times on a later exclusive node (different node would confound
+  T vs S).
 - Do not `sbatch` baseline wrappers. Confirm Discovery `ptrace`,
   OverlayFS, and privileged Docker. Share savings hostname / `lscpu`.
 
@@ -93,17 +142,37 @@ Done items stay here so we do not re-open them.
 - Linux F6-file + `snpEff.config` namespace (Mac audit left this
   INCOMPLETE). 2026-09-27: `docker info` failed (daemon not at
   `~/.docker/run/docker.sock`); `scripts/run_f6_trace_linux.py`
-  skipped. Needs Docker daemon or a Linux host with `strace`.
+  skipped. Needs Docker Desktop locally, or the written
+  `jobs/f6_trace.job` on CARC. Do not change
+  `run_f6_trace_linux.py`’s output path; the job copies it to
+  `results/f6_trace_linux.json`.
 - INCR Zenodo https://zenodo.org/records/19488802 returned **403**
   from this network. Cite as “GitHub live, Zenodo unverified” until
   that is resolved. Runnable artifact:
   https://github.com/atlas-brown/incr
 
+### Formats (`files` / `linetable`)
+
+- `docs/USAGE.md` and `acts/predict.py` still list only `vcf` /
+  `fasta` / `lines`. Add `files` and `linetable` if those surfaces
+  should match `acts run`.
+- `acts probe`: `records.py` has no `probe_files`; probe CLI kinds
+  are still `fastq_pe` / `lines` only.
+- Probe-eval F-suite is VCF/FASTA only. Extend only if that
+  comparison is wanted.
+- Do not put Mordred or Whisper column names in `acts/`.
+
 ### Fourth-tool screen (not this session)
 
+- Mordred job is written (`jobs/fourth_mordred.job`);
+  `scripts/run_fourth_screen.py` is still absent — screen logic
+  lives in the job. Not submitted.
 - Do not time `FOURTH_SCREEN.md` in the same session that wrote it.
 - Whisper FORMAT is new (directory of per-file TSVs keyed by audio
-  SHA-256). Do not pretend it is VCF/FASTA.
+  SHA-256). Do not pretend it is VCF/FASTA. Job
+  `jobs/fourth_whisper.job` is **BLOCKED** until Josh approves
+  model size and PyTorch. `submit_fourth.sh` refuses Whisper
+  unless `ACTS_WHISPER_SUBMIT=1`.
 - LibriSpeech test-clean vs test-other is `REFUSE_M`. Use the locked
   80/20 union split, or Common Voice metadata overlap.
 - ClamAV `--disable-cache` is a strawman. Best mode already memos
@@ -127,4 +196,5 @@ Done items stay here so we do not re-open them.
 - Baseline wrappers (Riker / ProcessCache / INCR / eggNOG).
 - LLM code-optimization arm (budget is in `COMPARISON_PROTOCOL.md`;
   not run).
-- CARC timing of tuned HMMER / SnpEff AppCDS.
+- CARC timing of tuned HMMER / SnpEff AppCDS (jobs written;
+  submit only after Josh approves `CARC_PLAN.md`).
