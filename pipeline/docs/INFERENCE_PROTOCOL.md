@@ -769,3 +769,96 @@ Do not put Mordred column titles in `acts/`.
 - Not permission to special-case Whisper, Mordred, or any binary.
 - Not CARC. Not Docker. Not a PyPI publish.
 - Not a rewrite of `results/inference_*.json` or headline files.
+
+---
+
+## Addendum 2026-09-27 — generic table column layout
+
+Written **before** changing re-render or MATCH, and before any new
+fixture or reuse JSON. Locked sections above are unchanged. This is a
+format-level layout probe, not a new method and not a per-tool parser.
+
+Commit `7eeb40e` / `results/inference_fasta_reuse.json` fell back to
+whitespace-normalized MATCH: cached table rows kept the source
+invocation’s column widths after name substitution, and a generic
+left-justified re-render cannot reproduce right-aligned numbers. That
+fallback stays the failure path. This addendum pre-registers a generic
+column-layout model so byte MATCH can succeed when the probe pins the
+layout.
+
+No tool names in the algorithm. No timing.
+
+### Locked algorithm — column layout (all whitespace/tab tables)
+
+After the existing FASTA→table probes (a, b, b2, c) have classified
+columns and chosen order vs multiset MATCH, infer a **layout** from
+probe outputs that include **SHORT vs LONG query names** and **SHORT vs
+LONG cell values** (use value-length variation already present in the
+probe body; add a mixed-name run — some short names, some long — in
+the same file so per-row overflow is distinguishable from a file-wide
+max).
+
+Per column (last column unpadded):
+
+| Property | Values |
+|----------|--------|
+| alignment | **left** or **right** |
+| width rule | **fixed minimum** (per row: `max(min_width, len(cell))`, overflow grows that row only) or **max value width** over a scope |
+
+One width **scope** for the table, used by columns whose rule is max
+value width:
+
+| Scope | Meaning |
+|-------|---------|
+| **fixed** | min_width only; no max over other records |
+| **per query group** | max cell width among that query’s rows |
+| **per file** | max cell width among every body row in this invocation |
+
+**Separator:** tab if any body line contains a tab; otherwise runs of
+spaces with a one-space field separator and padding belonging to a
+field (printf-style `" ".join(pad(cell))`).
+
+**Re-render:** reassemble cached PRODUCED cells with the new query name
+(and description), then emit body lines under the inferred layout.
+MATCH is **byte identity** on the body (order or multiset, as already
+contracted).
+
+**File-scope hazard:** if the scope is the whole **file**, a row’s
+bytes depend on other records. A per-record cache can only reproduce
+those bytes by re-rendering the **whole** output after every record is
+assembled. That is allowed; it is what re-render does.
+
+**Fallback:** if the probe cannot pin alignment, width rule, or scope
+(inconsistent gaps, mixed alignments on one column, a last field that
+cannot be separated, or not enough SHORT vs LONG variation), keep the
+whitespace-normalized MATCH from `7eeb40e` (`split()` then compare).
+Record `match_ws=true` and the reason on the contract. Do not invent a
+per-tool parser. Do not refuse a tool only because layout is unpinned
+when tokens already MATCH.
+
+Tab-separated bodies with no padding are pinned by construction
+(delimiter = tab; widths irrelevant).
+
+### Expected outcomes
+
+| Case | Layout | MATCH |
+|------|--------|-------|
+| fixtures: right-aligned numeric columns | pinned (right + fixed min or max-value as probed) | **byte** |
+| fixtures: per-group vs per-file width | scope matches the fixture | **byte** |
+| fixtures: tabs | delim=tab | **byte** |
+| fixture: irregular gaps / inconsistent alignment | **unpinned** | whitespace-normalized fallback; reason on the contract |
+| scan vs a small model set, gathering threshold, table out | pinned | **byte** order MATCH (same SHIP as the reuse addendum; `match_ws=false`) |
+| search, Z and domain-Z fixed at `1e6` | pinned | **byte** multiset MATCH (`match_ws=false`) |
+
+Reuse data, models, N, seed, and genome construction stay as in the
+2026-09-27 reuse addendum. Write a **new** result file; do not
+overwrite `results/inference_fasta_reuse.json`.
+
+### What this is not
+
+- Not a timing run.
+- Not a novelty claim or a second method.
+- Not permission to special-case a search binary or column titles.
+- Not a rewrite of the locked `7eeb40e` fallback JSON.
+- Not an edit of `docs/SAVINGS_PROTOCOL.md` (token identity). If byte
+  MATCH holds, an integrator addendum may update that document later.

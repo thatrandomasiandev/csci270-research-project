@@ -1,0 +1,216 @@
+{
+  "status": "RAN",
+  "protocol": "pipeline/docs/INFERENCE_PROTOCOL.md",
+  "addendum": "2026-09-27 generic table column layout",
+  "prior_fallback": "7eeb40e / results/inference_fasta_reuse.json",
+  "seed": 20260927,
+  "n": 500,
+  "n_models": 6,
+  "models": [
+    "ABC_tran",
+    "GTP_EFTU",
+    "Response_reg",
+    "AAA",
+    "HATPase_c",
+    "Helicase_C"
+  ],
+  "paper": "Generic column-layout inference; byte MATCH when the layout is pinned. Whitespace-normalized MATCH remains the fallback (7eeb40e). No per-tool parser.",
+  "work": "/var/folders/_4/rcvyxl616130ts3z3dl812y40000gn/T/acts_fasta_reuse_bytes_d00h4q49",
+  "genome1": {
+    "source": "data/kprot/MG1655.faa.gz",
+    "n": 500
+  },
+  "genome2": {
+    "accession": "GCF_001515725.1",
+    "strain": "ACN002",
+    "path": "data/recurrence/A/GCF_001515725.1_protein.faa.gz",
+    "n": 500,
+    "n_shared_constructed": 202,
+    "overlap": 202,
+    "overlap_frac": 0.404
+  },
+  "modes": {
+    "scan_cut_ga": {
+      "decision": "SHIP",
+      "reason": "MATCH order; hits=202 misses=298",
+      "match": "order",
+      "match_ws": false,
+      "byte_match": true,
+      "pad_widths": [
+        21,
+        1,
+        21,
+        1,
+        19,
+        7,
+        6,
+        10,
+        7,
+        6,
+        6,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        1
+      ],
+      "empty_desc": "",
+      "match_result": true,
+      "query_col": 2,
+      "layout": {
+        "delim": "ws",
+        "scope": "fixed",
+        "columns": [
+          {
+            "align": "left",
+            "width_rule": "fixed_min",
+            "min_width": 20
+          },
+          {
+            "align": "left",
+            "width_rule": "fixed_min",
+            "min_width": 0
+          },
+          {
+            "align": "left",
+            "width_rule": "fixed_min",
+            "min_width": 20
+          },
+          {
+            "align": "left",
+            "width_rule": "fixed_min",
+            "min_width": 0
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 18
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 6
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 5
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 9
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 6
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 5
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 5
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "right",
+            "width_rule": "fixed_min",
+            "min_width": 3
+          },
+          {
+            "align": "left",
+            "width_rule": "fixed_min",
+            "min_width": 0
+          }
+        ],
+        "pinned": true,
+        "reason": "pinned fixed; 0:left/fixed_min/20, 1:left/fixed_min/0, 2:left/fixed_min/20, 3:left/fixed_min/0, 4:right/fixed_min/18, 5:right/fixed_min/6, 6:right/fixed_min/5, 7:right/fixed_min/9, 8:right/fixed_min/6, 9:right/fixed_min/5, 10:right/fixed_min/5, 11:right/fixed_min/3, 12:right/fixed_min/3, 13:right/fixed_min/3, 14:right/fixed_min/3, 15:right/fixed_min/3, 16:right/fixed_min/3, 17:right/fixed_min/3, 18:left/fixed_min/0"
+      },
+      "layout_pinned": true,
+      "layout_scope": "fixed",
+      "layout_reason": "pinned fixed; 0:left/fixed_min/20, 1:left/fixed_min/0, 2:left/fixed_min/20, 3:left/fixed_min/0, 4:right/fixed_min/18, 5:right/fixed_min/6, 6:right/fixed_min/5, 7:right/fixed_min/9, 8:right/fixed_min/6, 9:right/fixed_min/5, 10:right/fixed_min/5, 11:right/fixed_min/3, 12:right/fixed_min/3, 13:right/fixed_min/3, 14:right/fixed_min/3, 15:right/fixed_min/3, 16:right/fixed_min/3, 17:right/fixed_min/3, 18:left/fixed_min/0",
+      "overlap": 202,
+      "n_hits": 202,
+      "n_misses": 298,
+      "n_empty_hits": 192,
+      "empty_hit_called_tool": [],
+      "populate": {
+        "n_hits": 0,
+        "n_misses": 500,
+        "n_empty_cached": 477
+      },
+      "first_diffs": [],
+      "diagnose": ""
+    },
+    "search_fixed_Z": {
+      "decision": "SHIP",
+      "reason": "MATCH multiset; hits=202 misses=298",
+      "match": "multiset",
+      "match_ws": true,
+      "byte_match": false,
+      "pad_widths": [],
+      "empty_desc": "-",
+      "match_result": true,
+      "query_col": 0,
+      "layout": {
+        "delim": "ws",
+        "scope": "fixed",
+        "columns": [],
+        "pinned": false,
+        "reason": "probe could not pin alignment, width rule, or scope (mixed-sample field widths for short names are not a single per-row, per-query, or per-file rule)"
+      },
+      "layout_pinned": false,
+      "layout_scope": "fixed",
+      "layout_reason": "probe could not pin alignment, width rule, or scope (mixed-sample field widths for short names are not a single per-row, per-query, or per-file rule)",
+      "overlap": 202,
+      "n_hits": 202,
+      "n_misses": 298,
+      "n_empty_hits": 190,
+      "empty_hit_called_tool": [],
+      "populate": {
+        "n_hits": 0,
+        "n_misses": 500,
+        "n_empty_cached": 468
+      },
+      "first_diffs": [],
+      "diagnose": ""
+    }
+  }
+}

@@ -121,8 +121,10 @@ class InferFastaFixtureTests(unittest.TestCase):
             ).run()
             self.assertEqual(first.decision, "SHIP", first.reason)
             contract = json.loads((cache.parent / (cache.name + ".contract.json")).read_text())
-            self.assertTrue(contract["pad_widths"] or contract["match_ws"], contract)
+            self.assertTrue(contract["pad_widths"] or contract["match_ws"] or contract.get("layout", {}).get("pinned"), contract)
             self.assertEqual(contract["empty_desc"], "-")
+            self.assertFalse(contract["match_ws"], contract.get("layout"))
+            self.assertEqual(contract.get("layout", {}).get("scope"), "per_file")
 
             other = Path(td) / "long.fa"
             recs = read_fasta(TINY)
@@ -141,6 +143,72 @@ class InferFastaFixtureTests(unittest.TestCase):
             rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
             full = (Path(td) / "b" / "full.out").read_text()
             self.assertEqual(body_lines(rebuilt), body_lines(full))
+
+    def test_right_numeric_byte_match_on_rename(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td) / "cache.jsonl"
+            bare = Path(td) / "bare.fa"
+            write_fasta(bare, [FastaRec(r.name, "", r.seq) for r in read_fasta(TINY)])
+            first = RecordMemo(
+                kind="fasta",
+                argv=_argv("right_numeric.py"),
+                input_path=bare,
+                out_dir=Path(td) / "a",
+                cache_path=cache,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            contract = json.loads((cache.parent / (cache.name + ".contract.json")).read_text())
+            self.assertFalse(contract["match_ws"], contract.get("layout"))
+            aligns = [c["align"] for c in contract["layout"]["columns"]]
+            self.assertIn("right", aligns, contract.get("layout"))
+
+            other = Path(td) / "long.fa"
+            recs = [FastaRec(f"LONGNAME{i:04d}", "", r.seq) for i, r in enumerate(read_fasta(TINY))]
+            write_fasta(other, recs)
+            second = RecordMemo(
+                kind="fasta",
+                argv=_argv("right_numeric.py"),
+                input_path=other,
+                out_dir=Path(td) / "b",
+                cache_path=cache,
+                verify="full",
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
+            full = (Path(td) / "b" / "full.out").read_text()
+            self.assertEqual(body_lines(rebuilt), body_lines(full))
+
+    def test_per_group_width_scope(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            rec = RecordMemo(
+                kind="fasta",
+                argv=_argv("per_group_width.py"),
+                input_path=TINY,
+                out_dir=Path(td),
+                verify="full",
+            ).run()
+            self.assertEqual(rec.decision, "SHIP", rec.reason)
+            contract = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
+            self.assertFalse(contract["match_ws"], contract.get("layout"))
+            self.assertEqual(contract["layout"]["scope"], "per_query")
+            rebuilt = (Path(td) / "reassembled.out").read_text()
+            full = (Path(td) / "full.out").read_text()
+            self.assertEqual(body_lines(rebuilt), body_lines(full))
+
+    def test_irregular_layout_falls_back_to_ws_match(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            rec = RecordMemo(
+                kind="fasta",
+                argv=_argv("irregular_layout.py"),
+                input_path=TINY,
+                out_dir=Path(td),
+                verify="full",
+            ).run()
+            self.assertEqual(rec.decision, "SHIP", rec.reason)
+            contract = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
+            self.assertTrue(contract["match_ws"], contract.get("layout"))
+            self.assertFalse(contract.get("layout", {}).get("pinned", True), contract.get("layout"))
+            self.assertTrue(contract.get("layout", {}).get("reason"), contract.get("layout"))
 
     def test_cli_fasta_kind(self) -> None:
         with tempfile.TemporaryDirectory() as td:

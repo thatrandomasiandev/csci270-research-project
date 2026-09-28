@@ -19,15 +19,16 @@ from acts.infer_vcf import (
 from acts.sample import PROBE_SEED, sample_records
 from acts.trace import run_traced
 from acts.table import (
+    TableLayout,
     body_lines,
     bodies_equal,
     detect_delim,
+    infer_table_layout,
     join_row,
-    measure_widths,
-    merge_widths,
+    layout_pad_widths,
     meta_lines,
+    render_table,
     split_body_rows,
-    ws_line,
 )
 
 MISSING_DESC = ("", "-", ".")
@@ -50,6 +51,7 @@ class TableContract:
     pad_widths: list[int] = field(default_factory=list)
     empty_desc: str = ""
     match_ws: bool = False
+    layout: dict = field(default_factory=dict)
     widen_history: list[str] = field(default_factory=list)
     late_key_probes: list[str] = field(default_factory=list)
     traced_files: list[str] = field(default_factory=list)
@@ -74,6 +76,7 @@ class TableContract:
         raw.setdefault("pad_widths", [])
         raw.setdefault("empty_desc", "")
         raw.setdefault("match_ws", False)
+        raw.setdefault("layout", {})
         raw.setdefault("traced_files", [])
         raw.setdefault("trace_status", "unavailable")
         raw.setdefault("probe_seed", PROBE_SEED)
@@ -371,18 +374,17 @@ def infer_table_contract(
         match = order_kind(names, rows1, query_col)
         empty_desc = _infer_empty_desc(rows1, desc_cols)
         hit_names = {row[query_col] for row in rows1}
-        pad_widths, pad_detected = infer_alignment(
+        layout = infer_layout_probe(
             argv,
             probe,
             query_col,
             delim,
             work / "align",
+            out1,
             hit_names=hit_names,
             runner=run,
         )
-        # Numeric columns are right-aligned in some tools; generic left-just
-        # cannot reproduce those bytes. Whitespace MATCH is the locked fallback.
-        match_ws = delim != "tab" and (pad_detected or bool(pad_widths) or bool(hit_names))
+        match_ws = delim != "tab" and not layout.pinned
         return TableContract(
             kind="fasta",
             argv=list(argv),
@@ -392,9 +394,10 @@ def infer_table_contract(
             delim=delim,
             match=match,
             n_cols=_max_cols(rows1),
-            pad_widths=pad_widths,
+            pad_widths=layout_pad_widths(layout),
             empty_desc=empty_desc,
             match_ws=match_ws,
+            layout=layout.to_dict(),
             traced_files=traced_files,
             trace_status=trace_status,
             probe_n=len(probe),
@@ -456,9 +459,40 @@ def extract_rows(
     return {"rows": packed}
 
 
+def layout_from_contract(contract: TableContract) -> TableLayout:
+    return TableLayout.from_dict(contract.layout)
+
+
+def reassemble_cells(
+    rec: FastaRec, payload: dict, contract: TableContract
+) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for item in payload.get("rows", []):
+        n = max(item.get("n", 0), contract.n_cols, contract.query_col + 1)
+        cells = [""] * n
+        for i, val in item.get("produced", {}).items():
+            idx = int(i)
+            while len(cells) <= idx:
+                cells.append("")
+            cells[idx] = val
+        cells[contract.query_col] = rec.name
+        for i in contract.desc_cols:
+            while len(cells) <= i:
+                cells.append("")
+            cells[i] = rec.description or contract.empty_desc
+        rows.append(cells)
+    return rows
+
+
 def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> list[str]:
+    layout = layout_from_contract(contract)
+    use_raw = not layout.pinned and not contract.pad_widths
+    if not use_raw:
+        cells = reassemble_cells(rec, payload, contract)
+        if layout.pinned:
+            return render_table(cells, layout, query_col=contract.query_col)
+        return [join_row(row, contract.delim) for row in cells]
     lines: list[str] = []
-    use_raw = not contract.pad_widths
     for item in payload.get("rows", []):
         raw = item.get("raw")
         if raw and use_raw:
@@ -571,6 +605,53 @@ def _infer_empty_desc(rows: list[list[str]], desc_cols: list[int]) -> str:
     return ""
 
 
+def infer_layout_probe(
+    argv: list[str],
+    recs: list[FastaRec],
+    query_col: int,
+    delim: str,
+    work: Path,
+    probe_text: str,
+    hit_names: set[str] | None = None,
+    runner=None,
+) -> TableLayout:
+    """SHORT vs LONG vs mixed names, plus probe values. No tool names."""
+    body = body_lines(probe_text)
+    _, rows = _split_body(probe_text, delim)
+    samples = [{"name": "probe", "lines": body, "rows": rows}]
+    if delim == "tab" or not recs:
+        return infer_table_layout(samples, query_col, delim)
+
+    carriers = [r for r in recs if not hit_names or r.name in hit_names][:16]
+    if not carriers:
+        carriers = recs[: min(16, len(recs))]
+    work.mkdir(parents=True, exist_ok=True)
+    run = runner or run_table_tool
+    short = [
+        FastaRec(chr(65 + i) if i < 26 else f"S{i}", "", r.seq)
+        for i, r in enumerate(carriers)
+    ]
+    long = [FastaRec(f"L{i:024d}", "", r.seq) for i, r in enumerate(carriers)]
+    mixed: list[FastaRec] = []
+    for i, r in enumerate(carriers):
+        if i % 2 == 0:
+            mixed.append(FastaRec(chr(65 + (i // 2) % 26) if i < 52 else f"M{i}", "", r.seq))
+        else:
+            mixed.append(FastaRec(f"L{i:024d}", "", r.seq))
+
+    def _sample(tag: str, rec_list: list[FastaRec], path: Path) -> None:
+        text = run(argv, write_fasta(path, rec_list))
+        lines = body_lines(text)
+        _, got = _split_body(text, delim)
+        samples.append({"name": tag, "lines": lines, "rows": got})
+
+    _sample("short", short, work / "short.fa")
+    _sample("long", long, work / "long.fa")
+    if len(carriers) >= 2:
+        _sample("mixed", mixed, work / "mixed.fa")
+    return infer_table_layout(samples, query_col, delim)
+
+
 def infer_alignment(
     argv: list[str],
     recs: list[FastaRec],
@@ -580,41 +661,23 @@ def infer_alignment(
     hit_names: set[str] | None = None,
     runner=None,
 ) -> tuple[list[int], bool]:
-    """Infer column pad floors from short vs long names. Fall back to ws MATCH."""
-    run = runner or run_table_tool
-    if delim == "tab" or not recs:
-        return [], False
-    carriers = [r for r in recs if not hit_names or r.name in hit_names][:16]
-    if not carriers:
-        carriers = recs[: min(16, len(recs))]
-    work.mkdir(parents=True, exist_ok=True)
-    short = [FastaRec(chr(65 + i) if i < 26 else f"S{i}", "", r.seq) for i, r in enumerate(carriers)]
-    long = [FastaRec(f"L{i:024d}", "", r.seq) for i, r in enumerate(carriers)]
-    out_s = run(argv, write_fasta(work / "short.fa", short))
-    out_l = run(argv, write_fasta(work / "long.fa", long))
-    raw_s, raw_l = body_lines(out_s), body_lines(out_l)
-    _, rows_s = _split_body(out_s, delim)
-    _, rows_l = _split_body(out_l, delim)
-    if not raw_s or not raw_l:
-        return [], False
-    def drop_q(lines: list[str], rows: list[list[str]]) -> list[str]:
-        out = []
-        for ln, row in zip(lines, rows):
-            if query_col < len(row):
-                out.append(ws_line(_subst_token(ln, row[query_col], " ")))
-            else:
-                out.append(ws_line(ln))
-        return out
-
-    rem_s, rem_l = drop_q(raw_s, rows_s), drop_q(raw_l, rows_l)
-    if rem_s != rem_l and sorted(rem_s) != sorted(rem_l):
-        return [], False
-    if raw_s == raw_l:
-        return [], False
-    measured = [w for ln, row in zip(raw_s, rows_s) if (w := measure_widths(ln, row))]
-    if not measured:
-        return [], True
-    return merge_widths(measured), False
+    """Compat wrapper: pad floors from the layout probe, else unpinned."""
+    dummy = "\n".join(
+        []
+    )
+    layout = infer_layout_probe(
+        argv,
+        recs,
+        query_col,
+        delim,
+        work,
+        dummy,
+        hit_names=hit_names,
+        runner=runner,
+    )
+    if layout.pinned and layout.delim != "tab":
+        return layout_pad_widths(layout), False
+    return [], not layout.pinned
 
 
 def refuse_table(exc: InferError, argv: list[str]) -> TableContract:
