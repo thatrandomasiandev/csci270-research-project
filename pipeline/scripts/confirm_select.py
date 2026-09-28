@@ -129,9 +129,13 @@ def miss_along_order(keysets: list[set[str]], order: list[int]) -> list[float]:
     """m(k) for k = 1 … K-1 along one locked ordering.
 
     m[k-1] is the miss of genome k+1 given genomes 1…k (RECURRENCE_PROTOCOL.md).
+    ``keysets`` may be already in run order with ``order = range(K)``.
     """
-    if len(order) != len(keysets):
-        raise ValueError("order and keysets must cover the same genomes")
+    if len(order) < 2:
+        raise ValueError("need at least 2 genomes")
+    for idx in order:
+        if idx < 0 or idx >= len(keysets):
+            raise IndexError(idx)
     miss: list[float] = []
     seen: set[str] = set()
     for i, idx in enumerate(order):

@@ -238,5 +238,35 @@ class CriteriaTests(unittest.TestCase):
         self.assertFalse(miss_frac["confirmed"])
 
 
+class LockedPredictionsTests(unittest.TestCase):
+    def test_predictions_locked_before_timing(self) -> None:
+        path = PIPE / "results" / "confirm_predictions.json"
+        self.assertTrue(path.is_file())
+        raw = json.loads(path.read_text())
+        self.assertTrue(raw["locked_before_timing"])
+        self.assertEqual(raw["primary"], "hmmscan")
+        self.assertEqual(raw["seed_confirm_E"], 20260927)
+        self.assertEqual(raw["stock_positions"], [1, 2, 5, 10, 20, 30])
+        excluded = excluded_accessions(json.loads(ACC.read_text()))
+        e_acc = [g["accession"] for g in raw["arms"]["confirm_E"]["genomes"]]
+        self.assertEqual(len(e_acc), 30)
+        self.assertEqual(len(set(e_acc)), 30)
+        self.assertTrue(set(e_acc).isdisjoint(excluded))
+        c_idx = json.loads(CURVES.read_text())["collections"]["C"]["orderings"][0][:30]
+        self.assertEqual(raw["selection"]["confirm_C"]["run_order_indices"], c_idx)
+        for cid in ("confirm_E", "confirm_C"):
+            arm = raw["arms"][cid]
+            self.assertEqual(len(arm["m"]), 29)
+            self.assertIn("1", arm["m_snapshots"])
+            self.assertIn("10", arm["m_snapshots"])
+            scan = arm["modes"]["hmmscan"]
+            search = arm["modes"]["hmmsearch"]
+            self.assertTrue(scan["primary"])
+            self.assertTrue(scan["scored"])
+            self.assertFalse(search["scored"])
+            self.assertLess(scan["cached_frac_at_k30"], 0.50)
+            self.assertEqual(scan["P"]["n_calls"], 12)
+
+
 if __name__ == "__main__":
     unittest.main()

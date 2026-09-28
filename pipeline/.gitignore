@@ -1,7 +1,8 @@
 egas_out/
 acts_out/
 data/
-data_confirm/
+results/confirm/GIT_HASH
+results/confirm/logs/
 data_formats/
 data_cache/
 data_probe/
