@@ -1,0 +1,776 @@
+%% ACTS conference-paper skeleton (ACM sigconf).
+%% Not the CSCI 270 STAR write-up (that lives in star/writeup/).
+%%
+%% Citation policy: every measured number names a committed results file
+%% and the commit that introduced it. Unmeasured work is \TODO{}.
+%% Predictions are labeled as predictions. Novelty matches
+%% pipeline/docs/RELATED_WORK.md section 3 exactly in substance.
+%%
+%% Worktree HEAD at drafting: 427fcbb (branch agent/paper).
+\documentclass[sigconf]{acmart}
+
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{amsmath}
+
+%% Unpublished lab draft: no ACM rights form.
+\setcopyright{none}
+\renewcommand{\footnotetextcopyrightpermission}[1]{}
+\settopmatter{printacmref=true}
+
+\newcommand{\TODO}[1]{%
+  \textcolor{red}{\textbf{TODO}\if\relax\detokenize{#1}\relax\else: #1\fi}}
+
+%% Shortcut for result-file provenance (printed only in TeX comments).
+%% Example at the call site:
+%%   $1.1668\times$
+%%   % source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
+
+\acmConference[Draft]{Laboratory draft; not submitted}{2026}{}
+\acmYear{2026}
+\copyrightyear{2026}
+
+\title{ACTS: Automatic Record-Level Incremental Computation for Unmodified Scientific CLIs}
+
+\author{Joshua Terranova}
+\affiliation{%
+  \institution{University of Southern California}
+  \city{Los Angeles}
+  \state{California}
+  \country{USA}}
+
+\renewcommand{\shortauthors}{Terranova}
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10011007.10011006.10011072</concept_id>
+       <concept_desc>Software and its engineering~Software performance</concept_desc>
+       <concept_significance>500</concept_significance>
+   </concept>
+   <concept>
+       <concept_id>10010405.10010444.10010449</concept_id>
+       <concept_desc>Applied computing~Bioinformatics</concept_desc>
+       <concept_significance>300</concept_significance>
+   </concept>
+</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Software and its engineering~Software performance}
+\ccsdesc[300]{Applied computing~Bioinformatics}
+
+\keywords{incremental computation, memoization, black-box tools, scientific CLIs, VCF, HMMER}
+
+\begin{abstract}
+Whole-command caches rerun an unmodified binary when any input byte
+changes. Hand-built per-record caches exist for one tool at a time.
+Nothing occupies automatic record-level reuse \emph{inside one
+invocation} of an unmodified scientific CLI, persisted across runs.
+ACTS infers records and field roles of a VCF or FASTA$\to$table
+binary with no per-tool code, memos those records, and ships a
+reassembly only when probes (and, in deployment, a Dune-style hit
+audit) pass. On SnpEff the later-run speedup is real and small:
+median $1.1668\times$ (95\% CI $[1.1595, 1.1705]$) on an exclusive
+Linux node, with body MATCH on all $52{,}638$ records.
+% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
+% source: pipeline/results/snpeff_cached_identity.json commit 81d472d
+Startup caps the tool at about $1.3\times$ even at 100\% hits.
+% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d (a_now, locked b, N)
+The deployed probe suite's unsafe-ship rate is a
+\emph{measurement}, not a new testing theory: $68/288$ overall and
+$4/224$ excluding the F6 environment/file faults the method does not
+claim to catch.
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0
+HMMER collection savings, running baselines, and a head-to-head with
+command-grain incrementalizers remain \TODO{}.
+\end{abstract}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\label{sec:intro}
+
+Scientific command-line tools often map each record of a file---a
+VCF variant, a FASTA sequence---to an output row, independently of
+its neighbors. A later sample shares many of those records with an
+earlier one. Whole-command incrementalizers
+(Rattle~\cite{spall2020rattle}, Riker~\cite{curtsinger2022riker},
+ProcessCache~\cite{shiptoski2023processcache}, and
+INCR~\cite{xie2026incr}) treat the invocation as one unit: one new
+record in a large file is a changed input, so the process reruns.
+Hand-built per-record caches (eggNOG-mapper \texttt{-m
+cache}~\cite{cantalapiedra2021eggnog,eggnog-cache-wiki},
+Oculus~\cite{veeneman2012oculus},
+SeAlM~\cite{stene2019sealm}) do the useful thing for one grammar and
+do not infer field roles of an unmodified third-party binary.
+
+The gap we claim is narrow. \textbf{Nothing occupies automatic
+record-level reuse inside one invocation of an unmodified scientific
+CLI, persisted across runs.} Whole-command incrementalization of
+unmodified binaries is occupied. Hand-built per-record caches are
+occupied. Safety \emph{theory} is occupied (Chen/Segura metamorphic
+relations~\cite{chen1998metamorphic,segura2016survey}; Dune's
+cache-check audit~\cite{dune-cache-check}; vCache's
+$\delta$~\cite{schroeder2026vcache}). Cost-model gating is
+engineering, not a prior theorem.
+
+ACTS is a wrapper, not a rewrite. On the first run of a given argv
+it probes a sample of records: determinism, shuffle,
+subset-invariance, field-role perturbation, late keys. The probes
+produce a cache key and a reassembly contract. Later runs pay the
+tool only for misses, reassemble, and---in the deployed
+mode---accept on probes plus a Bernoulli hit audit rather than a
+second full stock run. Byte-identical \texttt{cmp} is the VCF-body
+gate; HMMER \texttt{tblout} is token identity after whitespace
+normalization, because the format pads columns.
+
+Three claims, judged against the related-work read
+(\S\ref{sec:rw};~\cite{xie2026incr} is the sharpest 2026 neighbor):
+
+\begin{enumerate}
+  \item \textbf{Automatic record and field-role inference, no
+    per-tool code --- survives}, with a named neighbor. KumQuat
+    infers \emph{combiners}~\cite{shen2022kumquat}; ProcessCache /
+    Rattle / Riker / INCR infer \emph{file} dependencies of a
+    process or command; PaSh/POSH \emph{declare}
+    statelessness~\cite{vasilakis2021pash,kallas2022pash};
+    eggNOG/Oculus/SeAlM hard-code one grammar. INCR's optional
+    chunking still needs a crowdsourced ``stateless'' /
+    ``argument-independent'' annotation and applies to Unix stream
+    utilities, not inferred \texttt{CHROM,POS,REF,ALT} versus
+    \texttt{INFO/ANN}. What we own is per-\emph{format} probes that
+    produce a cache key and a reassembly contract for an unmodified
+    VCF or FASTA$\to$table binary.
+
+  \item \textbf{Safety probes with a measured miss rate in
+    deployment mode --- the measurement survives; the theory does
+    not.} Our shuffle / subset / perturbation probes \emph{are}
+    metamorphic relations~\cite{chen1998metamorphic,segura2016survey}.
+    Dune occupies random re-exec plus
+    diff~\cite{dune-cache-check}. vCache occupies a user-set
+    $\delta$ for semantic LLM caches~\cite{schroeder2026vcache}
+    (different object, stronger claim). What we own is the
+    \emph{measured} unsafe-ship rate of \emph{this} probe suite
+    under \texttt{--verify audit} (probes plus 2\% hit audit, no
+    full MATCH) on faults F1--F8 / controls C1--C5. Full-MATCH is
+    an experimental upper bound, not the deployed number. We do not
+    claim a $\delta$, and we do not say ``first statistical cache.''
+
+  \item \textbf{Cost-model gating that predicts speedup before
+    caching --- survives as engineering, not as a literature gap
+    worth a paper by itself.} We do not lead with this. It is the
+    screen, not the method: $t = a + b\cdot n$, refuse if the
+    predicted ratio cannot pay for wrapper overhead $w$.
+\end{enumerate}
+
+STAR~\cite{dobin2013star} is a kill test for the \emph{aligner
+instance}, not for the method: BAM is not a per-read function of
+the FASTQ, and Suite~B cross-sample overlap is rare (human airway
+\texttt{recall\_in\_new} $0.067$--$0.108$, nf-core $0.087$, fly
+$0.017$--$0.020$).
+% source: pipeline/results/suiteB_overlap.csv commit 402bd26
+% source: pipeline/results/star_identity_refuse.txt commit 402bd26
+Within-file uniqueness tops out at $1.15\times$ on i03.
+% source: pipeline/results/suiteB_dups.csv commit 402bd26 (max_speedup_if_pure 1.1528)
+We do not claim we invented align-uniques-once; Oculus already
+occupies that instance~\cite{veeneman2012oculus}.
+
+Ensembl VEP's official \texttt{--cache} is a \emph{reference-data}
+store (transcripts, known variants), not a memo of prior user
+VCFs~\cite{mclaren2016vep}. Adding sample 1{,}001 still annotates
+every variant in that VCF. We do not treat it as a competitor.
+
+\paragraph{Contributions.}
+(1)~Per-format inference of records and field roles for unmodified
+VCF and FASTA$\to$table CLIs (\S\ref{sec:infer}).
+(2)~A probe suite whose deployed unsafe-ship rate is measured, with
+theory explicitly disclaimed (\S\ref{sec:probes}--\S\ref{sec:audit}).
+(3)~A two-parameter cost screen used to pick tools, not sold as
+novelty (\S\ref{sec:cost}).
+(4)~An evaluation plan that separates committed measurements from
+predictions and from work that has not run (\S\ref{sec:eval}).
+
+\section{Background}
+\label{sec:bg}
+
+\subsection{Scientific CLIs as per-record maps}
+
+A typical annotator reads a file of records and writes a file of
+the same cardinality, or a table with zero or more rows per input
+record. SnpEff~\cite{cingolani2012snpeff} annotates each VCF
+variant. HMMER~\cite{eddy2011hmmer} searches each protein against a
+profile database. If record $i$'s output depends only on record
+$i$ (plus argv-named inputs: binary, flags, database files), then a
+later file that repeats keys can reuse stored outputs.
+
+Independence is an empirical property, not a type. A tool that
+writes the file length into every row, or that copies a neighbor's
+key, is not per-record. STAR's BAM carries QNAME, alignment
+coordinates, and headers that are not a function of the read
+sequence alone; ACTS refuses that argv on identity grounds.
+% source: pipeline/results/star_identity_refuse.txt commit 402bd26
+
+\subsection{Formats we handle}
+
+\textbf{VCF.} A record is a non-\texttt{\#} line. The default
+correspondence key is \texttt{CHROM POS REF ALT} (full ALT). Output
+order follows input order. MATCH is the record \emph{body}, not
+full-file \texttt{cmp}: SnpEff rewrites \texttt{\#\#SnpEffCmd} on
+every run. On 200 HG00096 \texttt{-c1} variants, two stock runs and
+a shuffled run MATCH on the body; full-file identity fails on that
+header line only.
+% source: pipeline/results/snpeff_identity/report.json commit 402bd26
+
+\textbf{FASTA$\to$table.} A record is one sequence. The cache key
+is the amino-acid string. The query-name column is inferred, not
+hard-coded. Some tools emit rows in input order
+(\texttt{hmmscan}); others globally sort
+(\texttt{hmmsearch}). The contract records \texttt{order} versus
+\texttt{multiset} MATCH. HMMER \texttt{--tblout} pads columns and
+right-aligns numbers, so MATCH is whitespace-normalized
+(\texttt{split()}), not bytes.
+% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
+%   scan_cut_ga: match=order, match_ws=true; search_fixed_Z: match=multiset, match_ws=true
+
+\subsection{The grain of reuse}
+
+Workflow managers (Nextflow \texttt{-resume}~\cite{ditommaso2017nextflow},
+Snakemake's skip and \texttt{--cache}~\cite{molder2021snakemake},
+Cromwell call caching~\cite{cromwell-call-cache}) hash a
+\emph{task} and its declared inputs. They are the right answer when
+the scientist already split the work into processes. They do not
+look inside \texttt{snpeff -i cohort.vcf}. Interpreter-level memo
+(IncPy~\cite{guo2011incpy}, Mandala~\cite{makelov2024mandala})
+cannot wrap a closed binary. Process-grain caches skip or rerun the
+whole exec-unit. ACTS sits between those grains: inside one
+invocation, at record resolution, without modifying the tool.
+
+\section{Method}
+\label{sec:method}
+
+ACTS wraps an unmodified argv. Example:
+\texttt{python3 -m acts run --kind vcf --input X -- <tool>}.
+\texttt{\{input\}} in argv is replaced with a file the wrapper
+wrote (probe subset, miss batch, or one-record header harvest).
+Stdout is the format the kind declared. That is format wiring, not
+a per-tool parser. \texttt{snpeff\_ann.py} is a test oracle, not
+the runtime path.
+
+A persistent JSONL cache is keyed by a \emph{namespace}
+(kind, argv strings, content hash of the binary, content hash of
+every argv-named path) and a \emph{record key}. Files the tool
+opens that do not appear in argv are out of scope unless
+probe-time tracing saw them (\S\ref{sec:probes}). Environment
+variables are a stated limitation (fault F6-env).
+
+\subsection{Record and field-role inference}
+\label{sec:infer}
+
+Inference is per \emph{format}, not per tool. The first run of a
+namespace draws \texttt{probe\_n} records (code default $500$;
+drawn without replacement, seed $20260927$ in the deployed path)
+and classifies every output column / INFO subfield:
+
+\begin{description}
+  \item[PASS-THROUGH] equal to the (possibly perturbed) input
+    value; taken from the new query record at reassembly.
+  \item[PRODUCED] unchanged across perturbation and not present in
+    the input; cached, keyed by the current cache key.
+  \item[DEPENDS-ON-NON-KEY] changed, but not equal to the input;
+    widen the cache key once to include the perturbed input
+    field(s) and re-probe. Still ambiguous $\to$
+    \texttt{REFUSE\_AMBIGUOUS}.
+\end{description}
+
+\paragraph{VCF.}
+Keys start as \texttt{CHROM,POS,REF,ALT}. Non-key fields (ID,
+QUAL, FILTER, INFO subfields, FORMAT, samples) are perturbed.
+A rewrite (output $\neq$ input, stable across perturbation) is
+PRODUCED, never silently treated as pass-through. Late INFO keys
+that appear only on a later miss batch trigger a bounded
+re-probe. Generic VCF inference replaced a SnpEff-specific splicer
+(commits \texttt{8540926}, \texttt{3f47a00}).
+% source: pipeline/results/inference_checks.json commit 8540926 (introduced);
+%   subset-invariance and late keys in commit 3f47a00
+
+\paragraph{FASTA$\to$table.}
+The query-name column is the column that follows the FASTA header
+name under perturbation. Sequence is the only cache-key field.
+Columns that still depend on the description after one widen
+attempt (there is no extra FASTA field to add) refuse. Empty
+outputs (no domain hits) are cached as \texttt{EMPTY} so a later
+genome with the same sequence and a new locus tag is a hit, not a
+miss. Local HMMER on 200 K-12 proteins SHIPs both
+\texttt{hmmscan --cut\_ga} (order MATCH) and
+\texttt{hmmsearch} with $Z$ and \texttt{domZ} fixed (multiset MATCH).
+% source: pipeline/results/inference_fasta_local.json commit 9172807
+A reuse test on 500 proteins with 202 shared sequences SHIPs both
+modes after whitespace-normalized MATCH; 192/202 scan hits and
+190/202 search hits were EMPTY, so NON-EMPTY reuse was not the
+bulk of that fixture.
+% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
+%   n_empty_hits: scan_cut_ga 192, search_fixed_Z 190; overlap 202
+
+Default \texttt{hmmsearch} E-values scale with the number of
+targets and fail subset-invariance; the locked argv therefore
+fixes $Z$. That is a flag choice the screen is allowed to make,
+not a per-tool parser.
+
+\subsection{Probes}
+\label{sec:probes}
+
+On the probe sample:
+
+{\raggedright
+\begin{enumerate}
+  \item[(a)] \textbf{Determinism.} Run twice; differing bodies
+    refuse as nondeterministic.
+  \item[(b)] \textbf{Shuffle.} Permute records; differing bodies
+    refuse as neighbor leakage.
+  \item[(b2)] \textbf{Subset-invariance.} A singleton (or small
+    subset) must match the corresponding rows of the full probe;
+    else refuse as a global (file-level) dependence.
+  \item[(c)] \textbf{Field-role perturbation.} As in
+    \S\ref{sec:infer}.
+  \item[(d)] \textbf{Late keys.} Unseen INFO keys / extra table
+    columns on a miss batch trigger a bounded re-classification.
+\end{enumerate}
+}
+
+These are metamorphic relations in Chen and Segura's
+sense~\cite{chen1998metamorphic,segura2016survey}. We do not claim
+a new MR theory. A program can satisfy the MRs and still be wrong;
+that is why MATCH (experimental) and the hit audit (deployed) sit
+behind the probes.
+
+STAR argv is a special-case identity refuse from a
+pre-registered check, not from these probes.
+
+\paragraph{Probe-time tracing.}
+On Linux, the first probe invocation may run under
+\texttt{strace -f -e trace=openat,open}. Regular files opened
+read-only (excluding \texttt{/proc}, \texttt{/sys}, \texttt{/dev},
+the per-run input, and temp dirs) are fingerprinted into the
+namespace. This is Rattle's traced-input idea transferred to the
+first infer run, not a new key theory~\cite{spall2020rattle}.
+macOS, or \texttt{strace} missing: no tracing; F6-file is
+uncovered. Tracing is probe-time only, not every later run.
+
+\subsection{Hit audit}
+\label{sec:audit}
+
+Dune's \texttt{cache-check-probability} re-executes randomly chosen
+\emph{build rules} and diffs them~\cite{dune-cache-check}. ACTS
+\texttt{--verify audit} (the default) is that idea at record grain:
+Bernoulli $p=0.02$ of cache hits, then pad to at least 20 hits
+(or all hits), one batch, seed $20260927$. A disagreement is
+\texttt{REFUSE\_AUDIT}. This is engineering transfer, not a
+theorem, and not vCache's user-set $\delta$ on a semantic LLM
+cache~\cite{schroeder2026vcache}.
+
+\texttt{--verify full} still runs a stock tool on the whole input
+and requires MATCH. That number is an experimental upper bound
+(\S\ref{sec:eval}). Deployment does not pay for it.
+
+\subsection{Cost model}
+\label{sec:cost}
+
+Stock wall time on random subsets is fit as $t = a + b\cdot n$
+(OLS on per-size mean wall). Wrapper overhead $w$ is measured
+(full $N$, tool replaced by a no-op that writes empty-but-valid
+output). For a later-run miss fraction $m$,
+\begin{align*}
+  \mathrm{ceiling}(m)
+    &= \frac{a + b\cdot N}{a + b\cdot m\cdot N + w}, \\
+  \mathrm{saved}(m)
+    &= (a + b\cdot N) - (a + b\cdot m\cdot N + w).
+\end{align*}
+A tool advances the headline screen only if $a>0$, $b>0$,
+$\mathrm{ceiling}(m)\ge 3.0$, and $\mathrm{saved}(m)\ge 60$~s, with
+$m$ the \emph{measured} miss fraction on a locked later input---not
+a hoped-for $0.2$.
+% protocol: pipeline/docs/HEADLINE_SCREEN.md (erratum after ruff)
+
+This is the screen, not the paper's method. Workflow papers that
+predict \emph{memory or runtime for scheduling} (Ponder /
+KS+~\cite{bader2023ponder}) are a different question.
+ProcessCache reports overheads after the fact. We do not claim a
+literature gap here.
+
+On SnpEff, $a$ is large relative to $b\cdot N$. After the exclusive
+Linux alternating run, $a_{\mathrm{now}}=15.98$~s predicts
+$1.203\times$ versus measured median $1.167\times$; the same fit
+caps the tool at about $1.3\times$ even at 100\% hits.
+% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
+%   a_now.mean_s = 15.9805; r_from_a_now = 1.2032; median_r = 1.1668
+%   locked b, N=52638, miss_n=11191
+Heavier SnpEff (stats on, \texttt{-ud 20000}) fails the advance
+rule: $\mathrm{ceiling}(0.2)=1.30\times$.
+% source: pipeline/results/tool_screen.json commit 81d472d
+%   ceiling_m0.2 = 1.2971 (reported 1.30)
+\texttt{ruff check --no-cache} passes the locked formula at
+$4.52\times$ but is rejected: ruff already caches per file,
+\texttt{--no-cache} is a strawman, full-run wall is $0.705$~s, and
+the first formula omitted $w$.
+% source: pipeline/results/tool_screen.json commit 81d472d
+%   ceiling_m0.2 = 4.519; mean wall at N=16259 is 0.705 s
+% protocol commit c51ed61; erratum in pipeline/docs/TOOL_SCREEN.md
+
+\section{Related Work}
+\label{sec:rw}
+
+Automatic incremental reuse is an old idea. The question is the
+grain, and whether the tool must be changed. This section follows
+the deep read in \texttt{pipeline/docs/RELATED\_WORK.md} (\S3); we do not
+add a fourth claim.
+
+At process or command grain, several systems already wrap
+\textbf{unmodified} binaries. Rattle traces each build command and
+skips it when argv, environment, and hashed file inputs
+match~\cite{spall2020rattle}. Riker extends that model to the POSIX
+filesystem---directories, pipes, links---so a spec as short as
+\texttt{gcc *.c} still rebuilds
+correctly~\cite{curtsinger2022riker}. ProcessCache generalizes the
+same idea off the build system and onto arbitrary Linux process
+trees~\cite{shiptoski2023processcache}. It memos \textbf{exec-units}
+(from \texttt{execve} to the end of the descendant tree), computes
+preconditions from a syscall log, and skips when those
+preconditions hold. On unchanged inputs it reports up to
+$65\times$; when a few input \emph{files} change, speedup
+collapses, and a changed FASTA is one file. HMMER under
+ProcessCache is one process.
+
+INCR~\cite{xie2026incr} is the 2026 form of this line, and the
+closest neighbor: bolt-on incrementalization of unmodified
+\textbf{shell programs}, OverlayFS isolation plus strace, reuse of
+command effects across edits. With optional PaSh/POSH
+annotations~\cite{vasilakis2021pash,kallas2022pash} it can chunk
+stdin of a \emph{declared} stateless utility or split per argument.
+Default grain remains the command. A lone \texttt{hmmsearch} on a
+proteome is one command; one new sequence reruns it. Chunk memo
+needs that crowdsourced ``stateless'' annotation; it does not infer
+VCF/FASTA field roles. INCR does \textbf{not} occupy claim~1. We
+use their tracing idea at \textbf{probe time} to fingerprint files
+the tool opens. We do not claim first automatic cache keys.
+
+Workflow managers occupy the next-coarser grain. Nextflow
+\texttt{-resume}~\cite{ditommaso2017nextflow}, Snakemake's
+intra-workflow skip and \texttt{--cache}~\cite{molder2021snakemake},
+and Cromwell call-caching~\cite{cromwell-call-cache} all hash a
+\textbf{task} and its declared inputs. They do not look inside
+\texttt{snpeff -i cohort.vcf}.
+
+Finer grain exists if the language is under control.
+IncPy~\cite{guo2011incpy} memos Python functions inside a modified
+CPython. Mandala~\cite{makelov2024mandala} does the same with
+\texttt{@op} annotations. Neither reaches a closed binary.
+
+Per-record reuse for \emph{one} scientific tool is also occupied,
+and we should say so. Oculus collapses duplicate reads before
+Bowtie/BWA and reprints SAM; it is nearly lossless, not
+byte-identical~\cite{veeneman2012oculus}. SeAlM caches alignment
+queries~\cite{stene2019sealm}. eggNOG-mapper's \texttt{-m cache} is
+the cleanest neighbor: \texttt{--md5} then a user-supplied
+annotations file, exact amino-acid identity, misses
+re-searched~\cite{cantalapiedra2021eggnog,eggnog-cache-wiki}. That
+is a hand-built memo of prior user sequences---our job, for one
+tool. Ensembl VEP \texttt{--cache} is the trap citation: it is a
+\textbf{reference-data} store, not a memo of the user's last
+VCF~\cite{mclaren2016vep}.
+
+Black-box \emph{structure} inference without caching is
+KumQuat~\cite{shen2022kumquat}: combiners for data-parallel Unix
+commands, 113 of 121 unique commands, no cross-run store. PaSh and
+POSH annotate the same commands for
+parallelism~\cite{vasilakis2021pash,kallas2022pash}. We infer a
+different contract (which fields are keys, which are produced,
+whether neighbors leak) so we can memoize.
+
+Correctness arguments for caches are also occupied, at other
+grains. Dune's \texttt{cache-check-probability} re-executes random
+\textbf{build rules} and diffs them~\cite{dune-cache-check}.
+vCache~\cite{schroeder2026vcache} gives a user-set error bound
+$\delta$ for \emph{semantic} LLM caches under i.i.d.\ prompts and a
+sigmoid model---a stronger claim than we can make, on a different
+object. Our shuffle, subset, and perturbation probes are
+metamorphic relations~\cite{chen1998metamorphic,segura2016survey}.
+The paper's correctness contribution is not a new MR theory and not
+a $\delta$. It is a \textbf{measured} unsafe-ship rate of this
+probe suite in the mode we actually ship (\texttt{--verify audit}:
+no full stock run; 2\% hit audit, at least 20 hits). The earlier
+full-MATCH number is an experimental upper bound.
+
+What is left, and what we claim, is narrow: infer records and field
+roles of an unmodified VCF or FASTA$\to$table binary with no
+per-tool code; memoize those records across runs; refuse when the
+probes fail; and, in deployment, accept on probes plus a Dune-style
+audit rather than a second full run. ProcessCache, Rattle, Riker,
+and INCR will rerun the process when any input byte changes.
+eggNOG will not annotate a SnpEff VCF. KumQuat will parallelize
+\texttt{sort} and leave tomorrow's proteome uncached.
+
+\section{Evaluation Plan}
+\label{sec:eval}
+
+We separate (i)~committed measurements, (ii)~model predictions,
+and (iii)~experiments that have not produced a result file on this
+branch. No number below is taken from uncommitted dirty-main
+artifacts.
+
+\subsection{Already measured}
+
+\paragraph{SnpEff later-run speedup (reference).}
+SnpEff~5.4c (GRCh38.86; \texttt{-noStats -noLog}) on HG00099
+\texttt{-c1} ($N=52{,}638$). Exclusive Linux node \texttt{b22-02}
+(AMD EPYC 7542), alternating stock vs cached, ten pairs. Median
+wall ratio $1.1668\times$ (95\% bootstrap CI $[1.1595, 1.1705]$;
+seed $20260924$, $10{,}000$ resamples). All ten pairs have equal
+bodies. MATCH on all $52{,}638$ reassembled records versus stock.
+% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
+%   median_r=1.1668229; ci95_lo=1.159457; ci95_hi=1.170514
+% source: pipeline/results/snpeff_cached_identity.json commit 81d472d
+%   n_reassembled=52638; bodies_equal=true
+A same-day Mac run reported $1.29\times$ and is \emph{withdrawn as a
+headline}: the idle precondition failed (load $5\to 27$). It
+remains a recorded result, not the claim.
+% source: pipeline/results/snpeff_alternating.json commit 81d472d
+%   also copied under mac_side_by_side in snpeff_alternating_carc.json
+%   median_r=1.2907
+
+1000~Genomes CEU chr22 \texttt{-c1} overlap: pairwise
+\texttt{recall\_in\_new} $0.620$--$0.637$; after two samples the
+third is already $0.787$ seen. Overlap is not a speedup.
+% source: pipeline/results/vep_chr22_overlap.json commit 402bd26
+%   pairwise 0.620406, 0.636935, 0.632661; union-of-two 0.787397
+
+\paragraph{Probe miss rate.}
+Synthetic faults F1--F8 and controls C1--C5, both VCF and FASTA,
+$N_{\mathrm{rec}}=2500$, \texttt{probe\_n}${}\in\{50,200,500,2000\}$,
+seed $20260927$. Protocol locked in
+\texttt{PROBE\_EVAL\_PROTOCOL.md} (\texttt{b4c878f};
+audit addendum \texttt{4679264}).
+
+\begin{table}[t]
+\caption{Probe-eval unsafe-ship rates. Full-MATCH is an experimental
+upper bound; \texttt{--verify audit} is the deployed number.
+F6-env is outside the argv-named-input guarantee. F6-file requires
+Linux tracing, which this Mac run did not have.}
+\label{tab:probe}
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Metric & \texttt{--verify full} & \texttt{--verify audit} \\
+\midrule
+Unsafe-ship overall
+  & $33/256$ & $68/288$ \\
+Excl.\ F6 / F6-env+F6-file
+  & $1/224$ & $4/224$ \\
+F6-env (limitation)
+  & $32/32$ & $32/32$ \\
+F6-file (macOS, no \texttt{strace})
+  & --- & $32/32$ \\
+False-refuse (C1--C5 $\times$ 4)
+  & $0/20$ & $0/20$ \\
+Audit-only catch
+  & --- & $12$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+% source: pipeline/results/probe_eval.json commit 96f786b
+%   unsafe_ship_n=33 / n_unsafe_cells=256; false_refuse_n=0
+%   excl F6: 33-32=1 over 256-32=224 (one in-scope miss: vcf F4 p=0.01 probe_n=50)
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0
+%   unsafe_ship_n=68 / 288; false_refuse_n=0; audit_only_catch=12
+%   excl F6-env and F6-file: 4/224
+%   F6-env 32/32; F6-file 32/32 on macOS
+
+In-scope unsafe-ship (56 cells per \texttt{probe\_n}: 7 classes
+$\times$ 4 frequencies $\times$ 2 formats, excluding F6-env and
+F6-file): $3/56$ at $50$, $1/56$ at $200$, $0/56$ at $500$,
+$0/56$ at $2000$.
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0
+%   tabulated from rows; also protocol addendum after 3723d74
+The post-hoc recommendation is \texttt{probe\_n}${}=500$ (about 504
+first-infer tool calls). That recommendation was not locked in
+\texttt{b4c878f} or \texttt{4679264}. The code default is already
+$500$; the savings runner used $8$ (\S\ref{sec:threats}).
+
+\paragraph{HMMER stock screen (no cache, no speedup claim).}
+Exclusive-node stock $t=a+b\cdot n$ on BW25113 ($N=4{,}192$),
+HMMER 3.4, Pfam-A 38.2, \texttt{--cpu 32}. Both modes ADVANCE the
+locked rule. \texttt{paper\_uses}${}={}$\texttt{hmmsearch} (first
+mode that passes; if both, hmmsearch).
+% source: pipeline/results/headline_screen.json commit 81e1aae
+%   hmmscan ceiling=81.092; hmmsearch ceiling=4.725; paper_uses=hmmsearch
+K-12 miss fraction $m=0.0019$ is a best case, not a diverse-collection
+claim.
+% source: pipeline/results/kprot_overlap.json commit 7e82f1f
+%   cited from headline_screen.md / headline_screen.json m field
+
+\subsection{Predictions (not measurements)}
+
+The Part~2 model applies the screen fit to recurrence curves with
+$N$ locked at the screen proteome $4{,}192$, not per-genome
+$N_i$. Numbers in this subsection are \textbf{predictions}.
+
+\begin{table}[t]
+\caption{Predicted later-genome speedup from
+$t=a+b\cdot n$ and median miss fraction $m(k)$ over 20 orderings.
+Not a timed result.}
+\label{tab:pred}
+\centering
+\small
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+Collection & Mode & $k{=}10$ & $k{=}30$ & $k{=}39$ \\
+\midrule
+A (diverse \emph{E.\ coli}) & hmmscan
+  & $2.96\times$ & $4.10\times$ & $4.87\times$ \\
+A & hmmsearch (primary)
+  & $2.12\times$ & $2.52\times$ & $2.73\times$ \\
+B (O157:H7) & hmmscan
+  & $36.7\times$ & $59.8\times$ & $50.7\times$ \\
+B & hmmsearch (primary)
+  & $4.47\times$ & $4.65\times$ & $4.60\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea
+%   A hmmscan k=10/30/39: 2.9561, 4.0967, 4.8676
+%   A hmmsearch k=10/30/39: 2.1195, 2.5213, 2.7340
+%   B hmmscan k=10/30/39: 36.6610, 59.7812, 50.7171
+%   B hmmsearch k=10/30/39: 4.4732, 4.6483, 4.5973
+% SAVINGS_PROTOCOL quotes A hmmscan 2.96x/4.10x and B 36.7x/50.7x;
+%   hmmsearch ``startup-capped (le 4.8x even at K-12 m; on A ~2.1-2.5x
+%   at k=10 and 30)''.
+
+Cumulative predicted wall on the locked savings workloads (30
+genomes of A, 40 of B; $N=4{,}192$ stand-in): A/hmmscan cached
+$31{,}288$~s vs stock $91{,}865$~s (predicted cum.\ $2.94\times$);
+A/hmmsearch predicted cum.\ $2.11\times$. A $3\times$ claim on
+hmmsearch from this experiment is not licensed by the model on
+collection A.
+% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea
+%   savings_budget.A.hmmscan cached_wall_s=31287.6 stock_full_s=91865.1 cum_speedup=2.936
+%   savings_budget.A.hmmsearch cum_speedup=2.111
+% protocol: pipeline/docs/SAVINGS_PROTOCOL.md
+
+\subsection{Not yet measured}
+\label{sec:todo}
+
+\begin{itemize}
+  \item \textbf{HMMER accumulated savings.}
+    Sequential stock-vs-cached wall and CPU over collections A and B,
+    both modes, MATCH plus Dune-style audit (pre-registered).
+    \TODO{jobs pending; no savings result JSON on this branch.}
+  \item \textbf{Running baselines.} The tool's own cache (eggNOG
+    \texttt{-m cache} on the HMMER instance; SnpEff has none at
+    record grain); Riker; ProcessCache; INCR on the same
+    argv. \TODO{comparison not run.}
+  \item \textbf{Linux F6-file and \texttt{snpEff.config}
+    namespace.} Protocol requires Linux \texttt{strace}. The Mac
+    audit run left this INCOMPLETE. \TODO{}
+  \item \textbf{VEP.} Protocol locked; binary and cache not on
+    disk. \TODO{}
+\end{itemize}
+
+\section{Threats to Validity}
+\label{sec:threats}
+
+\paragraph{Savings jobs used \texttt{probe\_n}${=}8$.}
+The HMMER savings runner hard-codes \texttt{PROBE\_N = 8}, while
+probe-eval (post-hoc) recommends $500$ to reach $0/56$ in-scope
+unsafe-ship. A collection result, when it lands, is evidence under
+the smaller probe, not under the recommended size.
+% source: pipeline/scripts/run_hmmer_savings.py (PROBE_N = 8)
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0 (0/56 at probe_n=500)
+% protocol: pipeline/docs/SAVINGS_PROTOCOL.md, pipeline/docs/HEADLINE_SCREEN.md
+%   headline_screen.md: ``both subset-invariant, k = 8''
+
+\paragraph{Whitespace-normalized MATCH for tables.}
+HMMER \texttt{tblout} is not byte-identical across equivalent runs
+(column padding, right-aligned numbers). The paper claims token
+identity (\texttt{split()}), order MATCH for \texttt{hmmscan
+--cut\_ga} and multiset MATCH for \texttt{hmmsearch} with fixed
+$Z$. A reviewer who expects \texttt{cmp} will call this a weaker
+oracle. It is the declared oracle, not a silent switch after a
+mismatch.
+% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
+% protocol: pipeline/docs/SAVINGS_PROTOCOL.md (MATCH table)
+
+\paragraph{F6-env.}
+A tool that reads \texttt{ACTS\_PROBE\_EVAL\_ENV} (or any
+environment variable not in argv) is undetectable by construction.
+All 32 F6-env cells unsafe-ship. This is a limitation of
+argv-named-input namespaces, not a probe bug.
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0
+% protocol: pipeline/docs/PROBE_EVAL_PROTOCOL.md, pipeline/docs/CACHE_KEY_PROTOCOL.md
+
+\paragraph{Tracing only on Linux.}
+Probe-time \texttt{strace} is how F6-file (a hidden config next to
+the input) enters the namespace. The committed audit run is macOS:
+\texttt{trace\_status=unavailable}, F6-file $32/32$ unsafe-ship.
+Linux F6-file plus a \texttt{snpEff.config} check is INCOMPLETE.
+% source: pipeline/results/probe_eval_audit.json commit c1ddad0
+%   f6_note; rows show trace_status unavailable
+
+\paragraph{Mac versus exclusive-node timing.}
+SnpEff Mac $1.29\times$ broke its idle precondition and is not the
+claim. The reference is the exclusive Linux alternating run
+($1.1668\times$). HMMER screen $a$/$b$ were fit on a different
+exclusive node (\texttt{b22-16}) than the SnpEff run
+(\texttt{b22-02}); both are EPYC 7542. Savings jobs, when they
+run, interleave stock and cached on one exclusive node to avoid
+that confound. Do not mix Mac wall times with Linux speedups.
+% source: pipeline/results/snpeff_alternating.json commit 81d472d (Mac, withdrawn headline)
+% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d (reference)
+% source: pipeline/results/headline_screen.json commit 81e1aae (HMMER a, b)
+
+\paragraph{\texttt{hmmscan} is a declared post-hoc deviation.}
+\texttt{HEADLINE\_SCREEN.md} locked \texttt{paper\_uses =
+hmmsearch} if both modes ADVANCE. Both did. The Part~2 model then
+showed hmmsearch is startup-capped on collection A, while hmmscan
+scales with recurrence. \textbf{Both modes are run.} hmmsearch
+stays the pre-registered primary. hmmscan is a post-hoc selection,
+justified by that model and by the official EBI
+\texttt{pfam\_scan.pl} (retrieved 2026-09-27; \texttt{PfamScan.pm}
+sets the binary to \texttt{hmmscan} and default \texttt{--cut\_ga}).
+A $3\times$ sentence, if it appears, is licensed only for the mode
+the measured totals support, and hmmscan $3\times$ on A would be
+post-hoc.
+% protocol: pipeline/docs/SAVINGS_PROTOCOL.md (Deviation from HEADLINE_SCREEN.md)
+% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea (pfam_scan block)
+% source: pipeline/results/headline_screen.json commit 81e1aae (paper_uses=hmmsearch)
+
+\paragraph{Other threats (brief).}
+Probe-eval tools are small Python faults, not SnpEff/HMMER with a
+injected bug. Directory fingerprints hash metadata, not contents.
+\texttt{save()} is last-writer-wins. VEP is absent. Collection C
+is not in the savings run. Synthetic overlap on chr22 CEU is not a
+clinical cohort.
+
+\section{Conclusion}
+\label{sec:conc}
+
+ACTS infers records and field roles of an unmodified VCF or
+FASTA-to-table CLI and memos those records across runs. The
+literature already occupies whole-command incrementalization,
+hand-built per-record caches, MR theory, Dune-style audits, and
+vCache-style $\delta$ bounds. The remaining object is automatic
+record-level reuse inside one invocation, persisted across runs,
+with a measured---not theorized---unsafe-ship rate.
+
+SnpEff shows the method can MATCH and still be a bad headline
+($1.17\times$, startup-capped). Probe-eval shows the deployed
+audit mode misses $4/224$ in-scope cells on this suite, and
+systematically misses env-hidden inputs. Whether FASTA$\to$table
+reuse on recurring proteomes pays for the wrapper is the
+measurement that is still out:
+\TODO{HMMER savings, baselines, comparison}.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+\end{document}
