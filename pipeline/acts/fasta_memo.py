@@ -12,15 +12,17 @@ from acts.infer_fasta import (
     InferError,
     TableContract,
     extract_rows,
+    layout_from_contract,
     load_or_infer_table,
     probe_late_cols,
+    reassemble_cells,
     reassemble_rows,
     refuse_table,
     run_table_tool,
     unclassified_cols,
 )
 from acts.infer_fasta import _group, _group_raw, _split_body
-from acts.table import align_body, body_lines, meta_lines
+from acts.table import align_body, body_lines, join_row, meta_lines, render_table
 
 
 def cached_search(
@@ -71,17 +73,31 @@ def cached_search(
         one = write_fasta(work / "header_harvest.fa", recs[:1])
         header = meta_lines(run_table_tool(argv, one))
 
+    rebuilt_cells: list[list[str]] = []
     rebuilt_body: list[str] = []
     holes = 0
+    layout = layout_from_contract(contract)
     for rec, k in zip(recs, keys):
         raw = cache.get(k)
         if raw is None:
             holes += 1
             continue
-        rebuilt_body.extend(reassemble_rows(rec, json.loads(raw), contract))
+        payload = json.loads(raw)
+        if layout.pinned or contract.pad_widths:
+            rebuilt_cells.extend(reassemble_cells(rec, payload, contract))
+        else:
+            rebuilt_body.extend(reassemble_rows(rec, payload, contract))
 
-    if contract.pad_widths:
-        rebuilt_body = align_body(rebuilt_body, contract.delim, contract.pad_widths)
+    if layout.pinned:
+        rebuilt_body = render_table(
+            rebuilt_cells, layout, query_col=contract.query_col
+        )
+    elif contract.pad_widths:
+        rebuilt_body = align_body(
+            [join_row(row, contract.delim) for row in rebuilt_cells],
+            contract.delim,
+            contract.pad_widths,
+        )
     text = "\n".join(header + rebuilt_body) + ("\n" if header or rebuilt_body else "")
     stats = {
         "n_records": len(recs),
