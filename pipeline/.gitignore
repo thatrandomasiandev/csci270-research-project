@@ -1,6 +1,7 @@
 egas_out/
 acts_out/
 data/
+data_confirm/
 data_formats/
 data_cache/
 data_probe/
