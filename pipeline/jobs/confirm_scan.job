@@ -1,0 +1,106 @@
+#!/bin/bash
+# Exclusive-node paired confirmatory hmmscan run (docs/CONFIRM_PROTOCOL.md).
+# Submit via scripts/submit_confirm.sh — do not sbatch this file bare.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/confirm/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/confirm/logs/%x-%j.err
+
+set -euo pipefail
+
+: "${ACTS_CONFIRM_COLLECTION:?}"
+: "${ACTS_CONFIRM_MODE:?}"
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_confirm_${SLURM_JOB_ID}"
+mkdir -p "${SRC}/results/confirm/logs" "${SCRATCH}"/{bin,work}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load hmmer 2>/dev/null || module load hmmer/3.3.2 2>/dev/null || true
+
+GIT_HASH="unknown"
+if [[ -f "${SRC}/results/confirm/GIT_HASH" ]]; then
+  GIT_HASH="$(tr -d '[:space:]' < "${SRC}/results/confirm/GIT_HASH")"
+fi
+export ACTS_GIT_HASH="${GIT_HASH}"
+
+echo "=== host / cpu ==="
+hostname
+date -Is
+uptime
+nproc
+python3 --version
+lscpu || true
+echo "GIT_HASH=${GIT_HASH}"
+echo "COLLECTION=${ACTS_CONFIRM_COLLECTION} MODE=${ACTS_CONFIRM_MODE}"
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-epyc-7542} NODELIST=${SLURM_NODELIST:-}"
+echo "SCRATCH=${SCRATCH}"
+
+if ! command -v hmmsearch >/dev/null 2>&1; then
+  echo "=== build HMMER 3.4 on the compute node ==="
+  cd "${SCRATCH}"
+  curl -L --fail -o hmmer-3.4.tar.gz http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+  tar xf hmmer-3.4.tar.gz
+  cd hmmer-3.4
+  ./configure --prefix="${SCRATCH}"
+  make -j"${SLURM_CPUS_PER_TASK:-8}"
+  make install
+  export PATH="${SCRATCH}/bin:${PATH}"
+fi
+command -v hmmsearch
+hmmsearch -h | head -n 3
+
+echo "=== stage inputs to node-local scratch ==="
+mkdir -p "${SCRATCH}/pipeline"/{scripts,acts,results,data/hmmer,data/recurrence,data_confirm}
+cp -a "${SRC}/scripts/." "${SCRATCH}/pipeline/scripts/"
+cp -a "${SRC}/acts/." "${SCRATCH}/pipeline/acts/"
+cp "${SRC}/results/headline_screen.json" \
+  "${SRC}/results/recurrence_accessions.json" \
+  "${SRC}/results/confirm_predictions.json" \
+  "${SCRATCH}/pipeline/results/"
+if [[ "${ACTS_CONFIRM_COLLECTION}" == "confirm_E" ]]; then
+  cp -a "${SRC}/data_confirm/E" "${SCRATCH}/pipeline/data_confirm/"
+elif [[ "${ACTS_CONFIRM_COLLECTION}" == "confirm_C" ]]; then
+  cp -a "${SRC}/data/recurrence/C" "${SCRATCH}/pipeline/data/recurrence/"
+else
+  echo "unknown ACTS_CONFIRM_COLLECTION=${ACTS_CONFIRM_COLLECTION}" >&2
+  exit 2
+fi
+if [[ -f "${SRC}/data/hmmer/Pfam-A.hmm.gz" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm.gz" "${SCRATCH}/pipeline/data/hmmer/"
+elif [[ -f "${SRC}/data/hmmer/Pfam-A.hmm" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm" "${SCRATCH}/pipeline/data/hmmer/"
+else
+  echo "=== fetch Pfam-A (399 MB) on the compute node ==="
+  curl -L --fail --retry 3 -o "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz" \
+    https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+fi
+if [[ -f "${SRC}/data/hmmer/Pfam.version.gz" ]]; then
+  cp "${SRC}/data/hmmer/Pfam.version.gz" "${SCRATCH}/pipeline/data/hmmer/"
+fi
+
+export PATH
+export ACTS_PIPELINE_ROOT="${SCRATCH}/pipeline"
+export ACTS_SAVINGS_WORK="${SCRATCH}/work"
+export ACTS_SAVINGS_OUT="${SRC}/results/confirm"
+export ACTS_CONFIRM_COLLECTION
+export ACTS_CONFIRM_MODE
+if [[ -f "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm" ]]; then
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm"
+else
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz"
+fi
+export PYTHONPATH="${SCRATCH}/pipeline"
+
+echo "=== run ==="
+python3 "${SCRATCH}/pipeline/scripts/confirm_run.py"
+echo CONFIRM_DONE

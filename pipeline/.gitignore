@@ -3,6 +3,9 @@ acts_out/
 data/
 !fixtures/llm_arm/data/
 !fixtures/llm_arm/data/**
+data_confirm/
+results/confirm/GIT_HASH
+results/confirm/logs/
 data_formats/
 data_cache/
 data_probe/
