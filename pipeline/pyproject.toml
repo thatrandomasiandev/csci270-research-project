@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "acts-memo"
+version = "0.2.0"
+description = "Local-only record-memoization CLI. Do not publish to PyPI — the name 'acts' is taken (Android Comms Test Suite 0.9)."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Joshua Terranova" }]
+
+[project.scripts]
+acts = "acts.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["acts*"]
+exclude = ["tests*", "fixtures*", "scripts*", "docs*", "results*", "jobs*"]
