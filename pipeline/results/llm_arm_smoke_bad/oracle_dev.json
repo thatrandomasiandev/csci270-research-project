@@ -1,0 +1,28 @@
+{
+  "label": "smoke",
+  "split": "dev",
+  "note": "Mac fixture oracle; not collections A/B; not a CARC timing",
+  "match": {
+    "match": false,
+    "match_type": "order+ws",
+    "rows": 8,
+    "stock_head": [
+      "id\ttoken\tscore",
+      "1\talpha\t5",
+      "2\tbb\t2",
+      "3\tcccc\t4"
+    ],
+    "work_head": [
+      "id\ttoken\tscore",
+      "1\talpha\t6",
+      "2\tbb\t3",
+      "3\tcccc\t5"
+    ]
+  },
+  "walls_s": {
+    "stock_s": 0.020650917002058122,
+    "stock_rc": 0.0,
+    "work_s": 0.021125792001839727,
+    "work_rc": 0.0
+  }
+}

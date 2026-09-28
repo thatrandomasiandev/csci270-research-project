@@ -7,32 +7,30 @@ import argparse
 import json
 from pathlib import Path
 
-HERE = Path(__file__).resolve().parent
+STOCK_SCORE = "def score(token: str) -> int:\n    return len(token)\n"
 
 
 def _safe(src: Path) -> None:
-    text = src.read_text()
-    old = "def score(token: str) -> int:\n    return len(token)\n"
     new = (
         "def score(token: str) -> int:\n"
         "    n = len(token)  # trivial no-op rename; same output\n"
         "    return n\n"
     )
-    if old not in text:
+    text = src.read_text()
+    if STOCK_SCORE not in text:
         raise SystemExit("safe patch: stock score() not found")
-    src.write_text(text.replace(old, new, 1))
+    src.write_text(text.replace(STOCK_SCORE, new, 1))
 
 
 def _bad(src: Path) -> None:
-    text = src.read_text()
-    old = "def score(token: str) -> int:\n    return len(token)\n"
     new = (
         "def score(token: str) -> int:\n"
         "    return len(token) + 1  # changes the output column\n"
     )
-    if old not in text:
+    text = src.read_text()
+    if STOCK_SCORE not in text:
         raise SystemExit("bad patch: stock score() not found")
-    src.write_text(text.replace(old, new, 1))
+    src.write_text(text.replace(STOCK_SCORE, new, 1))
 
 
 def main() -> int:
@@ -40,6 +38,12 @@ def main() -> int:
     p.add_argument("--work", required=True, type=Path)
     p.add_argument("--patch", required=True, choices=("safe", "bad"))
     p.add_argument("--tokens", type=int, default=100)
+    p.add_argument(
+        "--artifacts",
+        type=Path,
+        default=None,
+        help="Write tokens.json / transcript.txt here (not into the source tree).",
+    )
     args = p.parse_args()
     src = args.work / "score_rows.py"
     if not src.is_file():
@@ -48,11 +52,13 @@ def main() -> int:
         _safe(src)
     else:
         _bad(src)
-    transcript = args.work / "transcript.txt"
-    transcript.write_text(
+    art = args.artifacts or args.work
+    art.mkdir(parents=True, exist_ok=True)
+    (art / "transcript.txt").write_text(
         f"fake_agent patch={args.patch}\n"
         f"edited {src.name}\n"
         "no network\n"
+        "no model API\n"
     )
     tokens = {
         "prompt_tokens": max(1, args.tokens // 2),
@@ -60,7 +66,7 @@ def main() -> int:
         "backend": "fake_agent",
         "patch": args.patch,
     }
-    (args.work / "tokens.json").write_text(json.dumps(tokens, indent=2) + "\n")
+    (art / "tokens.json").write_text(json.dumps(tokens, indent=2) + "\n")
     print(json.dumps({"ok": True, "patch": args.patch, **tokens}))
     return 0
 

@@ -1,9 +1,11 @@
 # Pluggable agent backend. Do not hard-code a vendor.
 # Live runs: replace command with the real CLI; set model_id to an exact API id.
+# Josh must name model_id before any live call. Do not start a live optimizer
+# from this file.
 
 [agent]
-# Placeholders: {python} {root} {work} {patch} {task}
-command = "{python} {root}/fixtures/llm_arm/fake_agent.py --work {work} --patch {patch} --tokens 100"
+# Placeholders: {python} {root} {work} {patch} {task} {out} {model_id}
+command = "{python} {root}/fixtures/llm_arm/fake_agent.py --work {work} --patch {patch} --tokens 100 --artifacts {out}"
 
 [budget]
 hours = 8.0
@@ -18,3 +20,6 @@ path = "fixtures/llm_arm/src"
 dev = "fixtures/llm_arm/data/dev.tsv"
 test = "fixtures/llm_arm/data/test.tsv"
 smoke = "fixtures/llm_arm/data/smoke.tsv"
+
+[egas]
+contract = "fixtures/llm_arm/contract.toml"

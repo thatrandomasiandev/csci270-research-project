@@ -1,0 +1,32 @@
+{
+  "contract": "llm_arm_fixture",
+  "method": "llm_arm",
+  "decision": "INCOMPLETE",
+  "reason": "MATCH but n=0 < 3; do not ship on a single run",
+  "amdahl": {
+    "status": "PROCEED",
+    "legal_fraction": 0.8,
+    "max_speedup": 5.000000000000001,
+    "target": 1.1,
+    "reason": "legal f=0.800 allows \u22645.00\u00d7 \u2265 target 1.10\u00d7 (hottest score 0.800)",
+    "hottest": "score"
+  },
+  "bakeoffs": [],
+  "proposed": [
+    {
+      "id": "t2_score",
+      "cls": "T2_DEAD_PATH",
+      "title": "Dead-path skip in score",
+      "hint": "Profile early-exit rates. If most calls fail a cheap predicate, hoist it."
+    },
+    {
+      "id": "t3_score",
+      "cls": "T3_CLOSED_FORM",
+      "title": "Closed form in score",
+      "hint": "Replace a constant-iteration score loop with a multiply if the paper/code allows."
+    }
+  ],
+  "applied": [
+    "agent_source_edit"
+  ]
+}

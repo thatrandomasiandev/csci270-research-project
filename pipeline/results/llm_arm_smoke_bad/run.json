@@ -1,0 +1,13 @@
+{
+  "run_id": "smoke_bad",
+  "elapsed_s": 0.027746333995310124,
+  "tokens": 100,
+  "budget_ok": true,
+  "budget_why": "ok",
+  "agent_exit": 0,
+  "diff_bytes": 666,
+  "changed": true,
+  "dev_match": false,
+  "decision": "REFUSE_MATCH",
+  "builds": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad"
+}

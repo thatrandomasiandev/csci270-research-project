@@ -1,0 +1,7 @@
+{
+  "tool": "llm_arm_fixture",
+  "regions": [
+    {"symbol": "score", "fraction": 0.80, "legal": true, "file": "score_rows.py"},
+    {"symbol": "io", "fraction": 0.20, "legal": false}
+  ]
+}

@@ -1,0 +1,12 @@
+diff -ru /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad/stock_src/score_rows.py /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad/work/score_rows.py
+--- /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad/stock_src/score_rows.py	2026-09-27 22:42:41
++++ /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad/work/score_rows.py	2026-09-27 22:44:24
+@@ -8,7 +8,7 @@
+ 
+ 
+ def score(token: str) -> int:
+-    return len(token)
++    return len(token) + 1  # changes the output column
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
