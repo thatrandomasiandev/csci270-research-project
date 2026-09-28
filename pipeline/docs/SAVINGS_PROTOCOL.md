@@ -336,3 +336,19 @@ because it added FASTA alignment extras) is archived as
 (stash `f723379` / `backup/pre-merge-stash`). See
 `docs/PROBE_COST_RECONCILE.md`.
 
+---
+
+## Addendum 2026-09-27 — analysis code pre-committed
+
+Locked sections above are unchanged. This records that the analyzer
+existed **before** any savings job dumps or `results/savings_summary.*`.
+
+`scripts/analyze_savings.py` was committed at **`00f9403`**
+(`00f9403e55b94dcb16576ef7f63990b0bc64b318`) before any savings
+results existed. Tests: `tests/test_analyze_savings.py` (synthetic
+runner-schema fixtures only; explicit tmp output paths).
+
+Any later change to that script is a **declared deviation** from this
+pre-registration. Do not silently edit the analyzer after job JSON
+lands and then treat the new numbers as the locked analysis.
+
