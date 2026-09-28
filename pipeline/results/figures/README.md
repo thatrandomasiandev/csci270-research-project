@@ -1,6 +1,6 @@
 # Pipeline figures (2026-09-24)
 
-Source numbers only: `../snpeff_timing_fit.json`, `../snpeff_cached_identity.json`, `../vep_chr22_overlap.json`, `../snpeff_identity/report.json`, `../suiteB_dups.csv`, `../suiteB_overlap.csv`, `../snpeff_alternating_carc.json`, `../recurrence_curves.json`, `../probe_eval.json`, `../probe_eval_audit.json`, `../probe_eval_subset_batched.json`, `../probe_eval_subset_singleton.json`, `../hmmer_predicted_speedup_with_probe.json`.
+Source numbers only: `../snpeff_timing_fit.json`, `../snpeff_cached_identity.json`, `../vep_chr22_overlap.json`, `../snpeff_identity/report.json`, `../suiteB_dups.csv`, `../suiteB_overlap.csv`, `../snpeff_alternating_carc.json`, `../recurrence_curves.json`, `../probe_eval.json`, `../probe_eval_audit.json`, `../probe_eval_subset_batched.json`, `../probe_eval_subset_singleton.json`, `../hmmer_predicted_speedup_with_probe.json`. Savings figures 25–28 are written by `scripts/analyze_savings.py` from job dumps (not by `plot_pipeline_figures.py`).
 
 ```bash
 cd pipeline && python3 scripts/plot_pipeline_figures.py
@@ -35,3 +35,7 @@ STAR ≥2× Suite B plots are a different object: `star/bench/results/figures/`.
 | `12_recurrence_A_ecoli.png` | Diverse *E. coli* median m(k) + 10–90% band; 1/3 gate |
 | `13_recurrence_B_o157.png` | O157:H7 (Eppinger lineage / B1) median m(k) |
 | `14_recurrence_C_saureus.png` | *S. aureus* median m(k) |
+| `25_savings_cum_wall.png` | Accumulated stock vs cached wall (no P); hmmsearch PRIMARY on top, hmmscan post-hoc |
+| `26_savings_speedup_vs_k.png` | Per-genome measured speedup vs Part 2 predicted (N=4,192 stand-in) |
+| `27_savings_cum_with_without_P.png` | Cumulative cached wall with and without singleton_8 probe cost P (`probe_n=8`) |
+| `28_savings_stock_pred_error.png` | Sampled stock measured vs `a + b·N_i`; flag \|error\|/measured > 10% |
