@@ -3,6 +3,7 @@
   python3 -m acts probe --kind fastq_pe --r1 A.fq.gz --r2 B.fq.gz
   python3 -m acts run --strategy record_memo --kind lines --input in.txt -- cat
   python3 -m acts run -- STAR …     # refuses identity (not byte-identical)
+  python3 -m acts predict --kind lines --input in.txt -- cat
 """
 
 from __future__ import annotations
@@ -122,6 +123,41 @@ def cmd_overlap(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_predict(args: argparse.Namespace) -> int:
+    from acts.predict import PredictError, run_predict
+
+    if not args.input:
+        print("predict needs --input", file=sys.stderr)
+        return 2
+    tool = list(args.tool)
+    if tool and tool[0] == "--":
+        tool = tool[1:]
+    if not tool:
+        print("predict needs a tool after --", file=sys.stderr)
+        return 2
+    try:
+        report = run_predict(
+            kind=args.kind,
+            input_path=Path(args.input),
+            argv=tool,
+            cache_path=Path(args.cache) if args.cache else None,
+            seed=args.seed,
+            runs=args.runs,
+        )
+    except PredictError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    print(json.dumps(report.as_dict(), indent=2))
+    print(f"decision: {report.decision}")
+    print(f"why:      {report.reason}")
+    if report.predicted_speedup is not None:
+        print(
+            f"ceiling:  {report.predicted_speedup:.3f}×  "
+            "(P omitted — Agent A formula not merged)"
+        )
+    return 0
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     out = Path(args.out) if args.out else Path("acts_out") / args.strategy
     if args.strategy != "record_memo":
@@ -178,6 +214,18 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument("--probe-seed", type=int, default=20260927, dest="probe_seed")
     rn.add_argument("tool", nargs=argparse.REMAINDER)
     rn.set_defaults(func=cmd_run)
+
+    pd = sub.add_parser(
+        "predict",
+        help="time subsets, fit t=a+b·n, estimate m, screen-rule SHIP/REFUSE",
+    )
+    pd.add_argument("--kind", required=True, choices=("vcf", "fasta", "lines"))
+    pd.add_argument("--input", required=True)
+    pd.add_argument("--cache", help="existing record cache (jsonl); omit for first-run m")
+    pd.add_argument("--seed", type=int, default=20260927)
+    pd.add_argument("--runs", type=int, default=3, help="timed repeats per subset size")
+    pd.add_argument("tool", nargs=argparse.REMAINDER)
+    pd.set_defaults(func=cmd_predict)
 
     ov = sub.add_parser("overlap", help="cross-run record overlap (incremental kill test)")
     ov.add_argument("--suiteb", action="store_true")
