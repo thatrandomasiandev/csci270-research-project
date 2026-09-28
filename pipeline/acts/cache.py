@@ -102,6 +102,35 @@ def _path_candidates(token: str) -> list[str]:
     return out
 
 
+def fingerprint_paths(
+    paths: list[str | Path],
+    memo: FingerprintMemo | None = None,
+    *,
+    kind: str = "traced",
+    seen: set[str] | None = None,
+) -> list[dict]:
+    """Fingerprint extra regular files (probe-time traces). Same digest rules as argv files."""
+    memo = memo or FingerprintMemo(None)
+    seen = seen if seen is not None else set()
+    comps: list[dict] = []
+    for raw in paths:
+        p = Path(raw)
+        try:
+            resolved = str(p.resolve())
+        except OSError:
+            resolved = str(p)
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if not p.is_file() and not p.is_symlink():
+            continue
+        try:
+            comps.append({"kind": kind, "path": resolved, "digest": memo.file_digest(p)})
+        except OSError:
+            comps.append({"kind": kind, "path": resolved, "digest": UNREADABLE, "error": UNREADABLE})
+    return comps
+
+
 def fingerprint_inputs(argv: list[str], memo: FingerprintMemo | None = None) -> list[dict]:
     """Fingerprint the tool binary and every existing path named in argv.
 
@@ -173,11 +202,21 @@ def namespace(argv: list[str], kind: str, inputs: list[dict] | None = None) -> s
 
 
 class RecordCache:
-    def __init__(self, path: Path, *, argv: list[str], kind: str):
+    def __init__(
+        self,
+        path: Path,
+        *,
+        argv: list[str],
+        kind: str,
+        extra_files: list[str] | None = None,
+    ):
         self.path = path
         memo = FingerprintMemo(path.with_name(path.name + ".fingerprints.json"))
         t0 = time.perf_counter()
         self.inputs = fingerprint_inputs(argv, memo)
+        seen = {c["path"] for c in self.inputs}
+        if extra_files:
+            self.inputs.extend(fingerprint_paths(extra_files, memo, kind="traced", seen=seen))
         self.fingerprint_s = time.perf_counter() - t0
         memo.save()
         self.ns = namespace(argv, kind, self.inputs)

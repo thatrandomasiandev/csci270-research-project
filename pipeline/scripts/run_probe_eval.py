@@ -36,6 +36,7 @@ from suite import (  # type: ignore
     FREQS,
     N_REC,
     SEED,
+    hidden_cfg_path,
     write_fasta,
     write_vcf,
 )
@@ -70,6 +71,9 @@ def write_inputs(folder: Path, kind: str, cls: str) -> dict[str, Path]:
             paths["in3"] = write_fasta(folder / "fa_3.fa", idx1[:200], desc_suffix=suffix)
     else:
         paths["in3"] = writer(folder / f"{kind}_3.{ 'vcf' if kind == 'vcf' else 'fa'}", idx1[:200])
+    hidden_cfg_path(paths["in1"]).write_text("base\n")
+    hidden_cfg_path(paths["in2"]).write_text("base\n")
+    hidden_cfg_path(paths["in3"]).write_text("heldout\n" if cls == "F6-file" else "base\n")
     return paths
 
 
@@ -115,6 +119,8 @@ def acts_run(
         kind,
         "--probe-n",
         str(probe_n),
+        "--verify",
+        "audit",
         "--cache",
         str(cache),
         "--input",
@@ -143,12 +149,12 @@ def replay(kind: str, cache: Path, inp: Path, tool: list[str], work: Path) -> st
     if kind == "vcf":
         header, body = read_vcf_parts(inp)
         contract = RecordContract.load(vcf_contract(cache))
-        memo = RecordCache(cache, argv=tool, kind="vcf")
+        memo = RecordCache(cache, argv=tool, kind="vcf", extra_files=contract.traced_files)
         rebuilt, _ = cached_annotate(header, body, memo, contract, tool, work)
         return rebuilt
     recs = read_fasta(inp)
     contract = TableContract.load(fa_contract(cache))
-    memo = RecordCache(cache, argv=tool, kind="fasta")
+    memo = RecordCache(cache, argv=tool, kind="fasta", extra_files=contract.traced_files)
     rebuilt, _ = cached_search(recs, memo, contract, tool, work)
     return rebuilt
 
@@ -182,6 +188,7 @@ def first_probe(decision: str) -> str:
         "REFUSE_AMBIGUOUS": "perturbation",
         "REFUSE_MATCH": "match",
         "REFUSE_IDENTITY": "identity",
+        "REFUSE_AUDIT": "audit",
         "SHIP": "",
     }
     return mapping.get(decision, decision)
@@ -204,7 +211,7 @@ def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int) -> dict:
         d2 = acts_run(kind=kind, cache=cache, inp=paths["in2"], out=cell / "r2", tool=tool, probe_n=probe_n, env=env)
 
     env3 = dict(env)
-    if cls == "F6":
+    if cls in {"F6", "F6-env"}:
         env3["ACTS_PROBE_EVAL_ENV"] = "heldout"
 
     third = {"replayed": False, "equal_stock": None}
@@ -229,7 +236,11 @@ def run_cell(work: Path, kind: str, cls: str, p: float, probe_n: int) -> dict:
         "input1": d1,
         "input2": d2,
         "input3": third,
-        "caught_by": first_probe(d1["decision"]) if d1["decision"] != "SHIP" else "",
+        "caught_by": first_probe(d1["decision"])
+        if d1["decision"] != "SHIP"
+        else (first_probe(d2.get("decision", "")) if d2.get("decision") == "REFUSE_AUDIT" else ""),
+        "probe_caught": d1["decision"] != "SHIP",
+        "audit_caught": d1["decision"] == "SHIP" and d2.get("decision") == "REFUSE_AUDIT",
         "unsafe_ship": unsafe_ship,
         "false_refuse": cls.startswith("C") and (d1["decision"] != "SHIP" or d2.get("decision") != "SHIP"),
     }
@@ -259,15 +270,19 @@ def summarize(rows: list[dict]) -> dict:
         }
 
     catch_p = {}
+    f6_limit = {"F6-env"}
     for p in FREQS:
-        at = [r for r in unsafe if r["p"] == p and r["class"] != "F6"]
+        at = [r for r in unsafe if r["p"] == p and r["class"] not in f6_limit]
         catch_p[str(p)] = {
             "n": len(at),
-            "caught": sum(1 for r in at if r["input1"]["decision"] != "SHIP"),
+            "probe_caught": sum(1 for r in at if r.get("probe_caught")),
+            "audit_caught": sum(1 for r in at if r.get("audit_caught")),
+            "caught": sum(1 for r in at if r.get("probe_caught") or r.get("audit_caught")),
         }
 
     probe_counts = sum_counter(r["caught_by"] for r in unsafe if r["caught_by"])
-    refused = sum(1 for r in unsafe if r["input1"]["decision"] != "SHIP")
+    refused = sum(1 for r in unsafe if r.get("probe_caught") or r.get("audit_caught"))
+    in_scope = [r for r in unsafe if r["class"] != "F6-env"]
 
     reliable = {}
     for n in PROBE_NS:
@@ -276,9 +291,11 @@ def summarize(rows: list[dict]) -> dict:
             cells = [
                 r
                 for r in unsafe
-                if r["probe_n"] == n and r["p"] == p and r["class"] != "F6"
+                if r["probe_n"] == n
+                and r["p"] == p
+                and r["class"] not in {"F6-env", "F6-file"}
             ]
-            if cells and all(r["input1"]["decision"] != "SHIP" for r in cells):
+            if cells and all(r.get("probe_caught") or r.get("audit_caught") for r in cells):
                 hit = p
         reliable[str(n)] = hit if hit is not None else "none"
 
@@ -286,10 +303,14 @@ def summarize(rows: list[dict]) -> dict:
         "n_unsafe_cells": len(unsafe),
         "unsafe_ship_n": len(ships),
         "unsafe_ship_rate": (len(ships) / len(unsafe)) if unsafe else None,
+        "in_scope_n": len(in_scope),
+        "in_scope_unsafe_ship_n": sum(1 for r in in_scope if r["unsafe_ship"]),
         "false_refuse_n": sum(1 for r in controls if r["false_refuse"]),
         "false_refuse_rate": (
             sum(1 for r in controls if r["false_refuse"]) / len(controls) if controls else None
         ),
+        "probe_only_catch": sum(1 for r in unsafe if r.get("probe_caught")),
+        "audit_only_catch": sum(1 for r in unsafe if r.get("audit_caught")),
         "catch_rate_per_probe": {
             k: (v / refused) if refused else 0.0 for k, v in probe_counts.items()
         },
@@ -298,7 +319,7 @@ def summarize(rows: list[dict]) -> dict:
         },
         "per_class": per_class,
         "smallest_p_reliably_caught": reliable,
-        "f6_note": "F6 is outside the method guarantee (argv-named inputs only).",
+        "f6_note": "F6-env is outside the method guarantee. F6-file is caught only with Linux tracing.",
     }
 
 
@@ -372,12 +393,13 @@ def _jobs() -> list[tuple[str, str, float, int]]:
 
 def _write_payload(dest: Path, rows: list[dict], work: Path, *, finished: bool) -> dict:
     summary = summarize(rows)
-    fig = ROOT / "results" / "figures" / "12_probe_eval_catch.png"
+    fig = ROOT / "results" / "figures" / "15_probe_eval_audit_catch.png"
     if finished and rows:
         plot(rows, fig)
     payload = {
         "protocol": PROTOCOL,
-        "git_protocol": "b4c878f",
+        "git_protocol": "4679264",
+        "verify": "audit",
         "seed": SEED,
         "n_rec": N_REC,
         "probe_ns": list(PROBE_NS),
@@ -395,7 +417,7 @@ def _write_payload(dest: Path, rows: list[dict], work: Path, *, finished: bool) 
 
 def main() -> int:
     work = Path(tempfile.mkdtemp(prefix="acts_probe_eval_"))
-    dest = ROOT / "results" / "probe_eval.json"
+    dest = ROOT / "results" / "probe_eval_audit.json"
     jobs = _jobs()
     rows: list[dict] = []
     workers = min(4, os.cpu_count() or 2)

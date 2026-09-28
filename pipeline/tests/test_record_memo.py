@@ -32,6 +32,7 @@ class RecordMemoTests(unittest.TestCase):
                 argv=["cat"],
                 input_path=FIXTURE,
                 out_dir=out,
+                verify="full",
             ).run()
             self.assertEqual(rec.decision, "SHIP")
             self.assertEqual(

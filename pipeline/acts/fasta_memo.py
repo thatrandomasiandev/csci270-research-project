@@ -90,6 +90,7 @@ def cached_search(
         "n_cache_holes": holes,
         "cache_size_after": len(cache),
         "match": contract.match,
+        "hit_recs": hits,
     }
     return text, stats
 
@@ -105,10 +106,13 @@ def prepare_table_contract(
     cache_path: Path,
     *,
     probe_n: int = PROBE_N,
+    probe_seed: int = 20260927,
 ) -> TableContract:
     path = contract_path_for(cache_path)
     try:
-        return load_or_infer_table(argv, recs, work / "probe", path, probe_n=probe_n)
+        return load_or_infer_table(
+            argv, recs, work / "probe", path, probe_n=probe_n, probe_seed=probe_seed
+        )
     except InferError as exc:
         rec = refuse_table(exc, argv)
         rec.save(path)

@@ -6,22 +6,25 @@ Within-file dedup is the first-run special case of the same cache.
 
 from __future__ import annotations
 
+import json
 import random
 import subprocess
 from pathlib import Path
 
-from acts.audit import AuditReport, sample_hits
+from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, AuditReport, pick_audit, sample_hits
 from acts.cache import RecordCache
 from acts.infer import identity_risk_for_argv
-from acts.infer_vcf import InferError, run_vcf_tool
+from acts.infer_vcf import InferError, reassemble_record, run_vcf_tool, write_vcf
 from acts.fasta import read_fasta
 from acts.infer_fasta import InferError as FastaInferError
 from acts.infer_fasta import run_table_tool
 from acts.records import DupReport, probe_fasta, probe_fastq_pe, probe_lines
+from acts.sample import PROBE_SEED
 from acts.strategies.base import Strategy, StrategyResult
 from acts.table import tables_match
 from acts.vcf import bodies_equal, body_lines
 from acts.vcf_memo import cached_annotate, contract_path_for, prepare_contract, read_vcf_parts
+from acts.vcf_fields import cache_key
 
 RARE = 0.95
 
@@ -40,9 +43,11 @@ class RecordMemo(Strategy):
         out_dir: Path,
         cache_path: Path | None = None,
         unique_frac_refuse: float = RARE,
-        audit_p: float = 0.0,
-        audit_seed: int = 0,
+        audit_p: float | None = None,
+        audit_seed: int = AUDIT_SEED,
         probe_n: int = 500,
+        probe_seed: int = PROBE_SEED,
+        verify: str = "audit",
     ):
         self.kind = kind
         self.argv = argv
@@ -52,9 +57,11 @@ class RecordMemo(Strategy):
         self.out_dir = out_dir
         self.cache_path = cache_path
         self.unique_frac_refuse = unique_frac_refuse
-        self.audit_p = audit_p
+        self.verify = verify if verify in {"audit", "full"} else "audit"
+        self.audit_p = AUDIT_P if audit_p is None and self.verify == "audit" else (audit_p or 0.0)
         self.audit_seed = audit_seed
         self.probe_n = probe_n
+        self.probe_seed = probe_seed
 
     def probe(self) -> DupReport:
         if self.kind == "fastq_pe":
@@ -127,8 +134,7 @@ class RecordMemo(Strategy):
         assert self.input_path is not None
         header, body = read_vcf_parts(self.input_path)
         cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
-        cache = RecordCache(cache_path, argv=self.argv, kind="vcf")
-        extra.update({"n": len(body), "cache_size": len(cache)})
+        extra.update({"n": len(body), "verify": self.verify})
         try:
             contract = prepare_contract(
                 self.argv,
@@ -137,12 +143,19 @@ class RecordMemo(Strategy):
                 self.out_dir / "infer",
                 cache_path,
                 probe_n=self.probe_n,
+                probe_seed=self.probe_seed,
             )
         except InferError as exc:
             rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
             rec.write(self.out_dir / "decision.txt")
             return rec
 
+        cache = RecordCache(
+            cache_path, argv=self.argv, kind="vcf", extra_files=contract.traced_files
+        )
+        extra["cache_size"] = len(cache)
+        extra["trace_status"] = contract.trace_status
+        extra["traced_n"] = str(len(contract.traced_files))
         extra["cache_key_fields"] = ",".join(contract.cache_key_fields)
         extra["produced_info"] = ",".join(contract.produced_info_order)
         extra["widen"] = ",".join(contract.widen_history)
@@ -158,36 +171,56 @@ class RecordMemo(Strategy):
             )
             extra["late_key_probes"] = ",".join(contract.late_key_probes)
         except InferError as exc:
-            rec = StrategyResult(self.name, exc.decision, exc.reason, {**extra, **{}})
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
             rec.write(self.out_dir / "decision.txt")
             return rec
 
         extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
         (self.out_dir / "reassembled.out").write_text(rebuilt)
-        stock = run_vcf_tool(self.argv, self.input_path)
-        (self.out_dir / "full.out").write_text(stock)
         extra["n_reassembled"] = len(body_lines(rebuilt))
-        extra["n_stock"] = len(body_lines(stock))
-        if not bodies_equal(rebuilt, stock) or stats["n_cache_holes"]:
-            rec = StrategyResult(
-                self.name,
-                "REFUSE_MATCH",
-                "reassembled body is not MATCH to a full run",
-                extra,
-            )
+        if stats["n_cache_holes"]:
+            rec = StrategyResult(self.name, "REFUSE_MATCH", "cache hole after miss run", extra)
             rec.write(self.out_dir / "decision.txt")
             return rec
 
-        cache.save()
-        rec = StrategyResult(
-            self.name,
-            "SHIP",
-            (
+        if self.verify == "full":
+            stock = run_vcf_tool(self.argv, self.input_path)
+            (self.out_dir / "full.out").write_text(stock)
+            extra["n_stock"] = len(body_lines(stock))
+            if not bodies_equal(rebuilt, stock):
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_MATCH",
+                    "reassembled body is not MATCH to a full run",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
                 f"MATCH body; hits={stats['n_hits']} misses={stats['n_misses']}; "
                 f"key={','.join(contract.cache_key_fields)}"
-            ),
-            extra,
-        )
+            )
+        else:
+            audit = self._audit_vcf(header, stats.get("hit_records") or [], cache, contract)
+            extra["audit_checked"] = audit.n_checked
+            extra["audit_mismatch"] = audit.n_mismatch
+            if not audit.ok:
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_AUDIT",
+                    f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"audit p={audit.p} checked={audit.n_checked}; "
+                f"hits={stats['n_hits']} misses={stats['n_misses']}; "
+                f"key={','.join(contract.cache_key_fields)}"
+            )
+
+        cache.save()
+        rec = StrategyResult(self.name, "SHIP", why, extra)
         rec.write(self.out_dir / "decision.txt")
         return rec
 
@@ -197,8 +230,7 @@ class RecordMemo(Strategy):
         assert self.input_path is not None
         recs = read_fasta(self.input_path)
         cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
-        cache = RecordCache(cache_path, argv=self.argv, kind="fasta")
-        extra.update({"n": len(recs), "cache_size": len(cache)})
+        extra.update({"n": len(recs), "verify": self.verify})
         try:
             contract = prepare_table_contract(
                 self.argv,
@@ -206,12 +238,19 @@ class RecordMemo(Strategy):
                 self.out_dir / "infer",
                 cache_path,
                 probe_n=self.probe_n,
+                probe_seed=self.probe_seed,
             )
         except FastaInferError as exc:
             rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
             rec.write(self.out_dir / "decision.txt")
             return rec
 
+        cache = RecordCache(
+            cache_path, argv=self.argv, kind="fasta", extra_files=contract.traced_files
+        )
+        extra["cache_size"] = len(cache)
+        extra["trace_status"] = contract.trace_status
+        extra["traced_n"] = str(len(contract.traced_files))
         extra["match"] = contract.match
         extra["query_col"] = str(contract.query_col)
         try:
@@ -231,32 +270,51 @@ class RecordMemo(Strategy):
 
         extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
         (self.out_dir / "reassembled.out").write_text(rebuilt)
-        stock = run_table_tool(self.argv, self.input_path)
-        (self.out_dir / "full.out").write_text(stock)
         extra["n_reassembled"] = len(rebuilt.splitlines())
-        matched = tables_match(
-            rebuilt, stock, contract.match, match_ws=contract.match_ws
-        )
-        if not matched or stats["n_cache_holes"]:
-            rec = StrategyResult(
-                self.name,
-                "REFUSE_MATCH",
-                "reassembled body is not MATCH to a full run",
-                extra,
-            )
+        if stats["n_cache_holes"]:
+            rec = StrategyResult(self.name, "REFUSE_MATCH", "cache hole after miss run", extra)
             rec.write(self.out_dir / "decision.txt")
             return rec
 
-        cache.save()
-        rec = StrategyResult(
-            self.name,
-            "SHIP",
-            (
+        if self.verify == "full":
+            stock = run_table_tool(self.argv, self.input_path)
+            (self.out_dir / "full.out").write_text(stock)
+            matched = tables_match(
+                rebuilt, stock, contract.match, match_ws=contract.match_ws
+            )
+            if not matched:
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_MATCH",
+                    "reassembled body is not MATCH to a full run",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
                 f"MATCH {contract.match}; hits={stats['n_hits']} "
                 f"misses={stats['n_misses']}"
-            ),
-            extra,
-        )
+            )
+        else:
+            audit = self._audit_fasta(stats.get("hit_recs") or [], cache, contract)
+            extra["audit_checked"] = audit.n_checked
+            extra["audit_mismatch"] = audit.n_mismatch
+            if not audit.ok:
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_AUDIT",
+                    f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"audit p={audit.p} checked={audit.n_checked}; "
+                f"hits={stats['n_hits']} misses={stats['n_misses']}"
+            )
+
+        cache.save()
+        rec = StrategyResult(self.name, "SHIP", why, extra)
         rec.write(self.out_dir / "decision.txt")
         return rec
 
@@ -328,34 +386,54 @@ class RecordMemo(Strategy):
             rec.write(self.out_dir / "decision.txt")
             return rec
 
-        if self.audit_p > 0 and hits:
-            audit = self._audit(hits, mapping)
-            extra["audit_checked"] = audit.n_checked
-            extra["audit_mismatch"] = audit.n_mismatch
-            if not audit.ok:
+        if self.verify == "audit":
+            if hits:
+                audit = self._audit(hits, mapping)
+                extra["audit_checked"] = audit.n_checked
+                extra["audit_mismatch"] = audit.n_mismatch
+                if not audit.ok:
+                    rec = StrategyResult(
+                        self.name,
+                        "REFUSE_AUDIT",
+                        f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                        extra,
+                    )
+                    rec.write(self.out_dir / "decision.txt")
+                    return rec
+        else:
+            if self.audit_p > 0 and hits:
+                audit = self._audit(hits, mapping)
+                extra["audit_checked"] = audit.n_checked
+                extra["audit_mismatch"] = audit.n_mismatch
+                if not audit.ok:
+                    rec = StrategyResult(
+                        self.name,
+                        "REFUSE_AUDIT",
+                        f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                        extra,
+                    )
+                    rec.write(self.out_dir / "decision.txt")
+                    return rec
+            f_out = self.out_dir / "full.out"
+            self._exec(self.argv, self.input_path, f_out)
+            rebuilt = [mapping[line] for line in src]
+            r_out = self.out_dir / "reassembled.out"
+            r_out.write_text("\n".join(rebuilt) + ("\n" if rebuilt else ""))
+            if r_out.read_bytes() != f_out.read_bytes():
                 rec = StrategyResult(
                     self.name,
-                    "REFUSE_AUDIT",
-                    f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                    "REFUSE_MATCH",
+                    "reassembled output is not byte-identical to a full run",
                     extra,
                 )
                 rec.write(self.out_dir / "decision.txt")
                 return rec
 
-        f_out = self.out_dir / "full.out"
-        r_out = self.out_dir / "reassembled.out"
-        self._exec(self.argv, self.input_path, f_out)
-        rebuilt = [mapping[line] for line in src]
-        r_out.write_text("\n".join(rebuilt) + ("\n" if rebuilt else ""))
-        if r_out.read_bytes() != f_out.read_bytes():
-            rec = StrategyResult(
-                self.name,
-                "REFUSE_MATCH",
-                "reassembled output is not byte-identical to a full run",
-                extra,
+        if self.verify == "audit":
+            rebuilt = [mapping[line] for line in src]
+            (self.out_dir / "reassembled.out").write_text(
+                "\n".join(rebuilt) + ("\n" if rebuilt else "")
             )
-            rec.write(self.out_dir / "decision.txt")
-            return rec
 
         cache.save()
         rec = StrategyResult(
@@ -370,9 +448,44 @@ class RecordMemo(Strategy):
         rec.write(self.out_dir / "decision.txt")
         return rec
 
+    def _audit_vcf(self, header: list[str], hits: list[str], cache, contract) -> AuditReport:
+        rng = random.Random(self.audit_seed)
+        chosen = pick_audit(hits, p=self.audit_p, floor=AUDIT_FLOOR, rng=rng)
+        if not chosen:
+            return AuditReport(n_hits=len(hits), n_checked=0, n_mismatch=0, p=self.audit_p)
+        work = self.out_dir / "audit"
+        path = write_vcf(work / "audit.vcf", header, chosen)
+        got = run_vcf_tool(self.argv, path)
+        expected_body = []
+        for ln in chosen:
+            raw = cache.get(cache_key(ln, contract.cache_key_fields))
+            if raw is None:
+                return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=1, p=self.audit_p)
+            expected_body.append(reassemble_record(ln, json.loads(raw), contract))
+        expected = "\n".join(header + expected_body) + "\n"
+        bad = 0 if bodies_equal(got, expected) else 1
+        return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=bad, p=self.audit_p)
+
+    def _audit_fasta(self, hits: list, cache, contract) -> AuditReport:
+        from acts.fasta import write_fasta
+        from acts.fasta_memo import cached_search
+
+        rng = random.Random(self.audit_seed)
+        chosen = pick_audit(
+            hits, p=self.audit_p, floor=AUDIT_FLOOR, rng=rng, key=lambda r: r.key
+        )
+        if not chosen:
+            return AuditReport(n_hits=len(hits), n_checked=0, n_mismatch=0, p=self.audit_p)
+        work = self.out_dir / "audit"
+        path = write_fasta(work / "audit.fa", chosen)
+        got = run_table_tool(self.argv, path)
+        rebuilt, _ = cached_search(chosen, cache, contract, self.argv, work / "re")
+        bad = 0 if tables_match(rebuilt, got, contract.match, match_ws=contract.match_ws) else 1
+        return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=bad, p=self.audit_p)
+
     def _audit(self, hits: list[str], mapping: dict[str, str | None]) -> AuditReport:
         rng = random.Random(self.audit_seed)
-        chosen = sample_hits(hits, p=self.audit_p, rng=rng)
+        chosen = pick_audit(hits, p=self.audit_p, floor=AUDIT_FLOOR, rng=rng)
         bad = 0
         if chosen:
             a_in = self.out_dir / "audit.in"

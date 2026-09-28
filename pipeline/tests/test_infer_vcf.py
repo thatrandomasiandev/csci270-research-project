@@ -35,6 +35,7 @@ class InferVcfFixtureTests(unittest.TestCase):
                 argv=_argv("annotate_1to1.py"),
                 input_path=TINY,
                 out_dir=Path(td),
+                verify="full",
             ).run()
             self.assertEqual(rec.decision, "SHIP", rec.reason)
             self.assertTrue(

@@ -9,6 +9,8 @@ from pathlib import Path
 
 from acts.fasta import FastaRec, perturb_fasta, shuffle_fasta, write_fasta
 from acts.infer_vcf import InferError, run_vcf_tool
+from acts.sample import PROBE_SEED, sample_records
+from acts.trace import run_traced
 from acts.table import (
     body_lines,
     bodies_equal,
@@ -43,7 +45,10 @@ class TableContract:
     match_ws: bool = False
     widen_history: list[str] = field(default_factory=list)
     late_key_probes: list[str] = field(default_factory=list)
+    traced_files: list[str] = field(default_factory=list)
+    trace_status: str = "unavailable"
     probe_n: int = 0
+    probe_seed: int = PROBE_SEED
     decision: str = "OK"
     reason: str = ""
 
@@ -59,6 +64,9 @@ class TableContract:
         raw.setdefault("pad_widths", [])
         raw.setdefault("empty_desc", "")
         raw.setdefault("match_ws", False)
+        raw.setdefault("traced_files", [])
+        raw.setdefault("trace_status", "unavailable")
+        raw.setdefault("probe_seed", PROBE_SEED)
         return cls(**raw)
 
 
@@ -256,14 +264,17 @@ def infer_table_contract(
     work: Path,
     *,
     probe_n: int = PROBE_N,
+    probe_seed: int = PROBE_SEED,
 ) -> TableContract:
-    probe = recs[: min(probe_n, len(recs))]
+    probe = sample_records(recs, min(probe_n, len(recs)), seed=probe_seed)
     if not probe:
         raise InferError("REFUSE_AMBIGUOUS", "empty FASTA")
     work.mkdir(parents=True, exist_ok=True)
 
     p1 = write_fasta(work / "probe.fa", probe)
-    out1 = run_table_tool(argv, p1)
+    out1, traced_files, trace_status = run_traced(
+        argv, input_path=p1, work=work / "trace", runner=run_table_tool
+    )
     out2 = run_table_tool(argv, p1)
     if not bodies_equal(out1, out2):
         raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
@@ -319,7 +330,10 @@ def infer_table_contract(
         pad_widths=pad_widths,
         empty_desc=empty_desc,
         match_ws=match_ws,
+        traced_files=traced_files,
+        trace_status=trace_status,
         probe_n=len(probe),
+        probe_seed=probe_seed,
         decision="OK",
         reason="probe passed",
     )
@@ -458,12 +472,15 @@ def load_or_infer_table(
     contract_path: Path,
     *,
     probe_n: int = PROBE_N,
+    probe_seed: int = PROBE_SEED,
 ) -> TableContract:
     if contract_path.is_file():
         saved = TableContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "fasta" and saved.decision == "OK":
             return saved
-    contract = infer_table_contract(argv, recs, work, probe_n=probe_n)
+    contract = infer_table_contract(
+        argv, recs, work, probe_n=probe_n, probe_seed=probe_seed
+    )
     contract.save(contract_path)
     return contract
 

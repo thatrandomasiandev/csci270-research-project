@@ -9,7 +9,7 @@ import time
 from pathlib import Path
 
 SEED = 20260927
-CLASSES = ("F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8")
+CLASSES = ("F1", "F2", "F3", "F4", "F5", "F6-env", "F6-file", "F7", "F8")
 FREQS = (1.0, 0.1, 0.01, 0.001)
 FORMATS = ("vcf", "fasta")
 CONTROLS = ("C1", "C2", "C3", "C4", "C5")
@@ -27,7 +27,7 @@ VCF_HEADER = [
 def is_live(cls: str, fmt: str, index: int, p: float, *, seed: int = SEED) -> bool:
     if cls.startswith("C"):
         return False
-    if cls == "F6":
+    if cls in {"F6", "F6-env", "F6-file"}:
         return True
     raw = hashlib.sha256(f"{seed}|{cls}|{fmt}|{index}".encode()).hexdigest()
     return int(raw[:8], 16) % 10000 < int(round(p * 10000))
@@ -98,7 +98,18 @@ def _safe_score(seq: str) -> int:
     return sum(ord(c) for c in seq) % 97
 
 
-def emit_vcf(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
+def hidden_cfg_path(src: Path) -> Path:
+    return src.parent / "hidden.cfg"
+
+
+def hidden_token(src: Path) -> str:
+    path = hidden_cfg_path(src)
+    if path.is_file():
+        return path.read_text().strip() or "base"
+    return "base"
+
+
+def emit_vcf(text: str, cls: str, p: float, *, seed: int = SEED, src: Path | None = None) -> str:
     body = parse_vcf_body(text)
     header = [ln for ln in text.splitlines() if ln.startswith("#")]
     n = len(body)
@@ -132,8 +143,10 @@ def emit_vcf(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
             ann = _safe_ann(idx)
             if live:
                 rare = ident
-        elif cls == "F6":
+        elif cls in {"F6", "F6-env"}:
             ann = f"env:{env}:{key}"
+        elif cls == "F6-file":
+            ann = f"file:{hidden_token(src or Path('.'))}:{key}"
         elif cls == "F7" and live:
             ann = f"t{time.time_ns()}"
         elif cls == "F8" and live and prev_key:
@@ -151,7 +164,7 @@ def emit_vcf(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
     return "\n".join(out) + "\n"
 
 
-def emit_fasta(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
+def emit_fasta(text: str, cls: str, p: float, *, seed: int = SEED, src: Path | None = None) -> str:
     recs = parse_fasta(text)
     n = len(recs)
     env = os.environ.get("ACTS_PROBE_EVAL_ENV", "base")
@@ -176,8 +189,10 @@ def emit_fasta(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
             score = sum(ord(c) for c in desc) % 97
         elif cls == "F5" and live:
             extra = desc
-        elif cls == "F6":
+        elif cls in {"F6", "F6-env"}:
             score = sum(ord(c) for c in env) % 97
+        elif cls == "F6-file":
+            score = sum(ord(c) for c in hidden_token(src or Path("."))) % 97
         elif cls == "F7" and live:
             score = time.time_ns() % 97
         row_a = f"{name}\t{score}\t{extra}"
@@ -199,7 +214,7 @@ def emit_fasta(text: str, cls: str, p: float, *, seed: int = SEED) -> str:
 def run_tool(kind: str, cls: str, p: float, src: Path, *, seed: int = SEED) -> str:
     text = src.read_text()
     if kind == "vcf":
-        return emit_vcf(text, cls, p, seed=seed)
+        return emit_vcf(text, cls, p, seed=seed, src=src)
     if kind == "fasta":
-        return emit_fasta(text, cls, p, seed=seed)
+        return emit_fasta(text, cls, p, seed=seed, src=src)
     raise ValueError(kind)

@@ -106,6 +106,7 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] FASTA→table record format (`2ef93ff` protocol; fixtures + local search in `results/inference_fasta_local.json`)
 - [~] HMMER accumulated-savings — addendum `ef457b6`; runner `dc5ead9`; `--constraint=epyc-7542`. Jobs **12394300** `sav_A_scan` 22h, **12394301** `sav_A_search` 7h, **12394503** `sav_B_scan` 12h, **12394504** `sav_B_search` 6h (all PD). Collect later.
 - [x] Probe miss-rate (protocol `b4c878f`; local `pipeline/results/probe_eval.json`). 276 cells. Unsafe-ship **33/256** (32 are F6; **1/224** excl. F6 = vcf F4 at *p*=0.01, `probe_n`=50). False-refuse **0/20**. F6 is outside the argv-named-input guarantee.
+- [x] Deployed verification (addendum `4679264`): `--verify audit` default; random probes; Linux file tracing. Re-measure `pipeline/results/probe_eval_audit.json`. Unsafe-ship **68/288** (32 F6-env + 32 F6-file on macOS + 4 in-scope). Excl. F6* **4/224**. False-refuse **0/20**. Audit-only catch **12**. Linux F6-file + `snpEff.config` **INCOMPLETE** (no Docker daemon; Discovery SSH timed out).
 - [ ] Running baselines (the tool’s own cache; Riker / ProcessCache)
 - [ ] Read ProcessCache thesis + vCache (ICLR 2026) before a paper draft (`literature/READING.md`)
 - [x] Write-up draft — conference paper at `star/writeup/paper/main.pdf` (update when CARC 10/10 lands)

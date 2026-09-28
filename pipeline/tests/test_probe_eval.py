@@ -18,7 +18,8 @@ PY = sys.executable
 
 class ProbeEvalSuiteTests(unittest.TestCase):
     def test_f6_always_live(self) -> None:
-        self.assertTrue(is_live("F6", "vcf", 0, 0.001))
+        self.assertTrue(is_live("F6-env", "vcf", 0, 0.001))
+        self.assertTrue(is_live("F6-file", "vcf", 0, 0.001))
         self.assertFalse(is_live("C1", "vcf", 0, 1.0))
 
     def test_live_is_deterministic(self) -> None:

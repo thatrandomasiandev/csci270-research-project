@@ -8,6 +8,8 @@ from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from acts.sample import PROBE_SEED, sample_records
+from acts.trace import run_traced
 from acts.vcf import bodies_equal, body_lines, is_header, shuffle_body, variant_key
 from acts.vcf_fields import (
     COL_FILTER,
@@ -51,7 +53,10 @@ class RecordContract:
     sample_role: str
     widen_history: list[str] = field(default_factory=list)
     late_key_probes: list[str] = field(default_factory=list)
+    traced_files: list[str] = field(default_factory=list)
+    trace_status: str = "unavailable"
     probe_n: int = 0
+    probe_seed: int = PROBE_SEED
     decision: str = "OK"
     reason: str = ""
 
@@ -64,6 +69,9 @@ class RecordContract:
         raw = json.loads(path.read_text())
         raw.setdefault("late_key_probes", [])
         raw.setdefault("widen_history", [])
+        raw.setdefault("traced_files", [])
+        raw.setdefault("trace_status", "unavailable")
+        raw.setdefault("probe_seed", PROBE_SEED)
         return cls(**raw)
 
 
@@ -348,15 +356,18 @@ def infer_contract(
     work: Path,
     *,
     probe_n: int = PROBE_N,
+    probe_seed: int = PROBE_SEED,
     singleton_workers: int = 8,
 ) -> RecordContract:
-    probe = body[: min(probe_n, len(body))]
+    probe = sample_records(body, min(probe_n, len(body)), seed=probe_seed)
     if not probe:
         raise InferError("REFUSE_AMBIGUOUS", "empty VCF body")
     work.mkdir(parents=True, exist_ok=True)
 
     p1 = write_vcf(work / "probe.vcf", header, probe)
-    out1 = run_vcf_tool(argv, p1)
+    out1, traced_files, trace_status = run_traced(
+        argv, input_path=p1, work=work / "trace", runner=run_vcf_tool
+    )
     out2 = run_vcf_tool(argv, p1)
     if not bodies_equal(out1, out2):
         raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
@@ -450,7 +461,10 @@ def infer_contract(
         produced_info_order=produced_order,
         sample_role=classified["sample_role"],
         widen_history=widen_history,
+        traced_files=traced_files,
+        trace_status=trace_status,
         probe_n=len(probe),
+        probe_seed=probe_seed,
         decision="OK",
         reason="probe passed",
     )
@@ -520,12 +534,15 @@ def load_or_infer(
     contract_path: Path,
     *,
     probe_n: int = PROBE_N,
+    probe_seed: int = PROBE_SEED,
 ) -> RecordContract:
     if contract_path.is_file():
         saved = RecordContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "vcf" and saved.decision == "OK":
             return saved
-    contract = infer_contract(argv, header, body, work, probe_n=probe_n)
+    contract = infer_contract(
+        argv, header, body, work, probe_n=probe_n, probe_seed=probe_seed
+    )
     contract.save(contract_path)
     return contract
 

@@ -139,7 +139,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         out_dir=out,
         cache_path=Path(args.cache) if args.cache else None,
         audit_p=args.audit_p,
+        audit_seed=args.audit_seed,
         probe_n=args.probe_n,
+        probe_seed=args.probe_seed,
+        verify=args.verify,
     )
     rec = memo.run()
     print(f"strategy: {rec.strategy}")
@@ -168,8 +171,11 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument("--r2")
     rn.add_argument("-o", "--out")
     rn.add_argument("--cache", help="persistent record cache (jsonl); default out_dir/cache.jsonl")
-    rn.add_argument("--audit-p", type=float, default=0.0, dest="audit_p")
+    rn.add_argument("--verify", choices=("audit", "full"), default="audit")
+    rn.add_argument("--audit-p", type=float, default=None, dest="audit_p")
+    rn.add_argument("--audit-seed", type=int, default=20260927, dest="audit_seed")
     rn.add_argument("--probe-n", type=int, default=500, dest="probe_n")
+    rn.add_argument("--probe-seed", type=int, default=20260927, dest="probe_seed")
     rn.add_argument("tool", nargs=argparse.REMAINDER)
     rn.set_defaults(func=cmd_run)
 

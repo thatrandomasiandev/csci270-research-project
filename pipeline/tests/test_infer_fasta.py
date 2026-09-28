@@ -31,6 +31,7 @@ class InferFastaFixtureTests(unittest.TestCase):
                 argv=_argv("per_query_table.py"),
                 input_path=TINY,
                 out_dir=Path(td),
+                verify="full",
             ).run()
             self.assertEqual(rec.decision, "SHIP", rec.reason)
             contract = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
@@ -58,6 +59,7 @@ class InferFastaFixtureTests(unittest.TestCase):
                 argv=_argv("sorted_output.py"),
                 input_path=TINY,
                 out_dir=Path(td),
+                verify="full",
             ).run()
             self.assertEqual(rec.decision, "SHIP", rec.reason)
             contract = json.loads((Path(td) / "cache.jsonl.contract.json").read_text())
@@ -131,6 +133,7 @@ class InferFastaFixtureTests(unittest.TestCase):
                 input_path=other,
                 out_dir=Path(td) / "b",
                 cache_path=cache,
+                verify="full",
             ).run()
             self.assertEqual(second.decision, "SHIP", second.reason)
             self.assertEqual(int(second.extra["n_misses"]), 0)
