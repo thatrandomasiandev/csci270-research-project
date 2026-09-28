@@ -139,3 +139,96 @@ not as a probe bug.
 `results/probe_eval.json`, `results/figures/12_probe_eval_catch.png`,
 this protocol’s measured table in the run script’s stdout / the JSON
 `report` object.
+
+---
+
+## Addendum 2026-09-27 — audit mode, random probes, F6 split
+
+Written **before** `--verify audit`, random sampling, or `acts/trace.py`
+exist. Locked text above is unchanged. `96f786b` (`results/probe_eval.json`)
+is the **full-MATCH upper bound**. This addendum re-measures the
+**deployed** guarantee: probes + audit only. Do not overwrite the
+`96f786b` files.
+
+`--verify full` is the old path. It is not the paper’s deployed number.
+
+```
+python3 -m acts run --verify audit --kind {vcf,fasta} --probe-n N --cache C --input X -- <tool>
+```
+
+`--verify audit` is the **default**. No full stock tool on the input.
+Verification is a random hit audit (`AUDIT_P=0.02`, at least 20 hits,
+seed **20260927**), one batch. `--verify full` keeps `96f786b` MATCH.
+
+Probe sample = `probe_n` records drawn **without replacement** from the
+whole file (`random.Random(20260927)`), not a prefix. Same
+`probe_n` ∈ {50, 200, 500, 2000}. `N_rec` = 2500. Inputs 1–3 and
+input-3 twists stay as locked above, except F6 (split below).
+
+### File tracing (Linux, probe run only)
+
+During the **first** probe tool invocation, `strace -f -e trace=openat,open`.
+Every regular file opened **read-only** is fingerprinted and added to the
+cache namespace (`CACHE_KEY_PROTOCOL.md` addendum). Exclude `/proc`,
+`/sys`, `/dev`, the per-run `{input}`, and temp files (`/tmp`,
+`$TMPDIR`). Store the list on that namespace in
+`<cache>.namespaces.json`.
+
+macOS, or `strace` missing: no tracing; warn that F6-file is uncovered.
+Environment variables stay a stated limitation.
+
+### F6 split
+
+| ID | Fault | Expected |
+|----|-------|----------|
+| F6-env | `ACTS_PROBE_EVAL_ENV` on every record (old F6) | **undetectable**. All probes + audit pass while env is fixed. Input 3 sets `heldout`. Limitation. |
+| F6-file | reads `hidden.cfg` next to the input, **not** in argv; token written into ANN / score | Linux + tracing: file is in the namespace. Input 3 **rewrites** `hidden.cfg` → new namespace → replay has 0 hits and re-runs → **not** unsafe-ship. macOS: no tracing → same namespace → unsafe-ship (limitation until Linux). |
+
+F6-env and F6-file ignore *p* (always on). Four frequencies stay
+rectangular. Denominator becomes 9 × 4 × 2 × 4 = **288** unsafe cells
+(F1–F5, F6-env, F6-file, F7, F8). Controls stay 20 cells.
+
+### Expected catch (audit mode; written before the run)
+
+A cell is **probe-caught** if input 1 refuses. **Audit-caught** if input 1
+SHIPs and input 2 returns `REFUSE_AUDIT`. MATCH on a full stock run is
+**not** a catch in this addendum.
+
+| ID | If a live record is in the random probe | If not | Audit on input 2 (hits exist) |
+|----|----------------------------------------|--------|-------------------------------|
+| F1 | determinism → `REFUSE_NONDETERMINISTIC` | probes pass | live hit re-exec ≠ cache → `REFUSE_AUDIT` **if** that hit is sampled |
+| F2 | shuffle / subset → `REFUSE_NEIGHBORS` / `REFUSE_GLOBAL` | probes pass | live hit in a new neighbor batch → `REFUSE_AUDIT` if sampled |
+| F3 | subset → `REFUSE_GLOBAL` | probes pass | audit batch has different *N* → `REFUSE_AUDIT` if a live hit is sampled |
+| F4 | (c) widen ID/desc then SHIP, or `REFUSE_AMBIGUOUS` | no widen | same IDs → audit passes; input 3 new IDs → unsafe-ship |
+| F5 | late-key then (c) | unseen rare field | same as F4; may still late-key on a miss batch |
+| F6-env | undetectable | undetectable | passes; input 3 env twist → unsafe-ship |
+| F6-file | tracing (Linux) adds `hidden.cfg` | — | input 3 rewrites the file → new ns (Linux) or unsafe-ship (macOS) |
+| F7 | determinism | probes pass | same as F1 |
+| F8 | shuffle / subset | probes pass | same as F2 |
+
+Controls: SHIP on input 1 and 2 at every `probe_n`. Any refuse is a
+**false refuse**.
+
+### Metrics (this addendum)
+
+- **unsafe-ship** = SHIP input 1 (probes) **and** SHIP input 2 (audit)
+  **and** input-3 replay ≠ fresh stock. Denominator = 288.
+- **in-scope unsafe-ship** = same, excluding F6-env and (on macOS) F6-file.
+- **probe-only catch** = input 1 refuse / unsafe cells.
+- **probe+audit catch** = (input 1 refuse **or** input 2 `REFUSE_AUDIT`) /
+  unsafe cells.
+- **false-refuse** = controls not SHIP on input 1 or 2, over 20.
+- Per class, per *p*, per `probe_n`. Old-vs-new table vs `96f786b`.
+
+F6-file + a SnpEff `snpEff.config` namespace check: Linux only (Docker if
+present; otherwise a short non-exclusive CARC job). Not on a login node.
+
+### Outputs (new names; do not overwrite `96f786b`)
+
+`results/probe_eval_audit.json`, `results/probe_eval_audit.md`,
+`results/figures/15_probe_eval_audit_catch.png`.
+Keep `results/probe_eval.json` / `12_probe_eval_catch.png` as the
+full-MATCH upper bound.
+
+Not a speedup. Not Dune’s novelty. Not permission to trace every later
+run (probe-time only). Not a claim that env vars are catchable.

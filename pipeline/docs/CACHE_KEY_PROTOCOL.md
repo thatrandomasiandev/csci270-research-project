@@ -92,3 +92,28 @@ hits=200 misses=0, same namespace `11a295d1a5b7d21d`. After `touch`
 of `tools/snpEff/data/GRCh38.86/snpEffectPredictor.bin`: new namespace
 `776994566f66c961`, hits=0 misses=200; the old namespace's rows stay
 in the file.
+
+## Addendum 2026-09-27 — probe-time file tracing
+
+Written **before** `acts/trace.py`. Locked text above is unchanged.
+
+The 2026-09-27 hole (“files the tool opens that do not appear in argv”)
+is **partly** closed on Linux: the first probe invocation is traced
+(`strace -f -e openat,open`). Read-only regular files, minus `/proc`
+`/sys` `/dev` `{input}` and temp dirs, are fingerprinted as
+`kind=traced` and enter the namespace hash the same way argv-named
+files do. The list is stored on that namespace in
+`<cache>.namespaces.json`.
+
+Still not covered:
+
+- Environment variables.
+- Files opened only on records outside the probe sample.
+- Writes, and files opened read-write.
+- macOS / any host without `strace`.
+
+This is Rattle-style machinery transferred to the probe, not a novelty
+claim. Expected test (Linux only; skip on macOS with that reason): a
+tool that reads `hidden.cfg` not named in argv; after the probe, that
+path is in `inputs`; changing the file yields a new namespace and zero
+hits on the old rows.

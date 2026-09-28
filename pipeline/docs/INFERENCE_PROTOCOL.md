@@ -435,3 +435,55 @@ falls back to **whitespace-normalized MATCH** (body lines equal after
 - Not a claim about collection-A recurrence `m(k)` (that is
   `docs/RECURRENCE_PROTOCOL.md`).
 - Not a rewrite of the VCF SnpEff / fill-tags numbers.
+
+---
+
+## Addendum 2026-09-27 — deployable verification, random probes, probe-time tracing
+
+Written **before** the flag, the sampler, or `acts/trace.py` exist.
+Locked sections above are unchanged. Closest occupied work: Dune
+`cache-check-probability` (rule re-exec), Rattle / Riker / ProcessCache
+(command-layer traces). This is a transfer to record granularity, not
+a new theory.
+
+### `--verify`
+
+| Mode | Default? | What runs |
+|------|----------|-----------|
+| `audit` | **yes** | No full stock tool. After reassembly, re-run a random `AUDIT_P=0.02` of **hits** (at least 20 hits, or all hits if fewer; seed 20260927) as **one** batch. Compare that batch to the reassembled lines for the same records. Mismatch → `REFUSE_AUDIT`. First run (0 hits) SHIPs on probes alone. |
+| `full` | no | Today’s behavior: run the stock tool on the whole input and MATCH. Experiments / `96f786b` only. |
+
+`SHIP` in `audit` mode does **not** mean body MATCH vs a full tool run.
+That sentence in “Decisions (locked)” applies to `--verify full`.
+
+`--audit-p` overrides `AUDIT_P` in `audit` mode. `--audit-seed` overrides
+the seed.
+
+### Probe sample
+
+Replace “first 500 body records” / “first *N*” with: `probe_n` distinct
+records sampled uniformly without replacement from the **whole** input
+(`random.Random(20260927)` unless `--probe-seed` is set). `probe_n`
+default stays 500. If the file is shorter, use every record. Shuffle,
+subset-invariance, and perturbation still run on that sample.
+
+### Probe-time file tracing (Linux)
+
+The first probe tool invocation is wrapped in
+`strace -f -e trace=openat,open` when `strace` exists. Read-only regular
+files (not `/proc`, `/sys`, `/dev`, the per-run input, `/tmp` / `$TMPDIR`)
+are fingerprinted and added to the cache namespace as `kind=traced`.
+Listed under that namespace in `<cache>.namespaces.json`.
+
+macOS / no `strace`: skip; record `trace=unavailable` and warn. Env vars
+are still uncovered.
+
+Tracing is **not** applied to miss batches, audit batches, or later runs.
+A file the tool opens only on a record the probe never sampled stays
+unfingerprinted — stated limitation.
+
+### New decision
+
+| Decision | When |
+|----------|------|
+| `REFUSE_AUDIT` | `--verify audit` and a sampled hit’s re-execution ≠ cached reassembly |
