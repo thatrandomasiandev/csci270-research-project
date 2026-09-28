@@ -1,0 +1,15 @@
+diff -ru /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/stock_src/score_rows.py /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/work/score_rows.py
+--- /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/stock_src/score_rows.py	2026-09-27 22:39:48
++++ /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/work/score_rows.py	2026-09-27 22:40:39
+@@ -8,7 +8,8 @@
+ 
+ 
+ def score(token: str) -> int:
+-    return len(token)
++    n = len(token)  # trivial no-op rename; same output
++    return n
+ 
+ 
+ def main(argv: list[str] | None = None) -> int:
+Only in /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/work: tokens.json
+Only in /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe/work: transcript.txt

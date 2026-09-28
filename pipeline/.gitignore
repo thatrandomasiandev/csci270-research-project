@@ -6,6 +6,7 @@ data_cache/
 data_probe/
 data_compare/
 data_carcjobs/
+data_llmarm/
 tools/
 builds/
 __pycache__/

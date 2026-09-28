@@ -1,0 +1,11 @@
+{
+  "ready": true,
+  "host": "x86 epyc-7542 exclusive, interleaved stock anchors",
+  "note": "Do not time MATCH-fail runs. This script does not submit jobs.",
+  "argv_template": [
+    "python3",
+    "work/score_rows.py",
+    "INPUT.tsv",
+    "OUT.tsv"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "run_id": "dryrun_safe",
+  "elapsed_s": 0.02974170900415629,
+  "tokens": 100,
+  "budget_ok": true,
+  "budget_why": "ok",
+  "agent_exit": 0,
+  "diff_bytes": 924,
+  "changed": true
+}

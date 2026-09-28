@@ -1,0 +1,20 @@
+# Pluggable agent backend. Do not hard-code a vendor.
+# Live runs: replace command with the real CLI; set model_id to an exact API id.
+
+[agent]
+# Placeholders: {python} {root} {work} {patch} {task}
+command = "{python} {root}/fixtures/llm_arm/fake_agent.py --work {work} --patch {patch} --tokens 100"
+
+[budget]
+hours = 8.0
+tokens = 2000000
+n_runs = 3
+model_id = "TBD"
+
+[source]
+path = "fixtures/llm_arm/src"
+
+[data]
+dev = "fixtures/llm_arm/data/dev.tsv"
+test = "fixtures/llm_arm/data/test.tsv"
+smoke = "fixtures/llm_arm/data/smoke.tsv"
