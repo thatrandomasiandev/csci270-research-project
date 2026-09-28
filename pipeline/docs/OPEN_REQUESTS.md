@@ -2,9 +2,27 @@
 
 Not a protocol. Done items stay here so we do not re-open them.
 
-Round 2 merged `agent/analysis`, `agent/formats`, and `agent/carcjobs`
-into `main` (after round 1: cache, probe, usability, compare, fourth,
-baselines, paper).
+Round 3 merged `agent/llmarm`, `agent/confirm`, and `agent/bytes`
+into `main` (after round 2: analysis, formats, carcjobs; round 1:
+cache, probe, usability, compare, fourth, baselines, paper).
+
+## Done in the 2026-09-27c integrator pass
+
+- **LLM-arm harness** (`6968c6b` protocol, `44602d8` EGAS host +
+  fake-agent dry-run). Safe no-op MATCH-passes; bad patch scores
+  1.0×. No live model. No CARC timing.
+- **Confirmatory hmmscan pre-registered and predicted** (`8afe41f`
+  protocol, `9d78279` predictions). PRIMARY = hmmscan `--cut_ga` on
+  confirm_E (new *E. coli*, seed 20260927) and confirm_C (S. aureus
+  prefix). Locked with-*P* cumulative: **2.96×** / **3.12×**. Jobs
+  written, not submitted. `docs/CONFIRM_PLAN.md`.
+- **Generic table layout** (`e6dbf80` / `b85859e`). hmmscan
+  `--cut_ga` byte MATCH true; hmmsearch still whitespace fallback
+  (`results/inference_fasta_reuse_bytes.json`). SAVINGS addendum
+  records scan bytes only. Do not claim hmmsearch byte identity.
+- **SAVINGS_PROTOCOL.md addendum** (this integrator commit): hmmscan
+  `--tblout` may be byte MATCH on future runs; queued A/B jobs stay
+  token identity.
 
 ## Done in the 2026-09-27b integrator pass
 
@@ -29,18 +47,26 @@ baselines, paper).
 
 ### Josh: CARC_PLAN totals (do not sbatch until approved)
 
-Source: `docs/CARC_PLAN.md` (account `biyik_1165`). After the four
-savings jobs finish; do not overlap with their 47 h request.
+Source: `docs/CARC_PLAN.md` plus `docs/CONFIRM_PLAN.md` (account
+`biyik_1165`). After the four savings jobs finish; do not overlap
+with their 47 h request.
 
 | Bucket | `--time` sum | Est. actual |
 |--------|----------------|-------------|
 | Comparison + Mordred exclusive | **101 h** | **56.7 h** |
+| Confirmatory hmmscan exclusive | **52 h** | **23.7 h** |
 | Whisper | **0 (BLOCKED)** | 0 |
 | F6 (shared, not exclusive) | 0.5 h wall | 0.1 h |
+| LLM-arm live optimizer | **0 until Josh names `model_id` and funds it** | 0 |
 
-Dry-run only: `pipeline/scripts/submit_{compare,fourth,f6}.sh --dry-run`.
+Dry-run only: `pipeline/scripts/submit_{compare,fourth,f6,confirm}.sh --dry-run`.
 `sbatch --test-only` lines are in the plan as text. Local F6 still
 needs Docker Desktop; the CARC F6 job is the backup.
+
+`submit_confirm.sh --submit` currently **refuses** (exit 2). Wire the
+rsync/sbatch path the way `submit_hmmer_savings.sh` does before any
+real submit. Do not compete with the four savings jobs for exclusive
+`epyc-7542` nodes.
 
 ### Savings / CARC (do not sbatch from here)
 
@@ -116,11 +142,17 @@ needs Docker Desktop; the CARC F6 job is the backup.
   widens the key (ID, etc.), *m* can disagree with a real `run`.
   Optional: read `*.contract.json` next to the cache.
 
-### Inference / MATCH (do not change)
+### Inference / MATCH
 
-- Do not change MATCH types. Comparison MATCH copies the
-  savings-protocol table (hmmscan: order + whitespace; hmmsearch:
-  multiset + whitespace; SnpEff: record body).
+- **hmmscan `--cut_ga`:** byte MATCH is now the success path when
+  layout is pinned (`inference_fasta_reuse_bytes.json` →
+  `scan_cut_ga`). SAVINGS addendum 2026-09-27c records this.
+  `COMPARISON_PROTOCOL.md` and `LLM_ARM_PROTOCOL.md` still copy the
+  old whitespace table in locked text — dated addenda there if those
+  arms score new patches; do not rewrite their locked sections.
+- **hmmsearch `--tblout`:** still whitespace-normalized. Do not claim
+  bytes.
+- Queued A/B savings jobs stay token identity (pre-`b85859e`).
 - `run_probe_eval.py` now implicitly measures **batched** via the
   infer default. Keep `probe_eval.json` / `probe_eval_audit.json` as
   the locked singleton-era tables. The comparison is
@@ -191,10 +223,30 @@ needs Docker Desktop; the CARC F6 job is the backup.
   is the code-opt arm of the comparison. PGO and AppCDS are not a
   method.
 
+### Confirm / analysis
+
+- `scripts/analyze_savings.py` still discovers only collections
+  `A`/`B`. After confirm jobs dump
+  `results/confirm/confirm_{E,C}_hmmscan.json`, extend discovery to
+  `confirm_E` / `confirm_C` **without** changing the locked A/B
+  analysis. That extension is a **declared deviation** from
+  `00f9403` and must be labeled as such. Do not edit
+  `run_hmmer_savings.py`; `scripts/confirm_run.py` already wraps it.
+
+### LLM-arm (harness done; live run gated)
+
+- No live optimizer until Josh: (1) funds it, (2) accepts or changes
+  8 h / 2 M tokens / `n_runs=3`, (3) shared cap (~$30–75, 24 h / 6 M)
+  vs per-run expansion (~$90–225, 72 h / 18 M), (4) exact `model_id`
+  and the CLI in `agent.toml`, (5) workload order among SnpEff,
+  hmmscan, hmmsearch. STAR stays sealed.
+- MATCH-fail runs must never be timed on CARC. Collections A/B and
+  HG00099 stay **invisible** to the agent.
+
 ### Do not implement in this file
 
 - Baseline wrappers (Riker / ProcessCache / INCR / eggNOG).
-- LLM code-optimization arm (budget is in `COMPARISON_PROTOCOL.md`;
-  not run).
-- CARC timing of tuned HMMER / SnpEff AppCDS (jobs written;
-  submit only after Josh approves `CARC_PLAN.md`).
+- A live LLM-agent run (harness exists; PARAMETERS are TBD).
+- CARC timing of tuned HMMER / SnpEff AppCDS, confirmatory hmmscan,
+  or LLM-arm patches (jobs/harness written; submit only after Josh
+  approves the matching plan).

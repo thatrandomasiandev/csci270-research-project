@@ -278,3 +278,22 @@ sbatch --test-only --job-name=f6_trace --time=00:30:00 \
   wait on that script. Whisper stays BLOCKED.
 - **Probe / cache agent:** F6 job wraps `run_f6_trace_linux.py`; do not
   change that script’s output path. Mapping is in the table above.
+
+---
+
+## Addendum 2026-09-27 — confirmatory hmmscan (not submitted)
+
+Locked jobs above are unchanged. A **separate** exclusive-node plan
+is `docs/CONFIRM_PLAN.md` (`agent/confirm`, predictions `9d78279`):
+
+| Job | `--time` | Est. actual |
+|-----|----------|-------------|
+| `conf_E_scan` | 36:00:00 | 15.4 h |
+| `conf_C_scan` | 16:00:00 | 8.3 h |
+
+**+52 requested exclusive node-hours** after the four savings jobs
+finish. Predicted wall ~23.7 h. Do not overlap with savings or with
+the 101 h comparison bucket. Dry-run:
+`bash pipeline/scripts/submit_confirm.sh --dry-run`.
+`submit_confirm.sh --submit` currently **refuses** (prints the plan
+and exits 2) until the rsync/sbatch path is wired.

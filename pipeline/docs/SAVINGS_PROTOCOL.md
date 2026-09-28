@@ -352,3 +352,34 @@ Any later change to that script is a **declared deviation** from this
 pre-registration. Do not silently edit the analyzer after job JSON
 lands and then treat the new numbers as the locked analysis.
 
+---
+
+## Addendum 2026-09-27 — hmmscan `--tblout` byte MATCH
+
+Locked sections above are unchanged. The queued A/B savings jobs are
+not rewritten. This records what `agent/bytes` (`b85859e`) measured
+**after** those jobs were queued.
+
+The locked MATCH table claimed **token identity**, not bytes, because
+`7eeb40e` / `results/inference_fasta_reuse.json` could not reproduce
+HMMER column padding after name substitution.
+
+`results/inference_fasta_reuse_bytes.json` (same 6 Pfam models, N=500,
+seed 20260927, renamed genomes) re-ran that reuse under a **generic**
+column-layout probe (`docs/INFERENCE_PROTOCOL.md` addendum 2026-09-27):
+
+| Mode | Layout | MATCH now | `byte_match` |
+|------|--------|-----------|--------------|
+| hmmscan `--cut_ga` | **pinned**, scope **fixed**; names left `fixed_min` 20; numeric columns right | **order**, `match_ws=false` | **true** |
+| hmmsearch `-Z 1e6 --domZ 1e6` | **unpinned** (mixed-sample short-name widths are not per-row, per-query, or per-file) | **multiset** + whitespace (`7eeb40e` fallback) | **false** |
+
+Do **not** claim byte identity for hmmsearch `--tblout`. Do **not**
+change MATCH on the already-queued A/B jobs after they finish; those
+ran on pre-`b85859e` code and stay token identity.
+
+Future runs that import current `acts.fasta_memo` (confirmatory
+hmmscan, comparison scoring of new patches) use **byte MATCH for
+hmmscan `--cut_ga`** when the layout stays pinned. Whitespace
+normalized remains the fallback whenever the probe cannot pin a
+layout.
+
