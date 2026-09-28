@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.fasta import FastaRec, read_fasta, write_fasta
+from acts.infer_fasta import InferError, infer_table_contract
 from acts.strategies.record_memo import RecordMemo
 from acts.table import body_lines
 from acts.__main__ import main as acts_main
@@ -160,6 +161,51 @@ class InferFastaFixtureTests(unittest.TestCase):
             )
             self.assertEqual(code, 0)
             self.assertIn("SHIP", (Path(td) / "decision.txt").read_text())
+
+
+def _synth_fa(n: int) -> list[FastaRec]:
+    return [FastaRec(f"q{i}", "", "ACGT" * ((i % 5) + 2)) for i in range(n)]
+
+
+class BatchedSubsetFastaTests(unittest.TestCase):
+    def test_batched_is_default_and_independent_of_probe_n(self) -> None:
+        argv = _argv("per_query_table.py")
+        recs = _synth_fa(80)
+        with tempfile.TemporaryDirectory() as td:
+            work = Path(td)
+            a = infer_table_contract(argv, recs, work / "a", probe_n=20)
+            b = infer_table_contract(argv, recs, work / "b", probe_n=40)
+            self.assertEqual(a.subset_mode, "batched")
+            self.assertEqual(a.tool_calls, b.tool_calls)
+            self.assertEqual(a.tool_calls, 4 + 2 + 4 + 8)
+            self.assertEqual(a.tool_call_sizes[:4], [20, 20, 20, 20])
+            self.assertEqual(sorted(a.tool_call_sizes[4:6]), [10, 10])
+            self.assertEqual(sorted(a.tool_call_sizes[6:10]), [5, 5, 5, 5])
+            self.assertEqual(a.tool_call_sizes[10:], [1] * 8)
+
+    def test_singleton_tool_calls_grow_with_probe_n(self) -> None:
+        argv = _argv("per_query_table.py")
+        recs = _synth_fa(80)
+        with tempfile.TemporaryDirectory() as td:
+            work = Path(td)
+            small = infer_table_contract(
+                argv, recs, work / "s", probe_n=12, subset_mode="singleton"
+            )
+            big = infer_table_contract(
+                argv, recs, work / "b", probe_n=24, subset_mode="singleton"
+            )
+            self.assertEqual(small.subset_mode, "singleton")
+            self.assertEqual(big.tool_calls - small.tool_calls, 12)
+
+    def test_batched_and_singleton_both_refuse_global(self) -> None:
+        argv = _argv("global_evalue.py")
+        recs = read_fasta(TINY)
+        for mode in ("batched", "singleton"):
+            with tempfile.TemporaryDirectory() as td:
+                with self.assertRaises(InferError) as ctx:
+                    infer_table_contract(argv, recs, Path(td), subset_mode=mode)
+                self.assertEqual(ctx.exception.decision, "REFUSE_GLOBAL")
+                self.assertGreater(ctx.exception.tool_calls, 0)
 
 
 if __name__ == "__main__":

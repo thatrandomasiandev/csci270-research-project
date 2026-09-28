@@ -121,13 +121,22 @@ def prepare_contract(
     *,
     probe_n: int = PROBE_N,
     probe_seed: int = 20260927,
+    subset_mode: str = "batched",
 ) -> RecordContract:
     path = contract_path_for(cache_path)
     try:
         return load_or_infer(
-            argv, header, body, work / "probe", path, probe_n=probe_n, probe_seed=probe_seed
+            argv,
+            header,
+            body,
+            work / "probe",
+            path,
+            probe_n=probe_n,
+            probe_seed=probe_seed,
+            subset_mode=subset_mode,
         )
     except InferError as exc:
         rec = refuse_result(exc, argv)
+        rec.subset_mode = subset_mode
         rec.save(path)
         raise

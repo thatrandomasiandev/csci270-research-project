@@ -8,7 +8,14 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from acts.fasta import FastaRec, perturb_fasta, shuffle_fasta, write_fasta
-from acts.infer_vcf import InferError, run_vcf_tool
+from acts.infer_vcf import (
+    BATCHED_SUBSET_SEED,
+    InferError,
+    SUBSET_MODES,
+    _CallMeter,
+    batched_index_groups,
+    run_vcf_tool,
+)
 from acts.sample import PROBE_SEED, sample_records
 from acts.trace import run_traced
 from acts.table import (
@@ -49,6 +56,9 @@ class TableContract:
     trace_status: str = "unavailable"
     probe_n: int = 0
     probe_seed: int = PROBE_SEED
+    subset_mode: str = "batched"
+    tool_calls: int = 0
+    tool_call_sizes: list[int] = field(default_factory=list)
     decision: str = "OK"
     reason: str = ""
 
@@ -67,6 +77,9 @@ class TableContract:
         raw.setdefault("traced_files", [])
         raw.setdefault("trace_status", "unavailable")
         raw.setdefault("probe_seed", PROBE_SEED)
+        raw.setdefault("subset_mode", "batched")
+        raw.setdefault("tool_calls", 0)
+        raw.setdefault("tool_call_sizes", [])
         return cls(**raw)
 
 
@@ -233,6 +246,10 @@ def order_kind(names: list[str], rows: list[list[str]], query_col: int) -> str:
     return "multiset"
 
 
+def _count_fasta_records(path: Path) -> int:
+    return sum(1 for ln in path.read_text().splitlines() if ln.startswith(">"))
+
+
 def assert_subset_invariant(
     argv: list[str],
     recs: list[FastaRec],
@@ -240,22 +257,49 @@ def assert_subset_invariant(
     query_col: int,
     delim: str,
     work: Path,
+    *,
+    subset_mode: str = "batched",
+    runner=None,
+    seed: int = BATCHED_SUBSET_SEED,
 ) -> None:
+    if subset_mode not in SUBSET_MODES:
+        raise ValueError(f"subset_mode must be one of {SUBSET_MODES}, got {subset_mode!r}")
+    run = runner or run_table_tool
     raw_full = body_lines(full_text)
     _, rows = _split_body(full_text, delim)
     groups = _group_raw(raw_full, rows, query_col)
-    solo_dir = work / "singleton"
-    solo_dir.mkdir(parents=True, exist_ok=True)
-    for i, rec in enumerate(recs):
-        path = write_fasta(solo_dir / f"{i}.fa", [rec])
-        out = run_table_tool(argv, path)
-        got = body_lines(out)
-        expected = groups.get(rec.name, [])
-        if got != expected:
-            raise InferError(
-                "REFUSE_GLOBAL",
-                f"output depends on the rest of the file (singleton {i})",
-            )
+    work.mkdir(parents=True, exist_ok=True)
+
+    if subset_mode == "singleton":
+        solo_dir = work / "singleton"
+        solo_dir.mkdir(parents=True, exist_ok=True)
+        for i, rec in enumerate(recs):
+            path = write_fasta(solo_dir / f"{i}.fa", [rec])
+            out = run(argv, path)
+            got = body_lines(out)
+            expected = groups.get(rec.name, [])
+            if got != expected:
+                raise InferError(
+                    "REFUSE_GLOBAL",
+                    f"output depends on the rest of the file (singleton {i})",
+                )
+        return
+
+    batches = work / "batched"
+    batches.mkdir(parents=True, exist_ok=True)
+    for g, indices in enumerate(batched_index_groups(len(recs), seed=seed)):
+        batch = [recs[i] for i in indices]
+        path = write_fasta(batches / f"g{g}_n{len(indices)}.fa", batch)
+        out = run(argv, path)
+        got_raw = body_lines(out)
+        _, got_rows = _split_body(out, delim)
+        got_groups = _group_raw(got_raw, got_rows, query_col)
+        for rec in batch:
+            if got_groups.get(rec.name, []) != groups.get(rec.name, []):
+                raise InferError(
+                    "REFUSE_GLOBAL",
+                    f"output depends on the rest of the file (batch {g} n={len(indices)})",
+                )
 
 
 def infer_table_contract(
@@ -265,78 +309,106 @@ def infer_table_contract(
     *,
     probe_n: int = PROBE_N,
     probe_seed: int = PROBE_SEED,
+    subset_mode: str = "batched",
 ) -> TableContract:
+    if subset_mode not in SUBSET_MODES:
+        raise ValueError(f"subset_mode must be one of {SUBSET_MODES}, got {subset_mode!r}")
     probe = sample_records(recs, min(probe_n, len(recs)), seed=probe_seed)
     if not probe:
         raise InferError("REFUSE_AMBIGUOUS", "empty FASTA")
     work.mkdir(parents=True, exist_ok=True)
+    meter = _CallMeter(_count_fasta_records)
+    run = meter.run
 
-    p1 = write_fasta(work / "probe.fa", probe)
-    out1, traced_files, trace_status = run_traced(
-        argv, input_path=p1, work=work / "trace", runner=run_table_tool
-    )
-    out2 = run_table_tool(argv, p1)
-    if not bodies_equal(out1, out2):
-        raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
+    try:
+        p1 = write_fasta(work / "probe.fa", probe)
+        out1, traced_files, trace_status = run_traced(
+            argv, input_path=p1, work=work / "trace", runner=run
+        )
+        out2 = run(argv, p1)
+        if not bodies_equal(out1, out2):
+            raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
 
-    delim, rows1 = _split_body(out1)
-    pert = perturb_fasta(probe)
-    out_p = run_table_tool(argv, write_fasta(work / "probe_pert.fa", pert))
-    _, rows_p = _split_body(out_p, delim)
-    names = [r.name for r in probe]
-    pert_names = [r.name for r in pert]
-    query_col = find_query_col(names, rows1, pert_names, rows_p)
+        delim, rows1 = _split_body(out1)
+        pert = perturb_fasta(probe)
+        out_p = run(argv, write_fasta(work / "probe_pert.fa", pert))
+        _, rows_p = _split_body(out_p, delim)
+        names = [r.name for r in probe]
+        pert_names = [r.name for r in pert]
+        query_col = find_query_col(names, rows1, pert_names, rows_p)
 
-    shuffled = shuffle_fasta(probe)
-    out_sh = run_table_tool(argv, write_fasta(work / "probe_shuffle.fa", shuffled))
-    _, rows_sh = _split_body(out_sh, delim)
-    g1 = _group_raw(body_lines(out1), rows1, query_col)
-    gsh = _group_raw(body_lines(out_sh), rows_sh, query_col)
-    for rec in probe:
-        if g1.get(rec.name, []) != gsh.get(rec.name, []):
-            raise InferError("REFUSE_NEIGHBORS", "shuffle test failed; neighbors leak")
+        shuffled = shuffle_fasta(probe)
+        out_sh = run(argv, write_fasta(work / "probe_shuffle.fa", shuffled))
+        _, rows_sh = _split_body(out_sh, delim)
+        g1 = _group_raw(body_lines(out1), rows1, query_col)
+        gsh = _group_raw(body_lines(out_sh), rows_sh, query_col)
+        for rec in probe:
+            if g1.get(rec.name, []) != gsh.get(rec.name, []):
+                raise InferError("REFUSE_NEIGHBORS", "shuffle test failed; neighbors leak")
 
-    assert_subset_invariant(argv, probe, out1, query_col, delim, work)
+        assert_subset_invariant(
+            argv,
+            probe,
+            out1,
+            query_col,
+            delim,
+            work,
+            subset_mode=subset_mode,
+            runner=run,
+        )
 
-    desc_cols, produced = classify_columns(
-        names,
-        [r.description for r in probe],
-        rows1,
-        pert_names,
-        [r.description for r in pert],
-        rows_p,
-        query_col,
-        raw=body_lines(out1),
-        pert_raw=body_lines(out_p),
-    )
-    match = order_kind(names, rows1, query_col)
-    empty_desc = _infer_empty_desc(rows1, desc_cols)
-    hit_names = {row[query_col] for row in rows1}
-    pad_widths, pad_detected = infer_alignment(
-        argv, probe, query_col, delim, work / "align", hit_names=hit_names
-    )
-    # Numeric columns are right-aligned in some tools; generic left-just
-    # cannot reproduce those bytes. Whitespace MATCH is the locked fallback.
-    match_ws = delim != "tab" and (pad_detected or bool(pad_widths) or bool(hit_names))
-    return TableContract(
-        kind="fasta",
-        argv=list(argv),
-        query_col=query_col,
-        desc_cols=desc_cols,
-        produced_cols=produced,
-        delim=delim,
-        match=match,
-        n_cols=_max_cols(rows1),
-        pad_widths=pad_widths,
-        empty_desc=empty_desc,
-        match_ws=match_ws,
-        traced_files=traced_files,
-        trace_status=trace_status,
-        probe_n=len(probe),
-        probe_seed=probe_seed,
-        decision="OK",
-        reason="probe passed",
-    )
+        desc_cols, produced = classify_columns(
+            names,
+            [r.description for r in probe],
+            rows1,
+            pert_names,
+            [r.description for r in pert],
+            rows_p,
+            query_col,
+            raw=body_lines(out1),
+            pert_raw=body_lines(out_p),
+        )
+        match = order_kind(names, rows1, query_col)
+        empty_desc = _infer_empty_desc(rows1, desc_cols)
+        hit_names = {row[query_col] for row in rows1}
+        pad_widths, pad_detected = infer_alignment(
+            argv,
+            probe,
+            query_col,
+            delim,
+            work / "align",
+            hit_names=hit_names,
+            runner=run,
+        )
+        # Numeric columns are right-aligned in some tools; generic left-just
+        # cannot reproduce those bytes. Whitespace MATCH is the locked fallback.
+        match_ws = delim != "tab" and (pad_detected or bool(pad_widths) or bool(hit_names))
+        return TableContract(
+            kind="fasta",
+            argv=list(argv),
+            query_col=query_col,
+            desc_cols=desc_cols,
+            produced_cols=produced,
+            delim=delim,
+            match=match,
+            n_cols=_max_cols(rows1),
+            pad_widths=pad_widths,
+            empty_desc=empty_desc,
+            match_ws=match_ws,
+            traced_files=traced_files,
+            trace_status=trace_status,
+            probe_n=len(probe),
+            probe_seed=probe_seed,
+            subset_mode=subset_mode,
+            tool_calls=meter.n,
+            tool_call_sizes=list(meter.sizes),
+            decision="OK",
+            reason="probe passed",
+        )
+    except InferError as exc:
+        exc.tool_calls = meter.n
+        exc.tool_call_sizes = list(meter.sizes)
+        raise
 
 
 def _subst_token(line: str, old: str, new: str) -> str:
@@ -473,13 +545,19 @@ def load_or_infer_table(
     *,
     probe_n: int = PROBE_N,
     probe_seed: int = PROBE_SEED,
+    subset_mode: str = "batched",
 ) -> TableContract:
     if contract_path.is_file():
         saved = TableContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "fasta" and saved.decision == "OK":
             return saved
     contract = infer_table_contract(
-        argv, recs, work, probe_n=probe_n, probe_seed=probe_seed
+        argv,
+        recs,
+        work,
+        probe_n=probe_n,
+        probe_seed=probe_seed,
+        subset_mode=subset_mode,
     )
     contract.save(contract_path)
     return contract
@@ -500,8 +578,10 @@ def infer_alignment(
     delim: str,
     work: Path,
     hit_names: set[str] | None = None,
+    runner=None,
 ) -> tuple[list[int], bool]:
     """Infer column pad floors from short vs long names. Fall back to ws MATCH."""
+    run = runner or run_table_tool
     if delim == "tab" or not recs:
         return [], False
     carriers = [r for r in recs if not hit_names or r.name in hit_names][:16]
@@ -510,8 +590,8 @@ def infer_alignment(
     work.mkdir(parents=True, exist_ok=True)
     short = [FastaRec(chr(65 + i) if i < 26 else f"S{i}", "", r.seq) for i, r in enumerate(carriers)]
     long = [FastaRec(f"L{i:024d}", "", r.seq) for i, r in enumerate(carriers)]
-    out_s = run_table_tool(argv, write_fasta(work / "short.fa", short))
-    out_l = run_table_tool(argv, write_fasta(work / "long.fa", long))
+    out_s = run(argv, write_fasta(work / "short.fa", short))
+    out_l = run(argv, write_fasta(work / "long.fa", long))
     raw_s, raw_l = body_lines(out_s), body_lines(out_l)
     _, rows_s = _split_body(out_s, delim)
     _, rows_l = _split_body(out_l, delim)
@@ -547,6 +627,9 @@ def refuse_table(exc: InferError, argv: list[str]) -> TableContract:
         delim="tab",
         match="order",
         n_cols=0,
+        subset_mode="batched",
+        tool_calls=getattr(exc, "tool_calls", 0),
+        tool_call_sizes=list(getattr(exc, "tool_call_sizes", []) or []),
         decision=exc.decision,
         reason=exc.reason,
     )
