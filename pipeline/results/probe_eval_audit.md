@@ -1,7 +1,7 @@
 # Probe miss-rate — `--verify audit` (deployed)
 
 Addendum `4679264`. Seed 20260927. `N_rec`=2500. JSON: `probe_eval_audit.json`.
-Figures: `15_probe_eval_audit_catch.png`, `16_probe_eval_full_vs_audit.png`.
+Figures: `18_probe_eval_audit_catch.png` (renumbered from `15_` to avoid colliding with `15_hmmer_predicted_speedup.png`), `16_probe_eval_full_vs_audit.png`.
 
 `96f786b` / `probe_eval.json` is the **full-MATCH upper bound**. This file is
 the **deployed** number: probes + hit audit, no stock tool on the input.

@@ -232,3 +232,58 @@ full-MATCH upper bound.
 
 Not a speedup. Not Dune’s novelty. Not permission to trace every later
 run (probe-time only). Not a claim that env vars are catchable.
+
+---
+
+## Addendum 2026-09-27 — figure numbers and post-hoc `probe_n`
+
+Locked text above is unchanged. Written **after** `probe_eval_audit.json`
+(commit `c1ddad0`). This is **not** a pre-registered choice.
+
+### Figure numbers
+
+`12_probe_eval_catch.png` collided with `12_recurrence_A_ecoli.png`.
+`15_probe_eval_audit_catch.png` collided with
+`15_hmmer_predicted_speedup.png`. The probe-eval files are renamed;
+savings and recurrence figures are not touched.
+
+| Role | Old name (locked text above) | File on disk now |
+|------|------------------------------|------------------|
+| full-MATCH upper bound | `12_probe_eval_catch.png` | `17_probe_eval_catch.png` |
+| audit catch (deployed) | `15_probe_eval_audit_catch.png` | `18_probe_eval_audit_catch.png` |
+| full vs audit | (addendum run) | `16_probe_eval_full_vs_audit.png` (no collision) |
+
+### In-scope unsafe-ship by `probe_n`
+
+Denominator = 56 unsafe cells per `probe_n` (7 classes × 4
+frequencies × 2 formats), **excluding** F6-env and F6-file.
+Source: `results/probe_eval_audit.json`.
+
+| `probe_n` | in-scope unsafe-ship | cells |
+|-----------|----------------------|-------|
+| 50 | 3/56 (5.4%) | vcf F3 *p*=0.01; fasta F4 *p*=0.001; vcf F4 *p*=0.01 |
+| 200 | 1/56 (1.8%) | fasta F4 *p*=0.001 |
+| 500 | 0/56 | — |
+| 2000 | 0/56 | — |
+
+F6-env and F6-file stay 8/8 at every `probe_n` on macOS (no tracing).
+False-refuse stays 0/20 at every `probe_n`.
+
+### POST-HOC recommendation (do not change the code default yet)
+
+**Recommend `probe_n = 500`.** It is the smallest size in this table
+with 0/56 in-scope unsafe-ship. `200` still misses fasta F4 at
+*p*=0.001. `2000` adds no in-scope catch in this data.
+
+**Probe cost** (first infer, one format): a constant handful of
+full-probe tool runs (determinism ×2, shuffle, perturbation; plus
+optional widen) **plus `probe_n` singleton subset-invariance
+runs**. So tool calls ≈ `4 + probe_n` on the common path (VCF
+singletons may run 8-wide; FASTA is serial). At the recommended
+500 that is about **504** tool invocations on first infer, vs
+~204 at 200 and ~2004 at 2000. Code default is already 500
+(`acts/__main__.py`, `infer_vcf.PROBE_N`); leave it until a
+pre-registered change.
+
+This recommendation is data-dependent and was not locked in
+`b4c878f` or `4679264`.

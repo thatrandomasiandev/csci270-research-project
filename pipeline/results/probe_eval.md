@@ -1,6 +1,6 @@
 # Probe miss-rate (measured)
 
-Protocol `docs/PROBE_EVAL_PROTOCOL.md` (`b4c878f`). Seed 20260927. `N_rec`=2500. JSON: `probe_eval.json`. Figure: `figures/12_probe_eval_catch.png`.
+Protocol `docs/PROBE_EVAL_PROTOCOL.md` (`b4c878f`). Seed 20260927. `N_rec`=2500. JSON: `probe_eval.json`. Figure: `figures/17_probe_eval_catch.png` (renumbered from `12_` to avoid colliding with `12_recurrence_A_ecoli.png`).
 
 This is a measurement, not a method. Closest priors: Chen/Segura metamorphic testing; Dune `cache-check-probability`; vCache (LLM δ). F6 is outside the guarantee (argv-named inputs only).
 

@@ -393,7 +393,7 @@ def _jobs() -> list[tuple[str, str, float, int]]:
 
 def _write_payload(dest: Path, rows: list[dict], work: Path, *, finished: bool) -> dict:
     summary = summarize(rows)
-    fig = ROOT / "results" / "figures" / "15_probe_eval_audit_catch.png"
+    fig = ROOT / "results" / "figures" / "18_probe_eval_audit_catch.png"
     if finished and rows:
         plot(rows, fig)
     payload = {

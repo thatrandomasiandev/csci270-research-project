@@ -22,9 +22,9 @@ STAR ≥2× Suite B plots are a different object: `star/bench/results/figures/`.
 | `09_match_board.png` | Body MATCH; header cmp expected DIFF |
 | `10_suiteB_max_speedup_if_pure.png` | Uniqueness bound only; STAR REFUSE_IDENTITY |
 | `11_snpeff_alternating_carc.png` | CARC exclusive 10-pair wall + median r with bootstrap CI |
-| `12_probe_eval_catch.png` | Probe catch rate vs fault frequency (F1–F8, four `probe_n`) — `--verify full` upper bound |
-| `15_probe_eval_audit_catch.png` | Same plot in `--verify audit` (deployed) |
+| `17_probe_eval_catch.png` | Probe catch rate vs fault frequency (F1–F8, four `probe_n`) — `--verify full` upper bound (was `12_`, collided with recurrence A) |
 | `16_probe_eval_full_vs_audit.png` | Unsafe-ship / false-refuse: full MATCH vs audit |
+| `18_probe_eval_audit_catch.png` | Same catch-rate plot in `--verify audit` (deployed; was `15_`, collided with HMMER predicted speedup) |
 | `12_recurrence_A_ecoli.png` | Diverse *E. coli* median m(k) + 10–90% band; 1/3 gate |
 | `13_recurrence_B_o157.png` | O157:H7 (Eppinger lineage / B1) median m(k) |
 | `14_recurrence_C_saureus.png` | *S. aureus* median m(k) |
