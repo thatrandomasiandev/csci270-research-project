@@ -118,7 +118,9 @@ def main(argv: list[str] | None = None) -> int:
     diff = unified_diff(stock_copy, work)
     (out / "diffs" / "01_agent.diff").write_text(diff)
     (out / "final.diff").write_text(diff)
-    (out / "build.log").write_text("fixture: interpreted Python; no compile\n")
+    build_note = "fixture: interpreted Python; no compile\n"
+    (out / "build.log").write_text(build_note)
+    (out / "build_log.txt").write_text(build_note)
     write_json(out / "config.used.toml.json", {
         "run_id": args.run_id,
         "budget": budget.as_dict(),

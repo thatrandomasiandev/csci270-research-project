@@ -1,6 +1,8 @@
 egas_out/
 acts_out/
 data/
+!fixtures/llm_arm/data/
+!fixtures/llm_arm/data/**
 data_formats/
 data_cache/
 data_probe/
