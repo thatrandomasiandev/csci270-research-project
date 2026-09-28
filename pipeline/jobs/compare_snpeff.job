@@ -1,0 +1,309 @@
+#!/bin/bash
+# Exclusive-node interleaved S/T/C/TC SnpEff comparison (docs/CARC_PLAN.md).
+# Submit via scripts/submit_compare.sh — do not sbatch this file bare.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --exclusive
+#SBATCH --mem=16G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.err
+
+set -euo pipefail
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_compare_snpeff_${SLURM_JOB_ID}"
+mkdir -p "${SRC}/results/compare/logs" "${SCRATCH}/pipeline"/{acts,scripts,data/vep_chr22/subsets,tools,results,builds/snpeff}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load openjdk/21.0.0_35 || module load openjdk || true
+module load python/3.11.9 || module load python || true
+
+GIT_HASH="${ACTS_GIT_HASH:-unknown}"
+echo "=== host / java / cpu ==="
+hostname
+date -Is
+uptime
+java -version
+python3 --version
+lscpu || true
+echo "GIT_HASH=${GIT_HASH} NODELIST=${SLURM_NODELIST:-}"
+
+if [[ ! -f "${SRC}/builds/snpeff/snpeff.jsa" ]]; then
+  echo "missing AppCDS archive; run compare_build.job first" >&2
+  exit 2
+fi
+if [[ -f "${SRC}/results/compare_match.json" ]]; then
+  python3 - "${SRC}/results/compare_match.json" <<'PY'
+import json, sys
+p = json.loads(open(sys.argv[1]).read())
+sn = (p.get("workloads") or {}).get("snpeff") or {}
+if not sn.get("matched"):
+    sys.exit("SnpEff MATCH failed in compare_match.json; do not time")
+print("SnpEff MATCH gate: matched=true")
+PY
+fi
+
+echo "=== stage to node-local scratch ==="
+cp -a "${SRC}/acts/." "${SCRATCH}/pipeline/acts/"
+cp -a "${SRC}/scripts/." "${SCRATCH}/pipeline/scripts/"
+rsync -a --exclude galaxy --exclude .claude --exclude examples --exclude '*.zip' \
+  "${SRC}/tools/snpEff/" "${SCRATCH}/pipeline/tools/snpEff/"
+cp "${SRC}/data/vep_chr22/HG00096.c1.vcf.gz" \
+   "${SRC}/data/vep_chr22/HG00097.c1.vcf.gz" \
+   "${SCRATCH}/pipeline/data/vep_chr22/"
+cp "${SRC}/data/vep_chr22/subsets/HG00099.n52638.vcf" \
+   "${SCRATCH}/pipeline/data/vep_chr22/subsets/"
+cp "${SRC}/builds/snpeff/snpeff.jsa" "${SCRATCH}/pipeline/builds/snpeff/"
+if [[ -f "${SRC}/results/snpeff_alternating_carc.json" ]]; then
+  cp "${SRC}/results/snpeff_alternating_carc.json" "${SCRATCH}/pipeline/results/"
+fi
+
+export PYTHONPATH="${SCRATCH}/pipeline"
+export ACTS_PIPELINE_ROOT="${SCRATCH}/pipeline"
+export ACTS_COMPARE_OUT="${SRC}/results/compare_snpeff.json"
+export ACTS_GIT_HASH="${GIT_HASH}"
+
+echo "=== run interleaved S/T/C/TC ==="
+python3 - <<'PY'
+"""SnpEff S/T/C/TC on HG00099. MATCH record-body before timing T/TC. n=3 interleaved."""
+from __future__ import annotations
+
+import json
+import os
+import resource
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(os.environ["ACTS_PIPELINE_ROOT"])
+sys.path.insert(0, str(ROOT))
+
+from acts.cache import RecordCache
+from acts.vcf import bodies_equal, body_lines, is_header, read_maybe_gz
+from acts.vcf_memo import cached_annotate, contract_path_for, prepare_contract
+
+JAR = ROOT / "tools" / "snpEff" / "snpEff.jar"
+DATA = ROOT / "tools" / "snpEff" / "data"
+ARCHIVE = ROOT / "builds" / "snpeff" / "snpeff.jsa"
+V96 = ROOT / "data" / "vep_chr22" / "HG00096.c1.vcf.gz"
+V97 = ROOT / "data" / "vep_chr22" / "HG00097.c1.vcf.gz"
+V99 = ROOT / "data" / "vep_chr22" / "subsets" / "HG00099.n52638.vcf"
+OUT = Path(os.environ.get("ACTS_COMPARE_OUT", str(ROOT / "results" / "compare_snpeff.json")))
+WORK = Path(os.environ.get("SLURM_TMPDIR", "/tmp")) / "acts_compare_snpeff_work"
+N_RUNS = 3
+PROBE_N = 8
+
+
+def children_cpu_s() -> float:
+    ru = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return float(ru.ru_utime) + float(ru.ru_stime)
+
+
+def host_info() -> dict:
+    def _run(argv):
+        p = subprocess.run(argv, check=False, capture_output=True, text=True)
+        return (p.stdout or p.stderr or "").rstrip()
+    lscpu = _run(["lscpu"])
+    model = next((ln.split(":", 1)[-1].strip() for ln in lscpu.splitlines() if "Model name" in ln), "")
+    return {
+        "hostname": _run(["hostname"]),
+        "when_utc": datetime.now(timezone.utc).isoformat(),
+        "uptime": _run(["uptime"]),
+        "cpu_model": model,
+        "job_id": os.environ.get("SLURM_JOB_ID"),
+        "nodelist": os.environ.get("SLURM_NODELIST"),
+    }
+
+
+def vcf_parts(path: Path) -> tuple[list[str], list[str]]:
+    text = read_maybe_gz(path)
+    header = [ln for ln in text.splitlines() if is_header(ln)]
+    return header, body_lines(text)
+
+
+def snpeff_cmd(vcf: Path, tuned: bool) -> list[str]:
+    cmd = ["java", "-Xmx4g"]
+    if tuned:
+        cmd.extend(["-XX:SharedArchiveFile=" + str(ARCHIVE), "-Xshare:on", "-XX:TieredStopAtLevel=1"])
+    cmd.extend(["-jar", str(JAR), "-dataDir", str(DATA), "-noStats", "-noLog", "GRCh38.86", str(vcf)])
+    return cmd
+
+
+def run_plain(vcf: Path, tuned: bool) -> dict:
+    cmd = snpeff_cmd(vcf, tuned)
+    cpu0 = children_cpu_s()
+    t0 = time.perf_counter()
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    wall = time.perf_counter() - t0
+    if proc.returncode != 0:
+        raise RuntimeError(f"snpeff rc={proc.returncode}: {(proc.stderr or '')[-800:]}")
+    return {
+        "wall_s": wall,
+        "cpu_s": children_cpu_s() - cpu0,
+        "text": proc.stdout,
+        "tuned": tuned,
+        "cmd": cmd[:8],
+    }
+
+
+def wrapper_argv(tuned: bool) -> list[str]:
+    # {input} is the per-run VCF; jar/dataDir are fingerprinted.
+    cmd = ["java", "-Xmx4g"]
+    if tuned:
+        cmd.extend(["-XX:SharedArchiveFile=" + str(ARCHIVE), "-Xshare:on", "-XX:TieredStopAtLevel=1"])
+    cmd.extend(["-jar", str(JAR), "-dataDir", str(DATA), "-noStats", "-noLog", "GRCh38.86", "{input}"])
+    return cmd
+
+
+def atomic_write(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp.replace(path)
+
+
+def main() -> int:
+    WORK.mkdir(parents=True, exist_ok=True)
+    header99, body99 = vcf_parts(V99)
+    payload = json.loads(OUT.read_text()) if OUT.is_file() else {
+        "protocol": "pipeline/docs/CARC_PLAN.md",
+        "comparison_protocol": "pipeline/docs/COMPARISON_PROTOCOL.md",
+        "git": os.environ.get("ACTS_GIT_HASH", "unknown"),
+        "N": len(body99),
+        "input": str(V99),
+        "n_runs": N_RUNS,
+        "arms": ["S", "T", "C", "TC"],
+        "timing_claimed": False,
+        "host": host_info(),
+        "runs": [],
+        "setup": {},
+    }
+    payload["host"] = host_info()
+    payload["resumed"] = bool(payload.get("runs"))
+
+    print("MATCH stock vs AppCDS on HG00099 (record-body) …", flush=True)
+    s0 = run_plain(V99, tuned=False)
+    t0 = run_plain(V99, tuned=True)
+    match_ok = bodies_equal(s0["text"], t0["text"])
+    payload["match_T_vs_S"] = {
+        "matched": match_ok,
+        "n_out_stock": len(body_lines(s0["text"])),
+        "n_out_tuned": len(body_lines(t0["text"])),
+        "stock_wall_s_untimed_gate": s0["wall_s"],
+        "tuned_wall_s_untimed_gate": t0["wall_s"],
+        "note": "MATCH gate; walls not used as the comparison metric",
+    }
+    atomic_write(OUT, payload)
+    if not match_ok:
+        print("SnpEff T vs S MATCH failed; not timing T/TC", flush=True)
+        payload["disabled_arms"] = ["T", "TC"]
+        atomic_write(OUT, payload)
+        skip_t = True
+    else:
+        skip_t = False
+
+    argv_s = wrapper_argv(False)
+    argv_t = wrapper_argv(True)
+    cache_s = RecordCache(WORK / "cache_S.jsonl", argv=argv_s, kind="vcf")
+    cache_t = RecordCache(WORK / "cache_T.jsonl", argv=argv_t, kind="vcf")
+    h96, b96 = vcf_parts(V96)
+    h97, b97 = vcf_parts(V97)
+    print("infer + warm C/TC from HG00096 ∪ HG00097 (setup, not the metric) …", flush=True)
+    contract_s = prepare_contract(argv_s, header99, body99[: max(PROBE_N, 8)], WORK / "probe_s", cache_s.path, probe_n=PROBE_N)
+    if contract_s.decision != "OK":
+        payload["setup"]["contract_S"] = {"decision": contract_s.decision, "reason": contract_s.reason}
+        atomic_write(OUT, payload)
+        print("C contract refused; not timing C/TC", flush=True)
+        skip_c = True
+    else:
+        skip_c = False
+        for tag, hdr, body in (("96", h96, b96), ("97", h97, b97)):
+            cached_annotate(hdr, body, cache_s, contract_s, argv_s, WORK / f"warm_s_{tag}", contract_path_for(cache_s.path))
+            cache_s.save()
+        payload["setup"]["warm_S_cache_n"] = len(cache_s)
+    if not skip_t:
+        contract_t = prepare_contract(argv_t, header99, body99[: max(PROBE_N, 8)], WORK / "probe_t", cache_t.path, probe_n=PROBE_N)
+        if contract_t.decision != "OK":
+            skip_t = True
+            payload["disabled_arms"] = sorted(set(payload.get("disabled_arms") or []) | {"TC"})
+        else:
+            for tag, hdr, body in (("96", h96, b96), ("97", h97, b97)):
+                cached_annotate(hdr, body, cache_t, contract_t, argv_t, WORK / f"warm_t_{tag}", contract_path_for(cache_t.path))
+                cache_t.save()
+            payload["setup"]["warm_T_cache_n"] = len(cache_t)
+    atomic_write(OUT, payload)
+
+    done = {r["i"] for r in payload.get("runs") or []}
+    for i in range(1, N_RUNS + 1):
+        if i in done:
+            continue
+        rec = {"i": i, "arms": {}}
+        print(f"run {i}/{N_RUNS} S", flush=True)
+        s = run_plain(V99, tuned=False)
+        rec["arms"]["S"] = {"wall_s": s["wall_s"], "cpu_s": s["cpu_s"]}
+        atomic_write(OUT, {**payload, "runs": payload.get("runs", []) + [rec]})
+        if not skip_t:
+            print(f"run {i}/{N_RUNS} T", flush=True)
+            t = run_plain(V99, tuned=True)
+            rec["arms"]["T"] = {"wall_s": t["wall_s"], "cpu_s": t["cpu_s"]}
+            rec["arms"]["T"]["match_vs_S"] = bodies_equal(t["text"], s["text"])
+            if not rec["arms"]["T"]["match_vs_S"]:
+                skip_t = True
+                payload["disabled_arms"] = sorted(set(payload.get("disabled_arms") or []) | {"T", "TC"})
+        if not skip_c:
+            print(f"run {i}/{N_RUNS} C", flush=True)
+            cpu0 = children_cpu_s()
+            t0 = time.perf_counter()
+            text_c, stats_c = cached_annotate(header99, body99, cache_s, contract_s, argv_s, WORK / f"c_{i}", contract_path_for(cache_s.path))
+            rec["arms"]["C"] = {
+                "wall_s": time.perf_counter() - t0,
+                "cpu_s": children_cpu_s() - cpu0,
+                "n_hits": stats_c["n_hits"],
+                "n_misses": stats_c["n_misses"],
+                "match_vs_S": bodies_equal(text_c, s["text"]),
+            }
+            cache_s.save()
+            if not rec["arms"]["C"]["match_vs_S"]:
+                payload["stopped"] = {"where": "C MATCH", "i": i}
+                payload.setdefault("runs", []).append(rec)
+                atomic_write(OUT, payload)
+                print("C MATCH failed; STOP")
+                return 2
+        if not skip_t and not skip_c:
+            print(f"run {i}/{N_RUNS} TC", flush=True)
+            cpu0 = children_cpu_s()
+            t0 = time.perf_counter()
+            text_tc, stats_tc = cached_annotate(header99, body99, cache_t, contract_t, argv_t, WORK / f"tc_{i}", contract_path_for(cache_t.path))
+            rec["arms"]["TC"] = {
+                "wall_s": time.perf_counter() - t0,
+                "cpu_s": children_cpu_s() - cpu0,
+                "n_hits": stats_tc["n_hits"],
+                "n_misses": stats_tc["n_misses"],
+                "match_vs_T": bodies_equal(text_tc, t["text"]) if "t" in dir() else None,
+            }
+            cache_t.save()
+        payload.setdefault("runs", [])
+        payload["runs"] = [r for r in payload["runs"] if r.get("i") != i] + [rec]
+        atomic_write(OUT, payload)
+
+    payload["finished_utc"] = datetime.now(timezone.utc).isoformat()
+    atomic_write(OUT, payload)
+    print(f"wrote {OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+PY
+
+cp "${ACTS_COMPARE_OUT}" "${SRC}/results/compare_snpeff.json"
+echo COMPARE_SNPEFF_DONE

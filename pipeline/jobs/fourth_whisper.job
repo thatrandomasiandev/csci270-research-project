@@ -1,0 +1,36 @@
+#!/bin/bash
+# Whisper fourth-tool screen — BLOCKED until Josh approves model size and PyTorch.
+# docs/FOURTH_SCREEN.md + docs/CARC_PLAN.md.
+# submit_fourth.sh refuses this job unless ACTS_WHISPER_SUBMIT=1.
+# Even then CARC_PLAN.md still says BLOCKED.
+# This script exits 2 unless ACTS_WHISPER_APPROVED=1.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --time=24:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/fourth/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/fourth/logs/%x-%j.err
+
+set -euo pipefail
+
+echo "=== Whisper fourth-tool screen ==="
+echo "CARC_PLAN.md status: BLOCKED"
+echo "Need Josh approval of --model small (~466 MB) AND the openai-whisper PyTorch wheel."
+echo "Default turbo (~1.6 GB) is gated. tiny is a strawman — do not use."
+echo "ACTS_WHISPER_APPROVED=${ACTS_WHISPER_APPROVED:-}"
+echo "ACTS_WHISPER_SUBMIT=${ACTS_WHISPER_SUBMIT:-}"
+
+if [[ "${ACTS_WHISPER_APPROVED:-}" != "1" ]]; then
+  echo "BLOCKED: refusing to fetch LibriSpeech, install torch, or time Whisper." >&2
+  echo "Set ACTS_WHISPER_APPROVED=1 only after Josh signs the wheel-size check." >&2
+  exit 2
+fi
+
+echo "ACTS_WHISPER_APPROVED=1 is set, but this writing of the job still does not implement the screen." >&2
+echo "CARC_PLAN.md remains BLOCKED. Do not treat this exit as a completed screen." >&2
+exit 2

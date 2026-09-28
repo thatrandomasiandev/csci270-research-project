@@ -1,0 +1,529 @@
+#!/bin/bash
+# Exclusive-node interleaved S/T/C/TC HMMER comparison (docs/CARC_PLAN.md).
+# Submit via scripts/submit_compare.sh — do not sbatch this file bare.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.err
+
+set -euo pipefail
+
+: "${ACTS_COMPARE_COLLECTION:?}"
+: "${ACTS_COMPARE_MODE:?}"
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_compare_${SLURM_JOB_ID}"
+mkdir -p "${SRC}/results/compare/logs" "${SCRATCH}"/{work,pipeline}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+GIT_HASH="${ACTS_GIT_HASH:-unknown}"
+if [[ -f "${SRC}/results/compare/GIT_HASH" ]]; then
+  GIT_HASH="$(tr -d '[:space:]' < "${SRC}/results/compare/GIT_HASH")"
+fi
+export ACTS_GIT_HASH="${GIT_HASH}"
+
+echo "=== host / cpu ==="
+hostname
+date -Is
+uptime
+nproc
+python3 --version
+lscpu || true
+echo "GIT_HASH=${GIT_HASH}"
+echo "COLLECTION=${ACTS_COMPARE_COLLECTION} MODE=${ACTS_COMPARE_MODE}"
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-epyc-7542} NODELIST=${SLURM_NODELIST:-}"
+
+STOCK="${SRC}/builds/hmmer-stock"
+TUNED="${SRC}/builds/hmmer-tuned"
+if [[ ! -x "${STOCK}/bin/hmmscan" || ! -x "${TUNED}/bin/hmmscan" ]]; then
+  echo "missing GCC-PGO prefixes; run compare_build.job first" >&2
+  exit 2
+fi
+if [[ -f "${SRC}/results/compare_match.json" ]]; then
+  python3 - "${SRC}/results/compare_match.json" <<'PY'
+import json, sys
+p = json.loads(open(sys.argv[1]).read())
+if not p.get("all_matched"):
+    sys.exit("compare_match.json all_matched is false; do not time")
+print("MATCH gate from compare_match.json: all_matched=true")
+PY
+else
+  echo "WARNING: results/compare_match.json missing; MATCH will be per-genome only" >&2
+fi
+
+echo "=== stage to node-local scratch ==="
+mkdir -p "${SCRATCH}/pipeline"/{scripts,acts,results,data/hmmer,data/recurrence,builds}
+cp -a "${SRC}/scripts/." "${SCRATCH}/pipeline/scripts/"
+cp -a "${SRC}/acts/." "${SCRATCH}/pipeline/acts/"
+cp "${SRC}/results/headline_screen.json" "${SRC}/results/recurrence_accessions.json" \
+  "${SRC}/results/hmmer_predicted_speedup.json" "${SCRATCH}/pipeline/results/"
+cp -a "${SRC}/data/recurrence/${ACTS_COMPARE_COLLECTION}" "${SCRATCH}/pipeline/data/recurrence/"
+rsync -a "${STOCK}/" "${SCRATCH}/pipeline/builds/hmmer-stock/"
+rsync -a "${TUNED}/" "${SCRATCH}/pipeline/builds/hmmer-tuned/"
+if [[ -f "${SRC}/data/hmmer/Pfam-A.hmm.gz" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm.gz" "${SCRATCH}/pipeline/data/hmmer/"
+elif [[ -f "${SRC}/data/hmmer/Pfam-A.hmm" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm" "${SCRATCH}/pipeline/data/hmmer/"
+else
+  echo "=== fetch Pfam-A (399 MB) on the compute node ==="
+  curl -L --fail --retry 3 -o "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz" \
+    https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+fi
+
+export PATH
+export ACTS_PIPELINE_ROOT="${SCRATCH}/pipeline"
+export ACTS_COMPARE_WORK="${SCRATCH}/work"
+export ACTS_COMPARE_OUT="${SRC}/results/compare"
+export ACTS_HMMER_STOCK="${SCRATCH}/pipeline/builds/hmmer-stock/bin"
+export ACTS_HMMER_TUNED="${SCRATCH}/pipeline/builds/hmmer-tuned/bin"
+if [[ -f "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm" ]]; then
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm"
+else
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz"
+fi
+export PYTHONPATH="${SCRATCH}/pipeline"
+
+echo "=== run interleaved S/T/C/TC ==="
+python3 - <<'PY'
+"""Interleaved S/T/C/TC HMMER comparison. MATCH before timing T/TC. JSON after each arm."""
+from __future__ import annotations
+
+import gzip
+import json
+import os
+import resource
+import shutil
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+ROOT = Path(os.environ["ACTS_PIPELINE_ROOT"])
+sys.path.insert(0, str(ROOT))
+
+from acts.cache import RecordCache
+from acts.fasta import FastaRec, parse_fasta, write_fasta
+from acts.fasta_memo import cached_search, contract_path_for
+from acts.infer_fasta import TableContract, infer_table_contract, run_table_tool
+from acts.table import tables_match
+
+PROTOCOL = "pipeline/docs/CARC_PLAN.md"
+PROBE_N = 8
+Z_FIXED = 1_000_000
+DOMZ_FIXED = 1_000_000
+RHO = 1.10
+ORDER = {
+    "A": [9, 5, 2, 75, 29, 64, 23, 80, 4, 14, 47, 63, 31, 28, 16, 52, 6, 39, 69, 78, 25, 74, 76, 57, 20, 24, 15, 67, 41, 44],
+    "B": [4, 2, 1, 14, 32, 11, 38, 7, 23, 15, 24, 35, 27, 28, 39, 22, 31, 13, 37, 9, 17, 6, 36, 5, 18, 29, 12, 21, 8, 16, 10, 25, 3, 33, 0, 26, 30, 34, 19, 20],
+}
+STOCK_POS = {"A": {1, 2, 5, 10, 20, 30}, "B": {1, 2, 5, 10, 20, 40}}
+EXPECTED_MATCH = {"hmmscan": "order", "hmmsearch": "multiset"}
+
+
+def nproc() -> int:
+    raw = os.environ.get("SLURM_CPUS_PER_TASK") or os.environ.get("SLURM_CPUS_ON_NODE")
+    if raw:
+        try:
+            return max(1, int(raw.split("(")[0]))
+        except ValueError:
+            pass
+    return max(1, os.cpu_count() or 1)
+
+
+def children_cpu_s() -> float:
+    ru = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return float(ru.ru_utime) + float(ru.ru_stime)
+
+
+def host_info() -> dict:
+    def _run(argv: list[str]) -> str:
+        proc = subprocess.run(argv, check=False, capture_output=True, text=True)
+        return (proc.stdout or proc.stderr or "").rstrip()
+
+    lscpu = _run(["lscpu"])
+    model = next((ln.split(":", 1)[-1].strip() for ln in lscpu.splitlines() if "Model name" in ln), "")
+    return {
+        "hostname": _run(["hostname"]),
+        "date": datetime.now(timezone.utc).isoformat(),
+        "uptime": _run(["uptime"]),
+        "nproc": nproc(),
+        "cpu_model": model,
+        "slurm_job_id": os.environ.get("SLURM_JOB_ID"),
+        "slurm_nodelist": os.environ.get("SLURM_NODELIST"),
+        "constraint": os.environ.get("SLURM_JOB_CONSTRAINT", "epyc-7542"),
+    }
+
+
+def load_faa(path: Path) -> list[FastaRec]:
+    if path.suffix == ".gz" or path.name.endswith(".faa.gz"):
+        return parse_fasta(gzip.open(path, "rt").read())
+    return parse_fasta(path.read_text())
+
+
+def bins_for(prefix: Path) -> dict[str, str]:
+    found: dict[str, str] = {}
+    for name in ("hmmscan", "hmmsearch", "hmmpress"):
+        candidate = prefix / name
+        if not candidate.is_file():
+            raise FileNotFoundError(candidate)
+        found[name] = str(candidate)
+    ver = subprocess.run([found["hmmsearch"], "-h"], check=False, capture_output=True, text=True)
+    found["version_head"] = " | ".join((ver.stdout or ver.stderr).splitlines()[:3])
+    return found
+
+
+def stage_pfam(src: Path, dest_dir: Path) -> Path:
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    if src.suffix == ".gz" or src.name.endswith(".hmm.gz"):
+        dest = dest_dir / "Pfam-A.hmm"
+        if not dest.is_file() or dest.stat().st_mtime < src.stat().st_mtime:
+            with gzip.open(src, "rb") as fh_in, dest.open("wb") as fh_out:
+                shutil.copyfileobj(fh_in, fh_out)
+        return dest
+    dest = dest_dir / src.name
+    if src.resolve() != dest.resolve():
+        shutil.copy2(src, dest)
+    return dest
+
+
+def ensure_pressed(hmm: Path, hmmpress: str) -> Path:
+    pressed = Path(str(hmm) + ".h3m")
+    if pressed.is_file() and pressed.stat().st_mtime >= hmm.stat().st_mtime:
+        return hmm
+    proc = subprocess.run([hmmpress, "-f", str(hmm)], check=False, capture_output=True, text=True)
+    if proc.returncode != 0:
+        raise RuntimeError(f"hmmpress failed: {(proc.stderr or proc.stdout or '')[-800:]}")
+    return hmm
+
+
+def screen_fit(mode: str) -> dict:
+    screen = json.loads((ROOT / "results" / "headline_screen.json").read_text())
+    for row in screen["modes"]:
+        if row["mode"] == mode:
+            return {
+                "a": row["a_s"],
+                "b": row["b_s_per_record"],
+                "w": row["w"]["w_s"],
+                "N_screen": screen["N"],
+            }
+    raise KeyError(mode)
+
+
+def wrapper_argv(mode: str, binary: str, hmm: Path, cpu: int) -> list[str]:
+    emit = str(ROOT / "scripts" / "emit_side_table.py")
+    core = [sys.executable, emit, binary, "--cpu", str(cpu), "--noali", "--tblout", "{table}"]
+    if mode == "hmmscan":
+        return core + ["--cut_ga", str(hmm), "{input}"]
+    return core + ["-Z", str(Z_FIXED), "--domZ", str(DOMZ_FIXED), str(hmm), "{input}"]
+
+
+def stock_argv(mode: str, binary: str, hmm: Path, faa: Path, tblout: Path, cpu: int) -> list[str]:
+    if mode == "hmmscan":
+        return [binary, "--cpu", str(cpu), "--cut_ga", "--noali", "--tblout", str(tblout), str(hmm), str(faa)]
+    return [
+        binary, "--cpu", str(cpu), "--noali", "-Z", str(Z_FIXED), "--domZ", str(DOMZ_FIXED),
+        "--tblout", str(tblout), str(hmm), str(faa),
+    ]
+
+
+def time_cmd(argv: list[str]) -> dict:
+    up = subprocess.check_output(["uptime"], text=True).rstrip()
+    cpu0 = children_cpu_s()
+    t0 = time.perf_counter()
+    proc = subprocess.run(argv, check=False, capture_output=True, text=True)
+    wall = time.perf_counter() - t0
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"cmd failed rc={proc.returncode}: {argv[:8]}\n{(proc.stderr or proc.stdout or '')[-800:]}"
+        )
+    return {
+        "wall_s": wall,
+        "cpu_s": children_cpu_s() - cpu0,
+        "uptime": up,
+        "returncode": proc.returncode,
+        "stderr_tail": (proc.stderr or "")[-400:],
+    }
+
+
+def atomic_write(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp.replace(path)
+
+
+def genomes_spec(collection: str) -> list[dict]:
+    acc = json.loads((ROOT / "results" / "recurrence_accessions.json").read_text())
+    listed = acc["collections"][collection]["genomes"]
+    out = []
+    for pos, idx in enumerate(ORDER[collection], start=1):
+        g = listed[idx]
+        out.append(
+            {
+                "position": pos,
+                "index": idx,
+                "accession": g["accession"],
+                "strain": g.get("strain"),
+                "path": g["path"],
+            }
+        )
+    return out
+
+
+def tbl_path(base: Path, collection: str, mode: str, position: int, arm: str) -> Path:
+    return base / "tblout" / f"{collection}_{mode}_{position:02d}_{arm}.tbl"
+
+
+def ensure_contract(argv: list[str], recs: list[FastaRec], cache_path: Path, work: Path) -> TableContract:
+    path = contract_path_for(cache_path)
+    if path.is_file():
+        return TableContract.load(path)
+    contract = infer_table_contract(argv, recs, work / "probe", probe_n=PROBE_N)
+    contract.save(path)
+    return contract
+
+
+def genome_done(row: dict | None, sampled: bool, skip_t: bool) -> bool:
+    if not row:
+        return False
+    need = ["C", "TC"] if skip_t else (["S", "T", "C", "TC"] if sampled else ["C", "TC"])
+    keys = {"S": "stock_wall_s", "T": "tuned_wall_s", "C": "cached_stock_wall_s", "TC": "cached_tuned_wall_s"}
+    return all(row.get(keys[a]) is not None for a in need)
+
+
+def persist(payload: dict, out_json: Path, fit: dict) -> None:
+    rows = payload.get("genomes") or []
+    stock_s = tuned_s = c_s = tc_s = 0.0
+    for row in rows:
+        n_i = row.get("N_i") or 0
+        pred_s = fit["a"] + fit["b"] * n_i
+        pred_t = (fit["a"] / RHO) + (fit["b"] / RHO) * n_i
+        row["stock_predicted_s"] = pred_s
+        row["tuned_predicted_s"] = pred_t
+        stock_s += row.get("stock_wall_s") if row.get("stock_wall_s") is not None else pred_s
+        tuned_s += row.get("tuned_wall_s") if row.get("tuned_wall_s") is not None else pred_t
+        if row.get("cached_stock_wall_s") is not None:
+            c_s += row["cached_stock_wall_s"]
+        if row.get("cached_tuned_wall_s") is not None:
+            tc_s += row["cached_tuned_wall_s"]
+    payload["cumulative"] = {
+        "stock_wall_s": stock_s,
+        "tuned_wall_s": tuned_s,
+        "cached_stock_wall_s": c_s or None,
+        "cached_tuned_wall_s": tc_s or None,
+        "note": "unsampled S/T use a+bN / (a/ρ+b/ρ N); C and TC are measured",
+        "rho_pgo_prior": RHO,
+        "timing_claimed": False,
+    }
+    if c_s:
+        payload["cumulative"]["speedup_C_vs_S"] = stock_s / c_s
+    if tc_s:
+        payload["cumulative"]["speedup_TC_vs_S"] = stock_s / tc_s
+        payload["cumulative"]["speedup_T_vs_S"] = stock_s / tuned_s if tuned_s else None
+    payload["genomes"] = sorted(payload.get("genomes") or [], key=lambda r: r.get("position", 0))
+    atomic_write(out_json, payload)
+
+
+def run_plain(mode: str, binary: str, hmm: Path, recs: list[FastaRec], faa: Path, tbl: Path, cpu: int) -> dict:
+    write_fasta(faa, recs)
+    tbl.parent.mkdir(parents=True, exist_ok=True)
+    timed = time_cmd(stock_argv(mode, binary, hmm, faa, tbl, cpu))
+    return {**timed, "tblout": str(tbl), "text": tbl.read_text() if tbl.is_file() else ""}
+
+
+def run_cached(recs, argv, cache, contract, work) -> dict:
+    cpu0 = children_cpu_s()
+    t0 = time.perf_counter()
+    rebuilt, stats = cached_search(recs, cache, contract, argv, work, contract_path=contract_path_for(cache.path))
+    wall = time.perf_counter() - t0
+    cache.save()
+    return {
+        "wall_s": wall,
+        "cpu_s": children_cpu_s() - cpu0,
+        "n_hits": stats["n_hits"],
+        "n_misses": stats["n_misses"],
+        "cache_size_after": stats["cache_size_after"],
+        "rebuilt": rebuilt,
+    }
+
+
+def main() -> int:
+    collection = os.environ["ACTS_COMPARE_COLLECTION"]
+    mode = os.environ["ACTS_COMPARE_MODE"]
+    if collection not in ORDER or mode not in EXPECTED_MATCH:
+        raise SystemExit("set ACTS_COMPARE_COLLECTION={A,B} MODE={hmmscan,hmmsearch}")
+    cpu = nproc()
+    fit = screen_fit(mode)
+    specs = genomes_spec(collection)
+    out_dir = Path(os.environ.get("ACTS_COMPARE_OUT", str(ROOT / "results" / "compare")))
+    out_json = out_dir / f"{collection}_{mode}.json"
+    stop_path = out_dir / f"{collection}_{mode}.STOP.json"
+    work = Path(os.environ.get("ACTS_COMPARE_WORK", f"/tmp/acts_compare_{os.getpid()}"))
+    work.mkdir(parents=True, exist_ok=True)
+    if stop_path.is_file():
+        print(f"STOP already set: {stop_path}")
+        return 2
+
+    stock_bins = bins_for(Path(os.environ["ACTS_HMMER_STOCK"]))
+    tuned_bins = bins_for(Path(os.environ["ACTS_HMMER_TUNED"]))
+    pfam_src = Path(os.environ.get("ACTS_PFAM", str(ROOT / "data" / "hmmer" / "Pfam-A.hmm.gz")))
+    hmm = ensure_pressed(stage_pfam(pfam_src, work / "hmmer"), stock_bins["hmmpress"])
+    argv_s = wrapper_argv(mode, stock_bins[mode], hmm, cpu)
+    argv_t = wrapper_argv(mode, tuned_bins[mode], hmm, cpu)
+    skip_t = False
+
+    skeleton = {
+        "protocol": PROTOCOL,
+        "comparison_protocol": "pipeline/docs/COMPARISON_PROTOCOL.md",
+        "git": os.environ.get("ACTS_GIT_HASH", "unknown"),
+        "collection": collection,
+        "mode": mode,
+        "arms": ["S", "T", "C", "TC"],
+        "interleave": "sampled genomes: S,T,C,TC; others: C,TC",
+        "pgo_train_proteome": "BW25113 GCF_000750555.1 (not A/B)",
+        "probe_n": PROBE_N,
+        "rho_pgo_prior": RHO,
+        "host": host_info(),
+        "hmmer_stock": stock_bins["version_head"],
+        "hmmer_tuned": tuned_bins["version_head"],
+        "cpu": cpu,
+        "fit": fit,
+        "timing_claimed": False,
+        "genomes": [],
+        "disabled_arms": [],
+    }
+    payload = json.loads(out_json.read_text()) if out_json.is_file() else skeleton
+    payload["host"] = host_info()
+    payload["resumed"] = bool(payload.get("genomes"))
+    by_pos = {row["position"]: row for row in payload.get("genomes") or []}
+    if "T" in (payload.get("disabled_arms") or []):
+        skip_t = True
+
+    cache_s = RecordCache(out_dir / "cache" / f"{collection}_{mode}_S" / "cache.jsonl", argv=argv_s, kind="fasta")
+    cache_t = RecordCache(out_dir / "cache" / f"{collection}_{mode}_T" / "cache.jsonl", argv=argv_t, kind="fasta")
+    (out_dir / "cache" / f"{collection}_{mode}_S").mkdir(parents=True, exist_ok=True)
+    (out_dir / "cache" / f"{collection}_{mode}_T").mkdir(parents=True, exist_ok=True)
+    contract_s = contract_t = None
+
+    for spec in specs:
+        if stop_path.is_file():
+            payload["stopped"] = json.loads(stop_path.read_text())
+            persist(payload, out_json, fit)
+            return 2
+        sampled = spec["position"] in STOCK_POS[collection]
+        existing = by_pos.get(spec["position"])
+        if genome_done(existing, sampled, skip_t):
+            continue
+        recs = load_faa(ROOT / spec["path"])
+        gwork = work / f"g{spec['position']:02d}"
+        gwork.mkdir(parents=True, exist_ok=True)
+        row = {**(existing or spec), **spec, "N_i": len(recs), "n_unique": len({r.key for r in recs})}
+        if contract_s is None:
+            print("inferring stock table contract (probe_n=8) …", flush=True)
+            contract_s = ensure_contract(argv_s, recs, cache_s.path, gwork / "cs")
+            if contract_s.match != EXPECTED_MATCH[mode] or not contract_s.match_ws:
+                atomic_write(stop_path, {"stopped": True, "where": "contract_S", "match": contract_s.match})
+                payload["stopped"] = json.loads(stop_path.read_text())
+                persist(payload, out_json, fit)
+                return 2
+        if contract_t is None and not skip_t:
+            print("inferring tuned table contract (probe_n=8) …", flush=True)
+            contract_t = ensure_contract(argv_t, recs, cache_t.path, gwork / "ct")
+
+        if sampled and row.get("stock_wall_s") is None:
+            print(f"S {collection} {mode} genome {spec['position']} {spec['accession']}", flush=True)
+            r = run_plain(mode, stock_bins[mode], hmm, recs, gwork / "s.fa", tbl_path(out_dir, collection, mode, spec["position"], "S"), cpu)
+            row["stock_wall_s"] = r["wall_s"]
+            row["stock_cpu_s"] = r["cpu_s"]
+            row["stock_uptime"] = r["uptime"]
+            by_pos[spec["position"]] = row
+            payload["genomes"] = list(by_pos.values())
+            persist(payload, out_json, fit)
+
+        if sampled and not skip_t and row.get("tuned_wall_s") is None:
+            print(f"T {collection} {mode} genome {spec['position']} {spec['accession']}", flush=True)
+            r = run_plain(mode, tuned_bins[mode], hmm, recs, gwork / "t.fa", tbl_path(out_dir, collection, mode, spec["position"], "T"), cpu)
+            row["tuned_wall_s"] = r["wall_s"]
+            row["tuned_cpu_s"] = r["cpu_s"]
+            row["tuned_uptime"] = r["uptime"]
+            s_tbl = tbl_path(out_dir, collection, mode, spec["position"], "S")
+            t_tbl = tbl_path(out_dir, collection, mode, spec["position"], "T")
+            ok = tables_match(t_tbl.read_text(), s_tbl.read_text(), EXPECTED_MATCH[mode], match_ws=True)
+            row["match_T_vs_S"] = ok
+            if not ok:
+                skip_t = True
+                payload["disabled_arms"] = sorted(set(payload.get("disabled_arms") or []) | {"T", "TC"})
+                print("MATCH T vs S failed — disabling T and TC; C (stock cache) still runs", flush=True)
+            by_pos[spec["position"]] = row
+            payload["genomes"] = list(by_pos.values())
+            persist(payload, out_json, fit)
+
+        if row.get("cached_stock_wall_s") is None:
+            print(f"C {collection} {mode} genome {spec['position']} {spec['accession']}", flush=True)
+            r = run_cached(recs, argv_s, cache_s, contract_s, gwork / "c")
+            dest = tbl_path(out_dir, collection, mode, spec["position"], "C")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(r["rebuilt"])
+            row["cached_stock_wall_s"] = r["wall_s"]
+            row["cached_stock_cpu_s"] = r["cpu_s"]
+            row["cached_stock_n_hits"] = r["n_hits"]
+            row["cached_stock_n_misses"] = r["n_misses"]
+            s_tbl = tbl_path(out_dir, collection, mode, spec["position"], "S")
+            if sampled and s_tbl.is_file():
+                ok = tables_match(r["rebuilt"], s_tbl.read_text(), contract_s.match, match_ws=contract_s.match_ws)
+                row["match_C_vs_S"] = ok
+                if not ok:
+                    atomic_write(stop_path, {"stopped": True, "where": "C MATCH", "position": spec["position"]})
+                    payload["stopped"] = json.loads(stop_path.read_text())
+                    by_pos[spec["position"]] = row
+                    payload["genomes"] = list(by_pos.values())
+                    persist(payload, out_json, fit)
+                    return 2
+            by_pos[spec["position"]] = row
+            payload["genomes"] = list(by_pos.values())
+            persist(payload, out_json, fit)
+
+        if not skip_t and contract_t is not None and row.get("cached_tuned_wall_s") is None:
+            print(f"TC {collection} {mode} genome {spec['position']} {spec['accession']}", flush=True)
+            r = run_cached(recs, argv_t, cache_t, contract_t, gwork / "tc")
+            dest = tbl_path(out_dir, collection, mode, spec["position"], "TC")
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_text(r["rebuilt"])
+            row["cached_tuned_wall_s"] = r["wall_s"]
+            row["cached_tuned_cpu_s"] = r["cpu_s"]
+            row["cached_tuned_n_hits"] = r["n_hits"]
+            row["cached_tuned_n_misses"] = r["n_misses"]
+            t_tbl = tbl_path(out_dir, collection, mode, spec["position"], "T")
+            if sampled and t_tbl.is_file():
+                ok = tables_match(r["rebuilt"], t_tbl.read_text(), contract_t.match, match_ws=contract_t.match_ws)
+                row["match_TC_vs_T"] = ok
+                if not ok:
+                    payload["disabled_arms"] = sorted(set(payload.get("disabled_arms") or []) | {"TC"})
+                    skip_t = True
+                    print("MATCH TC vs T failed — disabling further T/TC", flush=True)
+            by_pos[spec["position"]] = row
+            payload["genomes"] = list(by_pos.values())
+            persist(payload, out_json, fit)
+
+    payload["finished_utc"] = datetime.now(timezone.utc).isoformat()
+    persist(payload, out_json, fit)
+    print(f"wrote {out_json}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+PY
+
+echo COMPARE_HMMER_DONE
