@@ -488,9 +488,12 @@ class RecordCache:
             for ns, rec, out in self._conn.execute("SELECT ns, record, output FROM records")
         ]
         text = "\n".join(lines) + ("\n" if lines else "")
-        tmp = self.path.with_name(self.path.name + ".tmp")
-        tmp.write_text(text)
-        tmp.replace(self.path)
+        tmp = self.path.with_name(f"{self.path.name}.{os.getpid()}.{time.time_ns()}.tmp")
+        try:
+            tmp.write_text(text)
+            tmp.replace(self.path)
+        except OSError:
+            tmp.unlink(missing_ok=True)
 
     def __len__(self) -> int:
         return self._db_count + len(self._new)
