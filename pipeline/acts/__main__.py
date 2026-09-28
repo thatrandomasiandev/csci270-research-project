@@ -2,6 +2,8 @@
 
   python3 -m acts probe --kind fastq_pe --r1 A.fq.gz --r2 B.fq.gz
   python3 -m acts run --strategy record_memo --kind lines --input in.txt -- cat
+  python3 -m acts run --kind files --input in_dir -- python3 tool.py
+  python3 -m acts run --kind linetable --input in.smi -- python3 tool.py
   python3 -m acts run -- STAR …     # refuses identity (not byte-identical)
   python3 -m acts predict --kind lines --input in.txt -- cat
 """
@@ -205,7 +207,11 @@ def main(argv: list[str] | None = None) -> int:
 
     rn = sub.add_parser("run", help="run a strategy; refuse when MATCH cannot hold")
     rn.add_argument("--strategy", default="record_memo")
-    rn.add_argument("--kind", default="lines", choices=("fastq_pe", "lines", "vcf", "fasta"))
+    rn.add_argument(
+        "--kind",
+        default="lines",
+        choices=("fastq_pe", "lines", "vcf", "fasta", "files", "linetable"),
+    )
     rn.add_argument("--input")
     rn.add_argument("--r1")
     rn.add_argument("--r2")

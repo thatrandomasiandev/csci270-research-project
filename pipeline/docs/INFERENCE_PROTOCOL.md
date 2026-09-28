@@ -568,3 +568,204 @@ For each `probe_n ∈ {50, 200, 500, 2000}`, report:
 
 Results must go to new files and new uniquely numbered figures; do not
 overwrite `probe_eval.json`, `probe_eval_audit.json`, or existing figures.
+
+---
+
+## Addendum 2026-09-27 — formats `files` and `lines->table`
+
+Written **before** implementing either parser, any fixture, or a Mordred
+run. Do not edit this addendum after seeing the new tests or
+`pipeline/data_formats/` JSON. Locked sections above are unchanged.
+
+Per-**format** only. No per-tool parsers, no tool names in `acts/`, no
+Whisper/PyTorch install (Josh-gated). `{input}` substitution is the same
+idea as VCF/FASTA. `{output}` is added for directory-valued tools.
+
+CLI kind tokens (stable):
+
+| Protocol name | `--kind` |
+|---------------|----------|
+| `files` | `files` |
+| `lines->table` | `linetable` |
+
+```
+python3 -m acts run --kind files --cache C --input INDIR -- <tool argv>
+python3 -m acts run --kind linetable --cache C --input X -- <tool argv>
+```
+
+`{input}` in argv is replaced with the probe / miss / audit input the
+runner wrote (a directory of files, or a lines file). If `{input}` is
+absent, that path is appended. For `files` only: `{output}` is replaced
+with a fresh output directory the runner created; if `{output}` is
+absent, that directory is appended after `{input}`. Existing `vcf` /
+`fasta` / `lines` kinds are unchanged.
+
+### Locked algorithm — format `files`
+
+Target shape: one output file (or a small fixed set of suffixes) per
+input file, written into an output directory. Whisper-style: one TSV
+per audio file. The code must not name that tool.
+
+- **Input** = a directory of regular files. Hidden names (`.*`) and
+  subdirectories are ignored. Each file is one record.
+- **Cache key** = SHA-256 of the file **bytes**. The file name is **not**
+  part of the key unless (c) widens it.
+- **Output** = regular files the tool writes into `{output}` (hidden
+  names ignored). Match each output file to an input by a **stem rule**
+  inferred by probe, not assumed:
+  - `stem`: output `{stem}{suffix}` for input `{stem}{ext}`
+  - `name`: output `{name}{suffix}` for input `{name}`
+- **A record’s output** = the `{output}` files whose names follow that
+  rule for that input. Zero files is an explicit `EMPTY` (`files: []`);
+  `cache.get` is a hit.
+- **Reassembly** writes cached bytes under the **new** input’s stem
+  (or name) plus each contracted suffix. PASS-THROUGH does not rewrite
+  file interiors; a name-dependent interior is a widen (below), not a
+  substitution.
+- **Order** is not part of MATCH. MATCH is per-record output bytes
+  aligned by the stem rule.
+
+### Locked algorithm — format `lines->table`
+
+Target shape: one input line (e.g. a SMILES string) → a CSV or TSV with
+a header row and one or more data rows per input. Mordred-style. The
+code must not name that tool.
+
+- **Input record** = one line of the input file (`rstrip` newline; the
+  line is the record, including leading/trailing spaces).
+- **Cache key** = the line text.
+- **Output** = a text table. The **first non-empty line** is the header
+  (column names) and is **metadata**, like a VCF header: MATCH is
+  body-only. Lines starting with `#` are also metadata. Body delimiter:
+  tab if any body line contains a tab; else comma if any contains a
+  comma; else whitespace.
+- **A record’s output** = the body rows that belong to it, inferred by
+  probe, in this order:
+  1. **Echoed input column:** perturb every line to a unique token; the
+     column that follows the new tokens is the query column (same
+     construction as FASTA→table query-name).
+  2. **Row order:** if no such column: `n_body == n_in` → 1:1 positional;
+     or `n_body == k * n_in` for a constant `k ≥ 1` → `k` contiguous
+     rows per input in input order.
+  3. Otherwise → `REFUSE_AMBIGUOUS`. Variable 1:many without an echo
+     column is refused.
+- **Zero-row records** cache `EMPTY` (`rows: []`).
+- **Reassembly** writes the new line into the echo column of each
+  cached row (if that column exists); PRODUCED cells come from the
+  cache. Header comes from the miss run (or a 1-record harvest).
+- **Order probe** (after correspondence is known):
+  - **Grouped:** each record’s rows are contiguous, first appearance in
+    input order (skipping empty). MATCH is **byte-order** on the body.
+  - **Global:** any other order (including a score sort). MATCH is a
+    **multiset** of body lines. The paper must say “order-insensitive
+    MATCH” for that tool.
+
+### Probes (same battery as VCF / FASTA→table)
+
+On `probe_n` distinct records sampled uniformly without replacement
+from the whole input (`random.Random(20260927)` unless `--probe-seed`
+is set; default `probe_n=500`). If shorter, use every record. Batched
+subset-invariance is the default `(b2)` (addendum 2026-09-27).
+
+**a) Determinism.** Two runs on the same probe input. `files`: the
+output-directory snapshot (relative paths + bytes) differs →
+`REFUSE_NONDETERMINISTIC`. `linetable`: body bytes differ →
+`REFUSE_NONDETERMINISTIC`.
+
+**b) Independence.** Shuffle record order. `files`: copy the same
+named files into a new directory in shuffled creation order (names
+unchanged); align by the stem rule; any record’s output bytes differ →
+`REFUSE_NEIGHBORS`. `linetable`: shuffle lines; group by the query
+column or by positional identity of the line; any record’s rows differ
+→ `REFUSE_NEIGHBORS`.
+
+**b2) Subset-invariance.** Batched (2 halves + 4 quarters + 8
+singletons, seed `20260927`) unless an explicit singleton comparison
+flag is set. Align by SHA-256 (`files`) or by query column / line
+identity (`linetable`). Any difference vs the full-probe output for
+that record → `REFUSE_GLOBAL`.
+
+**c) Perturbation.**
+
+`files`: rename every probe file to a unique `PERTURB_{i}{suffix}`.
+Infer the stem rule from which output names follow. Then compare
+aligned output **bytes**. Unchanged bytes → name is not in the value;
+key stays SHA-256. Changed bytes → **DEPENDS-ON-NON-KEY**; **widen
+once** to include `name` in the cache key. After that widen there is
+no further non-key field; stop. If the stem rule cannot be inferred →
+`REFUSE_AMBIGUOUS`. Pre-registered preference is widen-then-SHIP when
+the interior depends on the name and is not a byte-identical copy
+under rename.
+
+`linetable`: replace every probe line with a unique token. Per output
+column: follows the new line → **PASS-THROUGH**; unchanged →
+**PRODUCED**; changes but equals neither old nor new line →
+**DEPENDS-ON-NON-KEY**. The line is the only cache-key field. If a
+column is still DEPENDS after one widen attempt that is not possible
+here → `REFUSE_AMBIGUOUS`. (Positional correspondence has no
+PASS-THROUGH column; every cell is PRODUCED.)
+
+**d) Late keys.** A later miss batch that emits more than the contract
+saw: do not cache the new pieces; re-run (c) on up to 200 records that
+carry them; merge. `files`: extra output suffixes. `linetable`: extra
+column indices. Same one-widen rule as (c). If still ambiguous →
+`REFUSE_AMBIGUOUS`.
+
+### Decisions (added)
+
+Existing VCF/FASTA decisions still apply, including `REFUSE_GLOBAL`,
+`REFUSE_MATCH`, `REFUSE_AUDIT`, and `--verify audit` vs `full`.
+
+| Decision | When |
+|----------|------|
+| SHIP | probes passed; body / per-file MATCH vs a full run (`--verify full`) or audit (`--verify audit`) |
+| REFUSE_AMBIGUOUS | no stem rule; no row correspondence; or a column still DEPENDS |
+
+### Expected outcomes — fixtures (`fixtures/files_memo/`)
+
+Written before the fixtures exist. Input directory: `tiny/` (several
+small distinct regular files).
+
+| Fixture | Probe | Decision | Notes |
+|---------|-------|----------|-------|
+| `per_file.py` | (a)(b)(b2) pass; output bytes ignore the name; stem rule inferred | **SHIP** | One `{stem}.tsv` per input; key = SHA-256. Same bytes under a new name must **hit**. |
+| `uses_name.py` | (a)(b)(b2) pass; output bytes change when the file is renamed and are not a byte copy of the name | **SHIP** after one widen | key = SHA-256 **+ name**. Same bytes under a new name must **miss**. If the widen is still ambiguous → `REFUSE_AMBIGUOUS`. Preference is widen-then-SHIP. |
+| `reads_all.py` | a value that depends on the number of files in **this** invocation | **REFUSE_GLOBAL** | (b2) singleton/half ≠ full-probe |
+
+### Expected outcomes — fixtures (`fixtures/linetable_memo/`)
+
+Written before the fixtures exist. Input: `tiny.smi` (several lines).
+
+| Fixture | Probe | Decision | MATCH | Notes |
+|---------|-------|----------|-------|-------|
+| `per_line_csv.py` | header + one row per line; echoes the input | **SHIP** | byte-order | PRODUCED score; input PASS-THROUGH |
+| `sorted_csv.py` | global sort by a produced column | **SHIP** | **multiset** | order-insensitive MATCH |
+
+### Expected outcomes — Mordred (correctness only)
+
+If `pip install mordred rdkit` into a venv under
+`pipeline/data_formats/` stays **≤ ~200 MB** (disk of that venv after
+install): run `lines->table` on 500 ChEMBL-style SMILES (any small
+public or synthetic set; no download over 1 GB). Report the inferred
+contract (query column or positional, MATCH type, cache key) and any
+refusal. **No timing.** `--verify full` MATCH only.
+
+If the install exceeds ~200 MB: skip; record **INCOMPLETE**. Do not
+force it. Do not install Whisper or PyTorch.
+
+| Check | Expected |
+|-------|----------|
+| (a)(b)(b2) | pass (per-molecule descriptors) |
+| correspondence | echoed SMILES column, **or** 1:1 positional |
+| MATCH | byte-order if grouped; multiset if globally sorted |
+| decision | **SHIP** + body MATCH, *or* a named refuse if a probe fails |
+
+Do not put Mordred column titles in `acts/`.
+
+### What this is not
+
+- Not a timing run. Do not write speedups into any result JSON.
+- Not a rewrite of VCF or FASTA→table inference.
+- Not permission to special-case Whisper, Mordred, or any binary.
+- Not CARC. Not Docker. Not a PyPI publish.
+- Not a rewrite of `results/inference_*.json` or headline files.

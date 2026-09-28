@@ -18,7 +18,7 @@ from acts.infer_vcf import InferError, reassemble_record, run_vcf_tool, write_vc
 from acts.fasta import read_fasta
 from acts.infer_fasta import InferError as FastaInferError
 from acts.infer_fasta import run_table_tool
-from acts.records import DupReport, probe_fasta, probe_fastq_pe, probe_lines
+from acts.records import DupReport, count_keys, iter_lines, probe_fasta, probe_fastq_pe, probe_lines
 from acts.sample import PROBE_SEED
 from acts.strategies.base import Strategy, StrategyResult
 from acts.table import tables_match
@@ -80,6 +80,17 @@ class RecordMemo(Strategy):
             if self.input_path is None:
                 raise ValueError("fasta needs --input")
             return probe_fasta(self.input_path)
+        if self.kind == "files":
+            from acts.infer_files import file_sha256, list_input_files
+
+            if self.input_path is None:
+                raise ValueError("files needs --input")
+            files = list_input_files(self.input_path)
+            return count_keys((file_sha256(p) for p in files), kind="files")
+        if self.kind == "linetable":
+            if self.input_path is None:
+                raise ValueError("linetable needs --input")
+            return count_keys(iter_lines(self.input_path), kind="linetable")
         raise ValueError(f"unknown kind {self.kind!r}")
 
     def run(self) -> StrategyResult:
@@ -107,6 +118,10 @@ class RecordMemo(Strategy):
             return self._run_vcf(extra)
         if self.kind == "fasta" and self.argv:
             return self._run_fasta(extra)
+        if self.kind == "files" and self.argv:
+            return self._run_files(extra)
+        if self.kind == "linetable" and self.argv:
+            return self._run_linetable(extra)
         if self.kind != "lines" or not self.argv:
             if report.unique_frac >= self.unique_frac_refuse:
                 rec = StrategyResult(
@@ -318,6 +333,202 @@ class RecordMemo(Strategy):
         rec.write(self.out_dir / "decision.txt")
         return rec
 
+    def _run_files(self, extra: dict) -> StrategyResult:
+        from acts.files_memo import cached_files, contract_path_for, prepare_files_contract
+        from acts.infer_files import InferError as FilesInferError
+        from acts.infer_files import dirs_match, list_records, run_files_tool
+
+        assert self.input_path is not None
+        recs = list_records(self.input_path)
+        cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
+        extra.update({"n": len(recs), "verify": self.verify})
+        try:
+            contract = prepare_files_contract(
+                self.argv,
+                recs,
+                self.out_dir / "infer",
+                cache_path,
+                probe_n=self.probe_n,
+                probe_seed=self.probe_seed,
+            )
+        except FilesInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        cache = RecordCache(
+            cache_path, argv=self.argv, kind="files", extra_files=contract.traced_files
+        )
+        extra["cache_size"] = len(cache)
+        extra["trace_status"] = contract.trace_status
+        extra["traced_n"] = str(len(contract.traced_files))
+        extra["match"] = contract.match
+        extra["stem_rule"] = contract.stem_rule
+        extra["cache_key_fields"] = ",".join(contract.cache_key_fields)
+        extra["widen"] = ",".join(contract.widen_history)
+        extra["suffixes"] = ",".join(contract.suffixes)
+        rebuilt_dir = self.out_dir / "reassembled"
+        try:
+            rebuilt_dir, stats = cached_files(
+                recs,
+                cache,
+                contract,
+                self.argv,
+                self.out_dir / "memo",
+                rebuilt_dir,
+                contract_path=contract_path_for(cache_path),
+            )
+            extra["late_key_probes"] = ",".join(contract.late_key_probes)
+        except FilesInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
+        extra["n_reassembled"] = len(recs)
+        if stats["n_cache_holes"]:
+            rec = StrategyResult(self.name, "REFUSE_MATCH", "cache hole after miss run", extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        if self.verify == "full":
+            stock = self.out_dir / "full"
+            run_files_tool(self.argv, self.input_path, stock)
+            if not dirs_match(rebuilt_dir, stock):
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_MATCH",
+                    "reassembled files are not MATCH to a full run",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"MATCH bytes; hits={stats['n_hits']} misses={stats['n_misses']}; "
+                f"key={','.join(contract.cache_key_fields)}"
+            )
+        else:
+            audit = self._audit_files(stats.get("hit_recs") or [], cache, contract)
+            extra["audit_checked"] = audit.n_checked
+            extra["audit_mismatch"] = audit.n_mismatch
+            if not audit.ok:
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_AUDIT",
+                    f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"audit p={audit.p} checked={audit.n_checked}; "
+                f"hits={stats['n_hits']} misses={stats['n_misses']}; "
+                f"key={','.join(contract.cache_key_fields)}"
+            )
+
+        cache.save()
+        rec = StrategyResult(self.name, "SHIP", why, extra)
+        rec.write(self.out_dir / "decision.txt")
+        return rec
+
+    def _run_linetable(self, extra: dict) -> StrategyResult:
+        from acts.infer_linetable import InferError as LineInferError
+        from acts.infer_linetable import linetable_match, read_lines, run_linetable_tool
+        from acts.linetable_memo import (
+            cached_linetable,
+            contract_path_for,
+            prepare_linetable_contract,
+        )
+
+        assert self.input_path is not None
+        lines = read_lines(self.input_path)
+        cache_path = self.cache_path or (self.out_dir / "cache.jsonl")
+        extra.update({"n": len(lines), "verify": self.verify})
+        try:
+            contract = prepare_linetable_contract(
+                self.argv,
+                lines,
+                self.out_dir / "infer",
+                cache_path,
+                probe_n=self.probe_n,
+                probe_seed=self.probe_seed,
+            )
+        except LineInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        cache = RecordCache(
+            cache_path, argv=self.argv, kind="linetable", extra_files=contract.traced_files
+        )
+        extra["cache_size"] = len(cache)
+        extra["trace_status"] = contract.trace_status
+        extra["traced_n"] = str(len(contract.traced_files))
+        extra["match"] = contract.match
+        extra["query_col"] = str(contract.query_col)
+        extra["correspondence"] = contract.correspondence
+        try:
+            rebuilt, stats = cached_linetable(
+                lines,
+                cache,
+                contract,
+                self.argv,
+                self.out_dir / "memo",
+                contract_path=contract_path_for(cache_path),
+            )
+            extra["late_key_probes"] = ",".join(contract.late_key_probes)
+        except LineInferError as exc:
+            rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        extra.update({k: stats[k] for k in ("n_hits", "n_misses", "n_cache_holes")})
+        (self.out_dir / "reassembled.out").write_text(rebuilt)
+        extra["n_reassembled"] = len(rebuilt.splitlines())
+        if stats["n_cache_holes"]:
+            rec = StrategyResult(self.name, "REFUSE_MATCH", "cache hole after miss run", extra)
+            rec.write(self.out_dir / "decision.txt")
+            return rec
+
+        if self.verify == "full":
+            stock = run_linetable_tool(self.argv, self.input_path)
+            (self.out_dir / "full.out").write_text(stock)
+            if not linetable_match(rebuilt, stock, contract.match):
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_MATCH",
+                    "reassembled body is not MATCH to a full run",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"MATCH {contract.match}; hits={stats['n_hits']} "
+                f"misses={stats['n_misses']}"
+            )
+        else:
+            audit = self._audit_linetable(stats.get("hit_recs") or [], cache, contract)
+            extra["audit_checked"] = audit.n_checked
+            extra["audit_mismatch"] = audit.n_mismatch
+            if not audit.ok:
+                rec = StrategyResult(
+                    self.name,
+                    "REFUSE_AUDIT",
+                    f"{audit.n_mismatch} mismatched hit(s) of {audit.n_checked} re-executed",
+                    extra,
+                )
+                rec.write(self.out_dir / "decision.txt")
+                return rec
+            why = (
+                f"audit p={audit.p} checked={audit.n_checked}; "
+                f"hits={stats['n_hits']} misses={stats['n_misses']}"
+            )
+
+        cache.save()
+        rec = StrategyResult(self.name, "SHIP", why, extra)
+        rec.write(self.out_dir / "decision.txt")
+        return rec
+
     def _run_lines(self, report: DupReport, extra: dict) -> StrategyResult:
         assert self.input_path is not None
         src = self.input_path.read_text().splitlines()
@@ -481,6 +692,39 @@ class RecordMemo(Strategy):
         got = run_table_tool(self.argv, path)
         rebuilt, _ = cached_search(chosen, cache, contract, self.argv, work / "re")
         bad = 0 if tables_match(rebuilt, got, contract.match, match_ws=contract.match_ws) else 1
+        return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=bad, p=self.audit_p)
+
+    def _audit_files(self, hits: list, cache, contract) -> AuditReport:
+        from acts.files_memo import cached_files
+        from acts.infer_files import dirs_match, materialize, run_files_tool
+
+        rng = random.Random(self.audit_seed)
+        chosen = pick_audit(
+            hits, p=self.audit_p, floor=AUDIT_FLOOR, rng=rng, key=lambda r: r.sha256 + "\t" + r.name
+        )
+        if not chosen:
+            return AuditReport(n_hits=len(hits), n_checked=0, n_mismatch=0, p=self.audit_p)
+        work = self.out_dir / "audit"
+        batch_dir = work / "in"
+        materialize(chosen, batch_dir)
+        run_files_tool(self.argv, batch_dir, work / "got")
+        rebuilt, _ = cached_files(chosen, cache, contract, self.argv, work / "re", work / "reassembled")
+        bad = 0 if dirs_match(rebuilt, work / "got") else 1
+        return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=bad, p=self.audit_p)
+
+    def _audit_linetable(self, hits: list[str], cache, contract) -> AuditReport:
+        from acts.infer_linetable import linetable_match, run_linetable_tool, write_lines
+        from acts.linetable_memo import cached_linetable
+
+        rng = random.Random(self.audit_seed)
+        chosen = pick_audit(hits, p=self.audit_p, floor=AUDIT_FLOOR, rng=rng)
+        if not chosen:
+            return AuditReport(n_hits=len(hits), n_checked=0, n_mismatch=0, p=self.audit_p)
+        work = self.out_dir / "audit"
+        path = write_lines(work / "audit.txt", chosen)
+        got = run_linetable_tool(self.argv, path)
+        rebuilt, _ = cached_linetable(chosen, cache, contract, self.argv, work / "re")
+        bad = 0 if linetable_match(rebuilt, got, contract.match) else 1
         return AuditReport(n_hits=len(hits), n_checked=len(chosen), n_mismatch=bad, p=self.audit_p)
 
     def _audit(self, hits: list[str], mapping: dict[str, str | None]) -> AuditReport:
