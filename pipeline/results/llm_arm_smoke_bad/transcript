@@ -1,0 +1,7 @@
+$ /Library/Frameworks/Python.framework/Versions/3.11/bin/python3 /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/fixtures/llm_arm/fake_agent.py --work /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_bad/work --patch bad --tokens 100 --artifacts /Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_smoke_bad
+exit 0
+--- stdout ---
+{"ok": true, "patch": "bad", "prompt_tokens": 50, "completion_tokens": 50, "backend": "fake_agent"}
+
+--- stderr ---
+

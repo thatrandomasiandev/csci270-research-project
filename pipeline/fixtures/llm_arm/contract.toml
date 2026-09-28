@@ -1,0 +1,35 @@
+# Fixture contract for arm L dry-run. Not HMMER/SnpEff, not a paper claim.
+# Real workloads keep the locked tables in docs/LLM_ARM_PROTOCOL.md.
+
+[contract]
+name = "llm_arm_fixture"
+root = "."
+target_speedup = 1.10
+threads = 1
+runs = 3
+warmup = 0
+allow_t4_assist = false
+amdahl_min_fraction = 0.50
+profile = "profile.json"
+
+[method]
+kind = "generic"
+stock_bin = "{root}/stock_src/score_rows.py"
+opt_bin = "{root}/work/score_rows.py"
+run = "{python} {bin} {args} {output}"
+match = "order"
+
+[[workloads]]
+id = "dev"
+args = "data/dev.tsv"
+held_out = false
+
+[[workloads]]
+id = "smoke"
+args = "data/smoke.tsv"
+held_out = true
+
+[[workloads]]
+id = "fixture_test"
+args = "data/test.tsv"
+held_out = true

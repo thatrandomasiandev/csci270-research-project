@@ -1,0 +1,13 @@
+{
+  "run_id": "smoke_safe",
+  "elapsed_s": 0.028816666999773588,
+  "tokens": 100,
+  "budget_ok": true,
+  "budget_why": "ok",
+  "agent_exit": 0,
+  "diff_bytes": 685,
+  "changed": true,
+  "dev_match": true,
+  "decision": "INCOMPLETE",
+  "builds": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/builds/llm_arm/smoke_safe"
+}

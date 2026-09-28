@@ -1,0 +1,8 @@
+contract: llm_arm_fixture
+method:   llm_arm
+decision: INCOMPLETE
+why:      MATCH but n=0 < 3; do not ship on a single run
+amdahl:   PROCEED — legal f=0.800 allows ≤5.00× ≥ target 1.10× (hottest score 0.800)
+propose:
+  - [T2_DEAD_PATH] Dead-path skip in score: Profile early-exit rates. If most calls fail a cheap predicate, hoist it.
+  - [T3_CLOSED_FORM] Closed form in score: Replace a constant-iteration score loop with a multiply if the paper/code allows.

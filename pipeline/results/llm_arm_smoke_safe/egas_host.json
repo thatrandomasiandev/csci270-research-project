@@ -1,0 +1,22 @@
+{
+  "steps": [
+    "contract",
+    "amdahl",
+    "propose_t1_t3",
+    "agent",
+    "match_dev",
+    "decide"
+  ],
+  "proceed": true,
+  "reason": "legal f=0.800 allows \u22645.00\u00d7 \u2265 target 1.10\u00d7 (hottest score 0.800)",
+  "t4_used": false,
+  "t5_used": false,
+  "skipped_agent": false,
+  "agent_ran": true,
+  "dev_match": true,
+  "decision": "INCOMPLETE",
+  "rung_classes": [
+    "T2_DEAD_PATH",
+    "T3_CLOSED_FORM"
+  ]
+}

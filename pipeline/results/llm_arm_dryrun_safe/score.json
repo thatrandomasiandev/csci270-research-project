@@ -1,0 +1,35 @@
+{
+  "protocol": "docs/LLM_ARM_PROTOCOL.md",
+  "run_dir": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-llmarm/pipeline/results/llm_arm_dryrun_safe",
+  "split": "test",
+  "label": "fixture_test_not_collections_AB",
+  "match": true,
+  "speedup": "MATCH-clean; Mac timing is smoke; CARC later",
+  "score_if_test_match_fail": 1.0,
+  "match_detail": {
+    "match": true,
+    "match_type": "order+ws",
+    "smoke_or_test_rows": 8,
+    "stock_head": [
+      "id\ttoken\tscore",
+      "t1\theldout\t7",
+      "t2\txx\t2"
+    ],
+    "work_head": [
+      "id\ttoken\tscore",
+      "t1\theldout\t7",
+      "t2\txx\t2"
+    ]
+  },
+  "carc_timing": {
+    "ready": true,
+    "host": "x86 epyc-7542 exclusive, interleaved stock anchors",
+    "note": "Do not time MATCH-fail runs. This script does not submit jobs.",
+    "argv_template": [
+      "python3",
+      "work/score_rows.py",
+      "INPUT.tsv",
+      "OUT.tsv"
+    ]
+  }
+}
