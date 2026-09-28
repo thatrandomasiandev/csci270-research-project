@@ -1,0 +1,331 @@
+#!/bin/bash
+# Exclusive-node Mordred fourth-tool screen (docs/FOURTH_SCREEN.md, corrected rule).
+# Submit via scripts/submit_fourth.sh — do not sbatch this file bare.
+# Writes results/fourth_screen.json. Whisper is recorded BLOCKED, not run.
+# New files go under data_carcjobs/ — never shared data/.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/fourth/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/fourth/logs/%x-%j.err
+
+set -euo pipefail
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_fourth_mordred_${SLURM_JOB_ID}"
+DATA_LOCAL="${SRC}/data_carcjobs"
+mkdir -p "${SRC}/results/fourth/logs" "${DATA_LOCAL}/chembl" "${SCRATCH}/work"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+GIT_HASH="${ACTS_GIT_HASH:-unknown}"
+echo "=== host / cpu ==="
+hostname
+date -Is
+uptime
+nproc
+python3 --version
+lscpu || true
+echo "GIT_HASH=${GIT_HASH} NODELIST=${SLURM_NODELIST:-}"
+
+echo "=== venv (rdkit + mordred; no >1 GB fetch) ==="
+python3 -m venv "${SCRATCH}/venv"
+# shellcheck disable=SC1091
+source "${SCRATCH}/venv/bin/activate"
+python3 -m pip install --upgrade pip
+python3 -m pip install 'rdkit-pypi' mordred
+
+CHEM32="${DATA_LOCAL}/chembl/chembl_32_chemreps.txt.gz"
+CHEM33="${DATA_LOCAL}/chembl/chembl_33_chemreps.txt.gz"
+if [[ ! -f "${CHEM32}" ]]; then
+  echo "=== fetch ChEMBL 32 chemreps (under 1 GB) ==="
+  curl -L --fail --retry 3 -o "${CHEM32}" \
+    https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_32/chembl_32_chemreps.txt.gz
+fi
+if [[ ! -f "${CHEM33}" ]]; then
+  echo "=== fetch ChEMBL 33 chemreps (under 1 GB) ==="
+  curl -L --fail --retry 3 -o "${CHEM33}" \
+    https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_33/chembl_33_chemreps.txt.gz
+fi
+
+export ACTS_FOURTH_OUT="${SRC}/results/fourth_screen.json"
+export ACTS_FOURTH_WORK="${SCRATCH}/work"
+export ACTS_CHEM32="${CHEM32}"
+export ACTS_CHEM33="${CHEM33}"
+export ACTS_GIT_HASH="${GIT_HASH}"
+export ACTS_NPROC="${SLURM_CPUS_PER_TASK:-$(nproc)}"
+
+echo "=== Mordred screen (no ACTS cache, no speedup claim) ==="
+python3 - <<'PY'
+"""Fourth-tool screen for Mordred. Corrected ceiling from FOURTH_SCREEN.md."""
+from __future__ import annotations
+
+import csv
+import gzip
+import json
+import os
+import random
+import resource
+import shutil
+import statistics
+import subprocess
+import sys
+import time
+from datetime import datetime, timezone
+from pathlib import Path
+
+SEED = 20260927
+N_LOCK = 20_000
+SIZES = (1, 200, 1000, 5000)
+RUNS = 3
+CHEM32 = Path(os.environ["ACTS_CHEM32"])
+CHEM33 = Path(os.environ["ACTS_CHEM33"])
+WORK = Path(os.environ.get("ACTS_FOURTH_WORK", "/tmp/acts_fourth_screen"))
+OUT = Path(os.environ.get("ACTS_FOURTH_OUT", "results/fourth_screen.json"))
+NPROC = int(os.environ.get("ACTS_NPROC") or os.cpu_count() or 1)
+
+
+def children_cpu_s() -> float:
+    ru = resource.getrusage(resource.RUSAGE_CHILDREN)
+    return float(ru.ru_utime) + float(ru.ru_stime)
+
+
+def host_info() -> dict:
+    def _run(argv):
+        p = subprocess.run(argv, check=False, capture_output=True, text=True)
+        return (p.stdout or p.stderr or "").rstrip()
+    lscpu = _run(["lscpu"])
+    model = next((ln.split(":", 1)[-1].strip() for ln in lscpu.splitlines() if "Model name" in ln), "")
+    return {
+        "hostname": _run(["hostname"]),
+        "when_utc": datetime.now(timezone.utc).isoformat(),
+        "uptime": _run(["uptime"]),
+        "nproc": NPROC,
+        "cpu_model": model,
+        "job_id": os.environ.get("SLURM_JOB_ID"),
+        "nodelist": os.environ.get("SLURM_NODELIST"),
+    }
+
+
+def fit_ab(ns: list[int], ts: list[float]) -> tuple[float, float]:
+    n_bar = statistics.fmean(ns)
+    t_bar = statistics.fmean(ts)
+    var_n = sum((n - n_bar) ** 2 for n in ns)
+    if var_n == 0:
+        return t_bar, 0.0
+    cov = sum((n - n_bar) * (t - t_bar) for n, t in zip(ns, ts))
+    b = cov / var_n
+    return t_bar - b * n_bar, b
+
+
+def ceiling_m(a: float, b: float, n: int, m: float, w: float) -> float | None:
+    den = a + b * m * n + w
+    if den <= 0:
+        return None
+    return (a + b * n) / den
+
+
+def saved_m(a: float, b: float, n: int, m: float, w: float) -> float:
+    return (a + b * n) - (a + b * m * n + w)
+
+
+def atomic_write(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2) + "\n")
+    tmp.replace(path)
+
+
+def open_gz(path: Path):
+    return gzip.open(path, "rt")
+
+
+def load_keys_32() -> set[str]:
+    keys: set[str] = set()
+    with open_gz(CHEM32) as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        for row in reader:
+            k = (row.get("standard_inchi_key") or "").strip()
+            if k:
+                keys.add(k)
+    return keys
+
+
+def load_rows_33() -> list[dict]:
+    rows: list[dict] = []
+    with open_gz(CHEM33) as fh:
+        reader = csv.DictReader(fh, delimiter="\t")
+        for row in reader:
+            smi = (row.get("canonical_smiles") or "").strip()
+            key = (row.get("standard_inchi_key") or "").strip()
+            if smi and key:
+                rows.append({"smiles": smi, "inchikey": key, "chembl_id": row.get("chembl_id")})
+    return rows
+
+
+def write_smi(path: Path, rows: list[dict]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(r["smiles"] for r in rows) + ("\n" if rows else ""))
+
+
+def time_mordred(smi: Path, out_csv: Path) -> dict:
+    out_csv.parent.mkdir(parents=True, exist_ok=True)
+    cmd = [sys.executable, "-m", "mordred", "-t", "smi", "-p", str(NPROC), "-q", "-o", str(out_csv), str(smi)]
+    up = subprocess.check_output(["uptime"], text=True).rstrip()
+    cpu0 = children_cpu_s()
+    t0 = time.perf_counter()
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+    wall = time.perf_counter() - t0
+    if proc.returncode != 0:
+        raise RuntimeError(f"mordred rc={proc.returncode}: {(proc.stderr or proc.stdout or '')[-800:]}")
+    return {"wall_s": wall, "cpu_s": children_cpu_s() - cpu0, "uptime": up, "cmd": cmd}
+
+
+def capture_header(smi: Path) -> str:
+    dest = WORK / "header_probe.csv"
+    time_mordred(smi, dest)
+    text = dest.read_text() if dest.is_file() else ""
+    header = text.splitlines()[0] if text.splitlines() else "name"
+    return header
+
+
+def main() -> int:
+    WORK.mkdir(parents=True, exist_ok=True)
+    payload = json.loads(OUT.read_text()) if OUT.is_file() else {}
+    payload.update(
+        {
+            "protocol": "pipeline/docs/FOURTH_SCREEN.md",
+            "carc_plan": "pipeline/docs/CARC_PLAN.md",
+            "git": os.environ.get("ACTS_GIT_HASH", "unknown"),
+            "seed": SEED,
+            "host": host_info(),
+            "timing_claimed": False,
+            "note": "No ACTS cache. No speedup claim. Baseline is Mordred 2D-all (no --no-cache strawman).",
+        }
+    )
+    payload["whisper"] = {
+        "status": "BLOCKED",
+        "reason": "Josh must approve --model small and the PyTorch wheel (may exceed 1 GB). submit_fourth.sh refuses this arm.",
+    }
+    atomic_write(OUT, payload)
+
+    print("loading ChEMBL 32 keys + 33 rows …", flush=True)
+    keys32 = load_keys_32()
+    rows33 = load_rows_33()
+    rng = random.Random(SEED)
+    if len(rows33) > N_LOCK:
+        later = rng.sample(rows33, N_LOCK)
+    else:
+        later = list(rows33)
+    n = len(later)
+    miss = sum(1 for r in later if r["inchikey"] not in keys32)
+    m = miss / n if n else 1.0
+    payload["mordred"] = {
+        "N": n,
+        "n_chembl32_keys": len(keys32),
+        "n_chembl33_rows": len(rows33),
+        "m": m,
+        "m_n_miss": miss,
+        "record_key": "standard_inchi_key",
+        "best_mode": "python3 -m mordred -t smi -p NPROC -q -o OUT.csv INPUT.smi",
+        "cpu": NPROC,
+    }
+    atomic_write(OUT, payload)
+    if m >= 1.0 / 3.0:
+        payload["mordred"]["decision"] = "REFUSE_M"
+        payload["mordred"]["reject_reasons"] = [f"m={m:.4f} >= 1/3"]
+        atomic_write(OUT, payload)
+        print("REFUSE_M")
+        return 0
+
+    sizes = [s for s in SIZES if s < n] + [n]
+    subsets: dict[int, list[dict]] = {}
+    for size in sizes:
+        subsets[size] = rng.sample(later, size)
+        write_smi(WORK / f"n{size}.smi", subsets[size])
+
+    header = capture_header(WORK / "n1.smi")
+    raw = payload["mordred"].setdefault("raw", [])
+    done_sizes = {row["n"] for row in raw if row.get("mean_s") is not None}
+    for size in sizes:
+        if size in done_sizes:
+            continue
+        runs = []
+        for k in range(RUNS):
+            print(f"mordred n={size} run={k+1}/{RUNS}", flush=True)
+            timed = time_mordred(WORK / f"n{size}.smi", Path("/tmp/acts_fourth_screen") / f"n{size}_{k}.csv")
+            runs.append(timed)
+            atomic_write(OUT, payload)
+        walls = [r["wall_s"] for r in runs]
+        raw.append(
+            {
+                "n": size,
+                "runs": runs,
+                "mean_s": statistics.fmean(walls),
+                "stdev_s": statistics.stdev(walls) if len(walls) > 1 else 0.0,
+                "mean_cpu_s": statistics.fmean(r["cpu_s"] for r in runs),
+            }
+        )
+        payload["mordred"]["raw"] = raw
+        atomic_write(OUT, payload)
+
+    print("measuring w (no-op CSV header, full N) …", flush=True)
+    full_smi = WORK / f"n{n}.smi"
+    w_runs = []
+    for k in range(RUNS):
+        dest = Path("/tmp/acts_fourth_screen") / f"w_{k}.csv"
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        cpu0 = children_cpu_s()
+        t0 = time.perf_counter()
+        dest.write_text(header + "\n")
+        # Touch the full input the way the real CLI would (open + size).
+        full_smi.stat()
+        w_runs.append({"wall_s": time.perf_counter() - t0, "cpu_s": children_cpu_s() - cpu0})
+    w = statistics.fmean(r["wall_s"] for r in w_runs)
+    ns = [row["n"] for row in raw]
+    ts = [row["mean_s"] for row in raw]
+    a, b = fit_ab(ns, ts)
+    ceil = ceiling_m(a, b, n, m, w)
+    saved = saved_m(a, b, n, m, w)
+    advances = bool(a > 0 and b > 0 and ceil is not None and ceil >= 3.0 and saved >= 60.0)
+    reasons = []
+    if not (a > 0 and b > 0):
+        reasons.append("linear model failed (need a>0 and b>0)")
+    if ceil is None or ceil < 3.0:
+        reasons.append(f"ceiling={ceil} < 3")
+    if saved < 60.0:
+        reasons.append(f"saved={saved:.3f}s < 60s")
+    payload["mordred"].update(
+        {
+            "a_s": a,
+            "b_s_per_record": b,
+            "w": {"w_s": w, "runs": w_runs, "header": header[:200]},
+            "ceiling": ceil,
+            "saved_s": saved,
+            "advances": advances,
+            "decision": "ADVANCE" if advances else "REJECT",
+            "reject_reasons": reasons,
+            "advance_rule": "a>0 and b>0 and ceiling(m)>=3 and saved>=60s (FOURTH_SCREEN.md corrected)",
+        }
+    )
+    payload["finished_utc"] = datetime.now(timezone.utc).isoformat()
+    atomic_write(OUT, payload)
+    print(f"mordred a={a:.4f} b={b:.6f} w={w:.6f} m={m:.4f} ceiling={ceil} saved={saved:.3f} {payload['mordred']['decision']}")
+    print(f"wrote {OUT}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+PY
+
+echo FOURTH_MORDRED_DONE

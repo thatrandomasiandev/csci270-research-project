@@ -1,0 +1,72 @@
+#!/bin/bash
+# Short NON-exclusive Linux F6-file + snpEff.config strace check (docs/CARC_PLAN.md).
+# Runs scripts/run_f6_trace_linux.py (do not modify that script).
+# Script writes results/probe_eval_f6file_linux.json; this job copies it to
+# results/f6_trace_linux.json.
+# Submit via scripts/submit_f6.sh — do not sbatch this file bare.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=8G
+#SBATCH --time=00:30:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/f6/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/f6/logs/%x-%j.err
+
+set -euo pipefail
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_f6_${SLURM_JOB_ID}"
+mkdir -p "${SRC}/results/f6/logs" "${SCRATCH}/pipeline"/{scripts,acts,results,fixtures/probe_eval,tools}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load openjdk/21.0.0_35 || module load openjdk || true
+
+echo "=== host / cpu (NON-exclusive) ==="
+hostname
+date -Is
+uptime
+nproc
+python3 --version
+command -v strace || echo "WARNING: strace not on PATH"
+lscpu || true
+echo "JOB=${SLURM_JOB_ID:-} NODELIST=${SLURM_NODELIST:-} exclusive=no"
+
+echo "=== stage ==="
+cp "${SRC}/scripts/run_f6_trace_linux.py" "${SCRATCH}/pipeline/scripts/"
+cp -a "${SRC}/acts/." "${SCRATCH}/pipeline/acts/"
+cp -a "${SRC}/fixtures/probe_eval/." "${SCRATCH}/pipeline/fixtures/probe_eval/"
+if [[ -d "${SRC}/tools/snpEff" ]]; then
+  rsync -a --exclude galaxy --exclude .claude --exclude examples --exclude '*.zip' \
+    "${SRC}/tools/snpEff/" "${SCRATCH}/pipeline/tools/snpEff/" || true
+fi
+
+export PYTHONPATH="${SCRATCH}/pipeline"
+cd "${SCRATCH}/pipeline"
+
+echo "=== run_f6_trace_linux.py (writes results/probe_eval_f6file_linux.json) ==="
+set +e
+python3 scripts/run_f6_trace_linux.py
+RC=$?
+set -e
+
+SCRIPT_JSON="${SCRATCH}/pipeline/results/probe_eval_f6file_linux.json"
+LANDING="${SRC}/results/f6_trace_linux.json"
+SCRIPT_COPY="${SRC}/results/probe_eval_f6file_linux.json"
+mkdir -p "${SRC}/results"
+if [[ -f "${SCRIPT_JSON}" ]]; then
+  cp "${SCRIPT_JSON}" "${LANDING}"
+  cp "${SCRIPT_JSON}" "${SCRIPT_COPY}"
+  echo "copied ${SCRIPT_JSON} -> ${LANDING}"
+  echo "also copied to ${SCRIPT_COPY} (script's native path on project2)"
+else
+  echo "script did not write ${SCRIPT_JSON}; rc=${RC}" >&2
+  exit "${RC}"
+fi
+
+echo F6_TRACE_DONE
+exit "${RC}"

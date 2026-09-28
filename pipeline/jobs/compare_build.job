@@ -1,0 +1,226 @@
+#!/bin/bash
+# Exclusive-node HMMER GCC-PGO + SnpEff AppCDS + MATCH (docs/CARC_PLAN.md, docs/COMPARISON_PROTOCOL.md).
+# Submit via scripts/submit_compare.sh — do not sbatch this file bare.
+# PGO train proteome: BW25113 (GCF_000750555.1), not collections A or B.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --time=04:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/compare/logs/%x-%j.err
+
+set -euo pipefail
+
+SRC=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_compare_build_${SLURM_JOB_ID}"
+NPROC="${SLURM_CPUS_PER_TASK:-8}"
+mkdir -p "${SRC}/results/compare/logs" "${SRC}/builds" "${SRC}/data_compare" \
+  "${SCRATCH}"/{src,pgo,bin,work}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load openjdk/21.0.0_35 || module load openjdk || true
+
+export AR="${AR:-gcc-ar}"
+export RANLIB="${RANLIB:-gcc-ranlib}"
+export NM="${NM:-gcc-nm}"
+export PATH
+
+GIT_HASH="${ACTS_GIT_HASH:-unknown}"
+if [[ -f "${SRC}/results/compare/GIT_HASH" ]]; then
+  GIT_HASH="$(tr -d '[:space:]' < "${SRC}/results/compare/GIT_HASH")"
+fi
+
+echo "=== host / cpu ==="
+hostname
+date -Is
+uptime
+nproc
+gcc --version | head -n 1 || true
+python3 --version
+java -version || true
+lscpu || true
+echo "GIT_HASH=${GIT_HASH}"
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-epyc-7542} NODELIST=${SLURM_NODELIST:-}"
+echo "PGO_TRAIN=BW25113 (not collections A/B)"
+echo "SCRATCH=${SCRATCH}"
+
+json_step() {
+  python3 - "$@" <<'PY'
+import json, os, sys
+from datetime import datetime, timezone
+from pathlib import Path
+path = Path(os.environ["SRC"]) / "results" / "compare_build.json"
+payload = {}
+if path.is_file():
+    payload = json.loads(path.read_text())
+payload.setdefault("protocol", "pipeline/docs/CARC_PLAN.md")
+payload.setdefault("comparison_protocol", "pipeline/docs/COMPARISON_PROTOCOL.md")
+payload.setdefault("steps", [])
+payload["git"] = os.environ.get("GIT_HASH", "unknown")
+payload["host"] = {
+    "hostname": os.uname().nodename,
+    "job_id": os.environ.get("SLURM_JOB_ID"),
+    "nodelist": os.environ.get("SLURM_NODELIST"),
+    "constraint": os.environ.get("SLURM_JOB_CONSTRAINT", "epyc-7542"),
+    "when_utc": datetime.now(timezone.utc).isoformat(),
+}
+step = {"name": sys.argv[1], "status": sys.argv[2], "detail": sys.argv[3] if len(sys.argv) > 3 else ""}
+payload["steps"] = [s for s in payload["steps"] if s.get("name") != step["name"]] + [step]
+tmp = path.with_suffix(".json.tmp")
+path.parent.mkdir(parents=True, exist_ok=True)
+tmp.write_text(json.dumps(payload, indent=2) + "\n")
+tmp.replace(path)
+print(f"wrote {path} step={step['name']} status={step['status']}", flush=True)
+PY
+}
+
+export SRC GIT_HASH
+json_step start running "job ${SLURM_JOB_ID:-local}"
+
+echo "=== stage pipeline scripts (read-only copy to scratch) ==="
+mkdir -p "${SCRATCH}/pipeline"/{scripts,acts,results,data/kprot,data/hmmer,tools,builds,data_compare,fixtures}
+cp -a "${SRC}/scripts/." "${SCRATCH}/pipeline/scripts/"
+cp -a "${SRC}/acts/." "${SCRATCH}/pipeline/acts/"
+if [[ -d "${SRC}/tools/snpEff" ]]; then
+  rsync -a --exclude galaxy --exclude .claude --exclude examples --exclude '*.zip' \
+    "${SRC}/tools/snpEff/" "${SCRATCH}/pipeline/tools/snpEff/" || \
+    cp -a "${SRC}/tools/snpEff" "${SCRATCH}/pipeline/tools/"
+fi
+if [[ -f "${SRC}/data/kprot/BW25113.faa.gz" ]]; then
+  cp "${SRC}/data/kprot/BW25113.faa.gz" "${SCRATCH}/pipeline/data/kprot/"
+fi
+if [[ -f "${SRC}/data/hmmer/Pfam-A.hmm.gz" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm.gz" "${SCRATCH}/pipeline/data/hmmer/"
+elif [[ -f "${SRC}/data/hmmer/Pfam-A.hmm" ]]; then
+  cp "${SRC}/data/hmmer/Pfam-A.hmm" "${SCRATCH}/pipeline/data/hmmer/"
+else
+  echo "=== fetch Pfam-A (399 MB) on the compute node ==="
+  mkdir -p "${SCRATCH}/pipeline/data/hmmer"
+  curl -L --fail --retry 3 -o "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz" \
+    https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz
+fi
+
+STOCK_PREFIX="${SRC}/builds/hmmer-stock"
+TUNED_PREFIX="${SRC}/builds/hmmer-tuned"
+TARBALL="${SRC}/builds/hmmer-3.4.tar.gz"
+
+if [[ ! -x "${STOCK_PREFIX}/bin/hmmscan" || ! -x "${TUNED_PREFIX}/bin/hmmscan" ]]; then
+  echo "=== fetch HMMER 3.4 source (tens of MB; not Pfam) ==="
+  if [[ ! -f "${TARBALL}" ]]; then
+    curl -L --fail -o "${TARBALL}" http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz \
+      || curl -L --fail -o "${TARBALL}" http://eddylab.org/software/hmmer3/3.4/hmmer-3.4.tar.gz
+  fi
+  json_step tarball ok "${TARBALL}"
+  tar xf "${TARBALL}" -C "${SCRATCH}/src"
+  SRC_HMMER="${SCRATCH}/src/hmmer-3.4"
+
+  echo "=== stock HMMER (-O2) ==="
+  cp -a "${SRC_HMMER}" "${SCRATCH}/src/hmmer-stock"
+  cd "${SCRATCH}/src/hmmer-stock"
+  ./configure --prefix="${STOCK_PREFIX}" CFLAGS="-O2"
+  make -j"${NPROC}"
+  make install
+  json_step hmmer_stock ok "${STOCK_PREFIX}/bin/hmmscan"
+
+  echo "=== gunzip Pfam + PGO train proteome (BW25113, not A/B) ==="
+  HMM="${SCRATCH}/work/Pfam-A.hmm"
+  if [[ -f "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm" ]]; then
+    cp "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm" "${HMM}"
+  else
+    gzip -dc "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz" > "${HMM}"
+  fi
+  "${STOCK_PREFIX}/bin/hmmpress" -f "${HMM}"
+  TRAIN_FAA="${SCRATCH}/work/pgo_train_bw25113.faa"
+  if [[ -f "${SCRATCH}/pipeline/data/kprot/BW25113.faa.gz" ]]; then
+    gzip -dc "${SCRATCH}/pipeline/data/kprot/BW25113.faa.gz" > "${TRAIN_FAA}"
+  else
+    echo "BW25113.faa.gz missing under data/kprot; cannot PGO-train on a proteome outside A/B" >&2
+    json_step pgo_train failed "missing BW25113"
+    exit 2
+  fi
+  cp "${TRAIN_FAA}" "${SRC}/data_compare/pgo_train_bw25113.faa"
+
+  echo "=== tuned generate (-O3 -march=native -fprofile-generate) ==="
+  cp -a "${SRC_HMMER}" "${SCRATCH}/src/hmmer-pgo"
+  cd "${SCRATCH}/src/hmmer-pgo"
+  ./configure --prefix="${SCRATCH}/pgo" \
+    CFLAGS="-O3 -march=native -fprofile-generate" \
+    LDFLAGS="-fprofile-generate"
+  make -j"${NPROC}"
+  make install
+  json_step hmmer_pgo_generate ok "${SCRATCH}/pgo/bin/hmmscan"
+
+  echo "=== PGO train on BW25113 × Pfam-A (not collections A/B) ==="
+  "${SCRATCH}/pgo/bin/hmmscan" --cpu "${NPROC}" --cut_ga --noali \
+    --tblout "${SCRATCH}/work/pgo.hmmscan.tbl" "${HMM}" "${TRAIN_FAA}"
+  "${SCRATCH}/pgo/bin/hmmsearch" --cpu "${NPROC}" --noali \
+    -Z 1000000 --domZ 1000000 \
+    --tblout "${SCRATCH}/work/pgo.hmmsearch.tbl" "${HMM}" "${TRAIN_FAA}"
+  json_step pgo_train ok "BW25113 GCF_000750555.1"
+
+  echo "=== tuned use (-O3 -march=native -flto -fprofile-use) ==="
+  cd "${SCRATCH}/src/hmmer-pgo"
+  ./configure --prefix="${TUNED_PREFIX}" \
+    CFLAGS="-O3 -march=native -flto -fprofile-use" \
+    LDFLAGS="-flto -fprofile-use"
+  make -j"${NPROC}"
+  make install
+  json_step hmmer_tuned ok "${TUNED_PREFIX}/bin/hmmscan"
+else
+  echo "=== reuse existing prefixes ==="
+  json_step hmmer_stock reused "${STOCK_PREFIX}/bin/hmmscan"
+  json_step hmmer_tuned reused "${TUNED_PREFIX}/bin/hmmscan"
+fi
+
+command -v java
+"${STOCK_PREFIX}/bin/hmmscan" -h | head -n 3
+"${TUNED_PREFIX}/bin/hmmscan" -h | head -n 3
+
+echo "=== AppCDS + small MATCH (compare_match.py; Clang PGO path skipped because prefixes exist) ==="
+export PYTHONPATH="${SCRATCH}/pipeline"
+mkdir -p "${SCRATCH}/pipeline/builds/hmmer-stock/bin" \
+  "${SCRATCH}/pipeline/builds/hmmer-tuned/bin" \
+  "${SCRATCH}/pipeline/builds/snpeff" \
+  "${SCRATCH}/pipeline/data_compare" \
+  "${SCRATCH}/pipeline/results"
+rsync -a "${STOCK_PREFIX}/" "${SCRATCH}/pipeline/builds/hmmer-stock/"
+rsync -a "${TUNED_PREFIX}/" "${SCRATCH}/pipeline/builds/hmmer-tuned/"
+if [[ -f "${SRC}/builds/snpeff/snpeff.jsa" ]]; then
+  cp "${SRC}/builds/snpeff/snpeff.jsa" "${SCRATCH}/pipeline/builds/snpeff/"
+fi
+
+cd "${SCRATCH}/pipeline"
+python3 - <<'PY'
+from pathlib import Path
+from compare_build import prepare_inputs, dump_snpeff_cds, build_models, BUILDS, DATA
+
+paths = prepare_inputs()
+stock = Path("builds/hmmer-stock/bin")
+hmm = DATA / "toy.hmm"
+if not hmm.is_file():
+    build_models(stock / "hmmbuild", stock / "hmmpress", paths["train"], hmm)
+archive = BUILDS / "snpeff" / "snpeff.jsa"
+if not archive.is_file():
+    dump_snpeff_cds(paths["vcf"], archive)
+print(f"toy_hmm={hmm}")
+print(f"cds={archive}")
+print(f"test_faa={paths['test']}")
+print(f"test_vcf={paths['vcf']}")
+PY
+
+python3 scripts/compare_match.py
+cp -a builds/snpeff/snpeff.jsa "${SRC}/builds/snpeff/snpeff.jsa"
+mkdir -p "${SRC}/data_compare" "${SRC}/results"
+cp -a data_compare/. "${SRC}/data_compare/" || true
+cp results/compare_match.json "${SRC}/results/compare_match.json"
+json_step match ok "${SRC}/results/compare_match.json"
+
+echo COMPARE_BUILD_DONE
