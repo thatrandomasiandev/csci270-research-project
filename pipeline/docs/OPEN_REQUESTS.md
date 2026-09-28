@@ -91,7 +91,9 @@ Done items stay here so we do not re-open them.
   Update citations in a later paper commit, not by silently
   rewriting unmeasured sections.
 - Linux F6-file + `snpEff.config` namespace (Mac audit left this
-  INCOMPLETE). Needs VPN / a Linux host with `strace`.
+  INCOMPLETE). 2026-09-27: `docker info` failed (daemon not at
+  `~/.docker/run/docker.sock`); `scripts/run_f6_trace_linux.py`
+  skipped. Needs Docker daemon or a Linux host with `strace`.
 - INCR Zenodo https://zenodo.org/records/19488802 returned **403**
   from this network. Cite as “GitHub live, Zenodo unverified” until
   that is resolved. Runnable artifact:

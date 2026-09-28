@@ -7,9 +7,14 @@ Main keeps `probe_eval_subset_batched.json` /
 See `docs/PROBE_COST_RECONCILE.md`.
 
 Protocol addendum: `docs/INFERENCE_PROTOCOL.md` (commit `427fcbb`).
-`--verify audit`, seed 20260927. This snapshot’s in-scope = not F6-env /
-F6-file (**56 cells per `probe_n`**, **224** total) — the locked audit
-denominator. Main’s JSON uses **256**.
+`--verify audit`, seed 20260927.
+
+Canonical in-scope (2026-09-27): not F6-env / F6-file (**56 cells per
+`probe_n`**, **224** total). This snapshot already used that
+denominator. Main’s raw JSON `in_scope_*` still reports **36/256**
+(excluding F6-env only, macOS, no tracing); that is a label, not a
+second definition. See `docs/PROBE_EVAL_PROTOCOL.md` and
+`results/probe_eval_subset.md`.
 
 JSON: `probe_eval_subset_compare_stash.json`.
 Figures: `22_probe_eval_subset_batched_stash.png`,
@@ -24,7 +29,9 @@ Figures: `22_probe_eval_subset_batched_stash.png`,
 | 500 | 0/56 | 0/56 |
 | 2000 | 0/56 | 0/56 |
 
-Overall in-scope: **4/224** both. False-refuse: **0/20** both.
+Overall **in-scope (canonical): 4/224** both. Same cells labeled
+**36/256** if F6-file is left in (macOS, no tracing). False-refuse:
+**0/20** both.
 F3 probe-caught: 4, 7, 7, 7 of 8 at those sizes — **identical**.
 The four in-scope misses are F4 (field-role) plus one F3 at `probe_n=50`,
 *p*=0.01 — not a subset-mode gap.

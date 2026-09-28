@@ -77,10 +77,14 @@ Linux node, with body MATCH on all $52{,}638$ records.
 Startup caps the tool at about $1.3\times$ even at 100\% hits.
 % source: pipeline/results/snpeff_alternating_carc.json commit 81d472d (a_now, locked b, N)
 The deployed probe suite's unsafe-ship rate is a
-\emph{measurement}, not a new testing theory: $68/288$ overall and
-$4/224$ excluding the F6 environment/file faults the method does not
-claim to catch.
+\emph{measurement}, not a new testing theory: $68/288$ overall,
+$4/224$ in-scope (canonical: every class except F6-env and F6-file),
+and $36/256$ excluding F6-env only (macOS, no tracing).
+F6-file is covered by probe-time tracing on Linux and is not yet
+measured; F6-env is the real limitation.
 % source: pipeline/results/probe_eval_audit.json commit c1ddad0
+%   unsafe_ship_n=68 / 288; F6-env 32/32; F6-file 32/32 on macOS
+%   canonical in-scope 4/224; JSON in_scope_* 36/256 (excl F6-env only)
 HMMER collection savings, running baselines, and a head-to-head with
 command-grain incrementalizers remain \TODO{}.
 \end{abstract}
@@ -354,8 +358,10 @@ read-only (excluding \texttt{/proc}, \texttt{/sys}, \texttt{/dev},
 the per-run input, and temp dirs) are fingerprinted into the
 namespace. This is Rattle's traced-input idea transferred to the
 first infer run, not a new key theory~\cite{spall2020rattle}.
-macOS, or \texttt{strace} missing: no tracing; F6-file is
-uncovered. Tracing is probe-time only, not every later run.
+macOS, or \texttt{strace} missing: no tracing, so F6-file is not
+fingerprinted on that host. F6-file is covered by this probe-time
+tracing on Linux; it is not unhandled. Tracing is probe-time only,
+not every later run.
 
 \subsection{Hit audit}
 \label{sec:audit}
@@ -554,8 +560,9 @@ audit addendum \texttt{4679264}).
 \begin{table}[t]
 \caption{Probe-eval unsafe-ship rates. Full-MATCH is an experimental
 upper bound; \texttt{--verify audit} is the deployed number.
-F6-env is outside the argv-named-input guarantee. F6-file requires
-Linux tracing, which this Mac run did not have.}
+Canonical in-scope excludes F6-env and F6-file (denominator 224).
+F6-file is covered by probe-time tracing on Linux and is not yet
+measured; F6-env is the real limitation.}
 \label{tab:probe}
 \centering
 \small
@@ -565,12 +572,14 @@ Metric & \texttt{--verify full} & \texttt{--verify audit} \\
 \midrule
 Unsafe-ship overall
   & $33/256$ & $68/288$ \\
-Excl.\ F6 / F6-env+F6-file
+In-scope (canonical; excl.\ F6-env+F6-file)
   & $1/224$ & $4/224$ \\
+Excl.\ F6-env only (macOS, no tracing)
+  & --- & $36/256$ \\
 F6-env (limitation)
   & $32/32$ & $32/32$ \\
-F6-file (macOS, no \texttt{strace})
-  & --- & $32/32$ \\
+F6-file (Linux tracing; unmeasured here)
+  & --- & $32/32$ (macOS) \\
 False-refuse (C1--C5 $\times$ 4)
   & $0/20$ & $0/20$ \\
 Audit-only catch
@@ -583,13 +592,15 @@ Audit-only catch
 %   excl F6: 33-32=1 over 256-32=224 (one in-scope miss: vcf F4 p=0.01 probe_n=50)
 % source: pipeline/results/probe_eval_audit.json commit c1ddad0
 %   unsafe_ship_n=68 / 288; false_refuse_n=0; audit_only_catch=12
-%   excl F6-env and F6-file: 4/224
-%   F6-env 32/32; F6-file 32/32 on macOS
+%   canonical in-scope excl F6-env and F6-file: 4/224
+%   JSON in_scope_* excl F6-env only: 36/256 (macOS, no tracing)
+%   F6-env 32/32; F6-file 32/32 on macOS (Linux tracing not yet measured)
 
-In-scope unsafe-ship (56 cells per \texttt{probe\_n}: 7 classes
+Canonical in-scope unsafe-ship (56 cells per \texttt{probe\_n}: 7 classes
 $\times$ 4 frequencies $\times$ 2 formats, excluding F6-env and
 F6-file): $3/56$ at $50$, $1/56$ at $200$, $0/56$ at $500$,
-$0/56$ at $2000$.
+$0/56$ at $2000$. The same audit JSON labeled $36/256$ if F6-file
+is left in (macOS, no tracing).
 % source: pipeline/results/probe_eval_audit.json commit c1ddad0
 %   tabulated from rows; also protocol addendum after 3723d74
 The post-hoc recommendation is \texttt{probe\_n}${}=500$ (about 504
@@ -670,8 +681,12 @@ collection A.
     record grain); Riker; ProcessCache; INCR on the same
     argv. \TODO{comparison not run.}
   \item \textbf{Linux F6-file and \texttt{snpEff.config}
-    namespace.} Protocol requires Linux \texttt{strace}. The Mac
-    audit run left this INCOMPLETE. \TODO{}
+    namespace.} F6-file is covered by probe-time tracing on Linux,
+    not unhandled. The Mac audit JSON is
+    \texttt{trace\_status=unavailable}. This session:
+    \texttt{docker info} failed (daemon not running);
+    \texttt{scripts/run\_f6\_trace\_linux.py} was not run.
+    \TODO{Linux catch / unsafe-ship / namespace-on-edit still unmeasured.}
   \item \textbf{VEP.} Protocol locked; binary and cache not on
     disk. \TODO{}
 \end{itemize}
@@ -710,11 +725,14 @@ argv-named-input namespaces, not a probe bug.
 
 \paragraph{Tracing only on Linux.}
 Probe-time \texttt{strace} is how F6-file (a hidden config next to
-the input) enters the namespace. The committed audit run is macOS:
+the input) enters the namespace. That is coverage, not a hole in
+the method. The committed audit run is macOS:
 \texttt{trace\_status=unavailable}, F6-file $32/32$ unsafe-ship.
-Linux F6-file plus a \texttt{snpEff.config} check is INCOMPLETE.
+Linux F6-file plus a \texttt{snpEff.config} check is not yet
+measured (\texttt{docker info} failed 2026-09-27).
 % source: pipeline/results/probe_eval_audit.json commit c1ddad0
 %   f6_note; rows show trace_status unavailable
+%   no results/f6_trace_linux.json this session
 
 \paragraph{Mac versus exclusive-node timing.}
 SnpEff Mac $1.29\times$ broke its idle precondition and is not the
@@ -764,8 +782,11 @@ with a measured---not theorized---unsafe-ship rate.
 
 SnpEff shows the method can MATCH and still be a bad headline
 ($1.17\times$, startup-capped). Probe-eval shows the deployed
-audit mode misses $4/224$ in-scope cells on this suite, and
-systematically misses env-hidden inputs. Whether FASTA$\to$table
+audit mode misses $4/224$ in-scope cells on this suite
+(canonical: excl.\ F6-env and F6-file; $36/256$ if F6-file is
+left in on this Mac), and systematically misses env-hidden
+inputs (F6-env). F6-file is covered by Linux tracing and is not
+yet measured. Whether FASTA$\to$table
 reuse on recurring proteomes pays for the wrapper is the
 measurement that is still out:
 \TODO{HMMER savings, baselines, comparison}.

@@ -2,14 +2,16 @@
 
 Protocol `docs/PROBE_EVAL_PROTOCOL.md` (`b4c878f`). Seed 20260927. `N_rec`=2500. JSON: `probe_eval.json`. Figure: `figures/17_probe_eval_catch.png` (renumbered from `12_` to avoid colliding with `12_recurrence_A_ecoli.png`).
 
-This is a measurement, not a method. Closest priors: Chen/Segura metamorphic testing; Dune `cache-check-probability`; vCache (LLM δ). F6 is outside the guarantee (argv-named inputs only).
+This is a measurement, not a method. Closest priors: Chen/Segura metamorphic testing; Dune `cache-check-probability`; vCache (LLM δ). This run predates the F6-env / F6-file split: undivided F6 is the env-hidden class (limitation). F6-file is covered by probe-time tracing on Linux (not in this 8-class suite).
+
+Canonical in-scope (protocol addendum 2026-09-27) = all classes except F6-env and F6-file, denominator **224**. Audit-mode numbers live in `probe_eval_audit.md`: **4/224** in-scope (canonical) and **36/256** excluding F6-env only (macOS, no tracing). JSON not rewritten.
 
 ## Headline
 
 | Metric | Value |
 |--------|-------|
 | Unsafe-ship | **33 / 256** (0.129) |
-| Unsafe-ship excluding F6 | **1 / 224** (0.0045) |
+| In-scope analogue (canonical 224; excl. undivided F6) | **1 / 224** (0.0045) |
 | False-refuse (C1–C5 × 4 `probe_n`) | **0 / 20** |
 | Smallest *p* reliably caught (locked: F1–F5, F7, F8, both formats refuse) | **none** at every `probe_n` (F4/F5 VCF *widen and SHIP*) |
 | Same, refuse-or-bust classes only (F1–F3, F7, F8) | `probe_n`=50 → 0.1; 200/500/2000 → 0.01 |

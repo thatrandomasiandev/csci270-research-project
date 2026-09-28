@@ -308,7 +308,53 @@ both subset probes. Files:
 Do not overwrite `probe_eval.json`, `probe_eval_audit.json`, or figures
 17 / 18.
 
-A pre-merge duplicate eval (different in-scope denominator: 224 vs
-main’s 256) is archived under `*_stash` names from stash `f723379`.
-See `docs/PROBE_COST_RECONCILE.md`.
+A pre-merge duplicate eval is archived under `*_stash` names from
+stash `f723379`. See `docs/PROBE_COST_RECONCILE.md`. How to *label*
+those numerators is fixed by the canonical-in-scope addendum below
+(JSON files are not rewritten).
+
+---
+
+## Addendum 2026-09-27 — one canonical in-scope definition
+
+Locked text above is unchanged. Written after seeing
+`results/probe_eval_audit.json` (`c1ddad0`) and the subset JSONs
+(`e24370f`). This is a **labeling** fix, not a new run.
+
+The `4679264` metrics bullet excluded F6-file “on macOS,” which
+produced two denominators (224 vs 256) for the same cells. From this
+addendum there is **one** definition:
+
+**in-scope** = all unsafe classes **except F6-env and F6-file**.
+Denominator = 7 classes × 4 frequencies × 2 formats × 4 `probe_n` =
+**224** (56 cells per `probe_n`).
+
+**F6-file** is not out of method and is not “unhandled.” It is
+covered by probe-time tracing on Linux (`CACHE_KEY_PROTOCOL.md`
+`strace` addendum). Report it separately as **covered by tracing on
+Linux**. The committed Mac JSON has `trace_status=unavailable`; a
+Linux catch/unsafe-ship number is not in those files.
+
+**F6-env** is the real limitation (argv-named inputs; environment
+variables are not in the cache key).
+
+How to read committed JSON (`report.in_scope_*` is **not** rewritten;
+it still uses the macOS carve-out of excluding F6-env only):
+
+| Label | What | `--verify audit` (`c1ddad0`) | subset batched / singleton (`e24370f`) |
+|-------|------|------------------------------|----------------------------------------|
+| **in-scope (canonical)** | excl. F6-env **and** F6-file | **4/224** | **4/224** both |
+| excl. F6-env only (macOS, no tracing) | JSON `in_scope_*` | **36/256** | **36/256** both |
+| F6-file | separate row | 32/32 unsafe-ship on this Mac | 32/32 both |
+| F6-env | limitation | 32/32 | 32/32 both |
+| overall unsafe-ship | all 9 classes | 68/288 | 68/288 both |
+
+Full-MATCH `probe_eval.json` (`96f786b`) predates the F6 split: **1/224**
+excluding the undivided F6 class is the same 224-cell analogue for
+that 8-class run.
+
+`docker info` failed this session (daemon not running at
+`unix:///Users/joshuaterranova/.docker/run/docker.sock`).
+`scripts/run_f6_trace_linux.py` was **not** run. No
+`results/f6_trace_linux.json`.
 

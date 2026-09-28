@@ -6,24 +6,27 @@ Figures: `18_probe_eval_audit_catch.png` (renumbered from `15_` to avoid collidi
 `96f786b` / `probe_eval.json` is the **full-MATCH upper bound**. This file is
 the **deployed** number: probes + hit audit, no stock tool on the input.
 
-macOS host: no `strace`. F6-file is uncovered here. Docker daemon was down;
-Discovery SSH timed out. Linux F6-file + `snpEff.config` check is
-**INCOMPLETE** (`scripts/run_f6_trace_linux.py`).
+macOS host: no `strace`. F6-file is **covered by probe-time tracing on
+Linux** and is **not yet measured** here (`docker info` failed 2026-09-27:
+daemon not running). F6-env is the real limitation.
+`scripts/run_f6_trace_linux.py` was not run; no `results/f6_trace_linux.json`.
+
+Canonical in-scope (protocol addendum 2026-09-27) = all classes except
+F6-env and F6-file. Raw JSON `report.in_scope_*` still uses the macOS
+carve-out and is **not** rewritten.
 
 ## Headline
 
 | Metric | `--verify full` (`96f786b`) | `--verify audit` (this run) |
 |--------|-----------------------------|-----------------------------|
 | Unsafe-ship overall | 33 / 256 (0.129) | **68 / 288 (0.236)** |
-| Excl. F6 / F6-env+F6-file | **1 / 224 (0.0045)** | **4 / 224 (0.018)** |
+| **In-scope (canonical):** excl. F6-env and F6-file | **1 / 224 (0.0045)** | **4 / 224 (0.018)** |
+| Excl. F6-env only (macOS, no tracing) | — (F6 not yet split) | **36 / 256 (0.141)** |
 | F6-env | 32 / 32 (then F6) | **32 / 32** (limitation) |
-| F6-file | — | **32 / 32** on macOS (no tracing) |
+| F6-file (Linux tracing; unmeasured here) | — | **32 / 32** on this Mac |
 | False-refuse | 0 / 20 | **0 / 20** |
 | Probe-only catch | (MATCH mixed in) | 151 |
 | Audit-only catch | — | **12** |
-
-In-scope on this Mac (excl. F6-env only) is 36 / 256 because F6-file still
-counts until Linux tracing is measured.
 
 ## Per class (32 cells each)
 
@@ -35,7 +38,7 @@ counts until Linux tracing is measured.
 | F4 | 13/32 | audit 1 | **3** | fasta *p*=0.001 `n`∈{50,200}; **vcf *p*=0.01 `n`=50** (same cell as `96f786b`) |
 | F5 | 9/32 | audit 8 | 0 | late-key / perturbation |
 | F6-env | 0/32 | — | **32** | Env is outside the guarantee |
-| F6-file | 0/32 | — | **32** | macOS: no `strace`. Linux not run |
+| F6-file | 0/32 | — | **32** | Covered by Linux tracing; unmeasured (`docker info` failed) |
 | F7 | 26/32 | audit 1 | 0 | |
 | F8 | 25/32 | — | 0 | |
 
@@ -51,6 +54,7 @@ replace MATCH as an upper bound.
 ## F6
 
 - **F6-env:** undetectable. Stated limitation.
-- **F6-file:** tool reads `hidden.cfg` next to the input. On Linux + `strace`
-  the file should enter the namespace (`run_f6_trace_linux.py`). Not measured
-  on this Mac. `snpEff.config` check is the same script, same host gap.
+- **F6-file:** tool reads `hidden.cfg` next to the input. Covered by
+  probe-time tracing on Linux (`run_f6_trace_linux.py`); not unhandled.
+  This Mac JSON is `trace_status=unavailable`. `snpEff.config` is the
+  same script. Docker daemon was down 2026-09-27; still unmeasured.

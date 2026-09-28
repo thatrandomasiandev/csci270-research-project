@@ -61,19 +61,18 @@ F3 catch is **identical** in both evals (of 8 cells per `probe_n`):
 False-refuse **0** both. Overall unsafe-ship ~68/288 (stash batched
 67/288: one F6-env cell differs).
 
-**In-scope denominator disagrees:**
-
-| | In-scope | Unsafe-ship |
-|--|--|--|
-| Main | **36/256** | 68/288 both modes |
-| Stash | **4/224** | 67/288 batched, 68/288 singleton |
-
-Stash matches the locked audit write-up (`probe_eval_audit.json`:
-excl. F6-env **and** F6-file → 224). Main’s 256 drops only one F6
-class (32 cells). That is a **reporting** difference, not a catch-rate
-difference on F3. Main’s JSON stays the committed eval. Stash’s
-side-by-side table is archived as
+**In-scope labels (resolved 2026-09-27).** Canonical in-scope is
+excl. F6-env **and** F6-file (**4/224**). Main’s JSON `in_scope_*`
+still stores the macOS carve-out (**36/256**, excl. F6-env only).
+Stash already reported 4/224. Same F3 catch; not two evals. See
+`docs/PROBE_EVAL_PROTOCOL.md` canonical addendum. Stash’s
+side-by-side table remains
 `results/probe_eval_subset_compare_stash.json`.
+
+| | Canonical in-scope | JSON `in_scope_*` (macOS) | Unsafe-ship |
+|--|--|--|--|
+| Main | **4/224** | 36/256 | 68/288 both modes |
+| Stash | **4/224** | (wrote 4/224) | 67/288 batched, 68/288 singleton |
 
 ## Results: tool-call counts
 
