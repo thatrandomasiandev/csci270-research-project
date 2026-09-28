@@ -1,7 +1,9 @@
 egas_out/
 acts_out/
 data/
+data_compare/
 tools/
+builds/
 __pycache__/
 *.pyc
 fixtures/fat_copy/stock

@@ -1,0 +1,85 @@
+{
+  "protocol": "pipeline/docs/COMPARISON_PROTOCOL.md",
+  "protocol_commit": "9ff59000a4368988a14cab3266aa748b3467e2a4",
+  "git_head": "9ff59000a4368988a14cab3266aa748b3467e2a4",
+  "timing_claimed": false,
+  "host": {
+    "hostname": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "when_utc": "2026-09-28T02:23:25.715916+00:00"
+  },
+  "builds": {
+    "hmmer_stock": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/builds/hmmer-stock/bin",
+    "hmmer_tuned": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/builds/hmmer-tuned/bin",
+    "snpeff_cds": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/builds/snpeff/snpeff.jsa",
+    "toy_hmm": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/data_compare/toy.hmm",
+    "test_faa": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/data_compare/match_test.faa",
+    "test_vcf": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/data_compare/match_test.vcf",
+    "reused_existing_builds": "true"
+  },
+  "workloads": {
+    "star_sealed": {
+      "match": "cited sealed Suite B",
+      "matched": true,
+      "rerun": false,
+      "source_csv": "star/bench/results/illumina10_s8j_mac.csv",
+      "source_status": "STATUS.md",
+      "scoreboard": "10/10 min_pair >= 2.0, MATCH every timed pair",
+      "timing_claimed": false,
+      "note": "EGAS 2x is the code-opt arm; do not rerun"
+    },
+    "hmmscan_cut_ga": {
+      "mode": "hmmscan",
+      "match": "order",
+      "match_ws": true,
+      "matched": true,
+      "stock_returncode": 0,
+      "tuned_returncode": 0,
+      "n_tblout_stock": 4,
+      "n_tblout_tuned": 4,
+      "stock_stderr_tail": "",
+      "tuned_stderr_tail": "",
+      "timing_claimed": false,
+      "note": "small toy HMM / FASTA; not a speedup"
+    },
+    "hmmsearch_fixed_Z": {
+      "mode": "hmmsearch",
+      "match": "multiset",
+      "match_ws": true,
+      "matched": true,
+      "stock_returncode": 0,
+      "tuned_returncode": 0,
+      "n_tblout_stock": 4,
+      "n_tblout_tuned": 4,
+      "stock_stderr_tail": "",
+      "tuned_stderr_tail": "",
+      "timing_claimed": false,
+      "note": "small toy HMM / FASTA; not a speedup"
+    },
+    "snpeff": {
+      "match": "record-body",
+      "matched": true,
+      "stock_returncode": 0,
+      "tuned_returncode": 0,
+      "n_input_records": 24,
+      "n_out_stock": 24,
+      "n_out_tuned": 24,
+      "full_file_identical": true,
+      "stock_stderr_tail": "",
+      "tuned_stderr_tail": "",
+      "timing_claimed": false,
+      "jar": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/tools/snpEff/snpEff.jar",
+      "dataDir": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/tools/snpEff/data",
+      "cds_archive": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-compare/pipeline/builds/snpeff/snpeff.jsa",
+      "java_flags_tuned": [
+        "-XX:SharedArchiveFile",
+        "-Xshare:on",
+        "-XX:TieredStopAtLevel=1"
+      ],
+      "note": "small VCF; not a speedup; header drift allowed"
+    }
+  },
+  "all_matched": true,
+  "note": "MATCH only. No wall-clock comparison. PGO/AppCDS are established levers, not a method."
+}
