@@ -61,11 +61,11 @@ def _install_subset_mode(mode: str) -> None:
         iff._acts_subset_orig = iff.infer_table_contract
 
     def vcf_wrap(*args, **kwargs):
-        kwargs.setdefault("subset_mode", mode)
+        kwargs["subset_mode"] = mode
         return iv._acts_subset_orig(*args, **kwargs)
 
     def fa_wrap(*args, **kwargs):
-        kwargs.setdefault("subset_mode", mode)
+        kwargs["subset_mode"] = mode
         return iff._acts_subset_orig(*args, **kwargs)
 
     iv.infer_contract = vcf_wrap
