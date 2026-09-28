@@ -11,7 +11,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.cache import RecordCache
-from acts.infer_vcf import infer_contract
+from acts.infer_vcf import InferError, batched_index_groups, infer_contract
 from acts.strategies.record_memo import RecordMemo
 from acts.vcf import bodies_equal, body_lines
 from acts.vcf_memo import cached_annotate, read_vcf_parts
@@ -48,6 +48,8 @@ class InferVcfFixtureTests(unittest.TestCase):
             self.assertEqual(contract["cache_key_fields"], ["CHROM", "POS", "REF", "ALT"])
             self.assertEqual(contract["info_roles"].get("ANN"), "produced")
             self.assertNotIn("ID", contract["widen_history"])
+            self.assertEqual(contract["subset_mode"], "batched")
+            self.assertGreater(contract["tool_calls"], 0)
 
     def test_neighbors_refuses_shuffle(self) -> None:
         with tempfile.TemporaryDirectory() as td:
@@ -164,6 +166,64 @@ class InferVcfFixtureTests(unittest.TestCase):
             rare_lines = [ln for ln in body_lines(rebuilt) if "\t99999999\t" in ln]
             self.assertEqual(len(rare_lines), 1)
             self.assertIn("RARE=1", rare_lines[0])
+
+
+def _synth_vcf(n: int) -> tuple[list[str], list[str]]:
+    header = [
+        "##fileformat=VCFv4.2",
+        "#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO",
+    ]
+    body = [f"22\t{1000 + i}\t.\tA\tG\t.\tPASS\t." for i in range(n)]
+    return header, body
+
+
+class BatchedSubsetVcfTests(unittest.TestCase):
+    def test_index_groups_cover_and_are_fixed(self) -> None:
+        groups = batched_index_groups(40)
+        self.assertEqual(len(groups), 2 + 4 + 8)
+        halves, quarters = groups[:2], groups[2:6]
+        self.assertEqual(sorted(i for part in halves for i in part), list(range(40)))
+        self.assertEqual(sorted(i for part in quarters for i in part), list(range(40)))
+        self.assertEqual(batched_index_groups(40), groups)
+
+    def test_batched_is_default_and_independent_of_probe_n(self) -> None:
+        argv = _argv("annotate_1to1.py")
+        with tempfile.TemporaryDirectory() as td:
+            work = Path(td)
+            header, body = _synth_vcf(80)
+            a = infer_contract(argv, header, body, work / "a", probe_n=20)
+            b = infer_contract(argv, header, body, work / "b", probe_n=40)
+            self.assertEqual(a.subset_mode, "batched")
+            self.assertEqual(b.subset_mode, "batched")
+            self.assertEqual(a.tool_calls, b.tool_calls)
+            self.assertEqual(a.tool_calls, 4 + 2 + 4 + 8)
+
+    def test_singleton_tool_calls_grow_with_probe_n(self) -> None:
+        argv = _argv("annotate_1to1.py")
+        with tempfile.TemporaryDirectory() as td:
+            work = Path(td)
+            header, body = _synth_vcf(80)
+            small = infer_contract(
+                argv, header, body, work / "s", probe_n=12, subset_mode="singleton"
+            )
+            big = infer_contract(
+                argv, header, body, work / "b", probe_n=24, subset_mode="singleton"
+            )
+            self.assertEqual(small.subset_mode, "singleton")
+            self.assertGreater(big.tool_calls, small.tool_calls)
+            self.assertEqual(big.tool_calls - small.tool_calls, 12)
+
+    def test_batched_and_singleton_both_refuse_global(self) -> None:
+        argv = _argv("annotate_global.py")
+        header, body = read_vcf_parts(TINY)
+        for mode in ("batched", "singleton"):
+            with tempfile.TemporaryDirectory() as td:
+                with self.assertRaises(InferError) as ctx:
+                    infer_contract(
+                        argv, header, body, Path(td), subset_mode=mode, singleton_workers=1
+                    )
+                self.assertEqual(ctx.exception.decision, "REFUSE_GLOBAL")
+                self.assertGreater(ctx.exception.tool_calls, 0)
 
 
 @unittest.skipUnless(shutil.which("bcftools"), "bcftools not on PATH")

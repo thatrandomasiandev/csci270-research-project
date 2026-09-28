@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import json
+import random
 import subprocess
+import threading
 from collections import defaultdict
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -33,13 +35,26 @@ PERT_FILTER_HDR = '##FILTER=<ID=PERT,Description="ACTS inference probe">'
 
 PROBE_N = 500
 NAMED_NONKEY = ("ID", "QUAL", "FILTER")
+# Seed family locked in INFERENCE_PROTOCOL addendum 2026-09-27.
+BATCHED_SUBSET_SEED = 20260927
+N_BATCHED_SINGLETONS = 8
+SUBSET_MODES = ("batched", "singleton")
 
 
 class InferError(Exception):
-    def __init__(self, decision: str, reason: str):
+    def __init__(
+        self,
+        decision: str,
+        reason: str,
+        *,
+        tool_calls: int = 0,
+        tool_call_sizes: list[int] | None = None,
+    ):
         super().__init__(reason)
         self.decision = decision
         self.reason = reason
+        self.tool_calls = tool_calls
+        self.tool_call_sizes = list(tool_call_sizes or [])
 
 
 @dataclass
@@ -57,6 +72,9 @@ class RecordContract:
     trace_status: str = "unavailable"
     probe_n: int = 0
     probe_seed: int = PROBE_SEED
+    subset_mode: str = "batched"
+    tool_calls: int = 0
+    tool_call_sizes: list[int] = field(default_factory=list)
     decision: str = "OK"
     reason: str = ""
 
@@ -72,6 +90,9 @@ class RecordContract:
         raw.setdefault("traced_files", [])
         raw.setdefault("trace_status", "unavailable")
         raw.setdefault("probe_seed", PROBE_SEED)
+        raw.setdefault("subset_mode", "batched")
+        raw.setdefault("tool_calls", 0)
+        raw.setdefault("tool_call_sizes", [])
         return cls(**raw)
 
 
@@ -216,6 +237,62 @@ def classify_pairs(pairs_o: list[tuple[str, str]], pairs_p: list[tuple[str, str]
     }
 
 
+def _count_vcf_records(path: Path) -> int:
+    return sum(1 for ln in path.read_text().splitlines() if ln and not ln.startswith("#"))
+
+
+class _CallMeter:
+    """Count inference tool invocations and their input record counts."""
+
+    def __init__(self, count_records=_count_vcf_records):
+        self.n = 0
+        self.sizes: list[int] = []
+        self._lock = threading.Lock()
+        self._count = count_records
+
+    def run(self, argv: list[str], path: Path, *, work: Path | None = None) -> str:
+        n_rec = self._count(path)
+        with self._lock:
+            self.n += 1
+            self.sizes.append(n_rec)
+        return run_vcf_tool(argv, path, work=work)
+
+
+def partition_indices(n: int, n_parts: int, rng: random.Random) -> list[list[int]]:
+    """Disjoint cover of range(n) into n_parts, empty parts dropped."""
+    order = list(range(n))
+    rng.shuffle(order)
+    parts: list[list[int]] = [[] for _ in range(n_parts)]
+    for i, idx in enumerate(order):
+        parts[i % n_parts].append(idx)
+    out: list[list[int]] = []
+    for part in parts:
+        part.sort()
+        if part:
+            out.append(part)
+    return out
+
+
+def batched_index_groups(
+    n: int,
+    *,
+    seed: int = BATCHED_SUBSET_SEED,
+    n_singletons: int = N_BATCHED_SINGLETONS,
+) -> list[list[int]]:
+    """2 halves + 4 quarters + s singletons. One RNG stream from *seed*."""
+    if n <= 0:
+        return []
+    rng = random.Random(seed)
+    groups: list[list[int]] = []
+    groups.extend(partition_indices(n, 2, rng))
+    groups.extend(partition_indices(n, 4, rng))
+    n_s = min(n_singletons, n)
+    if n_s:
+        for idx in rng.sample(range(n), n_s):
+            groups.append([idx])
+    return groups
+
+
 def _depends_fields(classified: dict) -> list[str]:
     """Widen only when a *produced* INFO (or sample) value depends on non-key input.
 
@@ -230,6 +307,29 @@ def _depends_fields(classified: dict) -> list[str]:
     return bad
 
 
+def _vcf_batch_mismatch(
+    argv: list[str],
+    header: list[str],
+    batch: list[str],
+    expected: list[str],
+    dest: Path,
+    runner,
+) -> str | None:
+    path = write_vcf(dest, header, batch)
+    out = runner(argv, path)
+    body = body_lines(out)
+    try:
+        pairs = align_by_key(batch, body)
+    except InferError as exc:
+        return exc.reason
+    for (_rec_in, got), rec_full in zip(pairs, expected):
+        if got != rec_full:
+            return f"n_out={len(body)}"
+    if len(pairs) != len(expected):
+        return f"n_out={len(body)} n_expected={len(expected)}"
+    return None
+
+
 def assert_subset_invariant(
     argv: list[str],
     header: list[str],
@@ -238,34 +338,57 @@ def assert_subset_invariant(
     work: Path,
     *,
     workers: int = 8,
+    subset_mode: str = "batched",
+    runner=None,
+    seed: int = BATCHED_SUBSET_SEED,
 ) -> None:
-    """Each record alone must match its line from the full-probe run."""
+    """Compare each record's output across batch sizes. Mismatch → REFUSE_GLOBAL."""
+    if subset_mode not in SUBSET_MODES:
+        raise ValueError(f"subset_mode must be one of {SUBSET_MODES}, got {subset_mode!r}")
+    run = runner or run_vcf_tool
     pairs = align_by_key(probe, full_out_body)
-    solo = work / "singleton"
-    solo.mkdir(parents=True, exist_ok=True)
+    expected = [rec_full for _rec_in, rec_full in pairs]
+    work.mkdir(parents=True, exist_ok=True)
 
-    def _one(item: tuple[int, str, str]) -> tuple[int, str, str, str]:
-        i, rec_in, rec_full = item
-        path = write_vcf(solo / f"{i}.vcf", header, [rec_in])
-        out = run_vcf_tool(argv, path)
-        body = body_lines(out)
-        got = body[0] if len(body) == 1 else ""
-        return i, rec_full, got, f"n_out={len(body)}"
+    if subset_mode == "singleton":
+        solo = work / "singleton"
+        solo.mkdir(parents=True, exist_ok=True)
 
-    items = list(enumerate((a, b) for a, b in pairs))
-    packed = [(i, rec_in, rec_full) for i, (rec_in, rec_full) in items]
-    if workers <= 1 or len(packed) <= 1:
-        results = [_one(p) for p in packed]
-    else:
-        from concurrent.futures import ThreadPoolExecutor
+        def _one(item: tuple[int, str, str]) -> tuple[int, str, str, str]:
+            i, rec_in, rec_full = item
+            path = write_vcf(solo / f"{i}.vcf", header, [rec_in])
+            out = run(argv, path)
+            body = body_lines(out)
+            got = body[0] if len(body) == 1 else ""
+            return i, rec_full, got, f"n_out={len(body)}"
 
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            results = list(pool.map(_one, packed))
-    for i, rec_full, got, extra in results:
-        if got != rec_full:
+        packed = [(i, rec_in, rec_full) for i, (rec_in, rec_full) in enumerate(pairs)]
+        if workers <= 1 or len(packed) <= 1:
+            results = [_one(p) for p in packed]
+        else:
+            from concurrent.futures import ThreadPoolExecutor
+
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                results = list(pool.map(_one, packed))
+        for i, rec_full, got, extra in results:
+            if got != rec_full:
+                raise InferError(
+                    "REFUSE_GLOBAL",
+                    f"output depends on the rest of the file (singleton {i}: {extra})",
+                )
+        return
+
+    batches = work / "batched"
+    batches.mkdir(parents=True, exist_ok=True)
+    for g, indices in enumerate(batched_index_groups(len(probe), seed=seed)):
+        batch = [probe[i] for i in indices]
+        exp = [expected[i] for i in indices]
+        dest = batches / f"g{g}_n{len(indices)}.vcf"
+        extra = _vcf_batch_mismatch(argv, header, batch, exp, dest, run)
+        if extra:
             raise InferError(
                 "REFUSE_GLOBAL",
-                f"output depends on the rest of the file (singleton {i}: {extra})",
+                f"output depends on the rest of the file (batch {g} n={len(indices)}: {extra})",
             )
 
 
@@ -358,116 +481,136 @@ def infer_contract(
     probe_n: int = PROBE_N,
     probe_seed: int = PROBE_SEED,
     singleton_workers: int = 8,
+    subset_mode: str = "batched",
 ) -> RecordContract:
+    if subset_mode not in SUBSET_MODES:
+        raise ValueError(f"subset_mode must be one of {SUBSET_MODES}, got {subset_mode!r}")
     probe = sample_records(body, min(probe_n, len(body)), seed=probe_seed)
     if not probe:
         raise InferError("REFUSE_AMBIGUOUS", "empty VCF body")
     work.mkdir(parents=True, exist_ok=True)
+    meter = _CallMeter(_count_vcf_records)
+    run = meter.run
 
-    p1 = write_vcf(work / "probe.vcf", header, probe)
-    out1, traced_files, trace_status = run_traced(
-        argv, input_path=p1, work=work / "trace", runner=run_vcf_tool
-    )
-    out2 = run_vcf_tool(argv, p1)
-    if not bodies_equal(out1, out2):
-        raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
+    try:
+        p1 = write_vcf(work / "probe.vcf", header, probe)
+        out1, traced_files, trace_status = run_traced(
+            argv, input_path=p1, work=work / "trace", runner=run
+        )
+        out2 = run(argv, p1)
+        if not bodies_equal(out1, out2):
+            raise InferError("REFUSE_NONDETERMINISTIC", "tool body differs across two identical runs")
 
-    shuffled = shuffle_body("\n".join(header + probe) + "\n", seed=7)
-    p_sh = write_vcf(work / "probe_shuffle.vcf", header_of(shuffled), body_lines(shuffled))
-    out_sh = run_vcf_tool(argv, p_sh)
-    if not bodies_equal(out1, out_sh):
-        raise InferError("REFUSE_NEIGHBORS", "shuffle test failed; neighbors leak")
+        shuffled = shuffle_body("\n".join(header + probe) + "\n", seed=7)
+        p_sh = write_vcf(work / "probe_shuffle.vcf", header_of(shuffled), body_lines(shuffled))
+        out_sh = run(argv, p_sh)
+        if not bodies_equal(out1, out_sh):
+            raise InferError("REFUSE_NEIGHBORS", "shuffle test failed; neighbors leak")
 
-    assert_subset_invariant(
-        argv, header, probe, body_lines(out1), work, workers=singleton_workers
-    )
+        assert_subset_invariant(
+            argv,
+            header,
+            probe,
+            body_lines(out1),
+            work,
+            workers=singleton_workers,
+            subset_mode=subset_mode,
+            runner=run,
+        )
 
-    key_fields = list(KEY_FIELDS)
-    widen_history: list[str] = []
-    remaining = list(NONKEY_GROUPS)
-    types = info_types(header)
+        key_fields = list(KEY_FIELDS)
+        widen_history: list[str] = []
+        remaining = list(NONKEY_GROUPS)
+        types = info_types(header)
 
-    pert = [perturb_record(ln, i, remaining, info_types_map=types) for i, ln in enumerate(probe)]
-    p_pert = write_vcf(work / "probe_pert.vcf", header, pert)
-    out_pert = run_vcf_tool(argv, p_pert)
-    pairs_o = align_by_key(probe, body_lines(out1))
-    pairs_p = align_by_key(pert, body_lines(out_pert))
-    classified = classify_pairs(pairs_o, pairs_p)
-    depends = _depends_fields(classified)
+        pert = [perturb_record(ln, i, remaining, info_types_map=types) for i, ln in enumerate(probe)]
+        p_pert = write_vcf(work / "probe_pert.vcf", header, pert)
+        out_pert = run(argv, p_pert)
+        pairs_o = align_by_key(probe, body_lines(out1))
+        pairs_p = align_by_key(pert, body_lines(out_pert))
+        classified = classify_pairs(pairs_o, pairs_p)
+        depends = _depends_fields(classified)
 
-    if depends:
-        group_hits: dict[str, list[str]] = {}
-        for group in remaining:
-            g_pert = [perturb_record(ln, i, [group], info_types_map=types) for i, ln in enumerate(probe)]
-            pg = write_vcf(work / f"probe_pert_{group.lower()}.vcf", header, g_pert)
-            out_g = run_vcf_tool(argv, pg)
-            g_class = classify_pairs(pairs_o, align_by_key(g_pert, body_lines(out_g)))
-            hit = _depends_fields(g_class)
-            if hit:
-                group_hits[group] = hit
-        if not group_hits:
-            raise InferError(
-                "REFUSE_AMBIGUOUS",
-                f"DEPENDS-ON-NON-KEY on {depends} but no single group reproduced it",
-            )
-        for group in group_hits:
-            if group not in key_fields:
-                key_fields.append(group)
-                widen_history.append(group)
-        remaining = [g for g in NONKEY_GROUPS if g not in key_fields]
-        pert2 = [perturb_record(ln, i, remaining, info_types_map=types) for i, ln in enumerate(probe)]
-        if remaining:
-            p2 = write_vcf(work / "probe_pert_after_widen.vcf", header, pert2)
-            out2p = run_vcf_tool(argv, p2)
-            classified = classify_pairs(pairs_o, align_by_key(pert2, body_lines(out2p)))
-            still = _depends_fields(classified)
-            if still:
+        if depends:
+            group_hits: dict[str, list[str]] = {}
+            for group in remaining:
+                g_pert = [perturb_record(ln, i, [group], info_types_map=types) for i, ln in enumerate(probe)]
+                pg = write_vcf(work / f"probe_pert_{group.lower()}.vcf", header, g_pert)
+                out_g = run(argv, pg)
+                g_class = classify_pairs(pairs_o, align_by_key(g_pert, body_lines(out_g)))
+                hit = _depends_fields(g_class)
+                if hit:
+                    group_hits[group] = hit
+            if not group_hits:
                 raise InferError(
                     "REFUSE_AMBIGUOUS",
-                    f"still DEPENDS-ON-NON-KEY after widen {widen_history}: {still}",
+                    f"DEPENDS-ON-NON-KEY on {depends} but no single group reproduced it",
                 )
-        else:
-            classified = classify_pairs(pairs_o, pairs_o)
-            classified = {
-                "column_roles": {
-                    n: ("produced" if r == "depends" else r)
-                    for n, r in classified["column_roles"].items()
-                },
-                "info_roles": {
-                    n: ("produced" if r == "depends" else r)
-                    for n, r in classified["info_roles"].items()
-                },
-                "sample_role": "produced"
-                if classified["sample_role"] == "depends"
-                else classified["sample_role"],
-                "info_order": classified["info_order"],
-            }
+            for group in group_hits:
+                if group not in key_fields:
+                    key_fields.append(group)
+                    widen_history.append(group)
+            remaining = [g for g in NONKEY_GROUPS if g not in key_fields]
+            pert2 = [perturb_record(ln, i, remaining, info_types_map=types) for i, ln in enumerate(probe)]
+            if remaining:
+                p2 = write_vcf(work / "probe_pert_after_widen.vcf", header, pert2)
+                out2p = run(argv, p2)
+                classified = classify_pairs(pairs_o, align_by_key(pert2, body_lines(out2p)))
+                still = _depends_fields(classified)
+                if still:
+                    raise InferError(
+                        "REFUSE_AMBIGUOUS",
+                        f"still DEPENDS-ON-NON-KEY after widen {widen_history}: {still}",
+                    )
+            else:
+                classified = classify_pairs(pairs_o, pairs_o)
+                classified = {
+                    "column_roles": {
+                        n: ("produced" if r == "depends" else r)
+                        for n, r in classified["column_roles"].items()
+                    },
+                    "info_roles": {
+                        n: ("produced" if r == "depends" else r)
+                        for n, r in classified["info_roles"].items()
+                    },
+                    "sample_role": "produced"
+                    if classified["sample_role"] == "depends"
+                    else classified["sample_role"],
+                    "info_order": classified["info_order"],
+                }
 
-    produced_order = [k for k in classified["info_order"] if classified["info_roles"].get(k) == "produced"]
-    column_roles = {n: "key" for n in KEY_FIELDS}
-    column_roles.update({n: r for n, r in classified["column_roles"].items() if r})
-    for name in NAMED_NONKEY:
-        column_roles.setdefault(name, "pass")
-        if column_roles[name] in {"depends", "ambiguous"}:
-            # Not widened: take the query value. Wrong here fails MATCH.
-            column_roles[name] = "pass"
+        produced_order = [k for k in classified["info_order"] if classified["info_roles"].get(k) == "produced"]
+        column_roles = {n: "key" for n in KEY_FIELDS}
+        column_roles.update({n: r for n, r in classified["column_roles"].items() if r})
+        for name in NAMED_NONKEY:
+            column_roles.setdefault(name, "pass")
+            if column_roles[name] in {"depends", "ambiguous"}:
+                # Not widened: take the query value. Wrong here fails MATCH.
+                column_roles[name] = "pass"
 
-    return RecordContract(
-        kind="vcf",
-        argv=list(argv),
-        cache_key_fields=key_fields,
-        column_roles=column_roles,
-        info_roles={k: v for k, v in classified["info_roles"].items() if v},
-        produced_info_order=produced_order,
-        sample_role=classified["sample_role"],
-        widen_history=widen_history,
-        traced_files=traced_files,
-        trace_status=trace_status,
-        probe_n=len(probe),
-        probe_seed=probe_seed,
-        decision="OK",
-        reason="probe passed",
-    )
+        return RecordContract(
+            kind="vcf",
+            argv=list(argv),
+            cache_key_fields=key_fields,
+            column_roles=column_roles,
+            info_roles={k: v for k, v in classified["info_roles"].items() if v},
+            produced_info_order=produced_order,
+            sample_role=classified["sample_role"],
+            widen_history=widen_history,
+            traced_files=traced_files,
+            trace_status=trace_status,
+            probe_n=len(probe),
+            probe_seed=probe_seed,
+            subset_mode=subset_mode,
+            tool_calls=meter.n,
+            tool_call_sizes=list(meter.sizes),
+            decision="OK",
+            reason="probe passed",
+        )
+    except InferError as exc:
+        exc.tool_calls = meter.n
+        exc.tool_call_sizes = list(meter.sizes)
+        raise
 
 
 def extract_produced(line: str, contract: RecordContract, query: str | None = None) -> dict:
@@ -535,13 +678,20 @@ def load_or_infer(
     *,
     probe_n: int = PROBE_N,
     probe_seed: int = PROBE_SEED,
+    subset_mode: str = "batched",
 ) -> RecordContract:
     if contract_path.is_file():
         saved = RecordContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "vcf" and saved.decision == "OK":
             return saved
     contract = infer_contract(
-        argv, header, body, work, probe_n=probe_n, probe_seed=probe_seed
+        argv,
+        header,
+        body,
+        work,
+        probe_n=probe_n,
+        probe_seed=probe_seed,
+        subset_mode=subset_mode,
     )
     contract.save(contract_path)
     return contract
@@ -557,6 +707,9 @@ def refuse_result(exc: InferError, argv: list[str]) -> RecordContract:
         produced_info_order=[],
         sample_role="pass",
         late_key_probes=[],
+        subset_mode="batched",
+        tool_calls=getattr(exc, "tool_calls", 0),
+        tool_call_sizes=list(getattr(exc, "tool_call_sizes", []) or []),
         decision=exc.decision,
         reason=exc.reason,
     )

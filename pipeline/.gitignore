@@ -1,6 +1,7 @@
 egas_out/
 acts_out/
 data/
+data_probe/
 tools/
 __pycache__/
 *.pyc
