@@ -42,6 +42,7 @@ class RecordMemo(Strategy):
         unique_frac_refuse: float = RARE,
         audit_p: float = 0.0,
         audit_seed: int = 0,
+        probe_n: int = 500,
     ):
         self.kind = kind
         self.argv = argv
@@ -53,6 +54,7 @@ class RecordMemo(Strategy):
         self.unique_frac_refuse = unique_frac_refuse
         self.audit_p = audit_p
         self.audit_seed = audit_seed
+        self.probe_n = probe_n
 
     def probe(self) -> DupReport:
         if self.kind == "fastq_pe":
@@ -129,7 +131,12 @@ class RecordMemo(Strategy):
         extra.update({"n": len(body), "cache_size": len(cache)})
         try:
             contract = prepare_contract(
-                self.argv, header, body, self.out_dir / "infer", cache_path
+                self.argv,
+                header,
+                body,
+                self.out_dir / "infer",
+                cache_path,
+                probe_n=self.probe_n,
             )
         except InferError as exc:
             rec = StrategyResult(self.name, exc.decision, exc.reason, extra)
@@ -194,7 +201,11 @@ class RecordMemo(Strategy):
         extra.update({"n": len(recs), "cache_size": len(cache)})
         try:
             contract = prepare_table_contract(
-                self.argv, recs, self.out_dir / "infer", cache_path
+                self.argv,
+                recs,
+                self.out_dir / "infer",
+                cache_path,
+                probe_n=self.probe_n,
             )
         except FastaInferError as exc:
             rec = StrategyResult(self.name, exc.decision, exc.reason, extra)

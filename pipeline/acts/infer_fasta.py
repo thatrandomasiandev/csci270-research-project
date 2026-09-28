@@ -456,12 +456,14 @@ def load_or_infer_table(
     recs: list[FastaRec],
     work: Path,
     contract_path: Path,
+    *,
+    probe_n: int = PROBE_N,
 ) -> TableContract:
     if contract_path.is_file():
         saved = TableContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "fasta" and saved.decision == "OK":
             return saved
-    contract = infer_table_contract(argv, recs, work)
+    contract = infer_table_contract(argv, recs, work, probe_n=probe_n)
     contract.save(contract_path)
     return contract
 

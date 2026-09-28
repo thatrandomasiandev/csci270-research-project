@@ -518,12 +518,14 @@ def load_or_infer(
     body: list[str],
     work: Path,
     contract_path: Path,
+    *,
+    probe_n: int = PROBE_N,
 ) -> RecordContract:
     if contract_path.is_file():
         saved = RecordContract.load(contract_path)
         if saved.argv == list(argv) and saved.kind == "vcf" and saved.decision == "OK":
             return saved
-    contract = infer_contract(argv, header, body, work)
+    contract = infer_contract(argv, header, body, work, probe_n=probe_n)
     contract.save(contract_path)
     return contract
 

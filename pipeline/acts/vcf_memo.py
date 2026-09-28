@@ -7,6 +7,7 @@ from pathlib import Path
 
 from acts.cache import RecordCache
 from acts.infer_vcf import (
+    PROBE_N,
     InferError,
     RecordContract,
     extract_produced,
@@ -116,10 +117,12 @@ def prepare_contract(
     body: list[str],
     work: Path,
     cache_path: Path,
+    *,
+    probe_n: int = PROBE_N,
 ) -> RecordContract:
     path = contract_path_for(cache_path)
     try:
-        return load_or_infer(argv, header, body, work / "probe", path)
+        return load_or_infer(argv, header, body, work / "probe", path, probe_n=probe_n)
     except InferError as exc:
         rec = refuse_result(exc, argv)
         rec.save(path)

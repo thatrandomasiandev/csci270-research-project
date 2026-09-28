@@ -8,6 +8,7 @@ from pathlib import Path
 from acts.cache import RecordCache
 from acts.fasta import FastaRec, write_fasta
 from acts.infer_fasta import (
+    PROBE_N,
     InferError,
     TableContract,
     extract_rows,
@@ -102,10 +103,12 @@ def prepare_table_contract(
     recs: list[FastaRec],
     work: Path,
     cache_path: Path,
+    *,
+    probe_n: int = PROBE_N,
 ) -> TableContract:
     path = contract_path_for(cache_path)
     try:
-        return load_or_infer_table(argv, recs, work / "probe", path)
+        return load_or_infer_table(argv, recs, work / "probe", path, probe_n=probe_n)
     except InferError as exc:
         rec = refuse_table(exc, argv)
         rec.save(path)

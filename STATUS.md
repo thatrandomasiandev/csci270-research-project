@@ -1,6 +1,6 @@
 # STATUS — STAR ≥2× (CSCI 270 A-contract)
 
-**Updated:** 2026-09-26
+**Updated:** 2026-09-27
 
 ## Scope — LOCKED (Zhang)
 
@@ -104,7 +104,8 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] Tool screen (`c51ed61`) — SnpEff heavier fails; ruff formula-pass rejected (`results/tool_screen.json`)
 - [x] Generic VCF record inference (`8540926` + `3f47a00`); SnpEff MATCH 52,638 via probes
 - [x] FASTA→table record format (`2ef93ff` protocol; fixtures + local search in `results/inference_fasta_local.json`)
-- [ ] Headline tool (SnpEff capped ~1.3×; ruff rejected; VEP / dbNSFP skipped)
+- [~] HMMER accumulated-savings — addendum `ef457b6`; runner `dc5ead9`; `--constraint=epyc-7542`. Jobs **12394300** `sav_A_scan` 22h, **12394301** `sav_A_search` 7h, **12394503** `sav_B_scan` 12h, **12394504** `sav_B_search` 6h (all PD). Collect later.
+- [x] Probe miss-rate (protocol `b4c878f`; local `pipeline/results/probe_eval.json`). 276 cells. Unsafe-ship **33/256** (32 are F6; **1/224** excl. F6 = vcf F4 at *p*=0.01, `probe_n`=50). False-refuse **0/20**. F6 is outside the argv-named-input guarantee.
 - [ ] Running baselines (the tool’s own cache; Riker / ProcessCache)
 - [ ] Read ProcessCache thesis + vCache (ICLR 2026) before a paper draft (`literature/READING.md`)
 - [x] Write-up draft — conference paper at `star/writeup/paper/main.pdf` (update when CARC 10/10 lands)
