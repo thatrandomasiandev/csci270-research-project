@@ -117,3 +117,70 @@ claim. Expected test (Linux only; skip on macOS with that reason): a
 tool that reads `hidden.cfg` not named in argv; after the probe, that
 path is in `inputs`; changing the file yields a new namespace and zero
 hits on the old rows.
+
+## Addendum 2026-09-27 — SQLite backend and portable keys
+
+Written **before** the SQLite backend. Locked text above is unchanged.
+
+This is engineering (SQLite WAL + one transaction per `save()`), not a
+new cache theory. Closest trusted priors for *command-level* memo are
+Rattle / Riker / ProcessCache / INCR; they do not dictate the on-disk
+store. Do not claim novelty for the backend.
+
+### SQLite backend (default durable store)
+
+`RecordCache` persists rows in SQLite:
+
+- **WAL mode** (`PRAGMA journal_mode=WAL`).
+- **One transaction per `save()`**. `put()` stays in-memory; `save()`
+  upserts the dirty records of this process in a single transaction.
+  Writers do not replace the whole table, so a later save cannot drop
+  another process's rows.
+- **Safe with concurrent writers.** SQLite serializes writers; readers
+  proceed under WAL. `PRAGMA busy_timeout` is set so a second writer
+  waits instead of failing. The known concurrent-save limitation in the
+  earlier 2026-09-27 review addendum is **REMOVED**.
+- Fingerprint memo and namespace manifest live in the same database
+  (same WAL/transactions). Sidecar JSON files remain as dumps for
+  audit; the database is the source of truth.
+
+Public interface is unchanged: `RecordCache(path, *, argv, kind,
+extra_files=None)` with `.get` / `.put` / `.save` / `len()`, and
+attributes `path`, `ns`, `inputs`, `fingerprint_s`. Callers may pass an
+optional `portable=False` keyword; existing callers do not.
+
+Callers may still pass a `.jsonl` path. Opening an existing JSONL file
+**migrates automatically** into SQLite (round trip: same `get()` hits).
+New caches may use `.sqlite` directly. Namespace and fingerprint
+semantics (binary + argv-named files/dirs; `{input}` skipped; sidecar
+memo; namespaces manifest) stay the same.
+
+### Default keys: absolute paths plus digests
+
+The default namespace still hashes `kind`, argv strings, and each
+input component as `(kind, absolute path, digest)`. Identical file
+bytes at different absolute paths (including the same content on two
+machines) **never** share a cache. That is the safe default for a
+laptop vs CARC vs a lab NFS copy.
+
+### Opt-in `portable=True`
+
+`portable=True` keys on **digests only** (component kind + digest; argv
+path tokens are neutralized to those digests). Absolute paths do not
+enter the namespace. Intended for a **shared lab cache** when everyone
+agrees the files are the same content.
+
+Risk (stated):
+
+- **Intended share:** two machines, same Pfam-A bytes, different
+  install paths → same namespace, rows reused.
+- **Unsafe share:** content-identical files at different paths that are
+  *not* the same logical input (or binaries whose *bytes* match but
+  whose behavior depends on install path / sibling config) collide.
+  Portable mode will share rows in both the intended case and this
+  unsafe case. Default (path + digest) mode does not.
+
+Expected tests (written before the code): two processes writing at once
+lose no rows; JSONL → SQLite migration round-trips `get()` hits;
+portable mode shares across two paths with identical content; existing
+`test_cache_keys.py` cases still hold.

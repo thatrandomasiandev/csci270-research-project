@@ -11,8 +11,22 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from acts.cache import UNREADABLE, FingerprintMemo, RecordCache, fingerprint_inputs
+from acts.cache import UNREADABLE, FingerprintMemo, RecordCache, fingerprint_inputs, sqlite_path_for
 from acts.infer_vcf import substitute_argv
+
+
+def _store_has_ns(path: Path, ns: str) -> bool:
+    import sqlite3
+
+    db = sqlite_path_for(path)
+    if not db.is_file():
+        return False
+    conn = sqlite3.connect(str(db))
+    try:
+        row = conn.execute("SELECT 1 FROM records WHERE ns=? LIMIT 1", (ns,)).fetchone()
+        return row is not None
+    finally:
+        conn.close()
 
 
 class CacheKeyTests(unittest.TestCase):
@@ -53,7 +67,7 @@ class CacheKeyTests(unittest.TestCase):
         self.assertIsNone(c2.get("a"))
         c2.put("b", "B")
         c2.save()
-        self.assertIn(old_ns, self.cache.read_text())
+        self.assertTrue(_store_has_ns(self.cache, old_ns))
 
     def test_equals_form_is_fingerprinted(self) -> None:
         argv = ["cat", f"--db={self.db}"]
@@ -198,7 +212,7 @@ class CacheKeyTests(unittest.TestCase):
         self.assertIsNone(c2.get("a"))
         dir_comp = next(c for c in c2.inputs if c["kind"] == "dir")
         self.assertTrue(any("broken" in err for err in dir_comp.get("errors", [])))
-        self.assertIn(old_ns, self.cache.read_text())
+        self.assertTrue(_store_has_ns(self.cache, old_ns))
 
 
 if __name__ == "__main__":
