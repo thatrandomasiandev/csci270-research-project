@@ -64,9 +64,12 @@ the ruff erratum.
 `--cache C` (optional) sets miss fraction *m* from keys already in *C*
 for this argv. Omit it and *m* is first-run unique_frac.
 
-Predicted speedup in the JSON is the screen-rule **ceiling(m)** and
-**does not include probe cost P**. That formula is Agent A’s; this
-tree stubs it until merge.
+Predicted speedup in the JSON **includes probe cost P**
+(`P = Σ (a + b·n_i)` over the batched inference schedule).
+`ceiling_m` is the **P-free** screen ratio used for SHIP/REFUSE.
+`lines` have no field-role inference, so `P = 0`.
+FASTA alignment extras are omitted (same as the HMMER tab-delimited
+prediction). See `docs/INFERENCE_PROTOCOL.md` addendum 2026-09-27.
 
 ## `--verify audit`
 

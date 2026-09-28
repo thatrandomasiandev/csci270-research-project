@@ -2,8 +2,10 @@
 
 Engineering wrapper around the locked screen rule in
 ``docs/TOOL_SCREEN.md`` (erratum) / ``docs/HEADLINE_SCREEN.md``.
-Not a new method. Probe cost *P* is a stub until Agent A's batched
-subset-invariance formula is merged; this module does not invent it.
+Not a new method. Probe cost *P* is Agent A's batched subset-invariance
+schedule: ``P = Σ_i (a + b · n_i)`` over inference tool calls
+(``docs/INFERENCE_PROTOCOL.md`` addendum 2026-09-27;
+``scripts/predict_hmmer_probe_cost.py``).
 """
 
 from __future__ import annotations
@@ -30,10 +32,15 @@ CEILING_MIN = 3.0
 SAVED_MIN_S = 60.0
 M_GATE = 1.0 / 3.0
 SCREEN_LADDER = (1, 50, 200, 800, 1000, 5000, 20000)
+PROBE_N = 500
+N_BATCHED_SINGLETONS = 8
 PROBE_COST_NOTE = (
-    "stub: probe cost P is not computed here. Agent A's batched "
-    "subset-invariance formula is not in this tree. Do not treat "
-    "ceiling(m) as P-adjusted speedup. Wire the real P after merge."
+    "P = sum_i (a + b * n_i) over first-run inference calls. "
+    "vcf/fasta: 4 full-probe runs (trace, determinism, perturbation, "
+    "shuffle) plus batched subset (2 halves, 4 quarters, 8 singletons); "
+    "independent of probe_n for n ≥ 8. lines: no field-role inference, P=0. "
+    "FASTA alignment extras omitted (tab-delimited HMMER path). "
+    "ceiling_m is the P-free screen ratio; predicted_speedup includes P."
 )
 
 _NOOP_CODE = (
@@ -84,6 +91,37 @@ def fit_ab(ns: list[int], ts: list[float]) -> tuple[float, float]:
     cov = sum((n - n_bar) * (t - t_bar) for n, t in zip(ns, ts))
     b = cov / var_n
     return t_bar - b * n_bar, b
+
+
+def inference_call_sizes(
+    kind: str,
+    n: int,
+    *,
+    probe_n: int = PROBE_N,
+    subset_mode: str = "batched",
+) -> list[int]:
+    """Record counts per inference tool call. Same schedule as predict_hmmer_probe_cost.
+
+    *n* is the full input size; the probe uses ``k = min(probe_n, n)``.
+    """
+    if kind == "lines" or n <= 0:
+        return []
+    k = min(probe_n, n)
+    if k <= 0:
+        return []
+    if subset_mode == "singleton":
+        return [k, k, k, k] + [1] * k
+    sizes = [k, k, k, k]
+    h, r = divmod(k, 2)
+    sizes.extend([h + (1 if i < r else 0) for i in range(2)])
+    q, r4 = divmod(k, 4)
+    sizes.extend([q + (1 if i < r4 else 0) for i in range(4)])
+    sizes.extend([1] * min(N_BATCHED_SINGLETONS, k))
+    return [s for s in sizes if s > 0]
+
+
+def probe_cost_s(a: float, b: float, sizes: list[int]) -> float:
+    return sum(a + b * ni for ni in sizes)
 
 
 def ceiling(a: float, b: float, n: int, m: float, w: float) -> float | None:
@@ -332,8 +370,11 @@ class PredictReport:
     reason: str
     predicted_speedup: float | None
     predicted_speedup_includes_P: bool
-    probe_cost_P: None
+    probe_cost_P: float
     probe_cost_note: str
+    probe_n: int
+    subset_mode: str
+    probe_call_sizes: list[int]
     timed_runs: list[dict]
 
     def as_dict(self) -> dict:
@@ -349,6 +390,8 @@ def run_predict(
     seed: int = SEED,
     runs: int = RUNS,
     work: Path | None = None,
+    probe_n: int = PROBE_N,
+    subset_mode: str = "batched",
 ) -> PredictReport:
     if kind not in {"vcf", "fasta", "lines"}:
         raise PredictError(f"unknown kind {kind!r}")
@@ -381,6 +424,12 @@ def run_predict(
     ratio = ceiling(a, b, n, m, w)
     saved = saved_s(a, b, n, m, w)
     decision, reason = recommend(a, b, n, m, w)
+    call_sizes = inference_call_sizes(
+        kind, n, probe_n=probe_n, subset_mode=subset_mode
+    )
+    p = probe_cost_s(a, b, call_sizes)
+    cached_with_p = cached_wall + p
+    speedup = stock / cached_with_p if cached_with_p > 0 else None
     return PredictReport(
         kind=kind,
         input=str(input_path),
@@ -399,9 +448,12 @@ def run_predict(
         saved_s=saved,
         decision=decision,
         reason=reason,
-        predicted_speedup=ratio,
-        predicted_speedup_includes_P=False,
-        probe_cost_P=None,
+        predicted_speedup=speedup,
+        predicted_speedup_includes_P=True,
+        probe_cost_P=p,
         probe_cost_note=PROBE_COST_NOTE,
+        probe_n=min(probe_n, n) if n else 0,
+        subset_mode=subset_mode,
+        probe_call_sizes=call_sizes,
         timed_runs=timed,
     )

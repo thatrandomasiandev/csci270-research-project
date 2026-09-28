@@ -18,7 +18,9 @@ from acts.predict import (
     SAVED_MIN_S,
     ceiling,
     fit_ab,
+    inference_call_sizes,
     miss_fraction,
+    probe_cost_s,
     recommend,
     record_keys,
     run_predict,
@@ -122,6 +124,34 @@ class MissFractionTests(unittest.TestCase):
         self.assertAlmostEqual(m, 0.5)
 
 
+class ProbeCostTests(unittest.TestCase):
+    def test_lines_have_no_inference_calls(self) -> None:
+        self.assertEqual(inference_call_sizes("lines", 1000), [])
+        self.assertEqual(probe_cost_s(32.0, 0.7, []), 0.0)
+
+    def test_batched_schedule_independent_of_probe_n(self) -> None:
+        for k in (50, 200, 500, 2000):
+            sizes = inference_call_sizes("vcf", 10_000, probe_n=k)
+            self.assertEqual(len(sizes), 18, msg=k)
+        s500 = inference_call_sizes("vcf", 5000, probe_n=500)
+        self.assertEqual(s500[:4], [500, 500, 500, 500])
+        self.assertEqual(s500[4:6], [250, 250])
+        self.assertEqual(s500[6:10], [125, 125, 125, 125])
+        self.assertEqual(s500[10:], [1] * 8)
+
+    def test_singleton_grows_with_k(self) -> None:
+        sizes = inference_call_sizes(
+            "vcf", 1000, probe_n=50, subset_mode="singleton"
+        )
+        self.assertEqual(len(sizes), 54)
+
+    def test_P_matches_sum_a_plus_bn(self) -> None:
+        sizes = inference_call_sizes("fasta", 4192, probe_n=500)
+        a, b = 31.96, 0.723
+        p = probe_cost_s(a, b, sizes)
+        self.assertAlmostEqual(p, sum(a + b * n for n in sizes))
+
+
 class PredictCliTests(unittest.TestCase):
     def test_probe_still_works(self) -> None:
         code, payload = _cli(["probe", "--kind", "lines", "--input", str(LINE_IN)])
@@ -137,9 +167,10 @@ class PredictCliTests(unittest.TestCase):
         self.assertEqual(payload["kind"], "lines")
         self.assertEqual(payload["n"], 8)
         self.assertEqual(payload["sizes"], [1, 4, 8])
-        self.assertFalse(payload["predicted_speedup_includes_P"])
-        self.assertIsNone(payload["probe_cost_P"])
-        self.assertIn("stub", payload["probe_cost_note"].lower())
+        self.assertTrue(payload["predicted_speedup_includes_P"])
+        self.assertEqual(payload["probe_cost_P"], 0.0)
+        self.assertEqual(payload["probe_call_sizes"], [])
+        self.assertNotIn("stub", payload["probe_cost_note"].lower())
         self.assertIn(payload["decision"], {"SHIP", "REFUSE"})
         self.assertEqual(payload["decision"], "REFUSE")
 

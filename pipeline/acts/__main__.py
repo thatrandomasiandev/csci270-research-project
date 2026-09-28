@@ -151,10 +151,14 @@ def cmd_predict(args: argparse.Namespace) -> int:
     print(f"decision: {report.decision}")
     print(f"why:      {report.reason}")
     if report.predicted_speedup is not None:
-        print(
-            f"ceiling:  {report.predicted_speedup:.3f}×  "
-            "(P omitted — Agent A formula not merged)"
+        extra = (
+            f"  predicted={report.predicted_speedup:.3f}× with P="
+            f"{report.probe_cost_P:.3f}s"
         )
+        ceil = (
+            f"{report.ceiling_m:.3f}×" if report.ceiling_m is not None else "n/a"
+        )
+        print(f"ceiling:  {ceil} (P-free screen){extra}")
     return 0
 
 
