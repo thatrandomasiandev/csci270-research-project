@@ -487,3 +487,84 @@ unfingerprinted — stated limitation.
 | Decision | When |
 |----------|------|
 | `REFUSE_AUDIT` | `--verify audit` and a sampled hit’s re-execution ≠ cached reassembly |
+
+---
+
+## Addendum 2026-09-27 — batched subset-invariance
+
+Written **before** implementing batched subset-invariance or re-running
+`probe_eval` under the new probe. Locked sections above are unchanged.
+
+The 2026-09-26 subset-invariance probe is sound but too expensive for
+high-startup tools: it runs every sampled record alone, so `probe_n=500`
+costs about 500 singleton tool startups before any cached run can save time.
+For HMMER-scale startup costs, that can dominate the run.
+
+### Batched subset-invariance (all record formats)
+
+Replace the singleton-only `(b2)` check in the default inference path with a
+batched check over the same random probe sample of `k` records:
+
+1. Reuse the full-probe output from the determinism probe.
+2. Split the probe into **2 random halves** with fixed seed `20260927`, run
+   the tool once per half, and align output by the format key.
+3. Split the probe into **4 random quarters** with the same seed family, run
+   the tool once per quarter, and align output by key.
+4. Draw **s = 8 random singleton records** from the probe, run each alone,
+   and align by key.
+
+For every record observed in any smaller batch, compare that record’s output
+against the full-probe output. If it differs under the format’s body MATCH
+(`variant_key` line for VCF; grouped body lines for FASTA→table), return
+`REFUSE_GLOBAL`.
+
+The expected tool-call count for subset-invariance becomes:
+
+```
+1 full probe already paid by determinism
++ 2 halves
++ 4 quarters
++ 8 singletons
+= 15 comparable batch sizes, only 14 additional calls after the full probe
+```
+
+This cost is independent of `probe_n`. The old singleton check remains
+available behind an explicit comparison flag and is not the default.
+
+### Expected catch
+
+For F3/global-dependence faults in `fixtures/probe_eval`, batched
+subset-invariance is expected to catch the same cells as singleton
+subset-invariance at every fault frequency, because the faulty value depends
+on batch size and should move between the full probe and any half, quarter,
+or singleton containing a live record.
+
+Expected non-effects:
+
+- F1/F7 nondeterminism still caught by determinism/audit.
+- F2/F8 neighbor/order leakage still caught by shuffle.
+- F4/F5 field-role misses are not expected to improve unless their live
+  records land in the probe and perturbation exposes them.
+- F6-env remains outside the guarantee; F6-file remains a Linux tracing
+  question.
+
+### Pre-registered comparison
+
+Re-run `probe_eval` in `--verify audit` mode, fixed seeds, for both subset
+probes:
+
+| Variant | Subset probe | Purpose |
+|---------|--------------|---------|
+| `singleton` | old `k` singleton runs | upper-cost reference |
+| `batched` | full + 2 halves + 4 quarters + 8 singletons | deployable default |
+
+For each `probe_n ∈ {50, 200, 500, 2000}`, report:
+
+- in-scope unsafe-ship rate (excluding F6-env and F6-file),
+- per-class unsafe-ship, especially F3,
+- false-refuse on controls,
+- total inference tool calls recorded in the contract JSON,
+- audit contribution vs probe-only contribution.
+
+Results must go to new files and new uniquely numbered figures; do not
+overwrite `probe_eval.json`, `probe_eval_audit.json`, or existing figures.
