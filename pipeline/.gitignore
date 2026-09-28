@@ -4,6 +4,7 @@ data/
 data_cache/
 data_probe/
 data_compare/
+data_carcjobs/
 tools/
 builds/
 __pycache__/
