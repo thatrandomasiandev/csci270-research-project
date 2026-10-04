@@ -1,0 +1,24 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "git": "1a048afa480c0d89dcce9ebc735e96015671f03d",
+  "seed": 20261003,
+  "hmmer": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "queries": 300,
+  "models_full": 4871,
+  "models_halves": [
+    2435,
+    2436
+  ],
+  "powered": true,
+  "hits_full": 578,
+  "hits_union": 578,
+  "check1_hitset_equal": true,
+  "check2_unnormalized_mismatches": 0,
+  "evalue_tokens": 1156,
+  "evalue_byte_reproducible": 724,
+  "evalue_consistent_within_print": 1156,
+  "examples": [],
+  "kill_rule": "check1 false or check2 mismatches > 0",
+  "killed": false,
+  "finished_utc": "2026-10-04T01:49:21.727320+00:00"
+}
