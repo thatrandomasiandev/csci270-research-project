@@ -79,3 +79,25 @@ still pass after any script is added.
 No CARC timing and no claim of speedup. R1's projected re-annotation saving
 is a PROJECTION (changed fraction of models; `hmmscan` cost is dominated by
 b·N, which scales with the number of models).
+
+## Addendum 2026-10-03 — R2 as registered was underpowered; powered rerun
+
+Written after the registered R2 ran and **before** the powered run below.
+
+The registered R2 (400 random models, 300 proteins) produced only **5
+hits** (`results/reference_kill_r2_underpowered.json`): hit set equal, 0
+unnormalized mismatches, E-values 10/10 consistent and 5/10
+byte-reproducible. With 5 hits it cannot support a conclusion, so it is
+kept as recorded and not counted.
+
+**Powered R2 (R2p).** Same checks and kill rule. Changes:
+
+- Models: every Pfam 38.2 model that hit genome 1 in the CARC stock run
+  (`results/reference_kill_g1_hit_models.txt`: 3,871 names, from
+  `savings_failed_20260928/tblout/A_hmmscan_01_stock.tbl` on CARC) plus
+  1,000 random other models (seed 20261003). Total Z_R = 4,871.
+- Split: two random halves of those 4,871 (seed 20261003).
+- Proteins: the same 300-protein sample as R2.
+
+Selecting models that hit is deliberate: decomposition can only fail on
+hits. It does not bias checks 1–2, which compare runs on identical inputs.
