@@ -101,3 +101,32 @@ kept as recorded and not counted.
 
 Selecting models that hit is deliberate: decomposition can only fail on
 hits. It does not bias checks 1–2, which compare runs on identical inputs.
+
+## Addendum 2026-10-03 — outcomes of R1 and R2p (results; rules unchanged)
+
+**R2p** (`results/reference_kill_r2p.json`, `afcb119`): 578 hits. The
+union of hits from the two halves equals the full run (check 1). There are
+0 mismatches outside the E-value columns (check 2). All 1,156 E-values are
+consistent with E_full = E_half · Z_full / Z_half within print rounding,
+and 724 (62.6%) are byte-reproducible (check 3). **Not killed.** By the
+pre-registered branch for check 3, the claim form is: reuse is **exact for
+the hit set and all unnormalized columns**. Normalized fields are
+consistent with the inferred normalizer only up to HMMER's printed
+precision; exact values need the unrounded P-values the black box does not
+print. Fixing Z on the command line (`hmmscan -Z`) would make E-values
+release-stable, but that is a user choice of flags, not something ACTS
+infers. It is reported as an option, not as the method.
+
+**R1** (`results/reference_kill_r1.json`): Pfam 38.1 → 38.2. Z goes from
+27,481 to 30,134 models (2,674 added, 21 removed). **86.6%** of the newer
+release's models are unchanged under the strict hash (87.1% body-only).
+**Not killed** (threshold 50%).
+
+**Projection (PROJECTED, not measured).** Re-annotating a proteome after
+this release needs hmmscan only against the 4,052 new or changed models
+(13.4% of Z_new). Assume hmmscan cost scales with the number of models
+searched (b·N dominates, as measured in `headline_screen.json`) and per-model
+cost is uniform. Then cost falls to about 13.4% of a stock run, plus the
+merge and rescale, which gives about **7.4×** per re-annotation. Per-model
+cost is not uniform, so a measured re-annotation across 38.1 → 38.2 is
+required before any number is claimed.

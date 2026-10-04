@@ -1,0 +1,18 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "git": "3e27a0e53fa0d7f7a26509d80ce492d6d6e8ce32",
+  "old_release": "Pfam 38.1",
+  "new_release": "Pfam 38.2",
+  "z_old": 27481,
+  "z_new": 30134,
+  "added": 2674,
+  "removed": 21,
+  "shared": 27460,
+  "unchanged_strict": 26082,
+  "unchanged_body": 26253,
+  "frac_new_unchanged_strict": 0.8655339483639742,
+  "frac_new_unchanged_body": 0.8712086015796111,
+  "kill_rule": "frac_new_unchanged_strict < 0.5",
+  "killed": false,
+  "finished_utc": "2026-10-04T02:00:22.580226+00:00"
+}
