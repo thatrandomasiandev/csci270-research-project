@@ -30,3 +30,24 @@ VEP MATCH is the **record body**, not full-file `cmp`. Overlap is `-c1` per-samp
 - Not KumQuat (split, no cache) and not Oculus (hand-built, not `cmp`).
 - Not “first automatic cache keys” and not “first statistical cache audit.”
 - Not the graded STAR source 2×.
+
+## Addendum 2026-10-03 — reference-side MATCH type `ref-merge`
+
+Reference-side reuse (a new reference release reuses results for unchanged
+entries) is accepted under **`ref-merge`**, not `cmp`. The full definition
+is in `docs/REFERENCE_INCREMENTAL_PROTOCOL.md`.
+
+Under `ref-merge`:
+
+- Hit and domain sets and every unnormalized column are byte-identical.
+- Normalized columns are consistent with the inferred normalizer only
+  within printed precision.
+- Columns with no fitting normalizer are recomputed, not reused (hmmscan
+  c-Evalue).
+
+It is never described as byte-identical.
+
+Scope: score-thresholded modes only (`--cut_ga`). The E-value-thresholded
+negative control fails the decomposition test, as required
+(`results/reference_kill_r2n.json`). Re-annotation speedup is PROJECTED
+until a measured 38.1 → 38.2 run exists.
