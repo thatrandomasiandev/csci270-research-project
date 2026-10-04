@@ -16,6 +16,19 @@ Orientation: [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md).
 - Do **not** resurrect RM-decay work into the course deliverable (`archive/rm-decay-vs-overopt/` is lab/PhD only).
 - Prefer measurable progress every session: profile → hypothesize → patch → benchmark → update `STATUS.md`.
 
+## Review standard (Principal Architect / PC chair)
+
+Every ACTS design, critique or proposal is judged as an OSDI/SOSP/PLDI PC chair would judge it. Worked application: [`pipeline/docs/ARCHITECT_REVIEW.md`](pipeline/docs/ARCHITECT_REVIEW.md).
+
+1. **Amdahl first.** Split runtime into wrapper `w`, startup `a`, per-record `b·n`, probe `P` (`acts/predict.py` model). Name the dominant term before designing anything. No micro-optimization of a term under 5% of runtime.
+2. **Generic primitives.** Records, delimiters, key vs pass-through vs produced fields, cross-record state. Per-format parsers are fine; per-tool code is not. Credit borrowed mechanisms (group testing, property testing, Dune audit) and do not claim them as novel.
+3. **Formal, not invented.** State assumptions, then derive closed forms (`T = a + b·n`, `(1-p)^n` probe miss, cumulative `S(K)`). No fake theorems.
+4. **Inference vs refusal.** Perturbation that changes only copied fields → pass-through; produced-field change → widen the key. Refuse only for nondeterminism (F1/F7), neighbor/order (F2/F8), global state (F3). F6 is a stated limitation.
+5. **Empirical integrity.** Every number is MEASURED (committed file) or PROJECTED (formula + assumptions). Strongest baselines (tool's own cache, Riker/ProcessCache, INCR). Every safety proposal has a kill experiment **and** ship controls (SnpEff MATCH 52,638; fill-tags widening) that must still ship.
+6. **Red-team.** Name the 3 most dangerous reviewer attacks and the exact proof or experiment that defeats each.
+
+Required output shape when asked for a review: (1) cost decomposition + Amdahl target, (2) core abstraction + ≥3 domains split TESTED / HYPOTHESIZED, (3) formal model + invariants, (4) algorithm with widen-vs-refuse handling, (5) red-team + kill experiments + ship controls.
+
 ## Session protocol
 
 1. Read [`STATUS.md`](STATUS.md) and [`star/docs/SCOPE.md`](star/docs/SCOPE.md) (create SCOPE if missing).
