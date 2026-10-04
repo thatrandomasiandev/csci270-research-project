@@ -1,0 +1,18 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "git": "8c52c9f66c66a3236bc92f93721e9bdd2a883261",
+  "seed": 20261004,
+  "models_full": 4871,
+  "domain_lines_full": 511,
+  "domain_lines_union": 511,
+  "check1_domain_set_equal": true,
+  "check2_unnormalized_mismatches": 0,
+  "n_lines": 511,
+  "consistent": {
+    "full_seq_E": 511,
+    "i_Evalue": 511,
+    "c_Evalue": 511
+  },
+  "c_Evalue_reusable_tbl_domZ": true,
+  "finished_utc": "2026-10-04T02:05:14.696771+00:00"
+}

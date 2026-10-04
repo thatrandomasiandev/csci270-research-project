@@ -240,3 +240,16 @@ with seed **20261004**. Run `hmmscan --cut_ga` with both `--tblout` and
 reusable with the tblout-domZ normalizer, which is data-dependent and
 recomputed from the merged per-sequence hit set. If any line fails,
 c-Evalue stays not reusable.
+
+## Addendum 2026-10-03 — R3c outcome (result; rule applied as registered)
+
+`results/reference_kill_r3c.json` (fresh seed 20261004): 511 domain lines;
+the union equals the full run; 0 unnormalized mismatches. **511/511**
+consistent for full-sequence E (Z), i-Evalue (Z), and c-Evalue
+(domZ = per-sequence reported targets for the query, from tblout). Per the
+R3c rule, **c-Evalue is reclassified as reusable** with that data-dependent
+normalizer, recomputed from the merged per-sequence hit set.
+
+`ref-merge` now covers every domtblout column: domain sets and unnormalized
+columns byte-exact; full-sequence E and i-Evalue rescaled by Z; c-Evalue
+rescaled by per-query domZ. All three are within printed precision.
