@@ -1,0 +1,183 @@
+{
+  "protocol": "pipeline/docs/CONTENT_KEY_PROTOCOL.md",
+  "git": "887ffdc5c6baa9446629cbee5bbf9fca841e174e",
+  "started_utc": "2026-10-04T00:45:28.737788+00:00",
+  "finished_utc": "2026-10-04T00:45:41.648144+00:00",
+  "byte_key": "sha256 of whole record (VCF body line; FASTA header + sequence)",
+  "inferred_key": "VCF variant_key (CHROM POS REF ALT); FASTA seq_key (MD5 of uppercase sequence, * stripped)",
+  "vcf": {
+    "workload": "HG00096 \u222a HG00097 -> HG00099 (-c1)",
+    "byte_recall": 0.4383145256278734,
+    "inferred_recall": 0.7873969375736161,
+    "ratio": 0.5566627258908967
+  },
+  "genbank_proteins": {
+    "genomes": [
+      "GCA_002853805.1",
+      "GCA_002090355.1",
+      "GCA_016659085.1",
+      "GCA_041316645.1",
+      "GCA_013201215.1",
+      "GCA_054510725.1",
+      "GCA_002058765.1"
+    ],
+    "curve": [
+      {
+        "k": 1,
+        "accession": "GCA_002090355.1",
+        "n_records": 4294,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.41217634709587125,
+        "ratio": 0.0
+      },
+      {
+        "k": 2,
+        "accession": "GCA_016659085.1",
+        "n_records": 4197,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.5982249940033582,
+        "ratio": 0.0
+      },
+      {
+        "k": 3,
+        "accession": "GCA_041316645.1",
+        "n_records": 5160,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.5871523697610654,
+        "ratio": 0.0
+      },
+      {
+        "k": 4,
+        "accession": "GCA_013201215.1",
+        "n_records": 4261,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.6620689655172414,
+        "ratio": 0.0
+      },
+      {
+        "k": 5,
+        "accession": "GCA_054510725.1",
+        "n_records": 4739,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.5535181236673774,
+        "ratio": 0.0
+      },
+      {
+        "k": 6,
+        "accession": "GCA_002058765.1",
+        "n_records": 5058,
+        "byte_recall": 0.0,
+        "inferred_recall": 0.4052907915993538,
+        "ratio": 0.0
+      }
+    ]
+  },
+  "refseq_proteins_control": {
+    "genomes": [
+      "GCF_002853805.1",
+      "GCF_002090355.1",
+      "GCF_001650275.1",
+      "GCF_052050745.1",
+      "GCF_016659085.1",
+      "GCF_041316645.1",
+      "GCF_013201215.1",
+      "GCF_054510725.1",
+      "GCF_002058765.1",
+      "GCF_003956185.1"
+    ],
+    "curve": [
+      {
+        "k": 1,
+        "accession": "GCF_002090355.1",
+        "n_records": 4091,
+        "byte_recall": 0.42507944267905157,
+        "inferred_recall": 0.42507944267905157,
+        "ratio": 1.0
+      },
+      {
+        "k": 2,
+        "accession": "GCF_001650275.1",
+        "n_records": 5176,
+        "byte_recall": 0.31916537867078826,
+        "inferred_recall": 0.31993817619783615,
+        "ratio": 0.997584541062802
+      },
+      {
+        "k": 3,
+        "accession": "GCF_052050745.1",
+        "n_records": 4197,
+        "byte_recall": 0.6235406242554206,
+        "inferred_recall": 0.6499880867286156,
+        "ratio": 0.9593108504398828
+      },
+      {
+        "k": 4,
+        "accession": "GCF_016659085.1",
+        "n_records": 4191,
+        "byte_recall": 0.9696969696969697,
+        "inferred_recall": 0.9713672154617037,
+        "ratio": 0.9982805207565708
+      },
+      {
+        "k": 5,
+        "accession": "GCF_041316645.1",
+        "n_records": 5124,
+        "byte_recall": 0.5727946916471507,
+        "inferred_recall": 0.615144418423107,
+        "ratio": 0.9311548223350254
+      },
+      {
+        "k": 6,
+        "accession": "GCF_013201215.1",
+        "n_records": 4228,
+        "byte_recall": 0.6769157994323557,
+        "inferred_recall": 0.6790444654683065,
+        "ratio": 0.9968652037617554
+      },
+      {
+        "k": 7,
+        "accession": "GCF_054510725.1",
+        "n_records": 4697,
+        "byte_recall": 0.5541835213966362,
+        "inferred_recall": 0.5769640195869704,
+        "ratio": 0.9605166051660518
+      },
+      {
+        "k": 8,
+        "accession": "GCF_002058765.1",
+        "n_records": 4846,
+        "byte_recall": 0.4909203466776723,
+        "inferred_recall": 0.49277754849360295,
+        "ratio": 0.9962311557788945
+      },
+      {
+        "k": 9,
+        "accession": "GCF_003956185.1",
+        "n_records": 4734,
+        "byte_recall": 0.6487114490916772,
+        "inferred_recall": 0.6501901140684411,
+        "ratio": 0.99772579597141
+      }
+    ]
+  },
+  "skipped": [
+    {
+      "gcf": "GCF_001650275.1",
+      "gca": "GCA_001650275.1",
+      "why": "no GenBank protein.faa"
+    },
+    {
+      "gcf": "GCF_052050745.1",
+      "gca": "GCA_052050745.1",
+      "why": "no GenBank protein.faa"
+    },
+    {
+      "gcf": "GCF_003956185.1",
+      "gca": "GCA_003956185.1",
+      "why": "no GenBank protein.faa"
+    }
+  ],
+  "downloaded_bytes": 6814369,
+  "kill_rule": "byte/inferred >= 0.9 on BOTH vcf and GenBank (last k)",
+  "differentiator_killed": false
+}

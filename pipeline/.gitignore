@@ -19,3 +19,4 @@ __pycache__/
 fixtures/fat_copy/stock
 fixtures/fat_copy/opt
 .DS_Store
+data_contentkey/
