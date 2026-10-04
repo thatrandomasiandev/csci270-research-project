@@ -98,9 +98,12 @@ def write_models(blocks: list[list[str]], path: Path) -> Path:
     return path
 
 
-def tblout(hmm: Path, fa: Path, work: Path, tag: str) -> dict[tuple[str, str], list[str]]:
+def tblout(
+    hmm: Path, fa: Path, work: Path, tag: str, cut_ga: bool = True
+) -> dict[tuple[str, str], list[str]]:
     out = work / f"{tag}.tbl"
-    run(["hmmscan", "--cpu", "4", "--cut_ga", "--noali", "--tblout", str(out), str(hmm), str(fa)])
+    thresh = ["--cut_ga"] if cut_ga else []
+    run(["hmmscan", "--cpu", "4", *thresh, "--noali", "--tblout", str(out), str(hmm), str(fa)])
     hits: dict[tuple[str, str], list[str]] = {}
     for line in out.read_text().splitlines():
         if line.startswith("#") or not line.strip():
@@ -131,7 +134,7 @@ def half_ulp(printed: str) -> float:
     return 0.5 * 10 ** (-dec) * (10 ** int(exp) if exp else 1)
 
 
-def r2(work: Path, powered: bool = False) -> dict:
+def r2(work: Path, powered: bool = False, cut_ga: bool = True) -> dict:
     work.mkdir(parents=True, exist_ok=True)
     rng = random.Random(SEED)
     recs = parse_fasta(gzip.open(ROOT / "data" / "recurrence" / "A" / "GCF_002853805.1_protein.faa.gz", "rt").read())
@@ -150,9 +153,9 @@ def r2(work: Path, powered: bool = False) -> dict:
     rng.shuffle(idx)
     half1 = [chosen[i] for i in idx[: n_models // 2]]
     half2 = [chosen[i] for i in idx[n_models // 2 :]]
-    full = tblout(write_models(chosen, work / "R.hmm"), fa, work, "R")
-    h1 = tblout(write_models(half1, work / "R1.hmm"), fa, work, "R1")
-    h2 = tblout(write_models(half2, work / "R2.hmm"), fa, work, "R2")
+    full = tblout(write_models(chosen, work / "R.hmm"), fa, work, "R", cut_ga)
+    h1 = tblout(write_models(half1, work / "R1.hmm"), fa, work, "R1", cut_ga)
+    h2 = tblout(write_models(half2, work / "R2.hmm"), fa, work, "R2", cut_ga)
     z_full = n_models
     union = {**h1, **h2}
     hitset_ok = set(full) == set(union)
@@ -185,7 +188,9 @@ def r2(work: Path, powered: bool = False) -> dict:
         "protocol": PROTOCOL, "git": git_head(), "seed": SEED,
         "hmmer": run(["hmmscan", "-h"]).splitlines()[1],
         "queries": 300, "models_full": z_full, "models_halves": [len(half1), len(half2)],
-        "powered": powered,
+        "powered": powered, "cut_ga": cut_ga,
+        "hits_only_in_union": len(set(union) - set(full)),
+        "hits_only_in_full": len(set(full) - set(union)),
         "hits_full": len(full), "hits_union": len(union),
         "check1_hitset_equal": hitset_ok,
         "check2_unnormalized_mismatches": col_mismatch,
@@ -197,7 +202,7 @@ def r2(work: Path, powered: bool = False) -> dict:
         "killed": (not hitset_ok) or col_mismatch > 0,
         "finished_utc": datetime.now(timezone.utc).isoformat(),
     }
-    name = "reference_kill_r2p.json" if powered else "reference_kill_r2.json"
+    name = ("reference_kill_r2p.json" if cut_ga else "reference_kill_r2n.json") if powered else "reference_kill_r2.json"
     (ROOT / "results" / name).write_text(json.dumps(out, indent=2) + "\n")
     return out
 
@@ -206,8 +211,8 @@ if __name__ == "__main__":
     which = sys.argv[1]
     if which == "r1":
         print(json.dumps(r1(), indent=1))
-    elif which in ("r2", "r2p"):
-        res = r2(Path(sys.argv[2]), powered=(which == "r2p"))
+    elif which in ("r2", "r2p", "r2n"):
+        res = r2(Path(sys.argv[2]), powered=(which != "r2"), cut_ga=(which != "r2n"))
         print(json.dumps({k: v for k, v in res.items() if k != "examples"}, indent=1))
         print(json.dumps(res["examples"], indent=1))
     else:

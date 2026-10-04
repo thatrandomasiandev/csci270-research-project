@@ -130,3 +130,54 @@ cost is uniform. Then cost falls to about 13.4% of a stock run, plus the
 merge and rescale, which gives about **7.4×** per re-annotation. Per-model
 cost is not uniform, so a measured re-annotation across 38.1 → 38.2 is
 required before any number is claimed.
+
+## Addendum 2026-10-03 — scope, negative control, domtblout, MATCH type
+
+Written **before** R2n and R3 run. It follows a soundness review by the
+parallel ACTS session.
+
+### Scope of the R2p result
+
+R2p's hit-set equality holds **because `--cut_ga` thresholds on bit
+score**, which does not depend on database size. Under HMMER's default
+E-value reporting thresholds (`-E 10`, `--domE 10`), a smaller database
+(smaller Z) gives smaller E-values and admits extra hits near the
+boundary. The claim is therefore scoped to **score-thresholded modes**.
+
+### R2n — negative control (must FAIL check 1)
+
+Identical to R2p (same 300 proteins, same 4,871 models, same split), but
+**without `--cut_ga`**, i.e. default E-value thresholds. **Expected:**
+check 1 fails, with the union of the halves' hits a strict superset of the
+full run's hits. If R2n *passes* check 1, the decomposition test cannot
+tell a coupled normalizer from an uncoupled one, and R2p's pass carries no
+weight.
+
+### R3 — per-domain output (`--domtblout`), two candidate normalizers
+
+R2p tested `--tblout` only. R3 runs `hmmscan --cut_ga --domtblout` on the
+R2p inputs and checks, per domain line (query, model, domain index):
+
+1. The domain-line set of the full run equals the union of the halves.
+2. Every column other than the domain E-value columns (c-Evalue, i-Evalue)
+   is identical.
+3. For each domain E-value column, two candidate normalizers are tested
+   from the data, without assuming HMMER's documentation:
+   - **Z**, the number of models in the database searched;
+   - **domZ**, the number of targets reported for that query in that run
+     (data-dependent, recomputed from the merged hit set).
+
+   A column is assigned the normalizer under which all its values are
+   consistent within print tolerance. If neither fits, that column is
+   **not reusable** and must be recomputed.
+
+**Kill rule R3:** if check 1 or 2 fails, domtblout is not
+reference-decomposable, and the claim is restricted to `--tblout`.
+
+### MATCH type for reference-side reuse (declared)
+
+**`ref-merge`**: byte-identical for the hit set and every unnormalized
+column; normalized columns (`tblout` E-values, and any domtblout column
+assigned a normalizer in R3) are equal **within the printed precision**
+after rescaling. It is a distinct, weaker relation than `byte`, `order` or
+`multiset`. No reference-side result may be described as byte-identical.
