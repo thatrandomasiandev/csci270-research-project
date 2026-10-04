@@ -322,3 +322,26 @@ CARC hour:
 2. Run the confirmatory hmmscan.
 3. Run INCR head-to-head.
 4. Run Mordred.
+
+---
+
+## Correction 2026-10-03 (after `d5c88b0`)
+
+Attack 2 above says the savings jobs 12394300/01/503/504 "have not been
+collected." They had already ended: all four FAILED on 2026-09-28 after
+A/hmmsearch hit its own cached-MATCH gate at genome 5 (multi-word FASTA
+descriptions classified as produced), and a shared STOP file halted the
+others. The fix (`f8e3685`) adds the inference-time round-trip guard, and
+the fixed reruns are queued as 12629413–12629416. Record:
+`results/savings_failed_20260928/` and the 2026-10-03 addendum in
+`docs/SAVINGS_PROTOCOL.md`. The confirmatory jobs are still unsubmitted.
+
+**Architecture novelty, component by component.** Only one stage is new:
+field-role inference (K / U / O with key widening) plus splice reassembly.
+The round-trip guard is a moderate addition (checking an inferred contract
+by rebuilding perturbed output). Every other component is credited:
+property/metamorphic testing (determinism, shuffle), Caruca (line-level
+statelessness ≈ subset invariance), group testing (batched subsets),
+Rattle/Riker/ProcessCache (input tracing), Dune (hit audit), Amdahl (cost
+gate). The paper should present ACTS as infrastructure with one novel
+stage, not as a novel architecture.
