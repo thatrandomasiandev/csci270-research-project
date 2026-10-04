@@ -345,3 +345,69 @@ statelessness ≈ subset invariance), group testing (batched subsets),
 Rattle/Riker/ProcessCache (input tracing), Dune (hit audit), Amdahl (cost
 gate). The paper should present ACTS as infrastructure with one novel
 stage, not as a novel architecture.
+
+---
+
+## Addendum 2026-10-03 (late) — the minimal sound key
+
+The §2 novelty claim is narrowed after the prior-art pass
+(`RELATED_WORK.md`, late addendum). This is the formal content it rests on.
+
+**Setting.** A record has fields $F$. The per-record function is $\tau$.
+For a field $f$, write $x[f\!\leftarrow\!v]$ for $x$ with $f$ set to $v$.
+
+- **Irrelevant:** $\tau(x[f\!\leftarrow\!v]) = \tau(x)$ for all $x, v$.
+- **Transport:** there is a fixed set of output positions $\mathrm{pos}_f$
+  such that $\tau(x[f\!\leftarrow\!v]) = \tau(x)[\mathrm{pos}_f \leftarrow v]$
+  for all $x, v$. The value is copied and nothing else changes.
+- **Joint transport:** the transport identity holds when any subset of
+  transport fields is substituted at once (no interaction).
+- $D$ = fields that are not irrelevant (the prior-art dependency key).
+- $U \subseteq D$ = transport fields.
+- $K^\* = D \setminus U$.
+
+A field set $S$ is a **sound splice key** if there is a $g$ with
+$\tau(x) = g(x|_S)[\mathrm{pos}_f \leftarrow x_f]_{f \notin S}$ for all
+$x$.
+
+**Proposition.**
+
+- (i) Under joint transport, $K^\*$ is a sound splice key.
+- (ii) Every sound splice key $S$ satisfies $K^\* \subseteq S$.
+- (iii) Hence, for any input history, the recall under $K^\*$ is at least
+  the recall under $S$, including $S = D$.
+
+*Proof.*
+
+- (i) Fix $x$. Irrelevant fields do not affect $\tau$. Substituting all of
+  $U$ at once changes $\tau(x)$ only at $\bigcup_{f\in U}\mathrm{pos}_f$,
+  by joint transport. So $\tau(x)$ is determined by $x|_{K^\*}$ together
+  with the values of $U$ written at their positions. Define
+  $g(x|_{K^\*}) := \tau(x)$ with $U$ set to any fixed reference values.
+- (ii) Suppose $f \in K^\*$ and $f \notin S$. Then, by the definition of a
+  sound splice key, changing $f$ alters $\tau(x)$ only by writing $x_f$ at
+  $\mathrm{pos}_f$. That makes $f$ a transport field (or an irrelevant one
+  if $\mathrm{pos}_f = \varnothing$), which contradicts $f \in K^\*$.
+- (iii) Recall is antitone in the key: $S \supseteq K^\*$ refines the
+  partition of records, so every $S$-match is a $K^\*$-match. ∎
+
+**What the system checks versus assumes.** Transport and joint transport
+are tested on probe samples, not proved:
+
+- The single-group perturbation tests transport for each field.
+- The all-at-once perturbation of every non-key group tests joint
+  transport (`acts/infer_vcf.py:526`).
+
+A violation that the probes miss is a fault of class F4 or F5. It is
+bounded by $(1-p)^n$ (§3) and caught at runtime by the audit with
+probability $1-(1-q)^h$. The proposition makes no claim beyond what the
+probes establish.
+
+**Measured consequence** (`results/copy_aware_key.json`):
+
+- $D/K^\* = 0.557$ (VCF/SnpEff).
+- $D/K^\* = 0.00$ (GenBank/hmmscan).
+- $D/K^\* = 1.000$ (RefSeq control).
+
+This is the reuse that the strongest prior-art key construction leaves on
+the table.

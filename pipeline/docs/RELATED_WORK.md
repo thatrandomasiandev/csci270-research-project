@@ -699,3 +699,52 @@ such commands. ACTS infers which part of each record a tool's output
 depends on, so it reuses results when records recur with different bytes:
 renamed proteins, variants carrying another sample's genotypes, compounds
 with new IDs.*
+
+---
+
+## Addendum 2026-10-03 (late) — dependency inference, reflection, and hole-punching are occupied
+
+A second prior-art pass looked for black-box *field-dependency* inference,
+which the 2026-10-03 verdict above did not cover. Three neighbors occupy
+parts of ACTS's "novel stage":
+
+| Work | What it owns | What it lacks for ACTS |
+|---|---|---|
+| **GREYONE** (Gan et al., USENIX Security 2020): fuzzing-driven taint inference (FTI) | Black-box inference of which input bytes affect which values, done by single-byte mutation. Sound (no over-taint). | Built for fuzzing. It keys nothing and does not separate *copied* from *computed* dependence. |
+| **DUST / DustBuster** (Bar-Yossef, Keidar, Schonfeld, WWW 2007/TWEB) | Learns which URL parts do not affect content, then canonicalizes to a key. | Only drops *irrelevant* parts. A part that changes content stays in the key. |
+| **Param Miner** (Kettle, PortSwigger 2018) | Finds request inputs that change the response, including ones reflected verbatim. | A security probe. In a web cache, a reflected-but-unkeyed input is the *cache-poisoning bug*. |
+| **ESI** (Edge Side Includes, W3C note 2001) and dynamic-proxy caching (Datta et al., SIGMOD 2002) | Caching a response with holes filled per request. | Holes are declared by hand or by app instrumentation, not inferred. |
+| Bowers, McPhillips, Ludäscher (IPAW 2018); XProv (arXiv 2506.18252) | Fine-grained input→output dependency for workflow steps. | Declared annotations (ASP reasoning) or lineage-pattern mining. No perturbation, no cache. |
+
+**Consequence.** The positioning sentence above ("ACTS infers which part of
+each record a tool's output depends on") overclaims, because GREYONE-style
+inference already does that. A cache keyed on such a dependency set $D$
+keeps copied fields such as names and sample columns in the key. The delta
+is narrower: ACTS splits $D$ into transform fields $K$ and transport fields
+$U$, then keys on $K$ alone and re-fills $U$ from the new record. That is
+inferred hole-punching. It turns Param Miner's poisoning condition
+(reflected, unkeyed) into a correct cache, because the reflected value is
+re-substituted rather than served stale.
+
+**Measured** (`results/copy_aware_key.json`, pre-registered in
+`docs/COPY_AWARE_KEY_PROTOCOL.md` at `d3ec5a2`):
+
+- **VCF:** $D$-key recall is 0.557 of $K$-key recall. This equals the byte
+  ratio by construction, because SnpEff copies every field.
+- **GenBank under hmmscan:** $D/K$ = **0.00** at every $k$.
+- **RefSeq control:** 1.000 at every $k$.
+- The kill rule did not fire, and both locked predictions held.
+
+**Revised positioning sentence:** *Dependency inference (GREYONE, DUST,
+Param Miner) finds which input fields affect an opaque program's output.
+A cache keyed on them still misses whenever a copied field (an ID, a name,
+another sample's genotype) differs. ACTS also infers which dependencies are
+pure copies, keys only on the rest, and re-fills the copies. That key is
+the unique minimal sound one (ARCHITECT_REVIEW.md, addendum).*
+
+**Novelty rating (honest):** moderate. Each ingredient is credited. The
+contribution is the transport/transform split used to *shrink a sound key*,
+with a minimality result and a measured reuse gap over the strongest
+prior-art key construction. The reference-side normalizer inference
+(`REFERENCE_INCREMENTAL_PROTOCOL.md`) is the stronger novelty candidate and
+needs its own pass against iBLAST and iSeqSearch.
