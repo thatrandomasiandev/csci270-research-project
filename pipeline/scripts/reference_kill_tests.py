@@ -283,6 +283,81 @@ def _nmodels(hmm: Path) -> int:
     return sum(1 for ln in hmm.read_text().splitlines() if ln.startswith("//"))
 
 
+def _tbl_dom_z(path: Path) -> dict[str, int]:
+    per: dict[str, set[str]] = {}
+    for line in path.read_text().splitlines():
+        if line.startswith("#") or not line.strip():
+            continue
+        tok = line.split()
+        per.setdefault(tok[2], set()).add(tok[0])
+    return {q: len(t) for q, t in per.items()}
+
+
+def r3c(work: Path) -> dict:
+    """Confirmatory c-Evalue test on fresh data (seed 20261004)."""
+    seed = 20261004
+    work.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(seed)
+    recs = parse_fasta(gzip.open(ROOT / "data" / "recurrence" / "A" / "GCF_002853805.1_protein.faa.gz", "rt").read())
+    fa = write_fasta(work / "q.faa", rng.sample(recs, 300))
+    blocks = [b for _, b in iter_models(NEW)]
+    names = set((ROOT / "results" / "reference_kill_g1_hit_models.txt").read_text().split())
+    name_of = lambda b: next((ln.split()[1] for ln in b if ln.startswith("NAME ")), "")
+    hit = [b for b in blocks if name_of(b) in names]
+    rest = [b for b in blocks if name_of(b) not in names]
+    chosen = hit + random.Random(SEED).sample(rest, 1000)  # same 4,871 models as R2p
+    idx = list(range(len(chosen)))
+    rng.shuffle(idx)
+    halves = {"R1": [chosen[i] for i in idx[: len(chosen) // 2]], "R2": [chosen[i] for i in idx[len(chosen) // 2 :]]}
+    hmms = {"R": write_models(chosen, work / "R.hmm"), **{k: write_models(v, work / f"{k}.hmm") for k, v in halves.items()}}
+    z = {"R": len(chosen), "R1": len(halves["R1"]), "R2": len(halves["R2"])}
+    dz, dom = {}, {}
+    for tag, hmm in hmms.items():
+        tbl, dtbl = work / f"{tag}.tbl", work / f"{tag}.domtbl"
+        run(["hmmscan", "--cpu", "4", "--cut_ga", "--noali", "--tblout", str(tbl), "--domtblout", str(dtbl), str(hmm), str(fa)])
+        dz[tag] = _tbl_dom_z(tbl)
+        rows = {}
+        for line in dtbl.read_text().splitlines():
+            if line.startswith("#") or not line.strip():
+                continue
+            tok = line.split()
+            rows[(tok[3], tok[0], tok[9])] = tok
+        dom[tag] = rows
+    union = {**dom["R1"], **dom["R2"]}
+    set_ok = set(dom["R"]) == set(union)
+    mism = 0
+    fit = {"full_seq_E": 0, "i_Evalue": 0, "c_Evalue": 0}
+    n = 0
+    for key, tok in dom["R"].items():
+        sub = union.get(key)
+        if sub is None:
+            continue
+        half = "R1" if key in dom["R1"] else "R2"
+        n += 1
+        for i, (a, b) in enumerate(zip(tok, sub)):
+            if i in (6, 12):
+                f = z["R"] / z[half]
+                if abs(float(b) * f - float(a)) <= half_ulp(a) + half_ulp(b) * f:
+                    fit["full_seq_E" if i == 6 else "i_Evalue"] += 1
+            elif i == 11:
+                dzh = dz[half].get(key[0], 0)
+                f = dz["R"].get(key[0], 0) / dzh if dzh else float("nan")
+                if dzh and abs(float(b) * f - float(a)) <= half_ulp(a) + half_ulp(b) * f:
+                    fit["c_Evalue"] += 1
+            elif a != b:
+                mism += 1
+    out = {
+        "protocol": PROTOCOL, "git": git_head(), "seed": seed, "models_full": z["R"],
+        "domain_lines_full": len(dom["R"]), "domain_lines_union": len(union),
+        "check1_domain_set_equal": set_ok, "check2_unnormalized_mismatches": mism,
+        "n_lines": n, "consistent": fit,
+        "c_Evalue_reusable_tbl_domZ": set_ok and mism == 0 and fit["c_Evalue"] == n,
+        "finished_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    (ROOT / "results" / "reference_kill_r3c.json").write_text(json.dumps(out, indent=2) + "\n")
+    return out
+
+
 if __name__ == "__main__":
     which = sys.argv[1]
     if which == "r1":
@@ -291,6 +366,8 @@ if __name__ == "__main__":
         res = r2(Path(sys.argv[2]), powered=(which != "r2"), cut_ga=(which != "r2n"))
         print(json.dumps({k: v for k, v in res.items() if k != "examples"}, indent=1))
         print(json.dumps(res["examples"], indent=1))
+    elif which == "r3c":
+        print(json.dumps(r3c(Path(sys.argv[2])), indent=1))
     elif which == "r3":
         print(json.dumps(r3(Path(sys.argv[2])), indent=1))
     else:

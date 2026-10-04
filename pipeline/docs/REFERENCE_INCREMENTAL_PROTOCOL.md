@@ -211,3 +211,32 @@ be post hoc. It is left as an exploratory follow-up and is not claimed.
 sets and all unnormalized columns are byte-exact. tblout E-values, domtblout
 full-sequence E-values and i-Evalues are equal within printed precision
 after rescaling by Z. domtblout c-Evalues must be recomputed.
+
+## Addendum 2026-10-03 — c-Evalue: exploratory finding and confirmatory test R3c
+
+**Which domZ R3 tested:** the number of distinct targets with at least one
+line in that run's **domtblout** for the query. HMMER's domZ counts targets
+that pass the **per-sequence** reporting threshold, and a target can pass it
+while reporting no domain line, so R3's definition can undercount.
+
+**Exploratory (post hoc, not a result):** on the same R3 files, recomputing
+domZ from **tblout** (per-sequence reported targets per query) makes c-Evalue
+consistent on **560/560** lines. Because it was found after seeing R3, it
+does not change R3's pre-registered assignment (c-Evalue: not reusable).
+
+**R3c (confirmatory, pre-registered here, fresh data):** a new 300-protein
+sample from genome 1 and a new random split of the same 4,871 models, both
+with seed **20261004**. Run `hmmscan --cut_ga` with both `--tblout` and
+`--domtblout` on the full set and on each half. Checks:
+
+1. The domain-line set of the union equals the full run's.
+2. 0 mismatches outside the domain E-value columns.
+3. c-Evalue rescaled by domZ_full/domZ_half, **with domZ = per-sequence
+   reported targets for the query from tblout**, is consistent within print
+   tolerance on **every** line; full-sequence E-value and i-Evalue are
+   consistent rescaled by Z.
+
+**Rule:** if check 3 holds for all lines, c-Evalue is reclassified as
+reusable with the tblout-domZ normalizer, which is data-dependent and
+recomputed from the merged per-sequence hit set. If any line fails,
+c-Evalue stays not reusable.
