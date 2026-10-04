@@ -51,3 +51,13 @@ Scope: score-thresholded modes only (`--cut_ga`). The E-value-thresholded
 negative control fails the decomposition test, as required
 (`results/reference_kill_r2n.json`). Re-annotation speedup is PROJECTED
 until a measured 38.1 → 38.2 run exists.
+
+**Addendum 2026-10-03 (later), superseding the c-Evalue line above.**
+hmmscan c-Evalue is reusable. It rescales by domZ, defined as the number of
+targets reported for that query in **tblout** (per-sequence). Confirmed on
+fresh data: 511/511 lines, pre-registered at `8c52c9f`, result in
+`results/reference_kill_r3c.json`.
+
+This normalizer depends on the data: it comes from the *merged* hit set,
+so the rescale runs after the merge, not before. It is stable only because
+`--cut_ga` fixes the per-sequence reporting threshold.
