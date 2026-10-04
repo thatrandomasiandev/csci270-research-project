@@ -35,6 +35,7 @@ AUDIT_SEED = 20260927
 AUDIT_P = 0.02
 AUDIT_NONEMPTY_FLOOR = 20
 PROBE_N = 8
+SUBSET_MODE = "singleton"
 Z_FIXED = 1_000_000
 DOMZ_FIXED = 1_000_000
 ERROR_FLAG = 0.10
@@ -223,7 +224,9 @@ def paths_for(collection: str, mode: str) -> dict[str, Path]:
     return {
         "base": base,
         "json": base / f"{stem}.json",
-        "stop": base / "STOP.json",
+        # Scoped per (collection, mode): one run's gate failure must not halt the
+        # others (2026-09-28: hmmsearch STOP_MATCH killed a healthy hmmscan run).
+        "stop": base / f"STOP_{stem}.json",
         "tblout_dir": base / "tblout",
         "rebuilt_dir": base / "rebuilt",
         "cache_dir": base / "cache" / stem,
@@ -398,7 +401,11 @@ def ensure_contract(argv: list[str], recs: list[FastaRec], cache_path: Path, wor
     path = contract_path_for(cache_path)
     if path.is_file():
         return TableContract.load(path)
-    contract = infer_table_contract(argv, recs, work / "probe", probe_n=PROBE_N)
+    # Pinned to the pre-registered probe: probe_n=8, singleton subset checks (12 calls),
+    # which is what analyze_savings.py prices as P. The library default is now batched.
+    contract = infer_table_contract(
+        argv, recs, work / "probe", probe_n=PROBE_N, subset_mode=SUBSET_MODE
+    )
     contract.save(path)
     return contract
 

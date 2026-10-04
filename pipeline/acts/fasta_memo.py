@@ -20,6 +20,8 @@ from acts.infer_fasta import (
     refuse_table,
     run_table_tool,
     unclassified_cols,
+    uses_cells_path,
+    desc_view_rows,
 )
 from acts.infer_fasta import _group, _group_raw, _split_body
 from acts.table import align_body, body_lines, join_row, meta_lines, render_table
@@ -52,7 +54,7 @@ def cached_search(
         _, rows = _split_body(miss_out, contract.delim)
         groups = _group(rows, contract.query_col)
         groups_raw = _group_raw(raw_body, rows, contract.query_col)
-        unseen = unclassified_cols(rows, contract)
+        unseen = unclassified_cols(desc_view_rows(misses, groups_raw, contract), contract)
         if unseen:
             carriers = [r for r in misses if r.name in groups]
             probe_late_cols(argv, carriers, contract, work / "late", unseen)
@@ -66,6 +68,7 @@ def cached_search(
                         groups_raw.get(rec.name, []),
                         groups.get(rec.name, []),
                         contract,
+                        desc=rec.description,
                     )
                 ),
             )
@@ -77,22 +80,23 @@ def cached_search(
     rebuilt_body: list[str] = []
     holes = 0
     layout = layout_from_contract(contract)
+    cells_path = uses_cells_path(contract)
     for rec, k in zip(recs, keys):
         raw = cache.get(k)
         if raw is None:
             holes += 1
             continue
         payload = json.loads(raw)
-        if layout.pinned or contract.pad_widths:
+        if cells_path:
             rebuilt_cells.extend(reassemble_cells(rec, payload, contract))
         else:
             rebuilt_body.extend(reassemble_rows(rec, payload, contract))
 
-    if layout.pinned:
+    if cells_path and layout.pinned:
         rebuilt_body = render_table(
             rebuilt_cells, layout, query_col=contract.query_col
         )
-    elif contract.pad_widths:
+    elif cells_path and contract.pad_widths:
         rebuilt_body = align_body(
             [join_row(row, contract.delim) for row in rebuilt_cells],
             contract.delim,

@@ -144,6 +144,76 @@ class InferFastaFixtureTests(unittest.TestCase):
             full = (Path(td) / "b" / "full.out").read_text()
             self.assertEqual(body_lines(rebuilt), body_lines(full))
 
+    def test_trailing_multiword_desc_is_passthrough(self) -> None:
+        """Guard for the 2026-09-28 savings STOP_MATCH (A hmmsearch genome 5).
+
+        The same sequence recurred with a different multi-word description; the cache
+        replayed the old one. Descriptions must be copied from the new input.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td) / "cache.jsonl"
+            recs = read_fasta(TINY)
+            first_fa = Path(td) / "g1.fa"
+            write_fasta(
+                first_fa,
+                [FastaRec(r.name, f"alpha beta protein {i}", r.seq) for i, r in enumerate(recs)],
+            )
+            first = RecordMemo(
+                kind="fasta",
+                argv=_argv("ws_trailing_desc.py"),
+                input_path=first_fa,
+                out_dir=Path(td) / "a",
+                cache_path=cache,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+
+            second_fa = Path(td) / "g2.fa"
+            descs = ["MULTISPECIES: renamed family [Enterobacteriaceae]", "", "x", "two words"]
+            write_fasta(
+                second_fa,
+                [FastaRec(f"G2_{i:07d}", descs[i % len(descs)], r.seq) for i, r in enumerate(recs)],
+            )
+            second = RecordMemo(
+                kind="fasta",
+                argv=_argv("ws_trailing_desc.py"),
+                input_path=second_fa,
+                out_dir=Path(td) / "b",
+                cache_path=cache,
+                verify="full",
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(int(second.extra["n_misses"]), 0)
+            rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
+            full = (Path(td) / "b" / "full.out").read_text()
+            norm = lambda t: sorted(" ".join(ln.split()) for ln in body_lines(t))
+            self.assertEqual(norm(rebuilt), norm(full))
+            self.assertNotIn("alpha beta protein", rebuilt)
+
+    def test_tab_desc_cell_replaced_on_reuse(self) -> None:
+        """Tab tables: a description is one cell, replaced by position on reuse,
+        including when the cached record had an empty description."""
+        with tempfile.TemporaryDirectory() as td:
+            cache = Path(td) / "cache.jsonl"
+            recs = read_fasta(TINY)
+            g1 = Path(td) / "g1.fa"
+            write_fasta(g1, [FastaRec(r.name, "", r.seq) for r in recs])
+            first = RecordMemo(
+                kind="fasta", argv=_argv("per_query_table.py"), input_path=g1,
+                out_dir=Path(td) / "a", cache_path=cache,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            g2 = Path(td) / "g2.fa"
+            write_fasta(g2, [FastaRec(f"N{i}", f"new desc {i}", r.seq) for i, r in enumerate(recs)])
+            second = RecordMemo(
+                kind="fasta", argv=_argv("per_query_table.py"), input_path=g2,
+                out_dir=Path(td) / "b", cache_path=cache, verify="full",
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(int(second.extra["n_misses"]), 0)
+            rebuilt = (Path(td) / "b" / "reassembled.out").read_text()
+            full = (Path(td) / "b" / "full.out").read_text()
+            self.assertEqual(body_lines(rebuilt), body_lines(full))
+
     def test_right_numeric_byte_match_on_rename(self) -> None:
         with tempfile.TemporaryDirectory() as td:
             cache = Path(td) / "cache.jsonl"
@@ -278,3 +348,19 @@ class BatchedSubsetFastaTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReassembleCellsWidthTests(unittest.TestCase):
+    def test_row_keeps_own_width_when_contract_grows(self) -> None:
+        """Guard (2026-10-03 hmmscan repro): late-key probes raised n_cols, and every
+        rebuilt row was padded to it, adding trailing spaces under byte MATCH."""
+        from acts.infer_fasta import TableContract, reassemble_cells
+
+        contract = TableContract(
+            kind="fasta", argv=[], query_col=2, desc_cols=[], produced_cols=[0, 1, 3, 4],
+            delim="ws", match="order", n_cols=8,
+        )
+        payload = {"rows": [{"raw": "", "name": "old", "produced": {"0": "M", "1": "PF1", "3": "1e-5", "4": "word"}, "n": 5}]}
+        rec = FastaRec("new", "", "ACGT")
+        cells = reassemble_cells(rec, payload, contract)
+        self.assertEqual(cells, [["M", "PF1", "new", "1e-5", "word"]])

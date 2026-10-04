@@ -51,6 +51,8 @@ class TableContract:
     pad_widths: list[int] = field(default_factory=list)
     empty_desc: str = ""
     match_ws: bool = False
+    desc_span: bool = False
+    desc_trailing: bool = False
     layout: dict = field(default_factory=dict)
     widen_history: list[str] = field(default_factory=list)
     late_key_probes: list[str] = field(default_factory=list)
@@ -76,6 +78,8 @@ class TableContract:
         raw.setdefault("pad_widths", [])
         raw.setdefault("empty_desc", "")
         raw.setdefault("match_ws", False)
+        raw.setdefault("desc_span", False)
+        raw.setdefault("desc_trailing", False)
         raw.setdefault("layout", {})
         raw.setdefault("traced_files", [])
         raw.setdefault("trace_status", "unavailable")
@@ -88,6 +92,106 @@ class TableContract:
 
 def _max_cols(rows: list[list[str]]) -> int:
     return max((len(r) for r in rows), default=0)
+
+
+# Placeholder for a description echoed as a whitespace-token span.
+DESC_SENTINEL = "\x01ACTS_DESC\x01"
+
+
+def _bounded_positions(line: str, token: str) -> list[int]:
+    """Start offsets where `token` occurs with whitespace (or line edge) on both sides."""
+    out: list[int] = []
+    if not token:
+        return out
+    start = 0
+    while True:
+        i = line.find(token, start)
+        if i < 0:
+            return out
+        left = line[i - 1] if i else " "
+        j = i + len(token)
+        right = line[j] if j < len(line) else " "
+        if left.isspace() and right.isspace():
+            out.append(i)
+        start = i + 1
+
+
+def _subst_last(line: str, old: str, new: str) -> str:
+    """Replace the LAST whitespace-bounded occurrence of `old`.
+
+    Free-text fields such as a description sit at the end of a table row, and an
+    empty marker like "-" can also appear earlier (e.g. an accession column).
+    """
+    pos = _bounded_positions(line, old)
+    if not pos:
+        return line
+    i = pos[-1]
+    return line[:i] + new + line[i + len(old):]
+
+
+def _desc_token(desc: str, empty_desc: str) -> str:
+    return desc if desc else empty_desc
+
+
+def swap_desc_raw(line: str, old_desc: str, new_desc: str, contract: "TableContract") -> str:
+    """Put the new record's description into a cached raw output line."""
+    if contract.delim == "tab":
+        if not contract.desc_cols:
+            return line
+        parts = line.split("\t")
+        for i in contract.desc_cols:
+            if i < len(parts):
+                parts[i] = new_desc or contract.empty_desc
+        return "\t".join(parts)
+    if not (contract.desc_span or contract.desc_cols):
+        return line
+    old = _desc_token(old_desc, contract.empty_desc)
+    new = _desc_token(new_desc, contract.empty_desc)
+    if old == new:
+        return line
+    if old:
+        return _subst_last(line, old, new)
+    # Empty old description printed as nothing: only valid for a trailing field.
+    return line.rstrip() + (" " + new if new else "")
+
+
+def detect_desc_span(
+    pert: list[FastaRec], pert_groups_raw: dict[str, list[str]]
+) -> bool:
+    """True if every perturbed record that produced lines echoes its (multi-word)
+    description verbatim in each of those lines."""
+    seen = False
+    for rec in pert:
+        lines = pert_groups_raw.get(rec.name, [])
+        if not lines or not rec.description:
+            continue
+        seen = True
+        if not all(_bounded_positions(ln, rec.description) for ln in lines):
+            return False
+    return seen
+
+
+def _normalize_desc_lines(
+    recs: list[FastaRec], groups_raw: dict[str, list[str]], empty_markers: tuple[str, ...]
+) -> dict[str, list[str]]:
+    """Replace each record's echoed description (or empty marker) with DESC_SENTINEL."""
+    out: dict[str, list[str]] = {}
+    for rec in recs:
+        lines = []
+        for ln in groups_raw.get(rec.name, []):
+            if rec.description:
+                ln = _subst_last(ln, rec.description, DESC_SENTINEL)
+            else:
+                for marker in empty_markers:
+                    if marker and _bounded_positions(ln, marker):
+                        ln = _subst_last(ln, marker, DESC_SENTINEL)
+                        break
+                else:
+                    # The tool printed nothing for an empty description.
+                    ln = ln.rstrip() + " " + DESC_SENTINEL
+            lines.append(ln)
+        out[rec.name] = lines
+    return out
 
 
 def _split_body(text: str, delim: str | None = None) -> tuple[str, list[list[str]]]:
@@ -360,32 +464,77 @@ def infer_table_contract(
             runner=run,
         )
 
-        desc_cols, produced = classify_columns(
-            names,
-            [r.description for r in probe],
-            rows1,
-            pert_names,
-            [r.description for r in pert],
-            rows_p,
-            query_col,
-            raw=body_lines(out1),
-            pert_raw=body_lines(out_p),
-        )
+        gp = _group_raw(body_lines(out_p), rows_p, query_col)
+        # Tab tables keep a description in one cell; spans only arise in whitespace tables.
+        desc_span = delim != "tab" and detect_desc_span(pert, gp)
+        if desc_span:
+            empty_desc = _infer_empty_marker(pert, gp) or _infer_empty_from_probe(probe, g1) or "-"
+            markers = (empty_desc,) + tuple(m for m in MISSING_DESC if m and m != empty_desc)
+            n1 = _normalize_desc_lines(probe, g1, markers)
+            np_ = _normalize_desc_lines(pert, gp, markers)
+            raw_n1 = [ln for r in probe for ln in n1.get(r.name, [])]
+            raw_np = [ln for r in pert for ln in np_.get(r.name, [])]
+            rows_n1 = split_body_rows(raw_n1, delim)
+            rows_np = split_body_rows(raw_np, delim)
+            desc_trailing = all(r and r[-1] == DESC_SENTINEL for r in rows_n1 + rows_np)
+            desc_cols, produced = classify_columns(
+                names,
+                [DESC_SENTINEL] * len(probe),
+                rows_n1,
+                pert_names,
+                [DESC_SENTINEL] * len(pert),
+                rows_np,
+                query_col,
+                raw=raw_n1,
+                pert_raw=raw_np,
+            )
+        else:
+            desc_cols, produced = classify_columns(
+                names,
+                [r.description for r in probe],
+                rows1,
+                pert_names,
+                [r.description for r in pert],
+                rows_p,
+                query_col,
+                raw=body_lines(out1),
+                pert_raw=body_lines(out_p),
+            )
+            empty_desc = _infer_empty_desc(rows1, desc_cols)
+            desc_trailing = False
         match = order_kind(names, rows1, query_col)
-        empty_desc = _infer_empty_desc(rows1, desc_cols)
         hit_names = {row[query_col] for row in rows1}
+        layout_text = out1
+        if desc_span and desc_trailing:
+            # Collapse each description to one cell so column positions are stable.
+            marker = empty_desc or "-"
+            layout_text = "\n".join(
+                [ln.replace(DESC_SENTINEL, marker) for ln in raw_n1]
+            ) + "\n"
         layout = infer_layout_probe(
             argv,
             probe,
             query_col,
             delim,
             work / "align",
-            out1,
+            layout_text,
             hit_names=hit_names,
             runner=run,
         )
-        match_ws = delim != "tab" and not layout.pinned
-        return TableContract(
+        layout_d = layout.to_dict()
+        pad_widths = layout_pad_widths(layout)
+        n_cols = _max_cols(rows1)
+        if desc_span and not desc_trailing:
+            # A free-text span followed by other fields shifts token positions per
+            # record: rebuild from raw lines; MATCH is whitespace-normalized.
+            layout_d = {**layout_d, "pinned": False}
+            pad_widths = []
+            match_ws = delim != "tab"
+        else:
+            if desc_span:
+                n_cols = _max_cols(rows_n1)  # description is one trailing cell
+            match_ws = delim != "tab" and not layout.pinned
+        contract = TableContract(
             kind="fasta",
             argv=list(argv),
             query_col=query_col,
@@ -393,11 +542,13 @@ def infer_table_contract(
             produced_cols=produced,
             delim=delim,
             match=match,
-            n_cols=_max_cols(rows1),
-            pad_widths=layout_pad_widths(layout),
+            n_cols=n_cols,
+            pad_widths=pad_widths,
             empty_desc=empty_desc,
             match_ws=match_ws,
-            layout=layout.to_dict(),
+            desc_span=desc_span,
+            desc_trailing=desc_trailing,
+            layout=layout_d,
             traced_files=traced_files,
             trace_status=trace_status,
             probe_n=len(probe),
@@ -408,6 +559,8 @@ def infer_table_contract(
             decision="OK",
             reason="probe passed",
         )
+        verify_roundtrip(probe, pert, g1, rows_by_name(rows1, query_col), gp, contract)
+        return contract
     except InferError as exc:
         exc.tool_calls = meter.n
         exc.tool_call_sizes = list(meter.sizes)
@@ -439,7 +592,7 @@ def _subst_token(line: str, old: str, new: str) -> str:
 
 
 def extract_rows(
-    raw: list[str], rows: list[list[str]], contract: TableContract
+    raw: list[str], rows: list[list[str]], contract: TableContract, desc: str = ""
 ) -> dict:
     packed = []
     for ln, row in zip(raw, rows):
@@ -454,9 +607,10 @@ def extract_rows(
                 "name": row[contract.query_col] if contract.query_col < len(row) else "",
                 "produced": produced,
                 "n": len(row),
+                "desc": desc,
             }
         )
-    return {"rows": packed}
+    return {"rows": packed, "desc": desc}
 
 
 def layout_from_contract(contract: TableContract) -> TableLayout:
@@ -468,7 +622,13 @@ def reassemble_cells(
 ) -> list[list[str]]:
     rows: list[list[str]] = []
     for item in payload.get("rows", []):
-        n = max(item.get("n", 0), contract.n_cols, contract.query_col + 1)
+        if contract.desc_span:
+            n = max(contract.n_cols, contract.query_col + 1)
+        else:
+            # A row keeps its own width. contract.n_cols can grow via late-key probes
+            # (e.g. a longer multi-word produced field); padding every row to it
+            # appended empty cells, i.e. trailing spaces (2026-10-03 hmmscan repro).
+            n = max(item.get("n", 0), contract.query_col + 1)
         cells = [""] * n
         for i, val in item.get("produced", {}).items():
             idx = int(i)
@@ -486,7 +646,9 @@ def reassemble_cells(
 
 def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> list[str]:
     layout = layout_from_contract(contract)
-    use_raw = not layout.pinned and not contract.pad_widths
+    use_raw = (not layout.pinned and not contract.pad_widths) or (
+        contract.desc_span and not contract.desc_trailing
+    )
     if not use_raw:
         cells = reassemble_cells(rec, payload, contract)
         if layout.pinned:
@@ -500,10 +662,9 @@ def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> li
             old = item.get("name") or ""
             if old and old != rec.name:
                 ln = _subst_token(ln, old, rec.name)
-            for i in contract.desc_cols:
-                old_desc = item.get("desc") or ""
-                if old_desc and rec.description and old_desc != rec.description:
-                    ln = _subst_token(ln, old_desc, rec.description)
+            ln = swap_desc_raw(
+                ln, item.get("desc") or payload.get("desc") or "", rec.description, contract
+            )
             lines.append(ln)
             continue
         n = max(item.get("n", 0), contract.n_cols, contract.query_col + 1)
@@ -520,6 +681,78 @@ def reassemble_rows(rec: FastaRec, payload: dict, contract: TableContract) -> li
             cells[i] = rec.description or contract.empty_desc
         lines.append(join_row(cells, contract.delim))
     return lines
+
+
+def desc_view_rows(
+    recs: list[FastaRec], groups_raw: dict[str, list[str]], contract: TableContract
+) -> list[list[str]]:
+    """Rows as inference saw them: an echoed description collapsed to one cell."""
+    if not contract.desc_span:
+        lines = [ln for r in recs for ln in groups_raw.get(r.name, [])]
+        return split_body_rows(lines, contract.delim)
+    markers = (contract.empty_desc or "-",) + tuple(
+        m for m in MISSING_DESC if m and m != contract.empty_desc
+    )
+    norm = _normalize_desc_lines(recs, groups_raw, markers)
+    return split_body_rows([ln for r in recs for ln in norm.get(r.name, [])], contract.delim)
+
+
+def uses_cells_path(contract: TableContract) -> bool:
+    """Cells/re-render path vs raw-line substitution path (shared by memo and guard)."""
+    pinned = layout_from_contract(contract).pinned or bool(contract.pad_widths)
+    return pinned and (not contract.desc_span or contract.desc_trailing)
+
+
+def rows_by_name(rows: list[list[str]], query_col: int) -> dict[str, list[list[str]]]:
+    return _group(rows, query_col)
+
+
+def _infer_empty_marker(pert: list[FastaRec], gp: dict[str, list[str]]) -> str:
+    """Empty-description marker, from perturbed records given an empty description."""
+    seen: set[str] = set()
+    for rec in pert:
+        if rec.description:
+            continue
+        for ln in gp.get(rec.name, []):
+            toks = ln.split()
+            if toks and toks[-1] in MISSING_DESC:
+                seen.add(toks[-1])
+    return seen.pop() if len(seen) == 1 else ""
+
+
+def _infer_empty_from_probe(probe: list[FastaRec], g1: dict[str, list[str]]) -> str:
+    return _infer_empty_marker(probe, g1)
+
+
+def _ws_norm(lines: list[str]) -> list[str]:
+    return sorted(" ".join(ln.split()) for ln in lines)
+
+
+def verify_roundtrip(
+    probe: list[FastaRec],
+    pert: list[FastaRec],
+    g1_raw: dict[str, list[str]],
+    g1_rows: dict[str, list[list[str]]],
+    gp_raw: dict[str, list[str]],
+    contract: TableContract,
+) -> None:
+    """Class-level guard: reassembling each probe record from its cached payload, with
+    the PERTURBED name and description, must reproduce the tool's perturbed output.
+    A field misclassified as produced (or copied) fails here, before any caching."""
+    for rec, twin in zip(probe, pert):
+        payload = extract_rows(
+            g1_raw.get(rec.name, []), g1_rows.get(rec.name, []), contract, desc=rec.description
+        )
+        if not uses_cells_path(contract):
+            got = reassemble_rows(twin, payload, contract)
+        else:
+            got = [join_row(c, contract.delim) for c in reassemble_cells(twin, payload, contract)]
+        want = gp_raw.get(twin.name, [])
+        if _ws_norm(got) != _ws_norm(want):
+            raise InferError(
+                "REFUSE_AMBIGUOUS",
+                f"reassembly round-trip failed on probe record {rec.name!r}",
+            )
 
 
 def unclassified_cols(rows: list[list[str]], contract: TableContract) -> list[int]:
@@ -549,17 +782,39 @@ def probe_late_cols(
     out_p = run_table_tool(argv, write_fasta(work / "late_pert.fa", pert))
     _, rows_o = _split_body(out_o, contract.delim)
     _, rows_p = _split_body(out_p, contract.delim)
-    desc_cols, produced = classify_columns(
-        [r.name for r in subset],
-        [r.description for r in subset],
-        rows_o,
-        [r.name for r in pert],
-        [r.description for r in pert],
-        rows_p,
-        contract.query_col,
-        raw=body_lines(out_o),
-        pert_raw=body_lines(out_p),
-    )
+    if contract.desc_span:
+        go = _group_raw(body_lines(out_o), rows_o, contract.query_col)
+        gp = _group_raw(body_lines(out_p), rows_p, contract.query_col)
+        markers = (contract.empty_desc or "-",) + tuple(
+            m for m in MISSING_DESC if m and m != contract.empty_desc
+        )
+        no = _normalize_desc_lines(subset, go, markers)
+        np_ = _normalize_desc_lines(pert, gp, markers)
+        raw_o = [ln for r in subset for ln in no.get(r.name, [])]
+        raw_p = [ln for r in pert for ln in np_.get(r.name, [])]
+        desc_cols, produced = classify_columns(
+            [r.name for r in subset],
+            [DESC_SENTINEL] * len(subset),
+            split_body_rows(raw_o, contract.delim),
+            [r.name for r in pert],
+            [DESC_SENTINEL] * len(pert),
+            split_body_rows(raw_p, contract.delim),
+            contract.query_col,
+            raw=raw_o,
+            pert_raw=raw_p,
+        )
+    else:
+        desc_cols, produced = classify_columns(
+            [r.name for r in subset],
+            [r.description for r in subset],
+            rows_o,
+            [r.name for r in pert],
+            [r.description for r in pert],
+            rows_p,
+            contract.query_col,
+            raw=body_lines(out_o),
+            pert_raw=body_lines(out_p),
+        )
     for i in new_cols:
         if i in desc_cols and i not in contract.desc_cols:
             contract.desc_cols.append(i)

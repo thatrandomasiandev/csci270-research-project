@@ -1,0 +1,9 @@
+{
+  "stopped": true,
+  "where": "cached MATCH",
+  "collection": "A",
+  "mode": "hmmsearch",
+  "position": 5,
+  "accession": "GCF_016659085.1",
+  "decision": "STOP_MATCH"
+}

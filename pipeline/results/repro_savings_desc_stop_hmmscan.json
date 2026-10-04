@@ -1,0 +1,67 @@
+{
+  "purpose": "reproduce 2026-09-28 savings STOP_MATCH (A hmmsearch genome 5)",
+  "mode": "hmmscan",
+  "git_head": "c114d93760aae983f60dda0e260a77c563fe1ac7",
+  "acts_dirty": true,
+  "hmmer": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "models": 73,
+  "sample_per_genome": 300,
+  "seed": 20261003,
+  "genomes": [
+    {
+      "position": 1,
+      "accession": "GCF_002853805.1",
+      "decision": "SHIP",
+      "match_ws": false,
+      "desc_span": false,
+      "desc_trailing": false,
+      "reason": "MATCH order; hits=0 misses=305",
+      "n_hits": 0,
+      "n_misses": 305
+    },
+    {
+      "position": 2,
+      "accession": "GCF_002090355.1",
+      "decision": "SHIP",
+      "match_ws": false,
+      "desc_span": false,
+      "desc_trailing": false,
+      "reason": "MATCH order; hits=17 misses=288",
+      "n_hits": 17,
+      "n_misses": 288
+    },
+    {
+      "position": 3,
+      "accession": "GCF_001650275.1",
+      "decision": "SHIP",
+      "match_ws": false,
+      "desc_span": false,
+      "desc_trailing": false,
+      "reason": "MATCH order; hits=13 misses=291",
+      "n_hits": 13,
+      "n_misses": 291
+    },
+    {
+      "position": 4,
+      "accession": "GCF_052050745.1",
+      "decision": "SHIP",
+      "match_ws": false,
+      "desc_span": false,
+      "desc_trailing": false,
+      "reason": "MATCH order; hits=26 misses=285",
+      "n_hits": 26,
+      "n_misses": 285
+    },
+    {
+      "position": 5,
+      "accession": "GCF_016659085.1",
+      "decision": "SHIP",
+      "match_ws": false,
+      "desc_span": false,
+      "desc_trailing": false,
+      "reason": "MATCH order; hits=50 misses=261",
+      "n_hits": 50,
+      "n_misses": 261
+    }
+  ]
+}

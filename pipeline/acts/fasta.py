@@ -71,7 +71,14 @@ def shuffle_fasta(recs: list[FastaRec], *, seed: int = 7) -> list[FastaRec]:
 
 
 def perturb_fasta(recs: list[FastaRec]) -> list[FastaRec]:
+    """Rename every record and give it a fresh description.
+
+    Descriptions are multi-word with varying word counts, so a tool that echoes the
+    description as several whitespace tokens is exercised (2026-09-28 savings
+    STOP_MATCH: single-token probe descriptions hid that case).
+    """
     out: list[FastaRec] = []
     for i, rec in enumerate(recs):
-        out.append(FastaRec(f"PERT_{i}", f"DESC_{i}", rec.seq))
+        desc = "" if i % 4 == 3 else " ".join([f"PDESC_{i}"] + ["w"] * (1 + i % 3))
+        out.append(FastaRec(f"PERT_{i}", desc, rec.seq))
     return out

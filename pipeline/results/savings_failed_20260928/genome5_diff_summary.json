@@ -1,0 +1,31 @@
+{
+ "genome": "A hmmsearch position 5 GCF_016659085.1",
+ "stock_lines": 19889,
+ "rebuilt_lines": 19889,
+ "lines_only_in_stock": 73,
+ "lines_only_in_rebuilt": 73,
+ "paired_by_target_query": 73,
+ "first_differing_token_index_counts": {
+  "19": 25,
+  "21": 11,
+  "25": 16,
+  "22": 19,
+  "23": 2
+ },
+ "tblout_description_starts_at_token": 18,
+ "proteins": [
+  "WP_000043761.1",
+  "WP_000091955.1",
+  "WP_000124700.1",
+  "WP_000183107.1",
+  "WP_000455798.1",
+  "WP_000550695.1",
+  "WP_000716421.1",
+  "WP_000804550.1",
+  "WP_001051798.1",
+  "WP_001144615.1",
+  "WP_001278994.1"
+ ],
+ "example_stock": "WP_001278994.1 - Aldolase_II PF00596.28 1.2e-48 171.1 0.0 1.4e-48 170.9 0.0 1.0 1 0 0 1 1 1 1 MULTISPECIES: 3-oxo-tetronate 4-phosphate decarboxylase [Enterobacteriaceae]",
+ "example_rebuilt": "WP_001278994.1 - Aldolase_II PF00596.28 1.2e-48 171.1 0.0 1.4e-48 170.9 0.0 1.0 1 0 0 1 1 1 1 MULTISPECIES: aldolase [Enterobacteriaceae]"
+}

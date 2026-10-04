@@ -383,3 +383,94 @@ hmmscan `--cut_ga`** when the layout stays pinned. Whitespace
 normalized remains the fallback whenever the probe cannot pin a
 layout.
 
+
+## Addendum 2026-10-03 — first run halted by its own MATCH gate; fix and rerun
+
+Locked sections above are unchanged. This addendum is written **before**
+any rerun result exists.
+
+### What happened
+
+All four jobs submitted 2026-09-27 (12394300, 12394301, 12394503,
+12394504; git `dc5ead9`) ended FAILED with exit 2 on 2026-09-28. The
+record is `results/savings_failed_20260928/` (per-run JSON, `STOP.json`,
+Slurm logs, `genome5_diff_summary.json`).
+
+- `A_hmmsearch` (primary) passed MATCH on genomes 1–2 and the audit on
+  3–4, then **failed cached MATCH at genome 5** (`GCF_016659085.1`):
+  73 of 19,889 `--tblout` lines differed, all only in the trailing
+  target-description tokens (index ≥ 18). The gate worked as designed:
+  nothing was reported from that run.
+- `A_hmmscan` had passed MATCH on its sampled genomes 1, 2, 5, 10, 20 and
+  reached genome 22, but stopped because the runner used **one shared
+  `STOP.json`** for all four runs. Both B jobs read that file and exited
+  in 25 s.
+
+### Root cause (generic; no HMMER-specific code involved)
+
+1. **Description echo misclassified.** `hmmsearch --tblout` echoes each
+   FASTA record's description as several whitespace tokens at the end of
+   the line. The field-role probe perturbed descriptions to single tokens
+   (`DESC_i`), so multi-token descriptions were never exercised, and a
+   fallback classified those tokens as PRODUCED. Cached rows replayed the
+   description of the genome that first produced them. RefSeq renames
+   proteins between annotation releases (e.g. `WP_001278994.1`: cached
+   "MULTISPECIES: aldolase", genome 5 "MULTISPECIES: 3-oxo-tetronate
+   4-phosphate decarboxylase").
+2. **Description never stored.** The cache payload did not record the
+   record's description, so description substitution could not run.
+3. **STOP not scoped** per (collection, mode).
+4. Found while verifying the fix (latent, did not fire on CARC): rows
+   rebuilt through the layout path were padded to the contract's widest
+   row after a late-key probe, adding trailing spaces under byte MATCH.
+
+### Fix (`acts/fasta.py`, `acts/infer_fasta.py`, `acts/fasta_memo.py`,
+`scripts/run_hmmer_savings.py`)
+
+- Perturbed descriptions are multi-word with varying word counts, and one
+  in four is empty, so description spans and empty markers are probed.
+- Whitespace tables: an echoed description is detected as a span,
+  collapsed to one cell for classification and layout, stored with each
+  cached record, and replaced from the new input at reassembly (last
+  occurrence; the trailing field keeps the inferred byte layout). Tab
+  tables replace the description cell by position.
+- **New class-level guard at inference:** reassembling every probe record
+  from its cached payload with the *perturbed* name and description must
+  reproduce the tool's perturbed output, or the tool is refused. This
+  catches any field-role misclassification before caching.
+- Rows rebuilt through the layout path keep their own width.
+- STOP files are `STOP_<collection>_<mode>.json`.
+- Guard tests: `test_trailing_multiword_desc_is_passthrough`,
+  `test_tab_desc_cell_replaced_on_reuse`,
+  `ReassembleCellsWidthTests`, `tests/test_savings_runner_stop.py`.
+
+### Verification before rerun (local, real data, correctness only)
+
+`scripts/repro_savings_desc_stop.py`: collection-A genomes 1–5 in the
+locked order, the 78 Pfam models behind the 73 differing lines, each
+genome subset to the renamed proteins plus 300 random ones, `verify=full`
+on every genome. Results `results/repro_savings_desc_stop_hmmsearch.json`
+and `results/repro_savings_desc_stop_hmmscan.json`: all five genomes SHIP
+with MATCH in both modes (hmmsearch whitespace multiset; hmmscan byte,
+order). Timing on the Mac is not a result.
+
+### Rerun (unchanged protocol except the fix)
+
+- Same workloads, order, flags, stock-sample genomes, audit, kill rule,
+  `--time`, exclusive `epyc-7542` nodes, and the analysis code locked at
+  `00f9403`.
+- Probe pinned to the pre-registered `probe_n = 8` with **singleton**
+  subset checks (`SUBSET_MODE`), matching what `analyze_savings.py` prices
+  as P. (The library default had become batched after the first
+  submission.)
+- MATCH types: hmmsearch whitespace multiset (token identity), as locked;
+  hmmscan byte when the layout stays pinned (addendum above).
+- Fresh caches and output directory. The 2026-09-28 directory on CARC is
+  moved aside to `results/savings_failed_20260928/`; no row from the
+  failed run is combined with the rerun. The failed run stays in the
+  record and is reported as a halted run.
+- Already visible in the failed run and flagged here before the rerun:
+  stock wall time on genome 1 of A/hmmsearch was 523 s against a model
+  prediction of 741 s (42% error; the screen fit used BW25113 at
+  N = 4,192). The locked >10% flag applies and will be reported, not
+  refit.
