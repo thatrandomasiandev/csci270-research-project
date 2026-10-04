@@ -631,3 +631,71 @@ leave tomorrow’s proteome uncached.
 Personal-store notes updated in the same pass
 (`literature/topics/record-memoization-cli.md`, paper files
 for ProcessCache, vCache, INCR).
+
+## Addendum 2026-10-03 — Caruca and INCR, read in full
+
+Sources read end to end: Caruca, arXiv 2510.14279v1 (Lamprou, Jung,
+Keoliya, Lazarek, Kallas, Greenberg, Vasilakis; 11,846 words), and INCR,
+"Faster Re-Execution via Bolt-On Incrementalization", USENIX OSDI 2026
+(Xie, Lamprou, Xia, Vasilakis; `osdi26-xie-yizheng.pdf`, 13,654 words).
+The 2026-09-27 review above missed Caruca.
+
+### Caruca (specification mining for opaque commands)
+
+- **What it infers.** An LLM turns a command's documentation into an
+  invocation grammar. Sandboxed, strace-traced executions then classify
+  each invocation: *stateless* if its output on input `i` equals the
+  concatenation of its outputs on `n` partitions of `i` **split over
+  lines**; *argument-splittable* if one invocation per argument,
+  concatenated, equals the full invocation; plus input/output files and
+  filesystem pre/post-conditions.
+- **Records.** Always lines. A multi-line record (a FASTA entry) has no
+  representation.
+- **Reuse.** None. Specifications feed PaSh, POSH (parallelization),
+  Shellcheck and Shseer (bug finding). No caching, no cross-run reuse.
+- **Keys and fields.** None. No notion of which part of a record an
+  output depends on, or of fields copied from input vs computed.
+- **Evaluation.** 60 GNU Coreutils, POSIX and third-party commands.
+
+### INCR (bolt-on incrementalization of shell scripts)
+
+- **Default granularity.** Whole command invocations: a probe records each
+  command's dependencies (inputs, stdin hash, environment, filesystem) and
+  replays its memoized effects when all are unchanged.
+- **Finer granularity needs annotations.** For commands that crowdsourced
+  annotations (from PaSh/POSH) label *stateless*, INCR splits the input
+  stream with **content-defined chunking** and memoizes each chunk
+  separately, keyed by the chunk's content; unchanged chunks (e.g. a log
+  extended with new events) are reused. For *argument-independent*
+  commands it splits invocations per argument.
+- **Keys and fields.** Chunk bytes only. No projection key, no field roles,
+  no splicing of copied fields from new input.
+- **Caruca.** Not cited; INCR's annotations come from PaSh and POSH.
+
+### Verdict for ACTS
+
+Neither work infers a **content key** (the projection of a record that a
+tool's output depends on) or separates copied from computed fields.
+Together they give byte-level reuse: line partitions (Caruca) and
+content-defined byte chunks (INCR). ACTS's content-key claim is **not
+occupied** by either.
+
+The measured gap (`results/content_key_overlap.json`, pre-registered in
+`docs/CONTENT_KEY_PROTOCOL.md`): byte-level record keys recover 0.56 of
+inferred-key reuse on the 1000G VCF workload and 0.00 on GenBank E. coli
+proteomes (RefSeq control 0.998). Argument, not yet measured: INCR's
+chunks span several records, and a chunk is reusable only if all of its
+bytes recur, so per-record byte-key recall is an upper bound on its chunk
+reuse for these inputs. Running INCR itself (artifact requested) would
+replace that argument with a measurement.
+
+Claims that **are** occupied and must be cited, not claimed:
+execution-based inference of line-level statelessness for opaque commands
+(Caruca), and chunk-level memoization for stateless commands (INCR).
+
+Positioning sentence for the paper: *Caruca infers whether an opaque
+command can be split over lines, and INCR reuses unchanged byte chunks of
+such commands. ACTS infers which part of each record a tool's output
+depends on, so it reuses results when records recur with different bytes:
+renamed proteins, variants carrying another sample's genotypes, compounds
+with new IDs.*
