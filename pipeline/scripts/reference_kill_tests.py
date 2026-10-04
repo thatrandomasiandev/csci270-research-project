@@ -207,6 +207,82 @@ def r2(work: Path, powered: bool = False, cut_ga: bool = True) -> dict:
     return out
 
 
+DOM_E_COLS = {6: "full_seq_E", 11: "c_Evalue", 12: "i_Evalue"}
+
+
+def domtbl(hmm: Path, fa: Path, work: Path, tag: str) -> dict[tuple[str, str, str], list[str]]:
+    out = work / f"{tag}.domtbl"
+    run(["hmmscan", "--cpu", "4", "--cut_ga", "--noali", "--domtblout", str(out), str(hmm), str(fa)])
+    rows: dict[tuple[str, str, str], list[str]] = {}
+    for line in out.read_text().splitlines():
+        if line.startswith("#") or not line.strip():
+            continue
+        tok = line.split()
+        rows[(tok[3], tok[0], tok[9])] = tok  # (query, model, domain index)
+    return rows
+
+
+def dom_z(rows: dict) -> dict[str, int]:
+    """Targets reported per query in one run (candidate data-dependent normalizer)."""
+    per: dict[str, set[str]] = {}
+    for (q, t, _d) in rows:
+        per.setdefault(q, set()).add(t)
+    return {q: len(ts) for q, ts in per.items()}
+
+
+def r3(work: Path) -> dict:
+    """domtblout on the R2p inputs (written by r2p in the same work dir layout)."""
+    src = work.parent / "r2p"
+    fa = src / "q.faa"
+    work.mkdir(parents=True, exist_ok=True)
+    full = domtbl(src / "R.hmm", fa, work, "R")
+    h1 = domtbl(src / "R1.hmm", fa, work, "R1")
+    h2 = domtbl(src / "R2.hmm", fa, work, "R2")
+    z = {"R": _nmodels(src / "R.hmm"), "R1": _nmodels(src / "R1.hmm"), "R2": _nmodels(src / "R2.hmm")}
+    union = {**h1, **h2}
+    dz_full, dz1, dz2 = dom_z(full), dom_z(h1), dom_z(h2)
+    set_ok = set(full) == set(union)
+    mism = 0
+    fits = {name: {"Z": 0, "domZ": 0, "n": 0} for name in DOM_E_COLS.values()}
+    for key, tok in full.items():
+        sub = union.get(key)
+        if sub is None:
+            continue
+        in1 = key in h1
+        zh = z["R1"] if in1 else z["R2"]
+        dzh = (dz1 if in1 else dz2).get(key[0], 0)
+        for i, (a, b) in enumerate(zip(tok, sub)):
+            if i in DOM_E_COLS:
+                f = fits[DOM_E_COLS[i]]
+                f["n"] += 1
+                for label, factor in (("Z", z["R"] / zh), ("domZ", dz_full.get(key[0], 0) / dzh if dzh else float("nan"))):
+                    resc = float(b) * factor
+                    if abs(resc - float(a)) <= half_ulp(a) + half_ulp(b) * factor:
+                        f[label] += 1
+            elif a != b:
+                mism += 1
+    assigned = {}
+    for col, f in fits.items():
+        ok = [lab for lab in ("Z", "domZ") if f["n"] and f[lab] == f["n"]]
+        assigned[col] = ok or ["not reusable"]
+    out = {
+        "protocol": PROTOCOL, "git": git_head(), "inputs": "R2p (r2p work dir)",
+        "domain_lines_full": len(full), "domain_lines_union": len(union),
+        "check1_domain_set_equal": set_ok,
+        "check2_unnormalized_mismatches": mism,
+        "normalizer_fits": fits, "assigned_normalizer": assigned,
+        "kill_rule": "check1 false or check2 mismatches > 0",
+        "killed": (not set_ok) or mism > 0,
+        "finished_utc": datetime.now(timezone.utc).isoformat(),
+    }
+    (ROOT / "results" / "reference_kill_r3.json").write_text(json.dumps(out, indent=2) + "\n")
+    return out
+
+
+def _nmodels(hmm: Path) -> int:
+    return sum(1 for ln in hmm.read_text().splitlines() if ln.startswith("//"))
+
+
 if __name__ == "__main__":
     which = sys.argv[1]
     if which == "r1":
@@ -215,5 +291,7 @@ if __name__ == "__main__":
         res = r2(Path(sys.argv[2]), powered=(which != "r2"), cut_ga=(which != "r2n"))
         print(json.dumps({k: v for k, v in res.items() if k != "examples"}, indent=1))
         print(json.dumps(res["examples"], indent=1))
+    elif which == "r3":
+        print(json.dumps(r3(Path(sys.argv[2])), indent=1))
     else:
-        raise SystemExit("usage: reference_kill_tests.py r1 | r2 WORKDIR")
+        raise SystemExit("usage: reference_kill_tests.py r1 | r2|r2p|r2n|r3 WORKDIR")

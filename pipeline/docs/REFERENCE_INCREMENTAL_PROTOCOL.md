@@ -181,3 +181,33 @@ column; normalized columns (`tblout` E-values, and any domtblout column
 assigned a normalizer in R3) are equal **within the printed precision**
 after rescaling. It is a distinct, weaker relation than `byte`, `order` or
 `multiset`. No reference-side result may be described as byte-identical.
+
+## Addendum 2026-10-03 — outcomes of R2n and R3 (results; rules unchanged)
+
+**R2n negative control** (`results/reference_kill_r2n.json`): without
+`--cut_ga`, the union of the halves has **3 hits not in the full run**
+(1,085 vs 1,082; strict superset), plus 100 unnormalized mismatches
+(inclusion/domain counts under E-value thresholds). Check 1 **fails as
+required**. The decomposition test therefore distinguishes a Z-coupled
+threshold from a score threshold, and R2p's pass carries weight. Scope
+stays: score-thresholded modes only.
+
+**R3 domtblout** (`results/reference_kill_r3.json`): 560 domain lines;
+the union equals the full run; 0 mismatches outside the domain E-value
+columns. **Not killed.** Normalizers assigned from the data:
+
+| Column | Fits Z | Fits domZ (targets reported per query) | Assigned |
+|---|---|---|---|
+| full-sequence E-value | 560/560 | 150/560 | **Z** |
+| i-Evalue | 560/560 | 150/560 | **Z** |
+| c-Evalue | 151/560 | 504/560 | **not reusable** (recompute) |
+
+The review that prompted this addendum expected i-Evalue to scale with
+domZ; the data assign it Z. c-Evalue mostly tracks a per-query count but
+not the pre-registered domZ definition. Trying other definitions now would
+be post hoc. It is left as an exploratory follow-up and is not claimed.
+
+**`ref-merge` claim, consolidated:** under `--cut_ga`, hit sets, domain
+sets and all unnormalized columns are byte-exact. tblout E-values, domtblout
+full-sequence E-values and i-Evalues are equal within printed precision
+after rescaling by Z. domtblout c-Evalues must be recomputed.

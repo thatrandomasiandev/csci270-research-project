@@ -1,0 +1,40 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "git": "2bce5671358509092783d04bff1423b0895f7192",
+  "inputs": "R2p (r2p work dir)",
+  "domain_lines_full": 560,
+  "domain_lines_union": 560,
+  "check1_domain_set_equal": true,
+  "check2_unnormalized_mismatches": 0,
+  "normalizer_fits": {
+    "full_seq_E": {
+      "Z": 560,
+      "domZ": 150,
+      "n": 560
+    },
+    "c_Evalue": {
+      "Z": 151,
+      "domZ": 504,
+      "n": 560
+    },
+    "i_Evalue": {
+      "Z": 560,
+      "domZ": 150,
+      "n": 560
+    }
+  },
+  "assigned_normalizer": {
+    "full_seq_E": [
+      "Z"
+    ],
+    "c_Evalue": [
+      "not reusable"
+    ],
+    "i_Evalue": [
+      "Z"
+    ]
+  },
+  "kill_rule": "check1 false or check2 mismatches > 0",
+  "killed": false,
+  "finished_utc": "2026-10-04T02:03:17.534374+00:00"
+}
