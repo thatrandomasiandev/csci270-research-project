@@ -1,0 +1,178 @@
+{
+  "protocol": "pipeline/docs/COPY_AWARE_KEY_PROTOCOL.md",
+  "git": "d3ec5a2a386627f2dabae64b59ca324b27431265",
+  "started_utc": "2026-10-04T01:53:40.956518+00:00",
+  "finished_utc": "2026-10-04T01:53:43.161731+00:00",
+  "dep_key": "fields whose perturbation changes output (contract roles key|pass): VCF whole record; hmmscan (name, sequence)",
+  "copy_aware_key": "contract key fields: VCF CHROM POS REF ALT; FASTA seq_key",
+  "vcf": {
+    "workload": "HG00096 \u222a HG00097 -> HG00099 (-c1)",
+    "dep_fields": [
+      "CHROM",
+      "POS",
+      "REF",
+      "ALT",
+      "ID",
+      "QUAL",
+      "FILTER",
+      "AC",
+      "AN",
+      "DP",
+      "AF",
+      "EAS_AF",
+      "EUR_AF",
+      "AFR_AF",
+      "AMR_AF",
+      "SAS_AF",
+      "VT",
+      "NS",
+      "EX_TARGET",
+      "SAMPLES"
+    ],
+    "dep_recall": 0.4383145256278734,
+    "copy_aware_recall": 0.7873969375736161,
+    "ratio": 0.5566627258908967,
+    "note": "D = whole record (all fields key or pass); equals byte recall by construction"
+  },
+  "genbank_hmmscan": {
+    "genomes": [
+      "GCA_002853805.1",
+      "GCA_002090355.1",
+      "GCA_016659085.1",
+      "GCA_041316645.1",
+      "GCA_013201215.1",
+      "GCA_054510725.1",
+      "GCA_002058765.1"
+    ],
+    "curve": [
+      {
+        "k": 1,
+        "accession": "GCA_002090355.1",
+        "n_records": 4294,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.41217634709587125,
+        "ratio": 0.0
+      },
+      {
+        "k": 2,
+        "accession": "GCA_016659085.1",
+        "n_records": 4197,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.5982249940033582,
+        "ratio": 0.0
+      },
+      {
+        "k": 3,
+        "accession": "GCA_041316645.1",
+        "n_records": 5160,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.5871523697610654,
+        "ratio": 0.0
+      },
+      {
+        "k": 4,
+        "accession": "GCA_013201215.1",
+        "n_records": 4261,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.6620689655172414,
+        "ratio": 0.0
+      },
+      {
+        "k": 5,
+        "accession": "GCA_054510725.1",
+        "n_records": 4739,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.5535181236673774,
+        "ratio": 0.0
+      },
+      {
+        "k": 6,
+        "accession": "GCA_002058765.1",
+        "n_records": 5058,
+        "dep_recall": 0.0,
+        "copy_aware_recall": 0.4052907915993538,
+        "ratio": 0.0
+      }
+    ]
+  },
+  "refseq_hmmscan_control": {
+    "curve": [
+      {
+        "k": 1,
+        "accession": "GCF_002090355.1",
+        "n_records": 4091,
+        "dep_recall": 0.42507944267905157,
+        "copy_aware_recall": 0.42507944267905157,
+        "ratio": 1.0
+      },
+      {
+        "k": 2,
+        "accession": "GCF_001650275.1",
+        "n_records": 5176,
+        "dep_recall": 0.31993817619783615,
+        "copy_aware_recall": 0.31993817619783615,
+        "ratio": 1.0
+      },
+      {
+        "k": 3,
+        "accession": "GCF_052050745.1",
+        "n_records": 4197,
+        "dep_recall": 0.6499880867286156,
+        "copy_aware_recall": 0.6499880867286156,
+        "ratio": 1.0
+      },
+      {
+        "k": 4,
+        "accession": "GCF_016659085.1",
+        "n_records": 4191,
+        "dep_recall": 0.9713672154617037,
+        "copy_aware_recall": 0.9713672154617037,
+        "ratio": 1.0
+      },
+      {
+        "k": 5,
+        "accession": "GCF_041316645.1",
+        "n_records": 5124,
+        "dep_recall": 0.615144418423107,
+        "copy_aware_recall": 0.615144418423107,
+        "ratio": 1.0
+      },
+      {
+        "k": 6,
+        "accession": "GCF_013201215.1",
+        "n_records": 4228,
+        "dep_recall": 0.6790444654683065,
+        "copy_aware_recall": 0.6790444654683065,
+        "ratio": 1.0
+      },
+      {
+        "k": 7,
+        "accession": "GCF_054510725.1",
+        "n_records": 4697,
+        "dep_recall": 0.5769640195869704,
+        "copy_aware_recall": 0.5769640195869704,
+        "ratio": 1.0
+      },
+      {
+        "k": 8,
+        "accession": "GCF_002058765.1",
+        "n_records": 4846,
+        "dep_recall": 0.49277754849360295,
+        "copy_aware_recall": 0.49277754849360295,
+        "ratio": 1.0
+      },
+      {
+        "k": 9,
+        "accession": "GCF_003956185.1",
+        "n_records": 4734,
+        "dep_recall": 0.6501901140684411,
+        "copy_aware_recall": 0.6501901140684411,
+        "ratio": 1.0
+      }
+    ]
+  },
+  "kill_rule": "dep/copy_aware >= 0.9 on BOTH vcf and GenBank (last k)",
+  "copy_awareness_killed": false,
+  "prediction_genbank_ratio_le_0.05_all_k": true,
+  "prediction_refseq_ratio_ge_0.9_all_k": true
+}
