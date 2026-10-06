@@ -1,0 +1,56 @@
+#!/bin/bash
+# Exclusive-node DIAMOND second-tool run. Not a savings job.
+#SBATCH --job-name=acts_ref_diamond
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --constraint=epyc-7542
+#SBATCH --time=24:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/results/reference_diamond/diamond-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/results/reference_diamond/diamond-%j.err
+
+set -euo pipefail
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second
+PIPE="${ROOT}/pipeline"
+OUT="${ROOT}/results/reference_diamond"
+WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_diamond_${SLURM_JOB_ID}"
+mkdir -p "${OUT}" "${WORK}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load python/3.11.9 || module load python || true
+
+export PATH="${ROOT}/bin:${PATH}"
+export TMPDIR="${WORK}"
+export PYTHONPATH="${PIPE}"
+export ACTS_GIT_HASH_FILE="${OUT}/GIT_HASH"
+if [[ -n "${ACTS_GIT_HASH:-}" ]]; then
+  printf '%s\n' "${ACTS_GIT_HASH}" > "${ACTS_GIT_HASH_FILE}"
+fi
+
+echo "=== host ==="
+hostname
+date -Is
+lscpu | grep -E 'Model name|CPU\(s\)' || true
+python3 --version
+diamond version
+df -h "${WORK}" "${ROOT}" || true
+
+python3 -m pip install --user 'biopython==1.85' 'tqdm==4.67.1' || echo "pip install failed; iSeqSearch will record the import error"
+
+OLD_FILE="$(cat "${ROOT}/data/swissprot/OLD_PATH")"
+python3 "${PIPE}/scripts/run_reference_diamond.py" \
+  --diamond "$(command -v diamond)" \
+  --old "${OLD_FILE}" \
+  --new "${ROOT}/data/swissprot/uniprot_sprot_2026_03.fasta.gz" \
+  --queries "${PIPE}/data/recurrence/A/GCF_002853805.1_protein.faa.gz" \
+  --out "${OUT}" \
+  --work "${WORK}" \
+  --iseq "${ROOT}/iseq/Incremental-Protein-Search"
+
+echo REF_DIAMOND_DONE
