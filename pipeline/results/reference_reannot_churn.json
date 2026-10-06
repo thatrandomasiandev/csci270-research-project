@@ -1,0 +1,31 @@
+{
+  "measurement": "length-weighted churn from model files only",
+  "timed": false,
+  "old_path": "pipeline/data/hmmer/pfam38.1/Pfam-A.hmm.gz",
+  "new_path": "/tmp/pfam38.2/Pfam-A.hmm.gz",
+  "old_sha256": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+  "new_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+  "old_bytes": 384357362,
+  "new_bytes": 418160514,
+  "old_version": "Pfam release       : 38.1\nPfam-A families    : 27481\nDate               : 2025-09\nBased on UniProtKB : 2025_03",
+  "new_version": "Pfam release       : 38.2\nPfam-A families    : 30134\nDate               : 2026-01\nBased on UniProtKB : 2025_03",
+  "r1_z_new": 30134,
+  "r1_unchanged_strict": 26082,
+  "r1_crosscheck": "ok",
+  "n_old": 27481,
+  "n_new": 30134,
+  "n_unchanged_hash": 26082,
+  "n_changed_and_new": 4052,
+  "length_new": 4754065,
+  "length_unchanged": 4153508,
+  "length_changed_and_new": 600557,
+  "c_length": 0.12632494507332145,
+  "provenance": {
+    "git": "d5d5a66064bc7bda37777fd4278e45032a9b1c1c",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-06T23:05:22.486996+00:00"
+  }
+}

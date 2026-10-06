@@ -821,3 +821,170 @@ Those files were not edited here.
 Next measurement, not done here: a timed Pfam 38.1 → 38.2
 re-annotation on CARC, submitted with `ssh discovery sbatch`, not run
 on a login node.
+
+## Addendum 2026-10-06 — timed 38.1→38.2 re-annotation
+
+Written after the length-weighted churn below and **before** any timed
+arm. Locked text above is unchanged. No fifth normalizer. The gate is
+the primary formula. The secondary number is reported and is not the
+gate.
+
+### Workload
+
+Collection A, seed-20260926 order, positions 1–5. Same proteomes as
+`docs/SAVINGS_PROTOCOL.md`:
+
+| Pos | Index | Accession | Proteins |
+|---|---|---|---|
+| 1 | 9 | `GCF_002853805.1` | 5117 |
+| 2 | 5 | `GCF_002090355.1` | 4091 |
+| 3 | 2 | `GCF_001650275.1` | 5176 |
+| 4 | 75 | `GCF_052050745.1` | 4197 |
+| 5 | 29 | `GCF_016659085.1` | 4191 |
+
+Protein counts are the FASTA record counts on the Mac copies. The
+timed job recounts them and stops if a file disagrees.
+`hmmscan --cut_ga --noali --cpu 32`, writing tblout and domtblout.
+The index step is the declared prep `hmmpress -f {reference}`.
+
+### Files
+
+| Release | SHA-256 | Version file |
+|---|---|---|
+| 38.1 | `d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591` | Pfam 38.1, 27481 families, 2025-09 |
+| 38.2 | `2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab` | Pfam 38.2, 30134 families, 2026-01 |
+
+38.2 bytes are the CARC file
+`/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz`,
+copied to the Mac. 38.1 is `pipeline/data/hmmer/pfam38.1/Pfam-A.hmm.gz`.
+The timed job re-hashes both and stops on a mismatch.
+`results/reference_reannot_churn.json`.
+
+### Length-weighted churn (model files only, before timing)
+
+Unchanged means the content hash is in 38.1. That hash is the strict
+hash R1 used. The cross-check matches R1: 30,134 models in 38.2,
+26,082 unchanged.
+
+\[
+c_{\mathrm{length}} = 600557 / 4754065 = 0.12632494507332145.
+\]
+
+Count churn stays \(c = 4052 / 30134 = 0.13446605163602576\). Changed
+and new models are shorter than the average model, so the length
+weight is below the count weight.
+
+### What is not run
+
+A whole-invocation cache keys the reference bytes. The reference
+changed, so that cache has zero hits. It is not run.
+
+### Setup, untimed, reported
+
+Per genome, one reference-incremental run on 38.1 fills the cache.
+The probe and fit run once, on genome 1's fill. Its wall is \(P\).
+The new release is pressed once before any stock arm. That press is
+not charged to arm (i). The gestore probe runs once, on genome 1
+against 38.2. Its wall is reported separately and is not \(P\).
+
+### Arms
+
+Each genome, three repeats, one genome per invocation, on one
+exclusive `epyc-7542` node. Order inside a genome:
+`(i), (ii), (iii)` and then the next repeat. Genomes follow the
+table above.
+
+- **(i)** stock `hmmscan` on the pressed 38.2.
+- **(ii)** reference-incremental on 38.2, warm from that genome's
+  38.1 cache. The wall includes parsing, the diff, the sub-reference
+  build, prep, the tool on changed and new models, merge, rescale,
+  and render. It does not include a second full scan.
+- **(iii)** shipped `--baseline gestore`. It does not infer a
+  normalizer. Columns whose values depend on reference size cannot
+  be reused, so the fit refuses and the timed call scans every 38.2
+  entry, including prep of that copy. Expected: wall at least that
+  of (i), larger by the full-release prep, and not the incremental
+  speedup. A decision other than `REFUSE` is `STOP_GESTORE`.
+
+### Preflight
+
+The layout pin landed at `9c9f51a`. Its library check,
+`preflight_stock_outputs`, is the record-memo savings contract.
+This experiment's MATCH is `ref-merge`, so the preflight is that
+relation: after genome 1's cache fill, one stock run and one
+incremental run on 38.2, every row of both tables. Those two runs
+are not repeats. A mismatch is `STOP_MATCH` and no repeat starts.
+
+### MATCH
+
+Every timed (ii) is `ref-merge`d against that repeat's (i), both
+tables, every row. A mismatch stops the remaining repeats, records
+the reason, and no speedup is claimed.
+
+### Predictions
+
+\[
+\mathrm{speedup}(c, n) = (a + b n) / (a + c\, b n)
+\]
+
+with \(a = 31.959641573764316\) s and
+\(b = 0.7228553909794854\) s/record from
+`results/headline_screen.json`.
+
+**Primary.** \(c = 4052/30134\). At \(n = 4192\) this is
+\(6.968662141244353\times\). The five genomes are not all 4,192
+proteins, so the comparison value is the unweighted mean of the five
+per-genome primaries, \(6.99924607283027\times\):
+
+| Accession | Primary | Secondary |
+|---|---|---|
+| `GCF_002853805.1` | 7.048181565546971 | 7.4733276423250805 |
+| `GCF_002090355.1` | 6.9579639131287525 | 7.371035883891939 |
+| `GCF_001650275.1` | 7.052346971503922 | 7.478054963227952 |
+| `GCF_052050745.1` | 6.969179352246338 | 7.383742308241676 |
+| `GCF_016659085.1` | 6.968558561725364 | 7.3830389153098235 |
+
+**Secondary.** The same formula with \(c_{\mathrm{length}}\). The
+unweighted mean is \(7.417839942599294\times\). At \(n = 4192\) it is
+\(7.383156276518736\times\).
+
+**Gate.** Let \(S(g)\) be mean wall of (i) divided by mean wall of
+(ii) for genome \(g\), repeats only, probe excluded.
+\(\bar S\) is the unweighted mean of the five \(S(g)\).
+**CONFIRMED** if there is no stop and
+\(|\bar S - 6.99924607283027| / 6.99924607283027 \le 0.25\).
+**REFUTED** otherwise. Report the result either way.
+
+Also report, and do not use as the gate: \(\bar S\) against the
+secondary mean; speedup including measured \(P\),
+\(\bar T_i / (\bar T_{ii} + P)\) and
+\(5 \bar T_i / (5 \bar T_{ii} + P)\), where \(\bar T\) is the
+unweighted mean of the per-genome mean walls.
+
+### Amdahl, to be measured on arm (ii)
+
+For each timed (ii) repeat the clocks are:
+
+- `prep_s`: the declared prep on the sub-reference
+- `tool_s`: the tool on changed and new models. This is the measured
+  stand-in for \(a + b \cdot n_{\mathrm{changed}}\)
+- `merge_s`: rescale plus render
+- `w`: end-to-end wall minus prep, tool, and merge
+
+\(a\) is not separable from one invocation. The report uses the
+headline intercept above and sets
+\(b \cdot n_{\mathrm{changed}} = \mathrm{tool\_s} - a\), under the
+assumption that \(a\) does not shrink. If `tool_s` is below \(a\),
+that assumption fails and `tool_s` is the dominant measured term.
+The means of these clocks are the measured decomposition. Nothing
+here is a license to micro-optimize a term before the means exist.
+
+### Resources
+
+One exclusive `epyc-7542`, 32 CPUs, 128 GB, 48 h requested.
+PROJECTED occupancy is about 30–40 h (five cache fills, the probe,
+three repeats of a ~50 min stock scan, a shorter incremental scan,
+and a gestore scan that also presses a full copy). That projection
+is not a result. The job is `jobs/reference_reannot.job`, own tree
+`reference_reannot/` on CARC, own `GIT_HASH`. It does not write
+`results/savings/`.

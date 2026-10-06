@@ -1,0 +1,62 @@
+{
+  "addendum": "2026-10-06 \u2014 timed 38.1\u219238.2 re-annotation",
+  "a_s": 31.959641573764316,
+  "b_s_per_record": 0.7228553909794854,
+  "c_count": 0.13446605163602576,
+  "c_count_numerator": 4052,
+  "c_count_denominator": 30134,
+  "c_length": 0.12632494507332145,
+  "length_new": 4754065,
+  "length_unchanged": 4153508,
+  "length_changed_and_new": 600557,
+  "primary_at_n_4192": 6.968662141244353,
+  "secondary_at_n_4192": 7.383156276518736,
+  "primary_mean": 6.99924607283027,
+  "secondary_mean": 7.417839942599294,
+  "confirm_tolerance": 0.25,
+  "repeats": 3,
+  "old_sha256": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+  "new_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+  "genomes": [
+    {
+      "position": 1,
+      "index": 9,
+      "accession": "GCF_002853805.1",
+      "n_proteins": 5117,
+      "primary_speedup": 7.048181565546971,
+      "secondary_speedup": 7.4733276423250805
+    },
+    {
+      "position": 2,
+      "index": 5,
+      "accession": "GCF_002090355.1",
+      "n_proteins": 4091,
+      "primary_speedup": 6.9579639131287525,
+      "secondary_speedup": 7.371035883891939
+    },
+    {
+      "position": 3,
+      "index": 2,
+      "accession": "GCF_001650275.1",
+      "n_proteins": 5176,
+      "primary_speedup": 7.052346971503922,
+      "secondary_speedup": 7.478054963227952
+    },
+    {
+      "position": 4,
+      "index": 75,
+      "accession": "GCF_052050745.1",
+      "n_proteins": 4197,
+      "primary_speedup": 6.969179352246338,
+      "secondary_speedup": 7.383742308241676
+    },
+    {
+      "position": 5,
+      "index": 29,
+      "accession": "GCF_016659085.1",
+      "n_proteins": 4191,
+      "primary_speedup": 6.968558561725364,
+      "secondary_speedup": 7.3830389153098235
+    }
+  ]
+}
