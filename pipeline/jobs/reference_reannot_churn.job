@@ -1,5 +1,5 @@
 #!/bin/bash
-# Length-weighted Pfam 38.1 → 38.2 churn. Not a timed arm.
+# Length-weighted Pfam 38.1 → 38.2 churn. Not a timed arm, so it is not exclusive.
 # Own tree: do not write under pipeline/results/savings.
 #SBATCH --job-name=reannot_churn
 #SBATCH --account=biyik_1165
@@ -8,8 +8,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --exclusive
-#SBATCH --mem=128G
+#SBATCH --mem=64G
 #SBATCH --time=03:00:00
 #SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/logs/%x-%j.out
 #SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/logs/%x-%j.err

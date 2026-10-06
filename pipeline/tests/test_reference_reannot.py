@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import gzip
 import sys
 import tempfile
 import unittest
@@ -16,6 +17,7 @@ from acts.reference_formats import (  # noqa: E402
     write_entries,
 )
 from acts.reference_run import ReferenceIncremental  # noqa: E402
+from scripts.run_reference_reannot import decompress  # noqa: E402
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "reference_fitter"
 
@@ -46,6 +48,28 @@ class LengthChurnTests(unittest.TestCase):
         report = length_weighted_churn(entries, entries)
         self.assertEqual(report["c_length"], 0.0)
         self.assertEqual(report["n_unchanged_hash"], 2)
+
+
+class DecompressTests(unittest.TestCase):
+    def test_gzip_magic_is_two_bytes_not_a_full_read(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "in.gz"
+            payload = b"e0 1\n" * 50
+            with gzip.open(src, "wb") as handle:
+                handle.write(payload)
+            original = Path.read_bytes
+
+            def fail_slurp(self):
+                raise AssertionError("decompress slurped the whole file")
+
+            Path.read_bytes = fail_slurp
+            try:
+                dest = root / "out"
+                decompress(src, dest)
+            finally:
+                Path.read_bytes = original
+            self.assertEqual(dest.read_bytes(), payload)
 
 
 class PhaseClockTests(unittest.TestCase):

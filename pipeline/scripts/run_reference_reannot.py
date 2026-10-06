@@ -107,8 +107,9 @@ def decompress(src: Path, dest: Path) -> None:
     if dest.is_file() and dest.stat().st_size > 0:
         return
     dest.parent.mkdir(parents=True, exist_ok=True)
-    raw = src.read_bytes()[:2]
-    if raw == b"\x1f\x8b":
+    with src.open("rb") as handle:
+        magic = handle.read(2)
+    if magic == b"\x1f\x8b":
         with gzip.open(src, "rb") as inp, dest.open("wb") as out:
             shutil.copyfileobj(inp, out, length=1 << 20)
         return
@@ -521,7 +522,7 @@ def main() -> int:
 
     if not setup.get("preflight"):
         print("preflight ref-merge on genome 1", flush=True)
-        pending = args.work / "preflight"
+        pending = args.scratch / "preflight"
         shutil.rmtree(pending, ignore_errors=True)
         pending.mkdir(parents=True)
         faa = faa_for(first["accession"])
@@ -572,7 +573,7 @@ def main() -> int:
             key = (genome["accession"], repeat)
             if all((*key, arm) in finished for arm in ARMS):
                 continue
-            pending = args.work / "pending" / genome["accession"] / f"r{repeat}"
+            pending = args.scratch / "pending" / genome["accession"] / f"r{repeat}"
             shutil.rmtree(pending, ignore_errors=True)
             pending.mkdir(parents=True)
             for arm in ARMS:
