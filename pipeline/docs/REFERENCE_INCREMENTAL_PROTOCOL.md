@@ -253,3 +253,16 @@ normalizer, recomputed from the merged per-sequence hit set.
 `ref-merge` now covers every domtblout column: domain sets and unnormalized
 columns byte-exact; full-sequence E and i-Evalue rescaled by Z; c-Evalue
 rescaled by per-query domZ. All three are within printed precision.
+
+## Addendum 2026-10-06 — prior-art verdict (no new test)
+
+The kill rule for novelty, the search log, and the readings are in
+[`REFERENCE_PRIOR_ART.md`](REFERENCE_PRIOR_ART.md). Verdict: **NARROW**.
+iBLAST, iSeqSearch, and GeStore's BLAST plugin hand-build reference
+incrementality and E-value repair for specific search tools. GeStore's
+HMMER plugin does not rescale. KumQuat infers input-stream combiners
+and does not fit a normalizer. Nothing read infers both decomposition
+over reference entries and a fitted column normalizer for an unmodified
+CLI with no per-tool plugin. The R1–R3c results are unchanged. They
+show the property for `hmmscan --cut_ga`; they are not that inference
+procedure. A hand-coded HMMER plugin would not meet the surviving claim.
