@@ -1,7 +1,7 @@
 """Dune-style hit audit. Occupied at command granularity (Dune cache-check-probability).
 
 We apply the same idea at record granularity. Not a novelty claim.
-Canonical picker for `acts run --verify audit`. The HMMER savings job
+Canonical picker for `acts run --verify audit`. The savings job
 keeps its own copy (do not edit that script while it is queued).
 """
 

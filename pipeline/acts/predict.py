@@ -5,7 +5,7 @@ Engineering wrapper around the locked screen rule in
 Not a new method. Probe cost *P* is Agent A's batched subset-invariance
 schedule: ``P = Σ_i (a + b · n_i)`` over inference tool calls
 (``docs/INFERENCE_PROTOCOL.md`` addendum 2026-09-27;
-``scripts/predict_hmmer_probe_cost.py``).
+the probe-cost script under ``scripts/``).
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ PROBE_COST_NOTE = (
     "vcf/fasta: 4 full-probe runs (trace, determinism, perturbation, "
     "shuffle) plus batched subset (2 halves, 4 quarters, 8 singletons); "
     "independent of probe_n for n ≥ 8. lines: no field-role inference, P=0. "
-    "FASTA alignment extras omitted (tab-delimited HMMER path). "
+    "FASTA alignment extras omitted (tab-delimited profile path). "
     "ceiling_m is the P-free screen ratio; predicted_speedup includes P."
 )
 
@@ -100,7 +100,7 @@ def inference_call_sizes(
     probe_n: int = PROBE_N,
     subset_mode: str = "batched",
 ) -> list[int]:
-    """Record counts per inference tool call. Same schedule as predict_hmmer_probe_cost.
+    """Record counts per inference tool call. Same schedule as the probe-cost script.
 
     *n* is the full input size; the probe uses ``k = min(probe_n, n)``.
     """

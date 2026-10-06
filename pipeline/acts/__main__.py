@@ -1,9 +1,10 @@
-"""acts — strategy runner. First strategy: record memoization.
+"""acts — strategy runner.
 
   python3 -m acts probe --kind fastq_pe --r1 A.fq.gz --r2 B.fq.gz
   python3 -m acts run --strategy record_memo --kind lines --input in.txt -- cat
   python3 -m acts run --kind files --input in_dir -- python3 tool.py
   python3 -m acts run --kind linetable --input in.smi -- python3 tool.py
+  python3 -m acts run --strategy reference --input records.faa --reference db --prep 'prep {reference}' -- tool {reference} {input} {output}
   python3 -m acts run -- STAR …     # refuses identity (not byte-identical)
   python3 -m acts predict --kind lines --input in.txt -- cat
 """
@@ -166,12 +167,43 @@ def cmd_predict(args: argparse.Namespace) -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     out = Path(args.out) if args.out else Path("acts_out") / args.strategy
-    if args.strategy != "record_memo":
-        print(f"unknown strategy {args.strategy}; more later", file=sys.stderr)
-        return 2
     tool = list(args.tool)
     if tool and tool[0] == "--":
         tool = tool[1:]
+    if args.strategy == "reference":
+        from acts.reference_run import ReferenceIncremental, RunError
+
+        if not args.input:
+            print("reference needs --input", file=sys.stderr)
+            return 2
+        if not tool:
+            print("reference needs a tool after --", file=sys.stderr)
+            return 2
+        try:
+            memo = ReferenceIncremental(
+                argv=tool,
+                input_path=Path(args.input),
+                out_dir=out,
+                reference=Path(args.reference) if args.reference else None,
+                prep=args.prep,
+                baseline=args.baseline,
+                cache_path=Path(args.cache) if args.cache else None,
+                verify=args.verify,
+                audit_p=args.audit_p,
+                audit_seed=args.audit_seed,
+            )
+        except RunError as exc:
+            print(exc.reason, file=sys.stderr)
+            return 2
+        rec = memo.run()
+        print(f"strategy: {rec.strategy}")
+        print(f"decision: {rec.decision}")
+        print(f"why:      {rec.reason}")
+        print(f"wrote {out / 'decision.txt'}")
+        return 0 if rec.decision == "SHIP" else 1
+    if args.strategy != "record_memo":
+        print(f"unknown strategy {args.strategy}; more later", file=sys.stderr)
+        return 2
     memo = RecordMemo(
         kind=args.kind,
         argv=tool,
@@ -205,14 +237,33 @@ def main(argv: list[str] | None = None) -> int:
     pr.add_argument("--r2")
     pr.set_defaults(func=cmd_probe)
 
-    rn = sub.add_parser("run", help="run a strategy; refuse when MATCH cannot hold")
-    rn.add_argument("--strategy", default="record_memo")
+    rn = sub.add_parser(
+        "run",
+        help=(
+            "run a strategy. record_memo memoizes records. "
+            "reference fits F(records, reference): unchanged reference entries are reused, "
+            "and fitted numeric columns are rescaled. Probe is fixed at k=2, n_p=300, "
+            "seed 20261006. --prep builds index sidecars; it is not inferred."
+        ),
+    )
+    rn.add_argument("--strategy", default="record_memo", choices=("record_memo", "reference"))
     rn.add_argument(
         "--kind",
         default="lines",
         choices=("fastq_pe", "lines", "vcf", "fasta", "files", "linetable"),
     )
     rn.add_argument("--input")
+    rn.add_argument("--reference", help="reference file. Default: the argv file that parses as entries and is not --input")
+    rn.add_argument(
+        "--prep",
+        help="command run on each reference file before the tool. Use {reference} for that path. Builds index sidecars.",
+    )
+    rn.add_argument(
+        "--baseline",
+        choices=("gestore",),
+        default=None,
+        help="gestore reruns changed entries and does not infer a normalizer, so size-dependent columns cannot be reused",
+    )
     rn.add_argument("--r1")
     rn.add_argument("--r2")
     rn.add_argument("-o", "--out")

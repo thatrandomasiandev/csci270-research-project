@@ -23,13 +23,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from acts.entry_hash import entry_content_hash
 from acts.fasta import parse_fasta, write_fasta  # noqa: E402
+from acts.reference_formats import PROFILE_VOLATILE_TAGS
 
 PROTOCOL = "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md"
 SEED = 20261003
 NEW = ROOT / "data" / "hmmer" / "Pfam-A.hmm.gz"            # 38.2
 OLD = ROOT / "data" / "hmmer" / "pfam38.1" / "Pfam-A.hmm.gz"
-NO_EFFECT = ("DATE", "BM  ", "SM  ", "COM ")               # cannot change hmmscan --tblout
 EVALUE_COLS = (4, 7)                                       # full-seq E, best-domain E (0-based)
 
 
@@ -50,9 +51,8 @@ def iter_models(path: Path):
 
 
 def model_hashes(block: list[str]) -> tuple[str, str]:
-    strict = hashlib.sha256(
-        "".join(ln for ln in block if not ln.startswith(NO_EFFECT)).encode()
-    ).hexdigest()
+    text = "".join(block)
+    strict = entry_content_hash(text, PROFILE_VOLATILE_TAGS)
     in_body = False
     body: list[str] = []
     for ln in block:
@@ -128,10 +128,9 @@ def same_number(a: str, b: str) -> bool:
 
 
 def half_ulp(printed: str) -> float:
-    s = printed.lower()
-    mant, _, exp = s.partition("e")
-    dec = len(mant.split(".")[1]) if "." in mant else 0
-    return 0.5 * 10 ** (-dec) * (10 ** int(exp) if exp else 1)
+    from acts.reference_fit import half_ulp as _half_ulp
+
+    return _half_ulp(printed)
 
 
 def r2(work: Path, powered: bool = False, cut_ga: bool = True) -> dict:
