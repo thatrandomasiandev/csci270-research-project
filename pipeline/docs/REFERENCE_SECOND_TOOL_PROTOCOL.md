@@ -381,3 +381,25 @@ A fifth normalizer. A DIAMOND-named branch in `acts/`. A column map
 from `evalue` to `total_entry_length`. Editing this locked text. Using
 the residue-only fraction as `c`. Treating S2 as a license to pass
 `--freq-masking`.
+
+## Addendum 2026-10-06 — download approved
+
+Written after the hold above and before any download or DIAMOND run.
+The locked text is unchanged.
+
+The older archive may be fetched. Conditions, fixed by the approval:
+
+- Download on the CARC data-transfer node into `/project2`, not on the
+  Mac and not on a login node.
+- The tar MD5 must be `6042adf20dad1ab62112c9053bdebd20` before
+  extraction. A mismatch stops the run.
+- Extract only the Swiss-Prot FASTA member. Record that file's own
+  size and checksum in the result JSON.
+- Delete the tarball after a successful extract. Do not commit the
+  FASTA, the database, or the tar to git.
+- The release pair is **2026_01 → 2026_03**. Two releases. `c` is the
+  churn of that pair under D1.
+
+The newer FASTA (93,801,562 bytes, MD5
+`bc9d398533e6df582b563c6c03093bd0`) is fetched the same way. It is
+under 1 GB. The DIAMOND v2.2.5 Linux binary is fetched the same way.
