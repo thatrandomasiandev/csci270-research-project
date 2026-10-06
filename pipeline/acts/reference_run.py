@@ -20,6 +20,7 @@ from __future__ import annotations
 import random
 import shlex
 import subprocess
+import time
 from pathlib import Path
 from collections.abc import Callable, Sequence
 
@@ -161,6 +162,10 @@ def write_record_file(records: Sequence[RecordItem], path: Path) -> Path:
     return path
 
 
+def _clock_add(clock: dict[str, float], name: str, dt: float) -> None:
+    clock[name] = clock.get(name, 0.0) + float(dt)
+
+
 def subprocess_invoke(
     argv: list[str],
     *,
@@ -168,16 +173,22 @@ def subprocess_invoke(
     reference_slot: Path,
     prep: str | None,
     scratch: Path,
+    clock: dict[str, float] | None = None,
 ) -> Invoke:
     counter = {"n": 0}
+    phase = clock if clock is not None else {}
 
     def invoke(records: Sequence[RecordItem], entries: Sequence[Entry]) -> dict[str, str]:
         counter["n"] += 1
         work = scratch / f"call{counter['n']}"
         work.mkdir(parents=True, exist_ok=True)
+        started = time.perf_counter()
         rec_path = write_record_file(records, work / "records")
         ref_path = write_entries(list(entries), work / "reference")
+        _clock_add(phase, "subref_build_s", time.perf_counter() - started)
+        started = time.perf_counter()
         run_prep(prep, ref_path)
+        _clock_add(phase, "prep_s", time.perf_counter() - started)
         cmd, outputs = materialize_argv(
             argv,
             input_slot=input_slot,
@@ -186,11 +197,14 @@ def subprocess_invoke(
             reference_file=ref_path,
             work=work,
         )
+        started = time.perf_counter()
         proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
+        _clock_add(phase, "tool_s", time.perf_counter() - started)
         if proc.returncode != 0:
             err = (proc.stderr or proc.stdout or "")[-500:]
             raise RunError(f"tool failed ({proc.returncode}): {err}")
         tables: dict[str, str] = {}
+        started = time.perf_counter()
         if outputs:
             for name, dest in outputs.items():
                 if not dest.is_file():
@@ -198,6 +212,7 @@ def subprocess_invoke(
                 tables[name] = dest.read_text()
         else:
             tables["stdout"] = proc.stdout
+        _clock_add(phase, "read_output_s", time.perf_counter() - started)
         return tables
 
     return invoke
@@ -506,16 +521,21 @@ class ReferenceIncremental(Strategy):
         self.primary_parts = primary_parts
         self.sample = sample
         self.runner = runner
+        self.clock: dict[str, float] = {}
+        self._t_all = 0.0
 
     def run(self) -> StrategyResult:
         self.out_dir.mkdir(parents=True, exist_ok=True)
+        self._t_all = time.perf_counter()
         try:
+            started = time.perf_counter()
             reference = detect_reference(self.argv, self.input_path, self.reference)
             entries = parse_reference(reference)
             records = read_records(self.input_path)
+            _clock_add(self.clock, "parse_s", time.perf_counter() - started)
         except (RunError, FormatError, OSError, UnicodeError) as exc:
             reason = getattr(exc, "reason", None) or str(exc)
-            return self._finish("REFUSE", reason, {})
+            return self._finish("REFUSE", reason, self._phase_extra({}))
 
         cache = connect_cache(self.cache_path or (self.out_dir / "reference.sqlite"))
         ns = argv_namespace(self.argv, reference, self.baseline)
@@ -533,7 +553,18 @@ class ReferenceIncremental(Strategy):
             reference_slot=reference,
             prep=self.prep,
             scratch=self.out_dir / "calls",
+            clock=self.clock,
         )
+
+    def _phase_extra(self, extra: dict, *, probe_wall: float = 0.0, probe_phases: dict | None = None) -> dict:
+        payload = dict(extra)
+        payload["phases"] = {
+            **self.clock,
+            "total_s": time.perf_counter() - self._t_all,
+            "probe_wall_s": probe_wall,
+        }
+        payload["probe_phases"] = dict(probe_phases or {})
+        return payload
 
     def _run_cached(
         self,
@@ -545,7 +576,10 @@ class ReferenceIncremental(Strategy):
     ) -> StrategyResult:
         invoke = self._invoke(reference)
         stored = cache.load_contract(ns)
+        probe_wall = 0.0
+        probe_phases: dict[str, float] = {}
         if stored is None:
+            started = time.perf_counter()
             fitted = probe_fit(
                 entries,
                 records,
@@ -557,6 +591,13 @@ class ReferenceIncremental(Strategy):
                 n_p=PROBE_N,
                 seed=PROBE_SEED,
             )
+            probe_wall = time.perf_counter() - started
+            probe_phases = dict(self.clock)
+            self.clock.clear()
+            # parse_s happened before the probe and belongs to this invocation,
+            # not to the probe. Keep it on the post-probe clock.
+            if "parse_s" in probe_phases:
+                self.clock["parse_s"] = probe_phases.pop("parse_s")
             if not fitted.reason.startswith(("tool failed", "prep failed")):
                 cache.save_contract(ns, fitted.as_dict())
             stored = fitted.as_dict()
@@ -569,31 +610,71 @@ class ReferenceIncremental(Strategy):
                 return self._finish(
                     "REFUSE",
                     f"{stored.get('reason') or 'fit refused'}; full run failed: {exc.reason}",
-                    {"verify": self.verify, "reused_rows": 0},
+                    self._phase_extra(
+                        {
+                            "verify": self.verify,
+                            "reused_rows": 0,
+                            "n_entries": len(entries),
+                            "fallback_full_scan": False,
+                        },
+                        probe_wall=probe_wall,
+                        probe_phases=probe_phases,
+                    ),
                 )
             return self._finish(
                 "REFUSE",
                 str(stored.get("reason") or "fit refused"),
-                {"verify": self.verify, "reused_rows": 0},
+                self._phase_extra(
+                    {
+                        "verify": self.verify,
+                        "reused_rows": 0,
+                        "n_entries": len(entries),
+                        "fallback_full_scan": True,
+                    },
+                    probe_wall=probe_wall,
+                    probe_phases=probe_phases,
+                ),
             )
         if not tables and stored.get("tables") is None:
-            return self._finish("REFUSE", "stored contract has no tables", {})
+            return self._finish(
+                "REFUSE",
+                "stored contract has no tables",
+                self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
+            )
         try:
-            held, reused = self._incremental(cache, ns, invoke, entries, records, tables)
+            held, reused, stats = self._incremental(cache, ns, invoke, entries, records, tables)
         except RunError as exc:
-            return self._finish("REFUSE", exc.reason, {})
+            return self._finish(
+                "REFUSE",
+                exc.reason,
+                self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
+            )
+        started = time.perf_counter()
         self._write_tables(tables, held, entries, records)
-        extra = {"verify": self.verify, "reused_rows": reused, "rows": len(held)}
+        _clock_add(self.clock, "render_s", time.perf_counter() - started)
+        extra = {"verify": self.verify, "reused_rows": reused, "rows": len(held), **stats}
         if self.verify == "full":
             ok, why = self._verify_full(invoke, records, entries, tables, held)
             if not ok:
-                return self._finish("REFUSE_MATCH", why, extra)
+                return self._finish(
+                    "REFUSE_MATCH",
+                    why,
+                    self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases),
+                )
         elif self.verify == "audit" and reused:
             ok, why, report = self._verify_audit(invoke, records, entries, tables, held)
             extra["audit_checked"] = report
             if not ok:
-                return self._finish("REFUSE_AUDIT", why, extra)
-        return self._finish("SHIP", str(stored.get("reason") or "reference incrementality fitted"), extra)
+                return self._finish(
+                    "REFUSE_AUDIT",
+                    why,
+                    self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases),
+                )
+        return self._finish(
+            "SHIP",
+            str(stored.get("reason") or "reference incrementality fitted"),
+            self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases),
+        )
 
     def _full(self, invoke, records, entries, tables) -> list[dict]:
         if not tables:
@@ -606,7 +687,7 @@ class ReferenceIncremental(Strategy):
         texts = invoke(records, entries)
         return _rows_from_run(texts, tables, entries)
 
-    def _incremental(self, cache, ns, invoke, entries, records, tables) -> tuple[list[dict], int]:
+    def _incremental(self, cache, ns, invoke, entries, records, tables) -> tuple[list[dict], int, dict]:
         record_keys = {rec.key for rec in records}
         present = {entry.content_hash for entry in entries}
         removed = cache.covered_hashes(ns) - present
@@ -615,6 +696,7 @@ class ReferenceIncremental(Strategy):
         fresh: list[Entry] = []
         partial: list[Entry] = []
         missing_keys: set[str] = set()
+        started = time.perf_counter()
         for entry in entries:
             covered = cache.covered_records(ns, entry.content_hash)
             if not covered:
@@ -624,7 +706,18 @@ class ReferenceIncremental(Strategy):
             else:
                 partial.append(entry)
                 missing_keys |= record_keys - covered
+        _clock_add(self.clock, "diff_s", time.perf_counter() - started)
+        stats = {
+            "n_entries": len(entries),
+            "n_stable": len(stable),
+            "n_fresh": len(fresh),
+            "n_partial": len(partial),
+            "length_entries": sum(entry.length for entry in entries),
+            "length_fresh": sum(entry.length for entry in fresh),
+            "length_partial": sum(entry.length for entry in partial),
+        }
         held: list[dict] = []
+        started = time.perf_counter()
         for entry in stable:
             for table in tables:
                 held.extend(cache.load_rows(ns, entry.content_hash, record_keys, table.name))
@@ -632,6 +725,7 @@ class ReferenceIncremental(Strategy):
         for entry in partial:
             for table in tables:
                 held.extend(cache.load_rows(ns, entry.content_hash, kept_partial, table.name))
+        _clock_add(self.clock, "cache_load_s", time.perf_counter() - started)
         reused = len(held)
         ran_rows: list[dict] = []
         if fresh:
@@ -641,9 +735,13 @@ class ReferenceIncremental(Strategy):
             ran_rows.extend(_rows_from_run(invoke(subset, partial), tables, partial))
         held.extend(ran_rows)
         new_length = sum(entry.length for entry in entries)
+        started = time.perf_counter()
         scaled = _rescale_held(held, tables, len(entries), new_length)
+        _clock_add(self.clock, "merge_rescale_s", time.perf_counter() - started)
+        started = time.perf_counter()
         self._store(cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, scaled)
-        return scaled, reused
+        _clock_add(self.clock, "cache_store_s", time.perf_counter() - started)
+        return scaled, reused, stats
 
     def _store(self, cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, scaled) -> None:
         by_table: dict[str, list[dict]] = {table.name: [] for table in tables}

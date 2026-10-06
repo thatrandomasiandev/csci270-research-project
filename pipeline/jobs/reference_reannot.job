@@ -1,0 +1,82 @@
+#!/bin/bash
+# Timed 38.1 → 38.2 re-annotation. Submit only after the addendum is pushed.
+# Own tree and own GIT_HASH. Do not touch pipeline/results/savings.
+#SBATCH --job-name=reannot_381_382
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=128G
+#SBATCH --time=48:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot
+NEW_DIR=/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/reannot_${SLURM_JOB_ID}"
+export PYTHONPATH="${ROOT}"
+export ACTS_GIT_HASH="${ACTS_GIT_HASH:-}"
+if [[ -z "${ACTS_GIT_HASH}" && -f "${ROOT}/GIT_HASH" ]]; then
+  ACTS_GIT_HASH="$(tr -d '[:space:]' < "${ROOT}/GIT_HASH")"
+  export ACTS_GIT_HASH
+fi
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load hmmer 2>/dev/null || module load hmmer/3.3.2 2>/dev/null || true
+
+mkdir -p "${SCRATCH}" "${ROOT}/results" "${ROOT}/work"
+echo "=== host ==="
+hostname
+date -Is
+nproc
+python3 --version
+lscpu | grep -E 'Model name|CPU\(s\)' || true
+df -h "${SCRATCH}" "${ROOT}" || true
+echo "GIT_HASH=${ACTS_GIT_HASH}"
+echo "SCRATCH=${SCRATCH}"
+
+if ! command -v hmmscan >/dev/null 2>&1; then
+  echo "=== build HMMER 3.4 on the compute node ==="
+  cd "${SCRATCH}"
+  curl -L --fail -o hmmer-3.4.tar.gz http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+  tar xf hmmer-3.4.tar.gz
+  cd hmmer-3.4
+  ./configure --prefix="${SCRATCH}/hmmer"
+  make -j"${SLURM_CPUS_PER_TASK:-8}"
+  make install
+  export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+fi
+command -v hmmscan
+hmmscan -h | head -n 3
+
+NEW_VER=""
+if [[ -f "${NEW_DIR}/Pfam.version.gz" ]]; then
+  NEW_VER="${NEW_DIR}/Pfam.version.gz"
+fi
+
+cmd=(
+  python3 "${ROOT}/scripts/run_reference_reannot.py"
+  --predictions "${ROOT}/results/reference_reannot_predictions.json"
+  --churn "${ROOT}/results/reference_reannot_churn.json"
+  --old "${ROOT}/data/pfam38.1/Pfam-A.hmm.gz"
+  --new "${NEW_DIR}/Pfam-A.hmm.gz"
+  --old-version "${ROOT}/data/pfam38.1/Pfam.version.gz"
+  --genomes "${ROOT}/data/genomes"
+  --work "${ROOT}/work"
+  --scratch "${SCRATCH}"
+  --out "${ROOT}/results/reference_reannot.json"
+)
+if [[ -n "${NEW_VER}" ]]; then
+  cmd+=(--new-version "${NEW_VER}")
+fi
+"${cmd[@]}"
+
+echo REFERENCE_REANNOT_DONE

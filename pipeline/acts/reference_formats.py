@@ -244,6 +244,47 @@ def read_records(path: Path) -> list[RecordItem]:
     return items
 
 
+def length_weighted_churn(old: list[Entry], new: list[Entry]) -> dict:
+    """Share of the new release's length that is not an unchanged entry.
+
+    An entry is unchanged when its content hash occurs in the old release.
+    ``c_length = (L_new - L_unchanged) / L_new``. Hash identity is the same
+    one the reuse path uses, so this fraction is the length weight of the
+    entries that path must scan.
+    """
+    if not new:
+        raise FormatError("new reference has no entries")
+    return length_weighted_churn_hashes(
+        {entry.content_hash for entry in old},
+        new,
+        n_old=len(old),
+    )
+
+
+def length_weighted_churn_hashes(old_hashes: set[str], new: list[Entry], *, n_old: int) -> dict:
+    length_new = 0
+    length_unchanged = 0
+    n_unchanged = 0
+    for entry in new:
+        length_new += entry.length
+        if entry.content_hash in old_hashes:
+            length_unchanged += entry.length
+            n_unchanged += 1
+    if length_new <= 0:
+        raise FormatError("new reference has no length")
+    changed = length_new - length_unchanged
+    return {
+        "n_old": n_old,
+        "n_new": len(new),
+        "n_unchanged_hash": n_unchanged,
+        "n_changed_and_new": len(new) - n_unchanged,
+        "length_new": length_new,
+        "length_unchanged": length_unchanged,
+        "length_changed_and_new": changed,
+        "c_length": changed / length_new,
+    }
+
+
 def alias_map(entries: list[Entry]) -> dict[str, int]:
     """Map an output token to an entry index. Ambiguous aliases are an error."""
     out: dict[str, int] = {}
