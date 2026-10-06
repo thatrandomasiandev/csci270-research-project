@@ -90,6 +90,43 @@ class TableContract:
         return cls(**raw)
 
 
+def layout_is_pinned(contract: TableContract) -> bool:
+    layout = contract.layout or {}
+    if isinstance(layout, dict):
+        return bool(layout.get("pinned"))
+    return bool(getattr(layout, "pinned", False))
+
+
+def contract_satisfies(contract: TableContract, expected_match: str) -> tuple[bool, str]:
+    """Accept `expected_match` under whitespace MATCH or a stricter pinned byte MATCH.
+
+    True iff `contract.match == expected_match` and (`match_ws` or the layout
+    is pinned). A pinned layout is what makes inference set `match_ws` false
+    and check body lines for byte equality (`tables_match` with `match_ws`
+    false: list equality for order, `Counter` equality for multiset). That
+    check implies whitespace-normalized equality of the **same** match type,
+    because `ws_line` (`" ".join(line.split())`) is a function of each body
+    line: equal lists stay equal in order, and equal multisets stay equal
+    after the function is applied elementwise. Collisions under `ws_line`
+    can only make the whitespace relation weaker, never stronger, so the
+    converse is false. An unpinned contract with `match_ws` false is neither
+    relation and is refused. There is no fallback from a failed byte check
+    to whitespace.
+    """
+    got = contract.match
+    if got != expected_match:
+        return False, f"match {got!r} != expected {expected_match!r}"
+    pinned = layout_is_pinned(contract)
+    if contract.match_ws or pinned:
+        parts: list[str] = []
+        if contract.match_ws:
+            parts.append("whitespace-normalized MATCH")
+        if pinned:
+            parts.append("pinned byte MATCH")
+        return True, "match agrees; " + " and ".join(parts)
+    return False, "unpinned contract with match_ws false"
+
+
 def _max_cols(rows: list[list[str]]) -> int:
     return max((len(r) for r in rows), default=0)
 

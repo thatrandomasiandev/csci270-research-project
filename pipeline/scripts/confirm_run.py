@@ -18,6 +18,8 @@ ROOT = Path(os.environ.get("ACTS_PIPELINE_ROOT", Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from acts.infer_fasta import contract_satisfies, layout_is_pinned  # noqa: E402
+
 import run_hmmer_savings as sav  # noqa: E402
 
 PROTOCOL = "pipeline/docs/CONFIRM_PROTOCOL.md"
@@ -196,7 +198,8 @@ def main() -> int:
         if contract is None:
             print("inferring table contract (probe_n=8) …", flush=True)
             contract = sav.ensure_contract(argv, recs, cache.path, gwork)
-            if contract.match != sav.EXPECTED_MATCH[mode] or not contract.match_ws:
+            ok, reason = contract_satisfies(contract, sav.EXPECTED_MATCH[mode])
+            if not ok:
                 sav.write_stop(
                     paths["stop"],
                     {
@@ -205,7 +208,9 @@ def main() -> int:
                         "mode": mode,
                         "match": contract.match,
                         "match_ws": contract.match_ws,
+                        "pinned": layout_is_pinned(contract),
                         "expected": sav.EXPECTED_MATCH[mode],
+                        "reason": reason,
                     },
                 )
                 return sav.halt(payload, fit, collection, mode, out_json, json.loads(paths["stop"].read_text()))

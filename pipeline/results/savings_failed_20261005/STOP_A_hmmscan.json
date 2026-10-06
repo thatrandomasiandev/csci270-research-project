@@ -1,0 +1,9 @@
+{
+  "stopped": true,
+  "where": "contract",
+  "mode": "hmmscan",
+  "match": "order",
+  "match_ws": false,
+  "expected": "order",
+  "decision": "STOP_CONTRACT"
+}

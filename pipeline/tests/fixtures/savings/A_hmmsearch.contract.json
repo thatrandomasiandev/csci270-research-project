@@ -1,0 +1,194 @@
+{
+  "kind": "fasta",
+  "argv": [
+    "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+    "/tmp/SLURM_12629414/acts_savings_12629414/pipeline/scripts/emit_side_table.py",
+    "/tmp/SLURM_12629414/acts_savings_12629414/bin/hmmsearch",
+    "--cpu",
+    "32",
+    "--noali",
+    "--tblout",
+    "{table}",
+    "-Z",
+    "1000000",
+    "--domZ",
+    "1000000",
+    "/tmp/SLURM_12629414/acts_savings_12629414/work/hmmer/Pfam-A.hmm",
+    "{input}"
+  ],
+  "query_col": 0,
+  "desc_cols": [
+    18
+  ],
+  "produced_cols": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "delim": "ws",
+  "match": "multiset",
+  "n_cols": 19,
+  "pad_widths": [
+    21,
+    11,
+    21,
+    11,
+    10,
+    7,
+    6,
+    10,
+    7,
+    6,
+    6,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
+  ],
+  "empty_desc": "-",
+  "match_ws": false,
+  "desc_span": true,
+  "desc_trailing": true,
+  "layout": {
+    "delim": "ws",
+    "scope": "fixed",
+    "columns": [
+      {
+        "align": "left",
+        "width_rule": "fixed_min",
+        "min_width": 20
+      },
+      {
+        "align": "left",
+        "width_rule": "fixed_min",
+        "min_width": 10
+      },
+      {
+        "align": "left",
+        "width_rule": "fixed_min",
+        "min_width": 20
+      },
+      {
+        "align": "left",
+        "width_rule": "fixed_min",
+        "min_width": 10
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 9
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 6
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 5
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 9
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 6
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 5
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 5
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      },
+      {
+        "align": "right",
+        "width_rule": "fixed_min",
+        "min_width": 3
+      }
+    ],
+    "pinned": true,
+    "reason": "pinned fixed; 0:left/fixed_min/20, 1:left/fixed_min/10, 2:left/fixed_min/20, 3:left/fixed_min/10, 4:right/fixed_min/9, 5:right/fixed_min/6, 6:right/fixed_min/5, 7:right/fixed_min/9, 8:right/fixed_min/6, 9:right/fixed_min/5, 10:right/fixed_min/5, 11:right/fixed_min/3, 12:right/fixed_min/3, 13:right/fixed_min/3, 14:right/fixed_min/3, 15:right/fixed_min/3, 16:right/fixed_min/3, 17:right/fixed_min/3"
+  },
+  "widen_history": [],
+  "late_key_probes": [],
+  "traced_files": [],
+  "trace_status": "ok",
+  "probe_n": 8,
+  "probe_seed": 20260927,
+  "subset_mode": "singleton",
+  "tool_calls": 15,
+  "tool_call_sizes": [
+    8,
+    8,
+    8,
+    8,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    8,
+    8,
+    8
+  ],
+  "decision": "OK",
+  "reason": "probe passed"
+}

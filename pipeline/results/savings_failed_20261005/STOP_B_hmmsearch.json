@@ -1,0 +1,9 @@
+{
+  "stopped": true,
+  "where": "contract",
+  "mode": "hmmsearch",
+  "match": "multiset",
+  "match_ws": false,
+  "expected": "multiset",
+  "decision": "STOP_CONTRACT"
+}

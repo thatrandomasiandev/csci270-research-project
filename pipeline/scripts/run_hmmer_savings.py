@@ -3,8 +3,14 @@
 
 One invocation = one (collection, mode). Stock samples and cached runs
 share the node: for each genome k, stock (if sampled) runs immediately
-before cached. Writes JSON after every genome. MATCH uses token /
-whitespace identity, not bytes.
+before cached. Writes JSON after every genome.
+
+The contract gate (`acts.infer_fasta.contract_satisfies`) accepts the
+locked match type when the contract is whitespace-normalized or the
+layout is pinned. A pinned layout is checked as byte equality, which
+implies the whitespace relation of the same match type (addendum
+2026-10-06). A failed byte check halts with STOP_MATCH. It is not
+retried as whitespace.
 """
 
 from __future__ import annotations
@@ -27,7 +33,14 @@ sys.path.insert(0, str(ROOT))
 from acts.cache import RecordCache
 from acts.fasta import FastaRec, parse_fasta, write_fasta
 from acts.fasta_memo import cached_search, contract_path_for
-from acts.infer_fasta import InferError, TableContract, infer_table_contract, run_table_tool
+from acts.infer_fasta import (
+    InferError,
+    TableContract,
+    contract_satisfies,
+    infer_table_contract,
+    layout_is_pinned,
+    run_table_tool,
+)
 from acts.table import tables_match
 
 PROTOCOL = "pipeline/docs/SAVINGS_PROTOCOL.md"
@@ -649,7 +662,8 @@ def main() -> int:
         if contract is None:
             print("inferring table contract (probe_n=8) …", flush=True)
             contract = ensure_contract(argv, recs, cache.path, gwork)
-            if contract.match != EXPECTED_MATCH[mode] or not contract.match_ws:
+            ok, reason = contract_satisfies(contract, EXPECTED_MATCH[mode])
+            if not ok:
                 write_stop(
                     paths["stop"],
                     {
@@ -658,7 +672,9 @@ def main() -> int:
                         "mode": mode,
                         "match": contract.match,
                         "match_ws": contract.match_ws,
+                        "pinned": layout_is_pinned(contract),
                         "expected": EXPECTED_MATCH[mode],
+                        "reason": reason,
                     },
                 )
                 return halt(payload, fit, collection, mode, out_json, json.loads(paths["stop"].read_text()))

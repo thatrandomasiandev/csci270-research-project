@@ -474,3 +474,108 @@ order). Timing on the Mac is not a result.
   prediction of 741 s (42% error; the screen fit used BW25113 at
   N = 4,192). The locked >10% flag applies and will be reported, not
   refit.
+
+---
+
+## Addendum 2026-10-06 — rerun halted by a stale MATCH gate; gate fix
+
+Locked sections above are unchanged. This addendum is written **before**
+any rerun result exists. The four jobs below are a halted run. They are
+not analyzed here.
+
+### What happened (MEASURED)
+
+Jobs 12629413 (`sav_A_scan`), 12629414 (`sav_A_search`), 12629415
+(`sav_B_scan`), and 12629416 (`sav_B_search`) ran at git `f8e3685`
+(`f8e36856607547a551391c94c919e29700824b54`) and all ended FAILED, exit
+2, on 2026-10-05 (`sacct`: partition `main`, exclusive, constraint
+`epyc-7542`; time limits 22 h, 7 h, 12 h, 6 h). Each log
+(`results/savings_failed_20261005/logs/sav_*-<jobid>.out`) prints
+`inferring table contract (probe_n=8)` and then `STOP_CONTRACT`. The
+per-run JSON decision is `STOP_CONTRACT` and `"genomes": []`. The
+record is `results/savings_failed_20261005/`.
+
+Each inferred contract
+(`results/savings/cache/{A,B}_{hmmscan,hmmsearch}/cache.jsonl.contract.json`
+on CARC, left in place) has `decision` OK, reason `probe passed`,
+`match` equal to the locked type (order for hmmscan, multiset for
+hmmsearch), `layout.pinned` true, and `match_ws` false. The sqlite
+caches have **0** rows in `records` (input fingerprints only). No genome
+was timed.
+
+### Why `match_ws` false under a pinned layout is still the locked MATCH
+
+`tables_match` (`acts/table.py`) with `match_ws` false compares body
+lines for byte equality: list equality when `match` is order
+(`bodies_equal`), `Counter` equality when `match` is multiset
+(`bodies_multiset_equal`). With `match_ws` true it applies `ws_line`
+(`" ".join(line.split())`) first and then the same list or `Counter`
+comparison.
+
+`ws_line` is a function of one body line. Therefore:
+
+- equal body-line lists stay equal after `ws_line` (order);
+- equal body-line multisets stay equal after `ws_line` is applied
+  elementwise (multiset). Two distinct lines that collapse to one
+  whitespace-normalized line can only make the whitespace relation
+  *weaker*. They cannot make a true byte comparison fail the whitespace
+  comparison of the same type.
+
+The converse is false, and it is not claimed: whitespace equality does
+not imply byte equality. The two match types are not interchangeable.
+Order byte equality does not imply multiset whitespace equality of a
+*different* pair of texts, and a wrong `match` value is still refused.
+
+Inference sets `match_ws = (delim != "tab") and not layout.pinned` when
+the description is absent or a trailing span (`acts/infer_fasta.py`).
+A pinned layout is exactly the case that demands the stricter byte
+check. The probe on these four contracts passed that check, so the
+locked whitespace-normalized MATCH of the same type holds on the probe
+as well.
+
+### Cause
+
+The gate in `scripts/run_hmmer_savings.py` (and the same condition in
+`scripts/confirm_run.py`) stopped unless `contract.match_ws` was true.
+That condition is the pre-`b85859e` whitespace-only MATCH. The
+2026-09-27 byte-MATCH addendum above already said a pinned layout uses
+byte MATCH. The gate was not updated, so it rejected a contract that is
+stricter than the locked whitespace MATCH. The Mac repro
+(`scripts/repro_savings_desc_stop.py`) never calls this gate.
+
+### Fix
+
+One predicate, `acts.infer_fasta.contract_satisfies(contract, expected_match)`,
+is true iff `contract.match == expected_match` and (`contract.match_ws`
+or the layout is pinned). Both runners call it. They do not keep a
+second copy of the condition. Guard: `tests/test_contract_gate.py`,
+including the trimmed CARC hmmsearch contract from job 12629414
+(`tests/fixtures/savings/A_hmmsearch.contract.json`; `traced_files`
+paths removed).
+
+hmmsearch now runs under **byte MATCH** when its contract is pinned.
+On this rerun all four cached contracts are pinned, so both modes run
+under byte MATCH. The paper still claims only **token identity** for
+hmmsearch unless byte MATCH holds on every genome. Do not describe the
+hmmsearch `--tblout` result as byte-identical from the contract alone.
+
+### Pre-registered for the rerun
+
+- Same workloads, order, flags, stock-sample genomes, audit, kill rule,
+  `--time`, exclusive `epyc-7542` nodes, partition `main`, and the
+  analysis code locked at `00f9403`. No savings numbers are computed in
+  the session that resubmits.
+- The contracts and their sqlite files stay. They were inferred at
+  `f8e3685` and the inference code is unchanged since that commit, so
+  they are reused. `ensure_contract` loads the cached contract and does
+  not probe again. MEASURED job elapsed on 2026-10-05, which ended at
+  the contract gate with no genome rows: hmmsearch A `00:27:12`,
+  hmmsearch B `00:27:25` (`sacct`). The resubmit skips that probing,
+  about 27 minutes on each hmmsearch job.
+- If a pinned contract fails byte MATCH mid-run, the run halts with
+  `STOP_MATCH`. It is not retried under whitespace. Any rerun that
+  would proceed with an **unpinned** contract requires a new addendum
+  before it is submitted. No silent fallback.
+- The halted JSON, `STOP_*.json`, logs, and `GIT_HASH` are archived
+  under `results/savings_failed_20261005/` and are not combined with
+  the rerun. The failed run stays in the record.

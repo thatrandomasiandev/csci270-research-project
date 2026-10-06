@@ -1,0 +1,57 @@
+{
+  "protocol": "pipeline/docs/SAVINGS_PROTOCOL.md",
+  "addendum": "2026-09-27 same node",
+  "git": "f8e36856607547a551391c94c919e29700824b54",
+  "collection": "A",
+  "mode": "hmmsearch",
+  "path": "paired",
+  "paper": "token / whitespace-normalized identity, not byte identity",
+  "primary": true,
+  "post_hoc": false,
+  "host": {
+    "hostname": "b22-01.hpc.usc.edu",
+    "date": "2026-10-05T20:13:46.962404+00:00",
+    "uptime": " 13:13:46 up 16 days, 19:04,  1 user,  load average: 7.36, 16.28, 22.37",
+    "nproc": 32,
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "slurm_job_id": "12629414",
+    "slurm_nodelist": "b22-01"
+  },
+  "hmmer": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute.",
+  "pfam": "/tmp/SLURM_12629414/acts_savings_12629414/work/hmmer/Pfam-A.hmm",
+  "cpu": 32,
+  "fit": {
+    "a": 132.55764028895294,
+    "b": 0.11889530446294444,
+    "w": 0.018338670022785664,
+    "N_screen": 4192
+  },
+  "argv_wrapper": [
+    "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+    "/tmp/SLURM_12629414/acts_savings_12629414/pipeline/scripts/emit_side_table.py",
+    "/tmp/SLURM_12629414/acts_savings_12629414/bin/hmmsearch",
+    "--cpu",
+    "32",
+    "--noali",
+    "--tblout",
+    "{table}",
+    "-Z",
+    "1000000",
+    "--domZ",
+    "1000000",
+    "/tmp/SLURM_12629414/acts_savings_12629414/work/hmmer/Pfam-A.hmm",
+    "{input}"
+  ],
+  "genomes": [],
+  "stopped": {
+    "stopped": true,
+    "where": "contract",
+    "mode": "hmmsearch",
+    "match": "multiset",
+    "match_ws": false,
+    "expected": "multiset",
+    "decision": "STOP_CONTRACT"
+  },
+  "decision": "STOP_CONTRACT",
+  "resumed": false
+}
