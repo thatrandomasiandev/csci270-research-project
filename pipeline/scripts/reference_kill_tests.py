@@ -133,7 +133,7 @@ def half_ulp(printed: str) -> float:
     return _half_ulp(printed)
 
 
-def r2(work: Path, powered: bool = False, cut_ga: bool = True) -> dict:
+def r2(work: Path, powered: bool = False, cut_ga: bool = True, write_json: bool = True) -> dict:
     work.mkdir(parents=True, exist_ok=True)
     rng = random.Random(SEED)
     recs = parse_fasta(gzip.open(ROOT / "data" / "recurrence" / "A" / "GCF_002853805.1_protein.faa.gz", "rt").read())
@@ -202,7 +202,8 @@ def r2(work: Path, powered: bool = False, cut_ga: bool = True) -> dict:
         "finished_utc": datetime.now(timezone.utc).isoformat(),
     }
     name = ("reference_kill_r2p.json" if cut_ga else "reference_kill_r2n.json") if powered else "reference_kill_r2.json"
-    (ROOT / "results" / name).write_text(json.dumps(out, indent=2) + "\n")
+    if write_json:
+        (ROOT / "results" / name).write_text(json.dumps(out, indent=2) + "\n")
     return out
 
 
@@ -292,7 +293,7 @@ def _tbl_dom_z(path: Path) -> dict[str, int]:
     return {q: len(t) for q, t in per.items()}
 
 
-def r3c(work: Path) -> dict:
+def r3c(work: Path, write_json: bool = True) -> dict:
     """Confirmatory c-Evalue test on fresh data (seed 20261004)."""
     seed = 20261004
     work.mkdir(parents=True, exist_ok=True)
@@ -353,7 +354,8 @@ def r3c(work: Path) -> dict:
         "c_Evalue_reusable_tbl_domZ": set_ok and mism == 0 and fit["c_Evalue"] == n,
         "finished_utc": datetime.now(timezone.utc).isoformat(),
     }
-    (ROOT / "results" / "reference_kill_r3c.json").write_text(json.dumps(out, indent=2) + "\n")
+    if write_json:
+        (ROOT / "results" / "reference_kill_r3c.json").write_text(json.dumps(out, indent=2) + "\n")
     return out
 
 

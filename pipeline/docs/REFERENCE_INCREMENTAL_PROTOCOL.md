@@ -676,3 +676,148 @@ tie-break. The attack would land if a release had \(c > c^\*\), or if
 the linear-\(b\) assumption is badly wrong. Neither is answered by
 this arithmetic. The 7.4× sentence in the R1 outcome addendum stays a
 separate projection and is not updated here.
+
+## Addendum 2026-10-06 — fitter build and T1–T4 outcome
+
+Written after the library in `db16609` and the measurements cited
+below. Locked text above is unchanged. No fifth normalizer. No new
+probe. The procedure is the one pre-registered above; this addendum
+records what shipped and what the tests did.
+
+### Shipped algorithm
+
+`F(records, reference)` is `acts/reference_run.py`. The reference is
+the argv-named file that is not the record input and parses as
+entries, unless `--reference` names it. Per-format parsers cover
+profile text (the on-disk header token `HMMER3/f`), FASTA, and the
+`entryline` fixtures. Length and the volatile-tag list are data on
+those parsers. The strict entry hash is `acts/entry_hash.py`;
+`scripts/reference_kill_tests.py` calls it.
+
+The strategy's probe is the pre-registered one: \(k = 2\),
+\(n_p = 300\), seed `20261006`, Fisher–Yates on
+`random.Random.random`. T1 and T2 do not use it. They reuse the
+historical `Random.shuffle` halves from
+`scripts/reference_kill_tests.py` (seeds `20261003` and `20261004`).
+The closed family is identity, `entry_count`, `total_entry_length`,
+and `per_key_row_count`. Two or more non-identity members that both
+fit are a tie even when their primary factors coincide. The
+disambiguating partition is the pre-registered length-descending
+split. Cache rows are keyed by record key, entry content hash, and
+argv with the reference path removed. A later reference reuses
+unchanged entries, scans new or changed entries as a sub-reference,
+drops removed entries, rescales fitted columns, recomputes per-key
+counts from the merged row set, and re-renders. `--verify full` runs
+the tool on the full reference and compares under ref-merge. Audit
+samples \(q = 0.02\). `--baseline gestore` runs the decomposition
+probe and refuses any numeric column that is not identity.
+
+### Index step
+
+Sidecars are built by a caller-declared `--prep` command, not by
+tracing. `acts/trace.py` is Linux-only and records reads. The index
+has to exist before the tool runs, on every sub-reference, including
+on a Mac. The command is data. No tool name is compiled into `acts/`.
+
+### Refusal
+
+One full run, no partial reuse, and a stated reason, when any of
+these hold: fewer than two entries; empty record input; a column is
+mixed or matches no member; a non-numeric column is not
+byte-identical; the disambiguating partition is empty or still leaves
+two or more non-identity members; primary row-key sets differ; prep
+or the tool fails. A tool or prep failure is not cached. A gestore
+baseline also refuses when a numeric column is not identity.
+`--verify full` mismatch is `REFUSE_MATCH`. Audit mismatch is
+`REFUSE_AUDIT`.
+
+### Amdahl
+
+The dominant term of one incremental re-annotation is
+\(b \cdot n_{\text{changed}}\). PROJECTED speedup, the
+pre-registered break-even model, not a new fit:
+
+\[
+\mathrm{speedup}(c) = \frac{a + b n}{a + c\, b n}
+\]
+
+with \(a = 31.959641573764316\) s,
+\(b = 0.7228553909794854\) s/record, \(n = 4192\), MEASURED in
+`results/headline_screen.json`. The table above stands: primary
+\(P = 529.592\) s and \(c^\* = 0.8252\); primary plus tie-break
+\(P = 810.368\) s and \(c^\* = 0.7326\);
+\(S(c_{\mathrm{R1}}) = 2622.749\) s. The wrapper and the merge stay
+out of the model. The probe is paid once. Nothing in the build
+micro-optimizes them.
+
+### T1 — PASS
+
+`results/reference_fitter_t1.json`. Historical halves, 2435 and 2436
+entries, \(Z = 4871\). R2p is `--cut_ga` tblout, 578 rows. R3c is
+tblout plus domtblout, 511 domain rows. Both `SHIP`.
+
+Assignments, with no normalizer code for this tool: tblout columns 4
+and 7, and domtblout columns 6 and 12, `entry_count`. Domtblout
+column 11, `per_key_row_count` of the tblout table. Every other
+numeric column, identity.
+
+R2p's primary partition left `entry_count` and `total_entry_length`
+tied on columns 4 and 7 (578/578 each). The disambiguating probe kept
+`entry_count` and dropped total length. Tie-break residuals, both
+candidates:
+
+| Column | Candidate | Consistent | Fits | Max abs residual |
+|---|---|---|---|---|
+| tblout 4 | `entry_count` | 578/578 | yes | \(6.65754174650969 \times 10^{-7}\) |
+| tblout 4 | `total_entry_length` | 17/578 | no | \(2.4029899858449707 \times 10^{-5}\) |
+| tblout 7 | `entry_count` | 578/578 | yes | \(0.004008486175745979\) |
+| tblout 7 | `total_entry_length` | 19/578 | no | \(1.401697018993092\) |
+
+R3c did not tie. The same historical halves already rejected total
+length, so the disambiguating probe was not run. Primary-partition
+residuals for both candidates are in the same JSON under
+`primary_residuals`: tblout 4, total length 436/528; tblout 7,
+449/528; domtblout 6, 424/511; domtblout 12, 435/511.
+`entry_count` is 528/528 and 511/511 on those columns. Domtblout 11
+fits only `per_key_row_count` of tblout (511/511); `entry_count` is
+119/511 and total length is 104/511.
+
+### T2 — PASS
+
+`results/reference_fitter_t2.json`. R2n `REFUSE`: tblout column 16
+matches no normalizer. No reuse.
+
+### T3 — PASS
+
+`pipeline/tests/test_reference_fitter.py`, fixtures under
+`pipeline/tests/fixtures/reference_fitter/`. A ships `entry_count`.
+B ships `total_entry_length`, separated from A by the tie-break. C
+ships `per_key_row_count`. D and E `REFUSE`. The gestore baseline
+refuses law A.
+
+### T4 — PASS
+
+The same module reads `results/inference_checks.json`: SnpEff
+`n_reassembled` = `n_stock` = 52638 and bodies equal; fill-tags
+widening is the HG00099 case (23072 hits, cache key includes
+`SAMPLES`). `pipeline/run_tests.sh` is the gate for this commit.
+
+### Smoke, not a gate
+
+`results/reference_fitter_smoke.json`. The model list in
+`scripts/repro_savings_desc_stop.py` has 73 names, not 78; all 73
+were used. Seven description edits plus one cloned entry is 8/74 of
+the release. Forty records. The second run `SHIP`s under
+`--verify full`, 10 of 11 rows reused. Indicative Mac wall times:
+first reference \(0.310\) s, release \(0.122\) s. Not a speedup
+claim. At this size the \(b \cdot n_{\text{changed}}\) term is not
+what the clock shows.
+
+Provenance on the result files: git `db16609` at measurement time,
+host `Joshuas-MacBook-Pro-3.local`, CPython 3.11.9, HMMER 3.4 (Aug
+2023). The work tree was dirty from files this session did not own.
+Those files were not edited here.
+
+Next measurement, not done here: a timed Pfam 38.1 → 38.2
+re-annotation on CARC, submitted with `ssh discovery sbatch`, not run
+on a login node.

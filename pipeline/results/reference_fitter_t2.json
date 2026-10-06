@@ -1,0 +1,376 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "test": "T2",
+  "pass": true,
+  "reasons": [],
+  "r2n": {
+    "decision": "REFUSE",
+    "reason": "tblout: column 16 matches no normalizer",
+    "used_tie_break": false,
+    "primary_key_equal": false,
+    "probe_invocations": 3,
+    "tables": [
+      {
+        "name": "tblout",
+        "record_col": 2,
+        "entry_col": 0,
+        "index_col": null,
+        "meta": [
+          "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+          "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+          "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------",
+          "#",
+          "# Program:         hmmscan",
+          "# Version:         3.4 (Aug 2023)",
+          "# Pipeline mode:   SCAN",
+          "# Query file:      /tmp/acts_reference_fitter/r2n/q.faa",
+          "# Target file:     /tmp/acts_reference_fitter/r2n/R.hmm",
+          "# Option settings: hmmscan --tblout /tmp/acts_reference_fitter/r2n/R.tbl --noali --cpu 4 /tmp/acts_reference_fitter/r2n/R.hmm /tmp/acts_reference_fitter/r2n/q.faa ",
+          "# Current dir:     /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline",
+          "# Date:            Tue Oct  6 15:19:51 2026",
+          "# [ok]"
+        ],
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 1,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 2,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 4,
+            "role": "numeric",
+            "member": null,
+            "count_table": null,
+            "primary_fits": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie_break": null
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": null,
+            "count_table": null,
+            "primary_fits": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie_break": null
+          },
+          {
+            "index": 8,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 9,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 10,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 11,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 12,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 13,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 14,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 15,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 16,
+            "role": "numeric",
+            "member": null,
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 17,
+            "role": "numeric",
+            "member": null,
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 18,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          }
+        ],
+        "layout": {}
+      }
+    ],
+    "n_entries": 4871,
+    "n_records": 300,
+    "half_sizes": [
+      2435,
+      2436
+    ],
+    "tables_present": [
+      "tblout"
+    ],
+    "primary_residuals": {
+      "tblout": {
+        "4": {
+          "entry_count": {
+            "n": 1082,
+            "n_consistent": 1082,
+            "fits": true,
+            "max_abs_residual": 0.10147783251231512,
+            "mean_abs_residual": 0.0008550175086508938,
+            "worst": {
+              "record_key": "WP_000034602.1",
+              "part": 1,
+              "part_printed": "3.6",
+              "whole_printed": "7.3",
+              "phi": 1.9995894909688012,
+              "abs_residual": 0.10147783251231512
+            }
+          },
+          "total_entry_length": {
+            "n": 1082,
+            "n_consistent": 1082,
+            "fits": true,
+            "max_abs_residual": 0.10489149684138166,
+            "mean_abs_residual": 0.0008648788582407534,
+            "worst": {
+              "record_key": "WP_000895624.1",
+              "part": 1,
+              "part_printed": "1.9",
+              "whole_printed": "3.7",
+              "phi": 2.00257447202178,
+              "abs_residual": 0.10489149684138166
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 1082,
+            "n_consistent": 282,
+            "fits": false,
+            "max_abs_residual": 3.6333333333333333,
+            "mean_abs_residual": 0.01063815066249763,
+            "worst": {
+              "record_key": "WP_000662366.1",
+              "part": 1,
+              "part_printed": "1.4",
+              "whole_printed": "2.9",
+              "phi": 4.666666666666667,
+              "abs_residual": 3.6333333333333333
+            }
+          }
+        },
+        "7": {
+          "entry_count": {
+            "n": 1082,
+            "n_consistent": 1082,
+            "fits": true,
+            "max_abs_residual": 0.39782340862423027,
+            "mean_abs_residual": 0.002108715782655952,
+            "worst": {
+              "record_key": "WP_000013515.1",
+              "part": 0,
+              "part_printed": "5.3",
+              "whole_printed": "11",
+              "phi": 2.0004106776180697,
+              "abs_residual": 0.39782340862423027
+            }
+          },
+          "total_entry_length": {
+            "n": 1082,
+            "n_consistent": 1082,
+            "fits": true,
+            "max_abs_residual": 0.4136096640161977,
+            "mean_abs_residual": 0.002204807771963167,
+            "worst": {
+              "record_key": "WP_000013515.1",
+              "part": 0,
+              "part_printed": "5.3",
+              "whole_printed": "11",
+              "phi": 1.9974321388648684,
+              "abs_residual": 0.4136096640161977
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 1082,
+            "n_consistent": 288,
+            "fits": false,
+            "max_abs_residual": 6.5,
+            "mean_abs_residual": 0.04175189049826978,
+            "worst": {
+              "record_key": "WP_000081134.1",
+              "part": 0,
+              "part_printed": "8.4",
+              "whole_printed": "17",
+              "phi": 1.25,
+              "abs_residual": 6.5
+            }
+          }
+        }
+      }
+    }
+  },
+  "provenance": {
+    "git": "db16609a2e200b2b7ee7565a3f75699bc5fca2f9",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-06T22:23:36.028404+00:00",
+    "git_status_short": [
+      " M STATUS.md",
+      " M pipeline/scripts/reference_kill_tests.py",
+      " M tools/carc-gpu-dashboard/fixtures/demo_status.json",
+      " M tools/carc-gpu-dashboard/server.py",
+      " M tools/carc-gpu-dashboard/static/index.html",
+      " M tools/carc-gpu-dashboard/static/style.css",
+      "?? lab-notebook/",
+      "?? pipeline/results/reference_fitter_smoke.json",
+      "?? pipeline/results/reference_fitter_t1.json",
+      "?? pipeline/results/reference_fitter_t2.json",
+      "?? pipeline/results/savings/",
+      "?? pipeline/scripts/reference_fitter_accept.py",
+      "?? pipeline/scripts/reference_fitter_smoke.py"
+    ],
+    "tools": {
+      "hmmscan": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+      "hmmpress": "HMMER 3.4 (Aug 2023); http://hmmer.org/"
+    }
+  }
+}

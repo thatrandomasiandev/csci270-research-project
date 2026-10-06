@@ -1,0 +1,59 @@
+{
+  "test": "smoke",
+  "acceptance_gate": false,
+  "timing": "INDICATIVE",
+  "host_note": "Mac wall time. Not a CARC measurement.",
+  "pass": true,
+  "perturbation": {
+    "n_base": 73,
+    "desc_edited": [
+      "Aldolase_II",
+      "Bac_transf",
+      "Beta-prop_ACSF4",
+      "Beta-prop_EML_2",
+      "Beta-prop_IFT122_1st",
+      "Beta-prop_THOC3",
+      "Beta-prop_WDR90_POC16_2nd"
+    ],
+    "added": "Clone_release",
+    "n_release": 74,
+    "changed_fraction": 0.10810810810810811
+  },
+  "n_records": 40,
+  "runs": [
+    {
+      "label": "base",
+      "decision": "SHIP",
+      "reason": "decomposition and normalizers fitted",
+      "extra": {
+        "verify": "full",
+        "reused_rows": 0,
+        "rows": 11
+      },
+      "wall_s_indicative": 0.3103468749905005
+    },
+    {
+      "label": "release",
+      "decision": "SHIP",
+      "reason": "decomposition and normalizers fitted",
+      "extra": {
+        "verify": "full",
+        "reused_rows": 10,
+        "rows": 11
+      },
+      "wall_s_indicative": 0.12215500000456814
+    }
+  ],
+  "provenance": {
+    "git": "db16609a2e200b2b7ee7565a3f75699bc5fca2f9",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-06T22:23:36.689812+00:00",
+    "tools": {
+      "hmmscan": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+      "hmmpress": "HMMER 3.4 (Aug 2023); http://hmmer.org/"
+    }
+  }
+}

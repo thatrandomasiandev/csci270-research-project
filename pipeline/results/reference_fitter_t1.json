@@ -1,0 +1,1334 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "test": "T1",
+  "pass": true,
+  "reasons": [],
+  "amdahl": {
+    "label": "PROJECTED",
+    "dominant_term": "b*n_changed",
+    "formula": "(a + b*n) / (a + c*b*n)",
+    "assumptions": "Pre-registered break-even model: T_stock = a + b*n, T_inc = a + c*b*n, startup a does not shrink, b scales with the fraction of entries searched, merge ignored. a and b are MEASURED in results/headline_screen.json; c is MEASURED in results/reference_kill_r1.json.",
+    "a_s": 31.959641573764316,
+    "b_s_per_record": 0.7228553909794854,
+    "n": 4192,
+    "c_r1": 0.13446605163602576,
+    "speedup_at_c_r1": 6.968662141244353,
+    "sources": [
+      "results/headline_screen.json",
+      "results/reference_kill_r1.json",
+      "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md"
+    ]
+  },
+  "tie_break_residuals": {
+    "r2p": {
+      "tblout": {
+        "4": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count",
+            "total_entry_length"
+          ],
+          "tie_break": {
+            "entry_count": {
+              "n": 578,
+              "n_consistent": 578,
+              "fits": true,
+              "max_abs_residual": 6.65754174650969e-07,
+              "mean_abs_residual": 8.781301218812967e-09,
+              "worst": {
+                "record_key": "WP_101968717.1",
+                "part": 1,
+                "part_printed": "1e-05",
+                "whole_printed": "1.4e-05",
+                "phi": 1.333424582534903,
+                "abs_residual": 6.65754174650969e-07
+              }
+            },
+            "total_entry_length": {
+              "n": 578,
+              "n_consistent": 17,
+              "fits": false,
+              "max_abs_residual": 2.4029899858449707e-05,
+              "mean_abs_residual": 3.132719398949754e-07,
+              "worst": {
+                "record_key": "WP_001295382.1",
+                "part": 1,
+                "part_printed": "3.7e-05",
+                "whole_printed": "5e-05",
+                "phi": 2.0008081042824246,
+                "abs_residual": 2.4029899858449707e-05
+              }
+            }
+          }
+        },
+        "7": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count",
+            "total_entry_length"
+          ],
+          "tie_break": {
+            "entry_count": {
+              "n": 578,
+              "n_consistent": 578,
+              "fits": true,
+              "max_abs_residual": 0.004008486175745979,
+              "mean_abs_residual": 1.1316452939771182e-05,
+              "worst": {
+                "record_key": "WP_000891353.1",
+                "part": 1,
+                "part_printed": "0.093",
+                "whole_printed": "0.12",
+                "phi": 1.333424582534903,
+                "abs_residual": 0.004008486175745979
+              }
+            },
+            "total_entry_length": {
+              "n": 578,
+              "n_consistent": 19,
+              "fits": false,
+              "max_abs_residual": 1.401697018993092,
+              "mean_abs_residual": 0.0027241900574107606,
+              "worst": {
+                "record_key": "WP_000081134.1",
+                "part": 1,
+                "part_printed": "2.1",
+                "whole_printed": "2.8",
+                "phi": 2.0008081042824246,
+                "abs_residual": 1.401697018993092
+              }
+            }
+          }
+        }
+      }
+    },
+    "r3c": {
+      "tblout": {
+        "4": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count"
+          ],
+          "tie_break": null
+        },
+        "7": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count"
+          ],
+          "tie_break": null
+        }
+      },
+      "domtblout": {
+        "6": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count"
+          ],
+          "tie_break": null
+        },
+        "11": {
+          "member": "per_key_row_count",
+          "count_table": "tblout",
+          "primary_fits": [
+            "per_key_row_count:tblout"
+          ],
+          "tie_break": null
+        },
+        "12": {
+          "member": "entry_count",
+          "count_table": null,
+          "primary_fits": [
+            "entry_count"
+          ],
+          "tie_break": null
+        }
+      }
+    }
+  },
+  "r2p": {
+    "decision": "SHIP",
+    "reason": "decomposition and normalizers fitted",
+    "used_tie_break": true,
+    "primary_key_equal": true,
+    "probe_invocations": 5,
+    "tables": [
+      {
+        "name": "tblout",
+        "record_col": 2,
+        "entry_col": 0,
+        "index_col": null,
+        "meta": [
+          "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+          "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+          "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------",
+          "#",
+          "# Program:         hmmscan",
+          "# Version:         3.4 (Aug 2023)",
+          "# Pipeline mode:   SCAN",
+          "# Query file:      /tmp/acts_reference_fitter/r2p/q.faa",
+          "# Target file:     /tmp/acts_reference_fitter/r2p/R.hmm",
+          "# Option settings: hmmscan --tblout /tmp/acts_reference_fitter/r2p/R.tbl --noali --cut_ga --cpu 4 /tmp/acts_reference_fitter/r2p/R.hmm /tmp/acts_reference_fitter/r2p/q.faa ",
+          "# Current dir:     /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline",
+          "# Date:            Tue Oct  6 15:18:43 2026",
+          "# [ok]"
+        ],
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 1,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 2,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 4,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie": [],
+            "tie_break": {
+              "entry_count": {
+                "n": 578,
+                "n_consistent": 578,
+                "fits": true,
+                "max_abs_residual": 6.65754174650969e-07,
+                "mean_abs_residual": 8.781301218812967e-09,
+                "worst": {
+                  "record_key": "WP_101968717.1",
+                  "part": 1,
+                  "part_printed": "1e-05",
+                  "whole_printed": "1.4e-05",
+                  "phi": 1.333424582534903,
+                  "abs_residual": 6.65754174650969e-07
+                }
+              },
+              "total_entry_length": {
+                "n": 578,
+                "n_consistent": 17,
+                "fits": false,
+                "max_abs_residual": 2.4029899858449707e-05,
+                "mean_abs_residual": 3.132719398949754e-07,
+                "worst": {
+                  "record_key": "WP_001295382.1",
+                  "part": 1,
+                  "part_printed": "3.7e-05",
+                  "whole_printed": "5e-05",
+                  "phi": 2.0008081042824246,
+                  "abs_residual": 2.4029899858449707e-05
+                }
+              }
+            }
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count",
+              "total_entry_length"
+            ],
+            "tie": [],
+            "tie_break": {
+              "entry_count": {
+                "n": 578,
+                "n_consistent": 578,
+                "fits": true,
+                "max_abs_residual": 0.004008486175745979,
+                "mean_abs_residual": 1.1316452939771182e-05,
+                "worst": {
+                  "record_key": "WP_000891353.1",
+                  "part": 1,
+                  "part_printed": "0.093",
+                  "whole_printed": "0.12",
+                  "phi": 1.333424582534903,
+                  "abs_residual": 0.004008486175745979
+                }
+              },
+              "total_entry_length": {
+                "n": 578,
+                "n_consistent": 19,
+                "fits": false,
+                "max_abs_residual": 1.401697018993092,
+                "mean_abs_residual": 0.0027241900574107606,
+                "worst": {
+                  "record_key": "WP_000081134.1",
+                  "part": 1,
+                  "part_printed": "2.1",
+                  "whole_printed": "2.8",
+                  "phi": 2.0008081042824246,
+                  "abs_residual": 1.401697018993092
+                }
+              }
+            }
+          },
+          {
+            "index": 8,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 9,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 10,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 11,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 12,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 13,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 14,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 15,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 16,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 17,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 18,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          }
+        ],
+        "layout": {}
+      }
+    ],
+    "n_entries": 4871,
+    "n_records": 300,
+    "half_sizes": [
+      2435,
+      2436
+    ],
+    "tables_present": [
+      "tblout"
+    ],
+    "primary_residuals": {
+      "tblout": {
+        "4": {
+          "entry_count": {
+            "n": 578,
+            "n_consistent": 578,
+            "fits": true,
+            "max_abs_residual": 9.954825462012356e-07,
+            "mean_abs_residual": 6.874790190347569e-09,
+            "worst": {
+              "record_key": "WP_001283626.1",
+              "part": 0,
+              "part_printed": "1.1e-05",
+              "whole_printed": "2.3e-05",
+              "phi": 2.0004106776180697,
+              "abs_residual": 9.954825462012356e-07
+            }
+          },
+          "total_entry_length": {
+            "n": 578,
+            "n_consistent": 578,
+            "fits": true,
+            "max_abs_residual": 1.0539250838377713e-06,
+            "mean_abs_residual": 7.449875459869864e-09,
+            "worst": {
+              "record_key": "WP_000434038.1",
+              "part": 0,
+              "part_printed": "2.1e-05",
+              "whole_printed": "4.3e-05",
+              "phi": 1.9974321388648684,
+              "abs_residual": 1.0539250838377713e-06
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 578,
+            "n_consistent": 148,
+            "fits": false,
+            "max_abs_residual": 5.599999999999999e-05,
+            "mean_abs_residual": 2.7315660514378814e-07,
+            "worst": {
+              "record_key": "WP_001300658.1",
+              "part": 1,
+              "part_printed": "1.4e-05",
+              "whole_printed": "2.8e-05",
+              "phi": 6.0,
+              "abs_residual": 5.599999999999999e-05
+            }
+          }
+        },
+        "7": {
+          "entry_count": {
+            "n": 578,
+            "n_consistent": 578,
+            "fits": true,
+            "max_abs_residual": 0.004025462012320319,
+            "mean_abs_residual": 1.229533921319696e-05,
+            "worst": {
+              "record_key": "WP_000891353.1",
+              "part": 0,
+              "part_printed": "0.062",
+              "whole_printed": "0.12",
+              "phi": 2.0004106776180697,
+              "abs_residual": 0.004025462012320319
+            }
+          },
+          "total_entry_length": {
+            "n": 578,
+            "n_consistent": 578,
+            "fits": true,
+            "max_abs_residual": 0.0038407926096218487,
+            "mean_abs_residual": 1.7368831872565126e-05,
+            "worst": {
+              "record_key": "WP_000891353.1",
+              "part": 0,
+              "part_printed": "0.062",
+              "whole_printed": "0.12",
+              "phi": 1.9974321388648684,
+              "abs_residual": 0.0038407926096218487
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 578,
+            "n_consistent": 145,
+            "fits": false,
+            "max_abs_residual": 2.8,
+            "mean_abs_residual": 0.005143427831976088,
+            "worst": {
+              "record_key": "WP_000081134.1",
+              "part": 1,
+              "part_printed": "1.4",
+              "whole_printed": "2.8",
+              "phi": 4.0,
+              "abs_residual": 2.8
+            }
+          }
+        }
+      }
+    }
+  },
+  "r3c": {
+    "decision": "SHIP",
+    "reason": "decomposition and normalizers fitted",
+    "used_tie_break": false,
+    "primary_key_equal": true,
+    "probe_invocations": 3,
+    "tables": [
+      {
+        "name": "tblout",
+        "record_col": 2,
+        "entry_col": 0,
+        "index_col": null,
+        "meta": [
+          "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+          "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+          "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------",
+          "#",
+          "# Program:         hmmscan",
+          "# Version:         3.4 (Aug 2023)",
+          "# Pipeline mode:   SCAN",
+          "# Query file:      /tmp/acts_reference_fitter/r3c/q.faa",
+          "# Target file:     /tmp/acts_reference_fitter/r3c/R.hmm",
+          "# Option settings: hmmscan --tblout /tmp/acts_reference_fitter/r3c/R.tbl --domtblout /tmp/acts_reference_fitter/r3c/R.domtbl --noali --cut_ga --cpu 4 /tmp/acts_reference_fitter/r3c/R.hmm /tmp/acts_reference_fitter/r3c/q.faa ",
+          "# Current dir:     /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline",
+          "# Date:            Tue Oct  6 15:19:12 2026",
+          "# [ok]"
+        ],
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 1,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 2,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 4,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 8,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 9,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 10,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 11,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 12,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 13,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 14,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 15,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 16,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 17,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 18,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          }
+        ],
+        "layout": {}
+      },
+      {
+        "name": "domtblout",
+        "record_col": 3,
+        "entry_col": 0,
+        "index_col": 9,
+        "meta": [
+          "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+          "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+          "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------",
+          "#",
+          "# Program:         hmmscan",
+          "# Version:         3.4 (Aug 2023)",
+          "# Pipeline mode:   SCAN",
+          "# Query file:      /tmp/acts_reference_fitter/r3c/q.faa",
+          "# Target file:     /tmp/acts_reference_fitter/r3c/R.hmm",
+          "# Option settings: hmmscan --tblout /tmp/acts_reference_fitter/r3c/R.tbl --domtblout /tmp/acts_reference_fitter/r3c/R.domtbl --noali --cut_ga --cpu 4 /tmp/acts_reference_fitter/r3c/R.hmm /tmp/acts_reference_fitter/r3c/q.faa ",
+          "# Current dir:     /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline",
+          "# Date:            Tue Oct  6 15:19:12 2026",
+          "# [ok]"
+        ],
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 1,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 2,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 4,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 8,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 9,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 10,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 11,
+            "role": "numeric",
+            "member": "per_key_row_count",
+            "count_table": "tblout",
+            "primary_fits": [
+              "per_key_row_count:tblout"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 12,
+            "role": "numeric",
+            "member": "entry_count",
+            "count_table": null,
+            "primary_fits": [
+              "entry_count"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 13,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 14,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 15,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 16,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 17,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 18,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 19,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 20,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 21,
+            "role": "numeric",
+            "member": "identity",
+            "count_table": null,
+            "primary_fits": [
+              "identity"
+            ],
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "index": 22,
+            "role": "byte",
+            "member": "byte",
+            "count_table": null,
+            "primary_fits": [],
+            "tie": [],
+            "tie_break": null
+          }
+        ],
+        "layout": {}
+      }
+    ],
+    "n_entries": 4871,
+    "n_records": 300,
+    "half_sizes": [
+      2435,
+      2436
+    ],
+    "tables_present": [
+      "tblout",
+      "domtblout"
+    ],
+    "primary_residuals": {
+      "tblout": {
+        "4": {
+          "entry_count": {
+            "n": 528,
+            "n_consistent": 528,
+            "fits": true,
+            "max_abs_residual": 9.938423645320185e-07,
+            "mean_abs_residual": 4.468536979333397e-09,
+            "worst": {
+              "record_key": "WP_000996090.1",
+              "part": 1,
+              "part_printed": "1.5e-05",
+              "whole_printed": "2.9e-05",
+              "phi": 1.9995894909688012,
+              "abs_residual": 9.938423645320185e-07
+            }
+          },
+          "total_entry_length": {
+            "n": 528,
+            "n_consistent": 436,
+            "fits": false,
+            "max_abs_residual": 1.4954414107212869e-06,
+            "mean_abs_residual": 1.081381195198496e-08,
+            "worst": {
+              "record_key": "WP_000996090.1",
+              "part": 1,
+              "part_printed": "1.5e-05",
+              "whole_printed": "2.9e-05",
+              "phi": 2.033029427381419,
+              "abs_residual": 1.4954414107212869e-06
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 528,
+            "n_consistent": 119,
+            "fits": false,
+            "max_abs_residual": 3.5e-05,
+            "mean_abs_residual": 1.56300887188764e-07,
+            "worst": {
+              "record_key": "WP_001310834.1",
+              "part": 0,
+              "part_printed": "3.5e-05",
+              "whole_printed": "7e-05",
+              "phi": 1.0,
+              "abs_residual": 3.5e-05
+            }
+          }
+        },
+        "7": {
+          "entry_count": {
+            "n": 528,
+            "n_consistent": 528,
+            "fits": true,
+            "max_abs_residual": 0.004025462012320319,
+            "mean_abs_residual": 1.1358485719422803e-05,
+            "worst": {
+              "record_key": "WP_000891353.1",
+              "part": 0,
+              "part_printed": "0.062",
+              "whole_printed": "0.12",
+              "phi": 2.0004106776180697,
+              "abs_residual": 0.004025462012320319
+            }
+          },
+          "total_entry_length": {
+            "n": 528,
+            "n_consistent": 449,
+            "fits": false,
+            "max_abs_residual": 0.0021469127797922316,
+            "mean_abs_residual": 1.740654866799041e-05,
+            "worst": {
+              "record_key": "WP_001214290.1",
+              "part": 1,
+              "part_printed": "0.065",
+              "whole_printed": "0.13",
+              "phi": 2.033029427381419,
+              "abs_residual": 0.0021469127797922316
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 528,
+            "n_consistent": 122,
+            "fits": false,
+            "max_abs_residual": 0.03333333333333334,
+            "mean_abs_residual": 0.00022123270163566973,
+            "worst": {
+              "record_key": "WP_000996090.1",
+              "part": 1,
+              "part_printed": "0.05",
+              "whole_printed": "0.1",
+              "phi": 1.3333333333333333,
+              "abs_residual": 0.03333333333333334
+            }
+          }
+        }
+      },
+      "domtblout": {
+        "6": {
+          "entry_count": {
+            "n": 511,
+            "n_consistent": 511,
+            "fits": true,
+            "max_abs_residual": 3.976600985221665e-07,
+            "mean_abs_residual": 1.7801118211521083e-09,
+            "worst": {
+              "record_key": "WP_001295704.1",
+              "part": 1,
+              "part_printed": "5.7e-06",
+              "whole_printed": "1.1e-05",
+              "phi": 1.9995894909688012,
+              "abs_residual": 3.976600985221665e-07
+            }
+          },
+          "total_entry_length": {
+            "n": 511,
+            "n_consistent": 424,
+            "fits": false,
+            "max_abs_residual": 5.882677360740881e-07,
+            "mean_abs_residual": 3.389313282796523e-09,
+            "worst": {
+              "record_key": "WP_001295704.1",
+              "part": 1,
+              "part_printed": "5.7e-06",
+              "whole_printed": "1.1e-05",
+              "phi": 2.033029427381419,
+              "abs_residual": 5.882677360740881e-07
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 511,
+            "n_consistent": 114,
+            "fits": false,
+            "max_abs_residual": 2.4500000000000003e-06,
+            "mean_abs_residual": 2.9372863630727805e-08,
+            "worst": {
+              "record_key": "WP_001295704.1",
+              "part": 1,
+              "part_printed": "5.7e-06",
+              "whole_printed": "1.1e-05",
+              "phi": 1.5,
+              "abs_residual": 2.4500000000000003e-06
+            }
+          }
+        },
+        "11": {
+          "entry_count": {
+            "n": 511,
+            "n_consistent": 119,
+            "fits": false,
+            "max_abs_residual": 1.299178981937603e-05,
+            "mean_abs_residual": 4.140000908305148e-08,
+            "worst": {
+              "record_key": "WP_101968748.1",
+              "part": 1,
+              "part_printed": "2e-05",
+              "whole_printed": "2.7e-05",
+              "phi": 1.9995894909688012,
+              "abs_residual": 1.299178981937603e-05
+            }
+          },
+          "total_entry_length": {
+            "n": 511,
+            "n_consistent": 104,
+            "fits": false,
+            "max_abs_residual": 1.3660588547628386e-05,
+            "mean_abs_residual": 4.55429419504542e-08,
+            "worst": {
+              "record_key": "WP_101968748.1",
+              "part": 1,
+              "part_printed": "2e-05",
+              "whole_printed": "2.7e-05",
+              "phi": 2.033029427381419,
+              "abs_residual": 1.3660588547628386e-05
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 511,
+            "n_consistent": 511,
+            "fits": true,
+            "max_abs_residual": 1.200000000000002e-06,
+            "mean_abs_residual": 3.650079980926646e-09,
+            "worst": {
+              "record_key": "WP_000891353.1",
+              "part": 0,
+              "part_printed": "2.6e-05",
+              "whole_printed": "5.6e-05",
+              "phi": 2.2,
+              "abs_residual": 1.200000000000002e-06
+            }
+          }
+        },
+        "12": {
+          "entry_count": {
+            "n": 511,
+            "n_consistent": 511,
+            "fits": true,
+            "max_abs_residual": 0.0009950718685831639,
+            "mean_abs_residual": 4.397540370286953e-06,
+            "worst": {
+              "record_key": "WP_000891353.1",
+              "part": 0,
+              "part_printed": "0.012",
+              "whole_printed": "0.025",
+              "phi": 2.0004106776180697,
+              "abs_residual": 0.0009950718685831639
+            }
+          },
+          "total_entry_length": {
+            "n": 511,
+            "n_consistent": 435,
+            "fits": false,
+            "max_abs_residual": 0.0015615002654841281,
+            "mean_abs_residual": 6.112218467346798e-06,
+            "worst": {
+              "record_key": "WP_101968748.1",
+              "part": 1,
+              "part_printed": "0.017",
+              "whole_printed": "0.033",
+              "phi": 2.033029427381419,
+              "abs_residual": 0.0015615002654841281
+            }
+          },
+          "per_key_row_count:tblout": {
+            "n": 511,
+            "n_consistent": 116,
+            "fits": false,
+            "max_abs_residual": 0.010333333333333333,
+            "mean_abs_residual": 2.95125117422708e-05,
+            "worst": {
+              "record_key": "WP_101968748.1",
+              "part": 1,
+              "part_printed": "0.017",
+              "whole_printed": "0.033",
+              "phi": 1.3333333333333333,
+              "abs_residual": 0.010333333333333333
+            }
+          }
+        }
+      }
+    }
+  },
+  "provenance": {
+    "git": "db16609a2e200b2b7ee7565a3f75699bc5fca2f9",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-06T22:23:32.980173+00:00",
+    "git_status_short": [
+      " M STATUS.md",
+      " M pipeline/scripts/reference_kill_tests.py",
+      " M tools/carc-gpu-dashboard/fixtures/demo_status.json",
+      " M tools/carc-gpu-dashboard/server.py",
+      " M tools/carc-gpu-dashboard/static/index.html",
+      " M tools/carc-gpu-dashboard/static/style.css",
+      "?? lab-notebook/",
+      "?? pipeline/results/reference_fitter_smoke.json",
+      "?? pipeline/results/reference_fitter_t1.json",
+      "?? pipeline/results/reference_fitter_t2.json",
+      "?? pipeline/results/savings/",
+      "?? pipeline/scripts/reference_fitter_accept.py",
+      "?? pipeline/scripts/reference_fitter_smoke.py"
+    ],
+    "tools": {
+      "hmmscan": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+      "hmmpress": "HMMER 3.4 (Aug 2023); http://hmmer.org/"
+    }
+  }
+}
