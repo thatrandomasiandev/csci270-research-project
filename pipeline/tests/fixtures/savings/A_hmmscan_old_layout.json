@@ -1,0 +1,108 @@
+{
+  "delim": "ws",
+  "scope": "fixed",
+  "columns": [
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 20
+    },
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 10
+    },
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 20
+    },
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 0
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 18
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 6
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 5
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 9
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 6
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 5
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 5
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "right",
+      "width_rule": "fixed_min",
+      "min_width": 3
+    },
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 0
+    },
+    {
+      "align": "left",
+      "width_rule": "fixed_min",
+      "min_width": 0
+    }
+  ],
+  "pinned": true,
+  "reason": "pinned fixed; 0:left/fixed_min/20, 1:left/fixed_min/10, 2:left/fixed_min/20, 3:left/fixed_min/0, 4:right/fixed_min/18, 5:right/fixed_min/6, 6:right/fixed_min/5, 7:right/fixed_min/9, 8:right/fixed_min/6, 9:right/fixed_min/5, 10:right/fixed_min/5, 11:right/fixed_min/3, 12:right/fixed_min/3, 13:right/fixed_min/3, 14:right/fixed_min/3, 15:right/fixed_min/3, 16:right/fixed_min/3, 17:right/fixed_min/3, 18:left/fixed_min/0, 19:left/fixed_min/0"
+}

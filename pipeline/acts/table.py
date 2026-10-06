@@ -38,9 +38,42 @@ def split_body_rows(lines: list[str], delim: str) -> list[list[str]]:
     if not raw:
         return []
     n = min(len(r) for r in raw)
+    return _collapse_last(raw, n)
+
+
+def split_body_rows_n(lines: list[str], delim: str, n_cols: int) -> list[list[str]]:
+    """Split body lines into `n_cols` cells. The last cell keeps internal spaces.
+
+    Use the contract's column count so a trailing free-text field is one cell
+    even when some lines have more tokens than others.
+    """
+    if n_cols <= 0:
+        return split_body_rows(lines, delim)
+    if delim == "tab":
+        rows = []
+        for ln in lines:
+            parts = ln.split("\t")
+            if len(parts) <= n_cols:
+                rows.append(parts)
+            else:
+                rows.append(parts[: n_cols - 1] + ["\t".join(parts[n_cols - 1 :])])
+        return rows
+    raw = [ln.split() for ln in lines]
+    return _collapse_last(raw, n_cols)
+
+
+def _collapse_last(raw: list[list[str]], n: int) -> list[list[str]]:
+    if not raw:
+        return []
     if n <= 1:
         return [[" ".join(r)] if r else [] for r in raw]
-    return [r[: n - 1] + [" ".join(r[n - 1 :])] for r in raw]
+    out: list[list[str]] = []
+    for row in raw:
+        if len(row) <= n:
+            out.append(row)
+        else:
+            out.append(row[: n - 1] + [" ".join(row[n - 1 :])])
+    return out
 
 
 def join_row(cells: list[str], delim: str) -> str:
@@ -77,6 +110,26 @@ def tables_match(a: str, b: str, match: str, *, match_ws: bool = False) -> bool:
     if match == "multiset":
         return bodies_multiset_equal(a, b)
     return bodies_equal(a, b)
+
+
+def body_mismatch_count(
+    got: list[str], want: list[str], match: str, *, match_ws: bool = False
+) -> int:
+    """Rows that fail `match` between two body-line lists. Zero is MATCH."""
+    norm = ws_line if match_ws else (lambda line: line)
+    if match == "multiset":
+        cg = Counter(norm(ln) for ln in got)
+        cw = Counter(norm(ln) for ln in want)
+        keys = set(cg) | set(cw)
+        return sum(abs(cg[k] - cw[k]) for k in keys) // 2
+    n = max(len(got), len(want))
+    bad = 0
+    for i in range(n):
+        left = norm(got[i]) if i < len(got) else None
+        right = norm(want[i]) if i < len(want) else None
+        if left != right:
+            bad += 1
+    return bad
 
 
 def token_starts(line: str, cells: list[str]) -> list[int] | None:
@@ -264,17 +317,45 @@ class _Obs:
     query: str
 
 
+def _scope_keys(scope: str, queries: list[str], samples: list[str]) -> list[str]:
+    if scope == "per_query":
+        return [f"{s}\0{q}" for s, q in zip(samples, queries)]
+    if scope == "per_file":
+        return list(samples)
+    return ["all"] * len(queries)
+
+
+def _lengths_vary(keys: list[str], lengths: list[int]) -> bool:
+    seen: dict[str, int] = {}
+    for key, ln in zip(keys, lengths):
+        prev = seen.get(key)
+        if prev is None:
+            seen[key] = ln
+        elif prev != ln:
+            return True
+    return False
+
+
 def _fit_width_rule(
     lengths: list[int],
     field_ws: list[int],
     queries: list[str],
     samples: list[str],
-) -> tuple[str, int, str] | None:
-    """Return (width_rule, min_width, scope_vote) if field widths are explained."""
+) -> tuple[tuple[str, int, str] | None, list[tuple[str, int, str]]]:
+    """Return (unique rule, every rule that explains these widths).
+
+    A layout may be pinned only when one rule survives. `fixed_min` used to
+    win whenever it fit, including when a per-query or per-file max explained
+    the same probe. Rules that implement the same function on this probe are
+    one rule: a max-value rule whose groups never contain two cell lengths
+    is the same renderer as `fixed_min` with that floor. A max-value rule
+    that still fits after the probe has shown two lengths in one group is a
+    real competitor, and the column stays unpinned.
+    """
     if len(lengths) != len(field_ws) or not lengths:
-        return None
+        return None, []
     if any(fw < ln for fw, ln in zip(field_ws, lengths)):
-        return None
+        return None, []
 
     def fixed_min() -> tuple[str, int, str] | None:
         extras = [fw for fw, ln in zip(field_ws, lengths) if fw > ln]
@@ -312,16 +393,46 @@ def _fit_width_rule(
                 return None
         return ("max_value", w0, scope)
 
+    fits: list[tuple[str, int, str]] = []
     fm = fixed_min()
     if fm is not None:
-        return fm
-    pq = grouped_max([f"{s}\0{q}" for s, q in zip(samples, queries)], "per_query")
-    pf = grouped_max(list(samples), "per_file")
+        fits.append(fm)
+    pq = grouped_max(_scope_keys("per_query", queries, samples), "per_query")
     if pq is not None:
-        return pq
+        fits.append(pq)
+    pf = grouped_max(_scope_keys("per_file", queries, samples), "per_file")
     if pf is not None:
-        return pf
-    return None
+        fits.append(pf)
+    if not fits:
+        return None, []
+
+    fixed = next((rule for rule in fits if rule[0] == "fixed_min"), None)
+    kept: list[tuple[str, int, str]] = []
+    for rule, width, scope in fits:
+        if (
+            rule == "max_value"
+            and fixed is not None
+            and fixed[1] == width
+            and not _lengths_vary(_scope_keys(scope, queries, samples), lengths)
+        ):
+            continue
+        kept.append((rule, width, scope))
+    per_query = next((rule for rule in kept if rule[2] == "per_query"), None)
+    per_file = next((rule for rule in kept if rule[2] == "per_file"), None)
+    if per_query is not None and per_file is not None and per_query[1] == per_file[1]:
+        by_sample: dict[str, set[str]] = defaultdict(set)
+        for sample, query in zip(samples, queries):
+            by_sample[sample].add(query)
+        if all(len(names) <= 1 for names in by_sample.values()):
+            kept = [rule for rule in kept if rule[2] != "per_file"]
+    if len(kept) == 1:
+        return kept[0], kept
+    return None, kept
+
+
+def _rule_tag(rule: tuple[str, int, str]) -> str:
+    name, width, scope = rule
+    return f"{name}/{width}/{scope}"
 
 
 def _layout_scope(cols: list[tuple[ColLayout, str]]) -> str | None:
@@ -394,6 +505,7 @@ def infer_table_layout(
         )
 
     budget = {"left": 8000}
+    ambiguous: list[tuple[int, list[tuple[str, int, str]]]] = []
 
     def dfs(
         col: int,
@@ -472,10 +584,12 @@ def infer_table_layout(
             if key in seen:
                 continue
             seen.add(key)
-            fitted = _fit_width_rule(lengths, field_ws, queries, sample_ids)
-            if fitted is None:
+            unique, kept = _fit_width_rule(lengths, field_ws, queries, sample_ids)
+            if unique is None:
+                if len(kept) > 1 and not any(col == seen_col for seen_col, _ in ambiguous):
+                    ambiguous.append((col, kept))
                 continue
-            rule, min_w, vote = fitted
+            rule, min_w, vote = unique
             spec = ColLayout(align=align, width_rule=rule, min_width=min_w)
             found = dfs(col + 1, next_fs, specs + [(spec, vote)])
             if found is not None:
@@ -492,6 +606,16 @@ def infer_table_layout(
             )
         )
         return found
+    if ambiguous:
+        parts = [
+            f"col {col} fits " + ", ".join(_rule_tag(rule) for rule in kept)
+            for col, kept in ambiguous
+        ]
+        return TableLayout(
+            delim="ws",
+            pinned=False,
+            reason="could not pin a unique width rule: " + "; ".join(parts),
+        )
     extra = _mixed_width_inconsistency(obs, query_col, samples)
     reason = "probe could not pin alignment, width rule, or scope"
     if extra:

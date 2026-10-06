@@ -58,6 +58,13 @@ class SavingsStopScopeTests(unittest.TestCase):
         self.assertEqual(runner.PROBE_N, 8)
         self.assertEqual(runner.SUBSET_MODE, "singleton")
 
+    def test_preflight_stop_uses_the_library_check(self) -> None:
+        from acts.infer_fasta import preflight_stock_outputs
+
+        runner = _load_runner()
+        self.assertIs(runner.preflight_stock_outputs, preflight_stock_outputs)
+        self.assertEqual(runner.stop_decision("preflight"), "STOP_PREFLIGHT")
+
 
 if __name__ == "__main__":
     unittest.main()

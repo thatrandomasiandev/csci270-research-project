@@ -7,12 +7,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.table import (
+    TableLayout,
     bodies_ws_equal,
+    body_lines,
+    body_mismatch_count,
     infer_table_layout,
     render_table,
     split_body_rows,
     tables_match,
 )
+
+FIXTURES = Path(__file__).resolve().parent / "fixtures" / "savings"
 
 
 def _sample(name: str, lines: list[str]) -> dict:
@@ -40,10 +45,12 @@ class LayoutInferTests(unittest.TestCase):
         def rows(names: list[str], scores: list[int]) -> list[str]:
             return [f"{n.ljust(10)} {str(s).rjust(6)} -" for n, s in zip(names, scores)]
 
-        short = rows(["A", "B"], [3, 1400])
-        long = rows(["L" * 24, "M" * 24], [3, 1400])
-        mixed = rows(["A", "L" * 24], [3, 1400])
-        probe = rows(["alpha", "beta"], [12, 1400])
+        # 1234567 overflows the width-6 floor inside one file, so per-file
+        # max is refuted and fixed_min is the only remaining rule.
+        short = rows(["A", "B"], [3, 1234567])
+        long = rows(["L" * 24, "M" * 24], [3, 1234567])
+        mixed = rows(["A", "L" * 24], [3, 1234567])
+        probe = rows(["alpha", "beta"], [12, 1234567])
         layout = infer_table_layout(
             [
                 _sample("probe", probe),
@@ -145,6 +152,44 @@ class LayoutInferTests(unittest.TestCase):
         )
         self.assertFalse(layout.pinned, layout.reason)
         self.assertIn("pin", layout.reason.lower())
+
+    def test_archived_hmmscan_rows_do_not_pin_the_old_floor(self) -> None:
+        """2026-10-06: the cached hmmscan contract pinned fixed_min 20.
+
+        These rows are the 11 queries in A_hmmscan_01_stock.tbl whose target
+        names are wider than that floor, plus four queries that are not.
+        The historical layout mis-renders the widened rows. Inference now
+        refuses to pin, because the accession column is still explained by
+        more than one width rule.
+        """
+        import json
+
+        text = (FIXTURES / "A_hmmscan_01_widen.tbl").read_text()
+        lines = body_lines(text)
+        rows = split_body_rows(lines, "ws")
+        old = TableLayout.from_dict(json.loads((FIXTURES / "A_hmmscan_old_layout.json").read_text()))
+        self.assertTrue(old.pinned)
+        self.assertEqual(old.columns[0].width_rule, "fixed_min")
+        self.assertEqual(old.columns[0].min_width, 20)
+        rendered = render_table(rows, old, query_col=2)
+        self.assertEqual(body_mismatch_count(rendered, lines, "order"), 22)
+        layout = infer_table_layout(
+            [{"name": "probe", "lines": lines, "rows": rows}],
+            query_col=2,
+            delim="ws",
+        )
+        if layout.pinned:
+            self.assertEqual(layout.scope, "per_query")
+            self.assertEqual(layout.columns[0].width_rule, "max_value")
+            got = render_table(rows, layout, query_col=2)
+            self.assertEqual(body_mismatch_count(got, lines, "order"), 0)
+        else:
+            self.assertIn("unique", layout.reason)
+            self.assertIn("pin", layout.reason.lower())
+            got = render_table(rows, layout, query_col=2)
+            self.assertEqual(
+                body_mismatch_count(got, lines, "order", match_ws=True), 0
+            )
 
 
 if __name__ == "__main__":

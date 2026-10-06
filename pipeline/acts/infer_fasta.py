@@ -23,12 +23,14 @@ from acts.table import (
     body_lines,
     bodies_equal,
     detect_delim,
+    body_mismatch_count,
     infer_table_layout,
     join_row,
     layout_pad_widths,
     meta_lines,
     render_table,
     split_body_rows,
+    split_body_rows_n,
 )
 
 MISSING_DESC = ("", "-", ".")
@@ -652,6 +654,54 @@ def extract_rows(
 
 def layout_from_contract(contract: TableContract) -> TableLayout:
     return TableLayout.from_dict(contract.layout)
+
+
+def preflight_stock_outputs(
+    contract: TableContract, stocks: list[tuple[str, str]]
+) -> dict:
+    """Rebuild archived stock bodies under this contract before any genome run.
+
+    Each stock text is split with the contract's column count, re-rendered
+    with its layout, and compared under its MATCH (`match` and `match_ws`).
+    A pinned layout is a byte check. An unpinned layout is the
+    whitespace-normalized MATCH. `ok` is false when any file has a mismatch;
+    the caller stops with STOP_PREFLIGHT and does not spend the collection.
+    No stock files is ok: there is nothing on disk that can refute the contract.
+    """
+    layout = layout_from_contract(contract)
+    files: list[dict] = []
+    for label, text in stocks:
+        lines = body_lines(text)
+        rows = split_body_rows_n(lines, contract.delim, contract.n_cols)
+        rendered = render_table(rows, layout, query_col=contract.query_col)
+        n_mis = body_mismatch_count(
+            rendered, lines, contract.match, match_ws=contract.match_ws
+        )
+        files.append({"label": label, "n_rows": len(lines), "n_mismatch": n_mis})
+    ok = all(row["n_mismatch"] == 0 for row in files)
+    if not stocks:
+        reason = "no stock outputs available"
+    elif ok:
+        counts = ",".join(str(row["n_mismatch"]) for row in files)
+        reason = (
+            f"0 mismatches on {len(files)} stock file(s) "
+            f"under match={contract.match} match_ws={contract.match_ws} "
+            f"pinned={layout.pinned} ({counts})"
+        )
+    else:
+        bad = ", ".join(
+            f"{row['label']} {row['n_mismatch']}/{row['n_rows']}"
+            for row in files
+            if row["n_mismatch"]
+        )
+        reason = f"stock rebuild mismatches: {bad}"
+    return {
+        "ok": ok,
+        "reason": reason,
+        "files": files,
+        "pinned": layout.pinned,
+        "match_ws": contract.match_ws,
+    }
 
 
 def reassemble_cells(

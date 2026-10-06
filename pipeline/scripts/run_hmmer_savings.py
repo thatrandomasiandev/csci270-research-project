@@ -11,6 +11,11 @@ layout is pinned. A pinned layout is checked as byte equality, which
 implies the whitespace relation of the same match type (addendum
 2026-10-06). A failed byte check halts with STOP_MATCH. It is not
 retried as whitespace.
+
+Before any genome run, `acts.infer_fasta.preflight_stock_outputs`
+rebuilds every available full stock body for this argv under the
+contract's MATCH. A mismatch halts with STOP_PREFLIGHT. The probe that
+infers the contract still runs; the collection does not.
 """
 
 from __future__ import annotations
@@ -39,6 +44,7 @@ from acts.infer_fasta import (
     contract_satisfies,
     infer_table_contract,
     layout_is_pinned,
+    preflight_stock_outputs,
     run_table_tool,
 )
 from acts.table import tables_match
@@ -263,6 +269,8 @@ def stop_decision(where: str) -> str:
         return "STOP_AUDIT"
     if where == "contract":
         return "STOP_CONTRACT"
+    if where == "preflight":
+        return "STOP_PREFLIGHT"
     return f"STOP_{where.replace(' ', '_').upper()}"
 
 
@@ -408,6 +416,33 @@ def genomes_spec(collection: str) -> list[dict]:
             }
         )
     return out
+
+
+def preflight_stock_files(collection: str, mode: str, paths: dict[str, Path]) -> list[tuple[str, str]]:
+    """Full stock tblout already on disk for this argv, including an optional archive.
+
+    ACTS_PREFLIGHT_STOCK is a directory of ``{collection}_{mode}_*_stock.tbl``
+    from an earlier run. The current run's tblout directory is included too.
+    Reading those files is the preflight; it is not a genome run.
+    """
+    dirs: list[Path] = []
+    extra = (os.environ.get("ACTS_PREFLIGHT_STOCK") or "").strip()
+    if extra:
+        dirs.append(Path(extra))
+    dirs.append(paths["tblout_dir"])
+    seen: set[Path] = set()
+    found: list[tuple[str, str]] = []
+    pattern = f"{collection}_{mode}_*_stock.tbl"
+    for folder in dirs:
+        if not folder.is_dir():
+            continue
+        for path in sorted(folder.glob(pattern)):
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            seen.add(resolved)
+            found.append((path.name, path.read_text()))
+    return found
 
 
 def ensure_contract(argv: list[str], recs: list[FastaRec], cache_path: Path, work: Path) -> TableContract:
@@ -675,6 +710,24 @@ def main() -> int:
                         "pinned": layout_is_pinned(contract),
                         "expected": EXPECTED_MATCH[mode],
                         "reason": reason,
+                    },
+                )
+                return halt(payload, fit, collection, mode, out_json, json.loads(paths["stop"].read_text()))
+            print(f"contract gate: {reason}", flush=True)
+            pre = preflight_stock_outputs(contract, preflight_stock_files(collection, mode, paths))
+            print(f"preflight: {pre['reason']}", flush=True)
+            if not pre["ok"]:
+                write_stop(
+                    paths["stop"],
+                    {
+                        "stopped": True,
+                        "where": "preflight",
+                        "mode": mode,
+                        "match": contract.match,
+                        "match_ws": contract.match_ws,
+                        "pinned": layout_is_pinned(contract),
+                        "reason": pre["reason"],
+                        "files": pre["files"],
                     },
                 )
                 return halt(payload, fit, collection, mode, out_json, json.loads(paths["stop"].read_text()))

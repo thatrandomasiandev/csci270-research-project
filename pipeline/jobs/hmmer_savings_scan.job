@@ -1,0 +1,107 @@
+#!/bin/bash
+# hmmscan-only resubmit (SAVINGS_PROTOCOL.md addendum 2026-10-06).
+# Code comes from ACTS_CODE_ROOT. Data, Pfam, and the savings output
+# directory stay on the original tree. This script does not read or
+# write results/savings/GIT_HASH or the hmmsearch caches.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/savings/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/savings/logs/%x-%j.err
+
+set -euo pipefail
+
+: "${ACTS_SAVINGS_COLLECTION:?}"
+: "${ACTS_SAVINGS_MODE:?}"
+: "${ACTS_CODE_ROOT:?}"
+: "${ACTS_DATA_ROOT:?}"
+
+if [[ "${ACTS_SAVINGS_MODE}" != "hmmscan" ]]; then
+  echo "hmmer_savings_scan.job refuses mode ${ACTS_SAVINGS_MODE}" >&2
+  exit 1
+fi
+
+DATA="${ACTS_DATA_ROOT}"
+CODE="${ACTS_CODE_ROOT}"
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_savings_${SLURM_JOB_ID}"
+mkdir -p "${DATA}/results/savings/logs" "${SCRATCH}"/{bin,work}
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load hmmer 2>/dev/null || module load hmmer/3.3.2 2>/dev/null || true
+
+export ACTS_GIT_HASH_FILE="${ACTS_GIT_HASH_FILE:-${CODE}/GIT_HASH}"
+unset ACTS_GIT_HASH || true
+
+echo "=== host / cpu ==="
+hostname
+date -Is
+uptime
+nproc
+python3 --version
+lscpu || true
+echo "GIT_HASH_FILE=${ACTS_GIT_HASH_FILE}"
+if [[ -f "${ACTS_GIT_HASH_FILE}" ]]; then
+  echo "GIT_HASH=$(tr -d '[:space:]' < "${ACTS_GIT_HASH_FILE}")"
+fi
+echo "COLLECTION=${ACTS_SAVINGS_COLLECTION} MODE=${ACTS_SAVINGS_MODE}"
+echo "CODE=${CODE}"
+echo "DATA=${DATA}"
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-epyc-7542} NODELIST=${SLURM_NODELIST:-}"
+echo "SCRATCH=${SCRATCH}"
+
+if ! command -v hmmsearch >/dev/null 2>&1; then
+  echo "=== build HMMER 3.4 on the compute node ==="
+  cd "${SCRATCH}"
+  curl -L --fail -o hmmer-3.4.tar.gz http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+  tar xf hmmer-3.4.tar.gz
+  cd hmmer-3.4
+  ./configure --prefix="${SCRATCH}"
+  make -j"${SLURM_CPUS_PER_TASK:-8}"
+  make install
+  export PATH="${SCRATCH}/bin:${PATH}"
+fi
+command -v hmmsearch
+hmmsearch -h | head -n 3
+
+echo "=== stage inputs to node-local scratch ==="
+mkdir -p "${SCRATCH}/pipeline"/{scripts,acts,results,data/hmmer,data/recurrence}
+cp -a "${CODE}/scripts/." "${SCRATCH}/pipeline/scripts/"
+cp -a "${CODE}/acts/." "${SCRATCH}/pipeline/acts/"
+cp "${DATA}/results/headline_screen.json" "${DATA}/results/recurrence_accessions.json" \
+  "${DATA}/results/hmmer_predicted_speedup.json" "${SCRATCH}/pipeline/results/"
+cp -a "${DATA}/data/recurrence/${ACTS_SAVINGS_COLLECTION}" "${SCRATCH}/pipeline/data/recurrence/"
+if [[ -f "${DATA}/data/hmmer/Pfam-A.hmm.gz" ]]; then
+  cp "${DATA}/data/hmmer/Pfam-A.hmm.gz" "${SCRATCH}/pipeline/data/hmmer/"
+elif [[ -f "${DATA}/data/hmmer/Pfam-A.hmm" ]]; then
+  cp "${DATA}/data/hmmer/Pfam-A.hmm" "${SCRATCH}/pipeline/data/hmmer/"
+else
+  echo "Pfam-A.hmm is not on the data tree" >&2
+  exit 1
+fi
+if [[ -f "${DATA}/data/hmmer/Pfam.version.gz" ]]; then
+  cp "${DATA}/data/hmmer/Pfam.version.gz" "${SCRATCH}/pipeline/data/hmmer/"
+fi
+
+export PATH
+export ACTS_PIPELINE_ROOT="${SCRATCH}/pipeline"
+export ACTS_SAVINGS_WORK="${SCRATCH}/work"
+export ACTS_SAVINGS_OUT="${DATA}/results/savings"
+export ACTS_PREFLIGHT_STOCK="${ACTS_PREFLIGHT_STOCK:-${DATA}/results/savings_failed_20260928/tblout}"
+if [[ -f "${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm" ]]; then
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm"
+else
+  export ACTS_PFAM="${SCRATCH}/pipeline/data/hmmer/Pfam-A.hmm.gz"
+fi
+export PYTHONPATH="${SCRATCH}/pipeline"
+
+echo "=== run ==="
+python3 "${SCRATCH}/pipeline/scripts/run_hmmer_savings.py"
+echo SAVINGS_DONE

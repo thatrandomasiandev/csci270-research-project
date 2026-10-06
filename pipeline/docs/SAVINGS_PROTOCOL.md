@@ -579,3 +579,83 @@ hmmsearch `--tblout` result as byte-identical from the contract alone.
 - The halted JSON, `STOP_*.json`, logs, and `GIT_HASH` are archived
   under `results/savings_failed_20261005/` and are not combined with
   the rerun. The failed run stays in the record.
+
+---
+
+## Addendum 2026-10-06 — hmmscan byte layout refuted by archived full outputs; pin only unique width rules
+
+Locked sections above are unchanged. This addendum is written **before**
+the hmmscan resubmit. It does not use any output of jobs 12739162,
+12739229, 12739228, or 12739230.
+
+### Cause
+
+`acts.table` layout inference pinned a width rule the probe did not
+uniquely identify. When `fixed_min`, per-query `max_value`, and
+per-file `max_value` all explained a column, it kept `fixed_min`.
+
+HMMER `p7_tophits_TabularTargets` sets the target-name width to
+`ESL_MAX(20, p7_tophits_GetMaxNameLength(th))` on the hit list it is
+given (`src/p7_tophits.c`). hmmscan calls that once per query, so the
+width is per query. The cached hmmscan contracts
+(`results/savings/cache/{A,B}_hmmscan/cache.jsonl.contract.json` on
+CARC, inferred with `probe_n` 8, scope `fixed`, column 0 `fixed_min`
+20) never saw a model name longer than 20, so every rule fit and the
+code pinned the floor.
+
+### Evidence (archived 2026-09-28 stock, not this run)
+
+Re-rendered on the Mac with `acts.table.render_table` and the cached
+A hmmscan layout. Bodies only. Counts are MEASURED and recorded in
+`results/hmmscan_layout_preflight.json`.
+
+| File | Rows | Byte mismatches under the pinned floor |
+|------|------|----------------------------------------|
+| `results/savings_failed_20260928/tblout/A_hmmscan_01_stock.tbl` | 9,397 | 22 |
+| `A_hmmscan_02_stock.tbl` | 8,177 | 22 |
+| `A_hmmscan_05_stock.tbl` | 8,333 | 20 |
+| `A_hmmscan_10_stock.tbl` | 9,098 | 21 |
+| `A_hmmscan_20_stock.tbl` | 9,251 | 37 |
+
+On genome 1 the 22 rows are 11 queries. Every query's target-name
+field width equals `max(20, longest target name in that query)`
+(0 exceptions on that file).
+
+The same check on `A_hmmsearch_{01,02,05}_stock.tbl`, split with the
+cached contract's `n_cols` so the description is one cell, is **0
+mismatches over 62,262 rows**. hmmsearch keeps that pinned contract.
+
+### Rule
+
+A whitespace/tab layout is pinned only when every column's width rule
+is the only rule the probe does not refute. Two rules that render the
+same bytes on every extension the probe's groups allow (a max-value
+rule whose groups never contain two cell lengths, against `fixed_min`
+with the same floor) are one rule. If more than one rule still fits,
+the layout is unpinned and the reason is stored on the contract.
+MATCH is then the whitespace-normalized relation of the locked match
+type (`order` for hmmscan).
+
+hmmscan therefore uses its **locked whitespace MATCH** (order +
+`split()`) unless a probe uniquely identifies the layout. It does not
+keep the byte MATCH from the 2026-09-27 addendum when the probe cannot
+tell a fixed floor from a per-query max. hmmsearch is unchanged: its
+cached pinned contract stays, and this resubmit does not touch it.
+
+Re-inferring the layout from the five archived A hmmscan bodies leaves
+it unpinned (the accession column is still explained by more than one
+rule). Preflight under that contract's whitespace MATCH is 0, 0, 0, 0,
+0 mismatches. That check is `acts.infer_fasta.preflight_stock_outputs`,
+called from `scripts/run_hmmer_savings.py` after the contract gate and
+before any genome run. A mismatch stops with `STOP_PREFLIGHT`.
+
+### Resubmit
+
+Cancel the held hmmscan jobs only. Archive the old hmmscan contracts
+under `results/savings_failed_20261005/`, then delete only
+`results/savings/cache/{A,B}_hmmscan/`. Stage this commit on a separate
+CARC code path. Do not replace the checkout, `results/savings/GIT_HASH`,
+or caches that 12739228 and 12739230 read. Resubmit A and B hmmscan
+with the same resources (exclusive `epyc-7542`, 22 h and 12 h). Set
+`ACTS_GIT_HASH_FILE` per job. Point preflight at the archived tblout
+directory.

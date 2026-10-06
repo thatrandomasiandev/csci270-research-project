@@ -1,0 +1,103 @@
+{
+  "protocol": "pipeline/docs/SAVINGS_PROTOCOL.md",
+  "addendum": "2026-10-06 hmmscan byte layout refuted by archived full outputs",
+  "source": "archived stock from results/savings_failed_20260928/tblout on CARC, copied to the Mac with scp; not an output of the 2026-10-06 jobs",
+  "old_hmmscan_layout": {
+    "pinned": true,
+    "scope": "fixed",
+    "col0": "fixed_min/20",
+    "probe_n": 8,
+    "files": [
+      {
+        "label": "A_hmmscan_01_stock.tbl",
+        "n_rows": 9397,
+        "n_mismatch": 22
+      },
+      {
+        "label": "A_hmmscan_02_stock.tbl",
+        "n_rows": 8177,
+        "n_mismatch": 22
+      },
+      {
+        "label": "A_hmmscan_05_stock.tbl",
+        "n_rows": 8333,
+        "n_mismatch": 20
+      },
+      {
+        "label": "A_hmmscan_10_stock.tbl",
+        "n_rows": 9098,
+        "n_mismatch": 21
+      },
+      {
+        "label": "A_hmmscan_20_stock.tbl",
+        "n_rows": 9251,
+        "n_mismatch": 37
+      }
+    ]
+  },
+  "reinferred_hmmscan": {
+    "pinned": false,
+    "scope": "fixed",
+    "reason": "could not pin a unique width rule: col 1 fits fixed_min/10/fixed, max_value/10/per_query, max_value/0/per_file",
+    "match": "order",
+    "match_ws": true,
+    "files": [
+      {
+        "label": "A_hmmscan_01_stock.tbl",
+        "n_rows": 9397,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmscan_02_stock.tbl",
+        "n_rows": 8177,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmscan_05_stock.tbl",
+        "n_rows": 8333,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmscan_10_stock.tbl",
+        "n_rows": 9098,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmscan_20_stock.tbl",
+        "n_rows": 9251,
+        "n_mismatch": 0
+      }
+    ]
+  },
+  "hmmsearch_cached_contract": {
+    "pinned": true,
+    "n_cols": 19,
+    "files": [
+      {
+        "label": "A_hmmsearch_01_stock.tbl",
+        "n_rows": 23053,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmsearch_02_stock.tbl",
+        "n_rows": 19320,
+        "n_mismatch": 0
+      },
+      {
+        "label": "A_hmmsearch_05_stock.tbl",
+        "n_rows": 19889,
+        "n_mismatch": 0
+      }
+    ],
+    "n_rows": 62262,
+    "n_mismatch": 0
+  },
+  "provenance": {
+    "git": "8fc852e7c903d25f347224eb5980cad9d2264d4c",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-06T22:40:24.933588+00:00"
+  }
+}

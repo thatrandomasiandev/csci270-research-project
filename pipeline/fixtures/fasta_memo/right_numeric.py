@@ -24,6 +24,10 @@ print("# mock right-aligned numeric table")
 for name, desc, seq in recs:
     if seq.startswith("Q"):
         continue
+    # Some scores exceed the floor so per-file max is refuted and fixed_min
+    # is the only width rule the probe cannot reject.
     score = (sum(ord(c) for c in seq) * 7) % 9000
+    if seq[:1] in {"M", "W"}:
+        score += 1_000_000
     label = desc if desc else "-"
     print(f"{name.ljust(12)} {str(score).rjust(6)} {label}")

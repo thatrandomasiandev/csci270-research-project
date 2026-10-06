@@ -9,7 +9,12 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.fasta import FastaRec, read_fasta, write_fasta
-from acts.infer_fasta import InferError, infer_table_contract
+from acts.infer_fasta import (
+    InferError,
+    TableContract,
+    infer_table_contract,
+    preflight_stock_outputs,
+)
 from acts.strategies.record_memo import RecordMemo
 from acts.table import body_lines
 from acts.__main__ import main as acts_main
@@ -229,6 +234,11 @@ class InferFastaFixtureTests(unittest.TestCase):
             self.assertEqual(first.decision, "SHIP", first.reason)
             contract = json.loads((cache.parent / (cache.name + ".contract.json")).read_text())
             self.assertFalse(contract["match_ws"], contract.get("layout"))
+            self.assertEqual(contract["layout"]["scope"], "fixed")
+            self.assertTrue(
+                all(c["width_rule"] == "fixed_min" for c in contract["layout"]["columns"]),
+                contract.get("layout"),
+            )
             aligns = [c["align"] for c in contract["layout"]["columns"]]
             self.assertIn("right", aligns, contract.get("layout"))
 
@@ -303,6 +313,123 @@ class InferFastaFixtureTests(unittest.TestCase):
 
 def _synth_fa(n: int) -> list[FastaRec]:
     return [FastaRec(f"q{i}", "", "ACGT" * ((i % 5) + 2)) for i in range(n)]
+
+
+class RareQueryWidenTests(unittest.TestCase):
+    """A per-query pad that shows up only on a rare record.
+
+    Without that record the probe cannot refute fixed_min, per-query max,
+    or per-file max, so the layout stays unpinned and MATCH is whitespace.
+    With one such record the target column is per-query and the rebuild is
+    byte MATCH. Both contracts rebuild the full file, including the rare
+    record, under the contract's own MATCH.
+    """
+
+    def _recs(self, rare: bool) -> list[FastaRec]:
+        recs = [
+            FastaRec("alpha", "", "ACGTACGTACGT"),
+            FastaRec("beta", "", "GGGGTTTTAAAA"),
+            FastaRec("gamma", "", "CCCCAAAAGGGG"),
+        ]
+        if rare:
+            recs.append(FastaRec("rare", "", "ACGTRareRAREWIDEN"))
+        return recs
+
+    def test_probe_without_rare_record_unpins_and_whitespace_matches(self) -> None:
+        argv = _argv("rare_query_widen.py")
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            cache = td / "cache.jsonl"
+            contract = infer_table_contract(
+                argv, self._recs(False), td / "probe", probe_n=8, subset_mode="singleton"
+            )
+            self.assertFalse(contract.layout.get("pinned"), contract.layout.get("reason"))
+            self.assertTrue(contract.match_ws)
+            self.assertIn("unique", contract.layout.get("reason", ""))
+            contract.save(cache.with_name(cache.name + ".contract.json"))
+            normal = td / "normal.fa"
+            write_fasta(normal, self._recs(False))
+            first = RecordMemo(
+                kind="fasta", argv=argv, input_path=normal,
+                out_dir=td / "a", cache_path=cache, verify="full", probe_n=8,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            renamed = [
+                FastaRec(f"N{i}", "", rec.seq) for i, rec in enumerate(self._recs(False))
+            ]
+            renamed.append(FastaRec("rare2", "", "ACGTRareRAREWIDEN"))
+            full = td / "full.fa"
+            write_fasta(full, renamed)
+            second = RecordMemo(
+                kind="fasta", argv=argv, input_path=full,
+                out_dir=td / "b", cache_path=cache, verify="full", probe_n=8,
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertGreater(int(second.extra["n_hits"]), 0)
+            self.assertGreater(int(second.extra["n_misses"]), 0)
+            norm = lambda t: [" ".join(ln.split()) for ln in body_lines(t)]
+            self.assertEqual(
+                norm((td / "b" / "reassembled.out").read_text()),
+                norm((td / "b" / "full.out").read_text()),
+            )
+
+    def test_probe_with_rare_record_pins_per_query_and_byte_matches(self) -> None:
+        argv = _argv("rare_query_widen.py")
+        with tempfile.TemporaryDirectory() as td:
+            td = Path(td)
+            cache = td / "cache.jsonl"
+            src = td / "src.fa"
+            write_fasta(src, self._recs(True))
+            first = RecordMemo(
+                kind="fasta", argv=argv, input_path=src,
+                out_dir=td / "a", cache_path=cache, verify="full", probe_n=8,
+            ).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            contract = json.loads((cache.with_name(cache.name + ".contract.json")).read_text())
+            self.assertTrue(contract["layout"]["pinned"], contract["layout"].get("reason"))
+            self.assertEqual(contract["layout"]["scope"], "per_query")
+            self.assertEqual(contract["layout"]["columns"][0]["width_rule"], "max_value")
+            self.assertFalse(contract["match_ws"])
+            renamed = [FastaRec(f"N{i}", "", rec.seq) for i, rec in enumerate(self._recs(True))]
+            other = td / "renamed.fa"
+            write_fasta(other, renamed)
+            second = RecordMemo(
+                kind="fasta", argv=argv, input_path=other,
+                out_dir=td / "b", cache_path=cache, verify="full", probe_n=8,
+            ).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(int(second.extra["n_misses"]), 0)
+            self.assertEqual(
+                body_lines((td / "b" / "reassembled.out").read_text()),
+                body_lines((td / "b" / "full.out").read_text()),
+            )
+
+
+class PreflightStockTests(unittest.TestCase):
+    def test_unpinned_whitespace_passes_and_wrong_pin_stops(self) -> None:
+        pinned = TableContract(
+            kind="fasta", argv=["tool"], query_col=0, desc_cols=[], produced_cols=[1],
+            delim="ws", match="order", n_cols=2, match_ws=False,
+            layout={
+                "delim": "ws", "scope": "fixed", "pinned": True,
+                "columns": [{"align": "left", "width_rule": "fixed_min", "min_width": 8}],
+            },
+        )
+        stock = "name         1\n"
+        bad = preflight_stock_outputs(pinned, [("toy.tbl", stock)])
+        self.assertFalse(bad["ok"])
+        self.assertEqual(bad["files"][0]["n_mismatch"], 1)
+        open_layout = TableContract(
+            kind="fasta", argv=["tool"], query_col=0, desc_cols=[], produced_cols=[1],
+            delim="ws", match="order", n_cols=2, match_ws=True,
+            layout={"delim": "ws", "scope": "fixed", "pinned": False, "columns": [], "reason": "not unique"},
+        )
+        good = preflight_stock_outputs(open_layout, [("toy.tbl", stock)])
+        self.assertTrue(good["ok"], good["reason"])
+        self.assertEqual(good["files"][0]["n_mismatch"], 0)
+        empty = preflight_stock_outputs(open_layout, [])
+        self.assertTrue(empty["ok"])
+        self.assertIn("no stock", empty["reason"])
 
 
 class BatchedSubsetFastaTests(unittest.TestCase):
