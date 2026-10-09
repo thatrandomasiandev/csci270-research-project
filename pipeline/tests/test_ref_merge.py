@@ -32,6 +32,7 @@ from acts.reference_fit import (  # noqa: E402
 from acts.reference_formats import parse_reference, read_records, write_entries  # noqa: E402
 from acts.reference_run import (  # noqa: E402
     ReferenceIncremental,
+    _provenance_held,
     _rescale_held,
     _row_for_cache,
 )
@@ -257,6 +258,71 @@ class RefMergeTests(unittest.TestCase):
                 self.assertNotIn("rescale", row)
                 self.assertIn("cells", row)
                 self.assertIn("basis", row)
+            third = run(ref2)
+            self.assertEqual(third.decision, "SHIP", third.reason)
+            again = json.loads((root / "v2" / "tables" / "out.provenance.json").read_text())
+            self.assertTrue(load_rescale_provenance(again))
+
+    def test_second_render_keeps_the_source_printed_value(self) -> None:
+        """A reprint that is not byte-identical to stock must still pass after reload.
+
+        Job 12865788 preflight matched, then the timed arm stored the reprint.
+        The next render saw phi 1, dropped provenance, and failed column 4.
+        """
+        from acts.reference_fit import TableReport
+
+        columns = [
+            ColumnReport(index=0, role="byte", member=BYTE),
+            ColumnReport(index=1, role="numeric", member=IDENTITY),
+            ColumnReport(index=2, role="numeric", member="total_entry_length"),
+        ]
+        table = TableReport(
+            name="out",
+            record_col=0,
+            entry_col=1,
+            index_col=None,
+            meta=[],
+            columns=columns,
+        )
+        source = "1.2e-21"
+        stock = "8.7e-21"
+        row = {
+            "table": "out",
+            "record_key": "q",
+            "entry_hash": "h",
+            "entry_token": "m",
+            "row_index": "",
+            "cells": ["q", "m", source],
+            "basis": {
+                "entry_count": 10,
+                "total_entry_length": 100,
+                "row_count": {"out": 1},
+            },
+        }
+        scaled = _rescale_held([row], [table], 10, 744)
+        self.assertEqual(scaled[0]["rescale"][2][0], source)
+        self.assertAlmostEqual(scaled[0]["rescale"][2][1], 7.44)
+        self.assertNotEqual(scaled[0]["cells"][2], stock)
+        key = ("q", "m", "")
+        ok, why = ref_merge_rows(
+            {key: ["q", "m", stock]},
+            {key: scaled[0]["cells"]},
+            columns,
+            _provenance_held(scaled, table),
+        )
+        self.assertTrue(ok, why)
+        # The cache keeps the source. A later render rescales it again.
+        stored = _row_for_cache(row)
+        self.assertEqual(stored["cells"][2], source)
+        again = _rescale_held([stored], [table], 10, 744)
+        ok, why = ref_merge_rows(
+            {key: ["q", "m", stock]},
+            {key: again[0]["cells"]},
+            columns,
+            _provenance_held(again, table),
+        )
+        self.assertTrue(ok, why)
+        self.assertIn(2, _provenance_held(again, table)[key])
 
 
 def _added():

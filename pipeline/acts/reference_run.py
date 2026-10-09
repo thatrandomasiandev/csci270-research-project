@@ -779,16 +779,20 @@ class ReferenceIncremental(Strategy):
         scaled = _rescale_held(held, tables, len(entries), new_length)
         _clock_add(self.clock, "merge_rescale_s", time.perf_counter() - started)
         started = time.perf_counter()
-        self._store(cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, scaled)
+        # Persist the cells the tool printed and the basis they were produced
+        # under. The reprint is for this render only. Storing it would make the
+        # next render see phi 1, drop the source, and byte-compare a reprint.
+        self._store(cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, held)
         _clock_add(self.clock, "cache_store_s", time.perf_counter() - started)
         return scaled, reused, stats
 
-    def _store(self, cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, scaled) -> None:
+    def _store(self, cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, source_rows) -> None:
         by_table: dict[str, list[dict]] = {table.name: [] for table in tables}
-        for row in scaled:
+        for row in source_rows:
             by_table.setdefault(row["table"], []).append(row)
         # Coverage for pairs we can now answer: stable (already), fresh (all records),
-        # partial × missing records. Rewriting stable rows keeps their rescaled basis.
+        # partial × missing records. The stored basis stays the one the cells
+        # were produced under, so a later render can rescale from the source.
         groups = {
             "stable": (stable, list(records)),
             "fresh": (fresh, list(records)),
