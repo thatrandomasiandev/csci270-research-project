@@ -17,6 +17,7 @@ tool name is compiled into this module.
 
 from __future__ import annotations
 
+import json
 import random
 import shlex
 import subprocess
@@ -38,6 +39,7 @@ from acts.reference_fit import (
     TableReport,
     column_phi,
     disambiguating_indices,
+    dump_rescale_provenance,
     fit_observations,
     index_rows,
     parse_table_text,
@@ -445,7 +447,7 @@ def _rescale_held(
             if phi == 1.0:
                 continue
             phis[col.index] = phi
-        cells = rescale_cells(list(row["cells"]), table.columns, phis)
+        cells, cell_prov = rescale_cells(list(row["cells"]), table.columns, phis)
         saved = dict(row)
         saved["cells"] = cells
         saved["basis"] = {
@@ -453,7 +455,45 @@ def _rescale_held(
             "total_entry_length": new_length,
             "row_count": {name: per.get(row["record_key"], 0) for name, per in new_counts.items()},
         }
+        # In-memory only. _row_for_cache drops this so the sqlite payload
+        # keeps the keys a cache filled before this checker can still load.
+        if cell_prov:
+            saved["rescale"] = cell_prov
         out.append(saved)
+    return out
+
+
+_CACHE_ROW_KEYS = (
+    "table",
+    "record_key",
+    "entry_hash",
+    "entry_token",
+    "row_index",
+    "cells",
+    "basis",
+)
+
+
+def _row_for_cache(row: dict) -> dict:
+    """Payload written to sqlite. Rescale provenance is not part of the format."""
+    return {key: row[key] for key in _CACHE_ROW_KEYS}
+
+
+def _provenance_held(
+    held: list[dict], table: TableReport
+) -> dict[tuple[str, str, str], dict[int, tuple[str, float]]]:
+    """Sidecar for one table. Per-key-count phi is the post-merge value recorded at rescale."""
+    out: dict[tuple[str, str, str], dict[int, tuple[str, float]]] = {}
+    for row in held:
+        if row.get("table") != table.name:
+            continue
+        prov = row.get("rescale") or {}
+        if not prov:
+            continue
+        key = (row["record_key"], row["entry_token"], row.get("row_index") or "")
+        out[key] = {
+            int(index): (str(source), float(phi)) for index, (source, phi) in prov.items()
+        }
     return out
 
 
@@ -762,7 +802,7 @@ class ReferenceIncremental(Strategy):
                 )
             wanted = {(rec, ent) for rec, ent in pairs}
             rows = [
-                row
+                _row_for_cache(row)
                 for row in by_table.get(table.name, [])
                 if (row["record_key"], row["entry_hash"]) in wanted
             ]
@@ -779,7 +819,9 @@ class ReferenceIncremental(Strategy):
                 )
             except ValueError as exc:
                 return False, str(exc)
-            ok, why = ref_merge_rows(stock_rows, _index_held(held, table), table.columns)
+            ok, why = ref_merge_rows(
+                stock_rows, _index_held(held, table), table.columns, _provenance_held(held, table)
+            )
             if not ok:
                 return False, f"{table.name}: {why}"
         return True, ""
@@ -819,7 +861,12 @@ class ReferenceIncremental(Strategy):
                 if key[0] in wanted
             }
             stock_kept = {key: cells for key, cells in stock_rows.items() if key[0] in wanted}
-            ok, why = ref_merge_rows(stock_kept, ours, table.columns)
+            prov = {
+                key: cols
+                for key, cols in _provenance_held(held, table).items()
+                if key[0] in wanted
+            }
+            ok, why = ref_merge_rows(stock_kept, ours, table.columns, prov)
             if not ok:
                 return False, f"{table.name}: {why}", len(chosen)
         return True, "", len(chosen)
@@ -830,6 +877,10 @@ class ReferenceIncremental(Strategy):
         for table in tables:
             text = render_table_text(table, _order_rows(held, table, entries, records))
             (dest / table.name).write_text(text)
+            sidecar = dump_rescale_provenance(_provenance_held(held, table))
+            (dest / f"{table.name}.provenance.json").write_text(
+                json.dumps(sidecar, indent=2) + "\n"
+            )
 
     def _dump_raw(self, texts: dict[str, str]) -> None:
         dest = self.out_dir / "tables"

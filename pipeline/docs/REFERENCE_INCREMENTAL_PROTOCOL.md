@@ -988,3 +988,25 @@ and a gestore scan that also presses a full copy). That projection
 is not a result. The job is `jobs/reference_reannot.job`, own tree
 `reference_reannot/` on CARC, own `GIT_HASH`. It does not write
 `results/savings/`.
+
+## Addendum 2026-10-09 — ref-merge checker omitted source rounding
+
+ref-merge checker omitted source rounding; found in smoke before any measured outcome; locked definition unchanged; implementation corrected; error bound stated; 12760029 and 12864042 superseded.
+
+The locked predicate is unchanged. A source printed value \(v\) is consistent with a stock printed value \(w\) at a finite factor \(\phi\) when
+
+\[
+|v\phi - w| \le \mathrm{half\text{-}ULP}(w_{\mathrm{printed}}) + |\phi|\cdot\mathrm{half\text{-}ULP}(v_{\mathrm{printed}}).
+\]
+
+The checker had compared the reprinted cell to stock at \(\phi = 1\), which drops the source-rounding term \(|\phi|\cdot\mathrm{half\text{-}ULP}(v)\). The corrected checker tests each rescaled cell with the locked predicate against that source printed value, and it requires the emitted cell to equal the deterministic reprint of \(\mathrm{float}(v)\cdot\phi\). Identity and byte columns stay byte-exact. Row-key sets stay equal. Per-key-count columns use the post-merge \(\phi\).
+
+User-facing error bound, for a cell that passes. `emitted`, `stock`, and `source` are the numeric values of those printed tokens:
+
+\[
+|\mathrm{emitted} - \mathrm{stock}| \le \mathrm{half\text{-}ULP}(\mathrm{stock}) + \mathrm{half\text{-}ULP}(\mathrm{emitted}) + |\phi|\cdot\mathrm{half\text{-}ULP}(\mathrm{source}).
+\]
+
+The locked predicate bounds \(|\mathrm{source}\cdot\phi - \mathrm{stock}|\). Deterministic reprinting bounds \(|\mathrm{emitted} - \mathrm{source}\cdot\phi|\) by half an ulp of the emitted token. The displayed bound is the triangle inequality of those two.
+
+Jobs 12760029 and 12864042 ran the checker that omitted source rounding. They are superseded. No measured outcome from them is a result.

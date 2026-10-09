@@ -17,7 +17,13 @@ from acts.reference_formats import (  # noqa: E402
     write_entries,
 )
 from acts.reference_run import ReferenceIncremental  # noqa: E402
-from scripts.run_reference_reannot import decompress  # noqa: E402
+from acts.reference_formats import iter_profile_raw, parse_profile_text  # noqa: E402
+from scripts.run_reference_reannot import (  # noqa: E402
+    check_reannot_output,
+    decompress,
+    scan_argv,
+    select_profile_subset,
+)
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "reference_fitter"
 
@@ -155,6 +161,54 @@ class PhaseClockTests(unittest.TestCase):
             self.assertGreater(probe["tool_s"], 0.0)
             self.assertNotIn("parse_s", probe)
             self.assertIn("parse_s", phases)
+
+
+class SmokeSubsetTests(unittest.TestCase):
+    def test_measurement_argv_stays_32_cpus(self) -> None:
+        argv = scan_argv(32)
+        self.assertEqual(argv[argv.index("--cpu") + 1], "32")
+        self.assertIn("--cut_ga", argv)
+        self.assertIn("{reference}", argv)
+
+    def test_smoke_output_directory_is_separate(self) -> None:
+        check_reannot_output(Path("/tmp/reference_reannot_smoke/out.json"), True)
+        with self.assertRaises(SystemExit):
+            check_reannot_output(Path("/tmp/reference_reannot/out.json"), True)
+        with self.assertRaises(SystemExit):
+            check_reannot_output(Path("/tmp/reference_reannot_smoke/out.json"), False)
+
+    def test_profile_subset_keeps_changed_and_unchanged(self) -> None:
+        def hmm(name: str, acc: str) -> str:
+            return f"HMMER3/f\nNAME {name}\nACC {acc}\nLENG 1\n//\n"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old = root / "old.hmm"
+            new = root / "new.hmm"
+            old.write_text(hmm("alpha", "PF00001.1") + hmm("beta", "PF00002.1") + hmm("gone", "PF00003.1"))
+            new.write_text(
+                hmm("beta", "PF00002.1")
+                + hmm("alpha", "PF00001.1")
+                + hmm("fresh", "PF00009.1")
+            )
+            self.assertEqual(len(list(iter_profile_raw(old))), len(parse_profile_text(old.read_text())))
+            report = select_profile_subset(
+                old,
+                new,
+                root / "old_sub.hmm",
+                root / "new_sub.hmm",
+                n_unchanged=1,
+                n_changed=1,
+                preferred={"alpha"},
+            )
+            self.assertEqual(report["n_unchanged"], 1)
+            self.assertEqual(report["n_changed"], 1)
+            self.assertEqual(report["n_preferred"], 1)
+            self.assertIn("NAME alpha", (root / "old_sub.hmm").read_text())
+            new_text = (root / "new_sub.hmm").read_text()
+            self.assertIn("NAME alpha", new_text)
+            self.assertIn("NAME fresh", new_text)
+            self.assertNotIn("NAME gone", new_text)
 
 
 if __name__ == "__main__":

@@ -38,7 +38,9 @@ from acts.reference_fit import (  # noqa: E402
     PROBE_N,
     PROBE_SEED,
     index_rows,
+    load_rescale_provenance,
     parse_table_text,
+    ref_merge_printed_rows,
     ref_merge_rows,
     sample_record_indices,
 )
@@ -448,7 +450,14 @@ def _published_bar(stock_text: str, other_text: str) -> dict:
     }
 
 
-def _ref_merge_files(stock_text: str, ours_text: str, fit: dict) -> dict:
+def _ref_merge_files(
+    stock_text: str,
+    ours_text: str,
+    fit: dict,
+    provenance: dict | None = None,
+    *,
+    printed: bool = False,
+) -> dict:
     tables = fit.get("tables") or []
     if not tables:
         return {"ok": False, "why": "no fitted table"}
@@ -475,7 +484,12 @@ def _ref_merge_files(stock_text: str, ours_text: str, fit: dict) -> dict:
         )
         for col in table.get("columns") or []
     ]
-    ok, why = ref_merge_rows(stock_rows, our_rows, columns)
+    if printed:
+        ok, why = ref_merge_printed_rows(stock_rows, our_rows, columns)
+    elif provenance is None:
+        return {"ok": False, "why": "rescale provenance is required"}
+    else:
+        ok, why = ref_merge_rows(stock_rows, our_rows, columns, provenance)
     return {"ok": ok, "why": why}
 
 
@@ -880,7 +894,16 @@ def run(args: argparse.Namespace) -> int:
         if not stock_text or not text:
             matches.append({"i": i, "ok": False, "why": "missing output"})
             continue
-        row = _ref_merge_files(stock_text, text, fit_dict)
+        prov_path = work / f"r{i + 1}_ACTS" / "tables" / "out.provenance.json"
+        if not prov_path.is_file():
+            matches.append({"i": i, "ok": False, "why": "rescale provenance sidecar is missing"})
+            continue
+        try:
+            provenance = load_rescale_provenance(json.loads(prov_path.read_text()))
+        except (OSError, UnicodeError, ValueError, KeyError, TypeError) as exc:
+            matches.append({"i": i, "ok": False, "why": f"rescale provenance: {exc}"})
+            continue
+        row = _ref_merge_files(stock_text, text, fit_dict, provenance)
         row["i"] = i
         matches.append(row)
     iseq_bars = []
@@ -888,7 +911,7 @@ def run(args: argparse.Namespace) -> int:
         if not stock_text or not text:
             continue
         bar = _published_bar(stock_text, text)
-        bar["ref_merge"] = _ref_merge_files(stock_text, text, fit_dict)
+        bar["ref_merge"] = _ref_merge_files(stock_text, text, fit_dict, printed=True)
         bar["i"] = i
         iseq_bars.append(bar)
     d3 = {

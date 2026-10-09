@@ -101,6 +101,39 @@ def _profile_entry(raw: str) -> Entry:
     )
 
 
+def _is_gzip(path: Path) -> bool:
+    if path.name.endswith(".gz"):
+        return True
+    with path.open("rb") as handle:
+        return handle.read(2) == b"\x1f\x8b"
+
+
+def iter_profile_raw(path: Path):
+    """Yield each profile entry's raw text, one entry at a time.
+
+    The yielded text includes the ``//`` line and ends with a newline, matching
+    the raw stored by ``parse_profile_text``. The file is not held in memory.
+    """
+    opener = gzip.open if _is_gzip(path) else open
+    with opener(path, "rt") as handle:
+        buf: list[str] = []
+        started = False
+        for line in handle:
+            if not started:
+                if not line.strip():
+                    continue
+                if line.split(None, 1)[0] != PROFILE_MAGIC:
+                    raise FormatError("not profile text")
+                started = True
+            buf.append(line if line.endswith("\n") else line + "\n")
+            if line.startswith("//"):
+                yield "".join(buf)
+                buf = []
+                started = False
+        if "".join(buf).strip():
+            raise FormatError("truncated profile entry")
+
+
 def parse_profile_text(text: str) -> list[Entry]:
     entries: list[Entry] = []
     buf: list[str] = []

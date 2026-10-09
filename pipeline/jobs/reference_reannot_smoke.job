@@ -1,0 +1,84 @@
+#!/bin/bash
+# Smoke of the 38.1 → 38.2 driver. Not a measurement. Not exclusive.
+# Submit with absolute --output and --error under reference_reannot_smoke/.
+#SBATCH --job-name=reannot_smoke
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+#SBATCH --output=reannot-smoke-%j.out
+#SBATCH --error=reannot-smoke-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:?STOP_INPUTS: ACTS_CODE_ROOT is unset}"
+case "${ROOT}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_CODE_ROOT is not an absolute path: ${ROOT}" >&2
+    exit 2
+    ;;
+esac
+
+OLD="${ACTS_PFAM_OLD:?STOP_INPUTS: ACTS_PFAM_OLD is unset}"
+case "${OLD}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_PFAM_OLD is not an absolute path: ${OLD}" >&2
+    exit 2
+    ;;
+esac
+NEW="${ACTS_PFAM_NEW:?STOP_INPUTS: ACTS_PFAM_NEW is unset}"
+case "${NEW}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_PFAM_NEW is not an absolute path: ${NEW}" >&2
+    exit 2
+    ;;
+esac
+OLD_VER="${ACTS_PFAM_OLD_VERSION:?STOP_INPUTS: ACTS_PFAM_OLD_VERSION is unset}"
+GENOMES="${ACTS_GENOMES:?STOP_INPUTS: ACTS_GENOMES is unset}"
+HITS="${ACTS_HIT_NAMES:?STOP_INPUTS: ACTS_HIT_NAMES is unset}"
+
+SCRATCH="${SLURM_TMPDIR:-/tmp}/reannot_smoke_${SLURM_JOB_ID}"
+WORK="${SCRATCH}/work"
+OUT="${ROOT}/results/reference_reannot_smoke"
+export PYTHONPATH="${ROOT}"
+export ACTS_GIT_HASH="${ACTS_GIT_HASH:-}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+module load hmmer 2>/dev/null || module load hmmer/3.3.2 2>/dev/null || true
+
+mkdir -p "${SCRATCH}" "${WORK}" "${OUT}"
+echo "=== smoke host (not a measurement) ==="
+hostname
+date -Is
+nproc
+python3 --version
+command -v hmmscan
+hmmscan -h | head -n 2
+echo "ROOT=${ROOT}"
+echo "SCRATCH=${SCRATCH}"
+df -h "${SCRATCH}" || true
+
+python3 "${ROOT}/scripts/run_reference_reannot.py" \
+  --smoke \
+  --predictions "${ROOT}/results/reference_reannot_predictions.json" \
+  --churn "${ROOT}/results/reference_reannot_churn.json" \
+  --old "${OLD}" \
+  --new "${NEW}" \
+  --old-version "${OLD_VER}" \
+  --genomes "${GENOMES}" \
+  --smoke-hit-names "${HITS}" \
+  --work "${WORK}" \
+  --scratch "${SCRATCH}" \
+  --out "${OUT}/reference_reannot.json" \
+  --repeats 1
+
+echo REANNOT_SMOKE_DONE

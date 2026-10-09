@@ -604,30 +604,154 @@ def rescale_cells(
     cells: list[str],
     columns: list[ColumnReport],
     phi_of_index: dict[int, float],
-) -> list[str]:
+) -> tuple[list[str], dict[int, tuple[str, float]]]:
+    """Reprint rescaled cells and record each source printed value with its phi.
+
+    The second value maps a column index to ``(source_printed, phi)`` for every
+    cell this call rewrote. Identity columns are not entries. Callers that skip
+    ``phi == 1`` never pass those columns in, so they are not entries either.
+    """
     by_index = {col.index: col for col in columns}
     out = list(cells)
+    provenance: dict[int, tuple[str, float]] = {}
     for index, phi in phi_of_index.items():
         col = by_index.get(index)
-        if col is None or col.role != "numeric" or col.member in (None, IDENTITY):
+        if col is None or col.role != "numeric" or col.member in (None, IDENTITY, BYTE):
             continue
         if index >= len(out) or not math.isfinite(phi):
             continue
-        out[index] = reprint_like(out[index], float(out[index]) * phi)
+        source = out[index]
+        parsed = parse_finite(source)
+        if parsed is None:
+            continue
+        out[index] = reprint_like(source, parsed * phi)
+        provenance[index] = (source, float(phi))
+    return out, provenance
+
+
+def dump_rescale_provenance(
+    provenance: dict[tuple[str, str, str], dict[int, tuple[str, float]]],
+) -> dict:
+    """JSON-ready sidecar. Row keys are ``[record, entry, index]``."""
+    rows = []
+    for key, columns in provenance.items():
+        record, entry, index = key
+        encoded = {
+            str(col): {"source": source, "phi": phi}
+            for col, (source, phi) in columns.items()
+        }
+        if encoded:
+            rows.append({"key": [record, entry, index], "columns": encoded})
+    return {"version": 1, "rows": rows}
+
+
+def load_rescale_provenance(
+    payload: dict,
+) -> dict[tuple[str, str, str], dict[int, tuple[str, float]]]:
+    if payload.get("version") != 1:
+        raise ValueError(f"rescale provenance version {payload.get('version')!r} is not 1")
+    out: dict[tuple[str, str, str], dict[int, tuple[str, float]]] = {}
+    for row in payload.get("rows") or []:
+        record, entry, index = row["key"]
+        columns = {
+            int(col): (str(item["source"]), float(item["phi"]))
+            for col, item in (row.get("columns") or {}).items()
+        }
+        if columns:
+            out[(str(record), str(entry), str(index))] = columns
     return out
+
+
+def _row_key_mismatch(
+    stock: dict[tuple[str, str, str], list[str]],
+    ours: dict[tuple[str, str, str], list[str]],
+) -> str | None:
+    if set(stock) == set(ours):
+        return None
+    return (
+        f"row-key sets differ (stock {len(stock)}, ours {len(ours)}, "
+        f"only-stock {len(set(stock) - set(ours))}, only-ours {len(set(ours) - set(stock))})"
+    )
 
 
 def ref_merge_rows(
     stock: dict[tuple[str, str, str], list[str]],
     ours: dict[tuple[str, str, str], list[str]],
     columns: list[ColumnReport],
+    provenance: dict[tuple[str, str, str], dict[int, tuple[str, float]]],
 ) -> tuple[bool, str]:
-    """ref-merge at one reference: linear columns within half-ULP, others byte-identical."""
-    if set(stock) != set(ours):
-        return False, (
-            f"row-key sets differ (stock {len(stock)}, ours {len(ours)}, "
-            f"only-stock {len(set(stock) - set(ours))}, only-ours {len(set(ours) - set(stock))})"
-        )
+    """ref-merge of one table against stock.
+
+    Identity and byte columns are byte-exact. Row-key sets must be equal.
+    Each rescaled cell is tested with the locked predicate against its source
+    printed value, ``consistent(source_printed, stock_printed, phi)``, and the
+    emitted cell must equal ``reprint_like(source, float(source) * phi)``.
+    ``provenance`` maps a row key to ``{column index: (source_printed, phi)}``
+    for every rescaled cell. Per-key-count columns carry the post-merge phi.
+    A numeric cell with no provenance entry is byte-exact: this checker does
+    not compare a reprint to stock at phi = 1.
+
+    User-facing error bound for a cell that passes. ``emitted``, ``stock``, and
+    ``source`` are the numeric values of those printed tokens:
+
+        |emitted - stock| <= half_ulp(stock) + half_ulp(emitted) + |phi| * half_ulp(source)
+
+    The locked predicate bounds ``|source * phi - stock|`` by
+    ``half_ulp(stock) + |phi| * half_ulp(source)``. Deterministic reprinting
+    bounds ``|emitted - source * phi|`` by ``half_ulp(emitted)``. The displayed
+    bound is the triangle inequality of those two.
+    """
+    mismatch = _row_key_mismatch(stock, ours)
+    if mismatch:
+        return False, mismatch
+    numeric = {
+        col.index: col
+        for col in columns
+        if col.role == "numeric" and col.member not in (None, IDENTITY, BYTE)
+    }
+    for key, left in stock.items():
+        right = ours[key]
+        row_prov = provenance.get(key, {})
+        width = min(len(left), len(right))
+        for index in range(width):
+            spec = row_prov.get(index) if numeric.get(index) is not None else None
+            if spec is not None:
+                source, phi = spec
+                parsed = parse_finite(source)
+                if parsed is None or not math.isfinite(phi):
+                    return False, f"column {index} provenance is unusable on {key}"
+                expected = reprint_like(source, parsed * phi)
+                if right[index] != expected:
+                    return False, (
+                        f"column {index} rendering is not the deterministic reprint on {key}"
+                    )
+                if not consistent(source, left[index], phi):
+                    return False, f"column {index} mismatch on {key}"
+                continue
+            if left[index] != right[index]:
+                return False, f"column {index} mismatch on {key}"
+        if " ".join(left[width:]) != " ".join(right[width:]):
+            return False, f"trailing tokens mismatch on {key}"
+    return True, ""
+
+
+def ref_merge_printed_rows(
+    stock: dict[tuple[str, str, str], list[str]],
+    ours: dict[tuple[str, str, str], list[str]],
+    columns: list[ColumnReport],
+) -> tuple[bool, str]:
+    """Compare two files already printed at the target scale.
+
+    Numeric non-identity columns use ``consistent(printed, stock, 1.0)``.
+    Identity and byte columns are byte-exact. Row-key sets must be equal.
+
+    This is the third-party printer case: that file did not keep the source
+    token, so the source-rounding term cannot be applied. It is not the ACTS
+    ref-merge. ACTS passes source provenance to ``ref_merge_rows``.
+    """
+    mismatch = _row_key_mismatch(stock, ours)
+    if mismatch:
+        return False, mismatch
     numeric = {
         col.index: col
         for col in columns

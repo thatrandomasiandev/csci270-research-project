@@ -16,8 +16,32 @@
 
 set -euo pipefail
 
-ROOT=/project2/biyik_1165/jjt_373/csci270-star/reference_reannot
-NEW_DIR=/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/reference_reannot}"
+case "${ROOT}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_CODE_ROOT is not an absolute path: ${ROOT}" >&2
+    exit 2
+    ;;
+esac
+NEW_DIR="${ACTS_PFAM_NEW_DIR:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer}"
+case "${NEW_DIR}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_PFAM_NEW_DIR is not an absolute path: ${NEW_DIR}" >&2
+    exit 2
+    ;;
+esac
+OLD_HMM="${ACTS_PFAM_OLD:-${ROOT}/data/pfam38.1/Pfam-A.hmm.gz}"
+case "${OLD_HMM}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_PFAM_OLD is not an absolute path: ${OLD_HMM}" >&2
+    exit 2
+    ;;
+esac
+OLD_VER="${ACTS_PFAM_OLD_VERSION:-${ROOT}/data/pfam38.1/Pfam.version.gz}"
+GENOMES="${ACTS_GENOMES:-${ROOT}/data/genomes}"
 SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/reannot_${SLURM_JOB_ID}"
 export PYTHONPATH="${ROOT}"
 export ACTS_GIT_HASH="${ACTS_GIT_HASH:-}"
@@ -66,10 +90,10 @@ cmd=(
   python3 "${ROOT}/scripts/run_reference_reannot.py"
   --predictions "${ROOT}/results/reference_reannot_predictions.json"
   --churn "${ROOT}/results/reference_reannot_churn.json"
-  --old "${ROOT}/data/pfam38.1/Pfam-A.hmm.gz"
+  --old "${OLD_HMM}"
   --new "${NEW_DIR}/Pfam-A.hmm.gz"
-  --old-version "${ROOT}/data/pfam38.1/Pfam.version.gz"
-  --genomes "${ROOT}/data/genomes"
+  --old-version "${OLD_VER}"
+  --genomes "${GENOMES}"
   --work "${ROOT}/work"
   --scratch "${SCRATCH}"
   --out "${ROOT}/results/reference_reannot.json"

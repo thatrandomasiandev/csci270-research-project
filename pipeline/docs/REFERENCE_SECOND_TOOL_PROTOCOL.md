@@ -427,3 +427,21 @@ Measured identities, `md5sum` on compute node a01-04, job 12863550, 2026-10-09. 
 `--smoke` keeps the first 2,000 entries of each release and the first 50 query proteins, runs D0–D3 with one fit wall at n=10, one at n=50, and one alternating repeat (stock, ACTS, iSeqSearch) on 4 threads. It writes only under `results/reference_diamond_smoke/`. It does not satisfy D3.
 
 Resubmission uses a new code tree, these same files by absolute path, and the original resources: exclusive `epyc-7542`, 32 CPUs, 64 GB, 24 h.
+
+## Addendum 2026-10-09 — ref-merge checker omitted source rounding
+
+ref-merge checker omitted source rounding; found in smoke before any measured outcome; locked definition unchanged; implementation corrected; error bound stated; 12760029 and 12864042 superseded.
+
+D3's MATCH for the ACTS arm is ref-merge, the relation in `REFERENCE_INCREMENTAL_PROTOCOL.md`. The smoke at `results/reference_diamond_smoke/reference_diamond_d3.json` (job 12863759, code `45a0b6e`) reported `ref_merge_acts` failed on `('WP_000010284.1', 'sp|Q84P26|4CLL8_ARATH', '')`. That failure was the checker, which compared the reprinted E-value to stock at \(\phi = 1\) and dropped the source-rounding term. It was not a failure of the locked predicate. The smoke is not a measured outcome.
+
+The corrected checker tests each rescaled cell with the locked predicate against its source printed value, and it requires the emitted cell to equal the deterministic reprint of that source times \(\phi\). Identity and byte columns stay byte-exact. Row-key sets stay equal.
+
+User-facing error bound, for a cell that passes:
+
+\[
+|\mathrm{emitted} - \mathrm{stock}| \le \mathrm{half\text{-}ULP}(\mathrm{stock}) + \mathrm{half\text{-}ULP}(\mathrm{emitted}) + |\phi|\cdot\mathrm{half\text{-}ULP}(\mathrm{source}).
+\]
+
+iSeqSearch still has no source token. Its ref-merge stays the locked printed comparison: half-ULP at \(\phi = 1\) on `evalue`, every other column byte-identical. That path is not the ACTS checker.
+
+Job 12864042 ran the checker that omitted source rounding. It is superseded, as is 12760029. No measured outcome from either is a result.
