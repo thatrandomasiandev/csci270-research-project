@@ -221,8 +221,9 @@ set +e
     make release -j "${SLURM_CPUS_PER_TASK:-8}"
   else
     echo "clang++ not on PATH. Discovery has no clang module; llvm/14.0.2 requires legacy/CentOS7."
-    echo "release objects compiled with g++ $(g++ --version | head -n 1) via make CC=gcc CXX=g++"
-    make release -j "${SLURM_CPUS_PER_TASK:-8}" CC=gcc CXX=g++
+    echo "g++ $(g++ --version | head -n 1) does not define _GNU_SOURCE, so glibc leaves struct __ptrace_syscall_info incomplete."
+    echo "release build: make CC=gcc CXX='g++ -D_GNU_SOURCE'. No Riker source edit."
+    make release -j "${SLURM_CPUS_PER_TASK:-8}" CC=gcc CXX="g++ -D_GNU_SOURCE"
   fi
   bin=$(find release -type f -name rkr -perm -111 | head -n 1)
   test -n "${bin}"
