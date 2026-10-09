@@ -907,3 +907,21 @@ two hmmscan dumps replaces each imputed stock wall with the new
 measurement and reports cumulative speedup with and without
 singleton_8 `P`. That fully measured pair is the hmmscan number. It
 is still post-hoc. It is not the paper's primary.
+
+### Submit record
+
+The text above was committed at `6cee2f5` before `sbatch`. Submitted
+2026-10-09 from the Mac onto
+`/project2/biyik_1165/jjt_373/csci270-star/acts-hmmscan-stock-20261009/`.
+`GIT_HASH` there is `6cee2f53bc14578425b4d38d03bf8da1677c4b42`.
+Staging used `rsync` through `discovery`. Both jobs were submitted
+with `--nice=10000`.
+
+| Job | Name | State at submit | Start |
+|-----|------|-----------------|-------|
+| 12864755 | `scan_stock_build` | PENDING, Reason=Priority, Nice=10000 | Unknown |
+| 12864756, tasks 0–57 | `scan_stock_measure` | PENDING, `afterok:12864755`, Nice=10000 | Unknown |
+
+`squeue --start -j 12864755,12864756` gave no start time for either
+job. Another pending job on the account, 12850670, was estimated at
+2026-10-11T04:28:41. The node type was not changed.
