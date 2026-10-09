@@ -1,0 +1,340 @@
+#!/bin/bash
+# Capability probe and pinned builds for BASELINES_PROTOCOL.md.
+# Ordinary shared xeon-4116 only. No exclusive. No epyc-7542.
+# Scratch (compilers, cargo, clones) is node-local. Products go to ROOT.
+#SBATCH --job-name=base_build
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=xeon-4116
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=24G
+#SBATCH --time=06:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/logs/%x-%j.err
+
+set -uo pipefail
+
+finish() {
+  export PYTHONPATH="${ROOT}/scripts"
+  python3 "${ROOT}/scripts/baseline_build_report.py" \
+    --probe-dir "${PROBE}" \
+    --out "${ROOT}/results/baseline_build.json" || true
+}
+trap finish EXIT
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_baseline_build_${SLURM_JOB_ID}"
+PROBE="${SCRATCH}/probes"
+SAVINGS=/project2/biyik_1165/jjt_373/csci270-star/pipeline
+export ACTS_GIT_HASH_FILE="${ACTS_GIT_HASH_FILE:-${ROOT}/ACTS_GIT_HASH}"
+
+case "${SLURM_JOB_CONSTRAINT:-}" in
+  *epyc-7542*) echo "refusing epyc-7542" >&2; exit 2 ;;
+esac
+
+mkdir -p "${ROOT}/bin" "${ROOT}/data" "${ROOT}/src" "${ROOT}/results" "${ROOT}/logs" "${PROBE}" "${SCRATCH}/src"
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module load gcc/13.3.0 2>/dev/null || true
+module load python/3.11.9 2>/dev/null || true
+if ! command -v clang++ >/dev/null 2>&1; then
+  for m in clang clang/17.0.6 clang/16.0.6 llvm llvm/17.0.6; do
+    module load "${m}" 2>/dev/null || true
+    command -v clang++ >/dev/null 2>&1 && break
+  done
+fi
+
+echo "=== host ==="
+hostname
+date -Is
+nproc
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-} CPUS=${SLURM_CPUS_PER_TASK:-} JOB=${SLURM_JOB_ID:-}"
+uname -a | tee "${PROBE}/uname.log"
+cat /etc/os-release > "${PROBE}/os-release.log" || true
+lscpu > "${PROBE}/lscpu.log" || true
+scontrol show job "${SLURM_JOB_ID}" > "${PROBE}/scontrol.log" || true
+df -h /tmp "${ROOT}" > "${PROBE}/df.log" || true
+echo "GIT=$(cat "${ACTS_GIT_HASH_FILE}" 2>/dev/null || echo missing)"
+
+note_exit() {
+  local name="$1" code="$2"
+  printf '%s\n' "${code}" > "${PROBE}/${name}.exit"
+}
+
+run_log() {
+  local name="$1"; shift
+  set +e
+  "$@" > "${PROBE}/${name}.log" 2>&1
+  local code=$?
+  set +e
+  note_exit "${name}" "${code}"
+  echo "probe ${name} exit ${code}"
+  return 0
+}
+
+echo "=== probes ==="
+cat > "${SCRATCH}/ptrace_probe.c" <<'EOF'
+#include <signal.h>
+#include <stdio.h>
+#include <sys/ptrace.h>
+#include <sys/wait.h>
+#include <unistd.h>
+int main(void) {
+    pid_t pid = fork();
+    if (pid < 0) { perror("fork"); return 1; }
+    if (pid == 0) {
+        if (ptrace(PTRACE_TRACEME, 0, 0, 0) != 0) { perror("PTRACE_TRACEME"); return 2; }
+        raise(SIGSTOP);
+        _exit(0);
+    }
+    int status = 0;
+    if (waitpid(pid, &status, 0) < 0) { perror("waitpid"); return 1; }
+    if (ptrace(PTRACE_CONT, pid, 0, 0) != 0) { perror("PTRACE_CONT"); return 3; }
+    if (waitpid(pid, &status, 0) < 0) { perror("waitpid2"); return 1; }
+    printf("ptrace_ok status=%d\n", status);
+    return 0;
+}
+EOF
+cat > "${SCRATCH}/seccomp_probe.c" <<'EOF'
+#include <linux/filter.h>
+#include <linux/seccomp.h>
+#include <stdio.h>
+#include <sys/prctl.h>
+int main(void) {
+    struct sock_filter filter[] = { BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW) };
+    struct sock_fprog prog = { .len = 1, .filter = filter };
+    if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0) { perror("PR_SET_NO_NEW_PRIVS"); return 1; }
+    if (prctl(PR_SET_SECCOMP, SECCOMP_MODE_FILTER, &prog) != 0) { perror("PR_SET_SECCOMP"); return 2; }
+    printf("seccomp_bpf_ok\n");
+    return 0;
+}
+EOF
+gcc -O2 -o "${SCRATCH}/ptrace_probe" "${SCRATCH}/ptrace_probe.c"
+gcc -O2 -o "${SCRATCH}/seccomp_probe" "${SCRATCH}/seccomp_probe.c"
+run_log ptrace "${SCRATCH}/ptrace_probe"
+run_log seccomp_bpf "${SCRATCH}/seccomp_probe"
+run_log ptrace_scope cat /proc/sys/kernel/yama/ptrace_scope
+run_log unshare_user unshare --user --mount --map-root-user true
+run_log mergerfs bash -c 'command -v mergerfs && mergerfs -v'
+run_log strace bash -c 'command -v strace && strace -V'
+run_log docker bash -c 'command -v docker; docker info'
+
+OVERLAY="${SCRATCH}/overlay"
+mkdir -p "${OVERLAY}/lower" "${OVERLAY}/upper" "${OVERLAY}/work" "${OVERLAY}/merged"
+echo seed > "${OVERLAY}/lower/f"
+run_log overlayfs unshare --user --mount --map-root-user bash -c \
+  "mount -t overlay overlay -o lowerdir=${OVERLAY}/lower,upperdir=${OVERLAY}/upper,workdir=${OVERLAY}/work ${OVERLAY}/merged && cat ${OVERLAY}/merged/f && echo overlay_ok"
+
+echo "=== data (small FASTAs; Pfam already on project) ==="
+FA1="${SAVINGS}/data/recurrence/A/GCF_002853805.1_protein.faa.gz"
+FA2="${SAVINGS}/data/recurrence/A/GCF_002090355.1_protein.faa.gz"
+PFAM_GZ="${SAVINGS}/data/hmmer/Pfam-A.hmm.gz"
+gzip -l "${PFAM_GZ}" | tee "${PROBE}/pfam_gzip_l.log"
+python3 - <<PY
+import pathlib
+text = pathlib.Path("${PROBE}/pfam_gzip_l.log").read_text().splitlines()
+# gzip -l: last line is the total uncompressed size
+nums = text[-1].split()
+uncomp = int(nums[1])
+pathlib.Path("${PROBE}/pfam_uncompressed_bytes").write_text(str(uncomp) + "\n")
+print("pfam_uncompressed_bytes", uncomp)
+if uncomp > 4_000_000_000:
+    raise SystemExit("Pfam uncompressed exceeds 4 GB; not expanding onto project")
+PY
+pfam_expand=$?
+if [[ "${pfam_expand}" -ne 0 ]]; then
+  echo "refusing Pfam expand; see probe log" | tee "${PROBE}/pfam.err"
+else
+  if [[ ! -s "${ROOT}/data/Pfam-A.hmm" ]]; then
+    gzip -dc "${PFAM_GZ}" > "${ROOT}/data/Pfam-A.hmm.tmp"
+    mv "${ROOT}/data/Pfam-A.hmm.tmp" "${ROOT}/data/Pfam-A.hmm"
+  fi
+  gzip -dc "${FA1}" > "${ROOT}/data/GCF_002853805.1_protein.faa"
+  gzip -dc "${FA2}" > "${ROOT}/data/GCF_002090355.1_protein.faa"
+fi
+
+echo "=== HMMER 3.4 ==="
+if [[ ! -x "${ROOT}/bin/hmmscan" ]]; then
+  set +e
+  (
+    set -e
+    cd "${SCRATCH}"
+    curl -L --fail -o hmmer-3.4.tar.gz http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz \
+      || curl -L --fail -o hmmer-3.4.tar.gz http://eddylab.org/software/hmmer3/3.4/hmmer-3.4.tar.gz
+    tar xf hmmer-3.4.tar.gz
+    cd hmmer-3.4
+    ./configure --prefix="${SCRATCH}/hmmer"
+    make -j "${SLURM_CPUS_PER_TASK:-8}"
+    make install
+    cp -a "${SCRATCH}/hmmer/bin/hmmscan" "${SCRATCH}/hmmer/bin/hmmsearch" "${ROOT}/bin/"
+  ) > "${PROBE}/hmmer.log" 2>&1
+  note_exit hmmer $?
+  set -e
+else
+  echo "hmmscan already installed" > "${PROBE}/hmmer.log"
+  note_exit hmmer 0
+fi
+{
+  echo "{"
+  echo "  \"binary_hmmscan\": \"${ROOT}/bin/hmmscan\","
+  echo "  \"binary_hmmsearch\": \"${ROOT}/bin/hmmsearch\","
+  printf '  "version": %s\n' "$(${ROOT}/bin/hmmsearch -h | head -n 3 | python3 -c 'import json,sys; print(json.dumps(" | ".join(l.strip() for l in sys.stdin)))')"
+  echo "}"
+} > "${PROBE}/hmmer.json" || true
+
+echo "=== rust ==="
+if ! command -v cargo >/dev/null 2>&1; then
+  export CARGO_HOME="${SCRATCH}/cargo"
+  export RUSTUP_HOME="${SCRATCH}/rustup"
+  curl --proto '=https' --tlsv1.2 -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+  # shellcheck disable=SC1091
+  source "${CARGO_HOME}/env"
+fi
+cargo --version | tee "${PROBE}/cargo.version"
+rustc --version | tee -a "${PROBE}/cargo.version"
+
+clone_depth() {
+  local url="$1" dest="$2"
+  if [[ ! -d "${dest}/.git" ]]; then
+    git clone --depth 1 --recursive "${url}" "${dest}"
+  fi
+  git -C "${dest}" rev-parse HEAD
+  du -sh "${dest}"
+}
+
+echo "=== Riker (Codeberg; GitHub main is the migration stub) ==="
+set +e
+(
+  set -e
+  clone_depth https://codeberg.org/curtsinger/riker.git "${SCRATCH}/src/riker"
+  cd "${SCRATCH}/src/riker"
+  if ! command -v clang++ >/dev/null 2>&1; then
+    echo "clang++ not on PATH" >&2
+    exit 3
+  fi
+  make release -j "${SLURM_CPUS_PER_TASK:-8}"
+  bin=$(find release -type f -name rkr -perm -111 | head -n 1)
+  test -n "${bin}"
+  cp -a "${bin}" "${ROOT}/bin/rkr"
+  git rev-parse HEAD > "${ROOT}/src/riker.commit"
+) > "${PROBE}/riker.log" 2>&1
+note_exit riker $?
+set -e
+python3 - <<PY
+import json, pathlib
+root = pathlib.Path("${ROOT}")
+commit = (root / "src" / "riker.commit").read_text().strip() if (root / "src" / "riker.commit").is_file() else ""
+meta = {
+  "remote": "https://codeberg.org/curtsinger/riker.git",
+  "commit": commit,
+  "github_main_stub": "d534721fcdf75b75c339f110c9d5247dc6f0676e",
+  "github_note": "github.com/curtsinger-lab/riker main is only the Codeberg migration README",
+  "binary": "${ROOT}/bin/rkr",
+  "build": "make release",
+}
+pathlib.Path("${PROBE}/riker.json").write_text(json.dumps(meta, indent=2) + "\n")
+PY
+
+echo "=== ProcessCache SHA-256 (unmodified HEAD) ==="
+set +e
+(
+  set -e
+  clone_depth https://github.com/upenn-acg/ProcessCache.git "${SCRATCH}/src/ProcessCache"
+  cd "${SCRATCH}/src/ProcessCache"
+  cargo build --release
+  cp -a target/release/process_cache "${ROOT}/bin/process_cache_sha256"
+  git rev-parse HEAD > "${ROOT}/src/processcache.commit"
+) > "${PROBE}/processcache_sha256.log" 2>&1
+note_exit processcache_sha256 $?
+set -e
+python3 - <<PY
+import json, pathlib
+commit = pathlib.Path("${ROOT}/src/processcache.commit")
+meta = {
+  "remote": "https://github.com/upenn-acg/ProcessCache.git",
+  "commit": commit.read_text().strip() if commit.is_file() else "",
+  "binary": "${ROOT}/bin/process_cache_sha256",
+  "check": "CheckMechanism::Hash at execution_utils.rs, DONT_HASH_FILES=false",
+  "mtime_smoke": "not started; protocol says do not request mtime until SHA-256 smoke passes",
+}
+pathlib.Path("${PROBE}/processcache_sha256.json").write_text(json.dumps(meta, indent=2) + "\n")
+PY
+
+echo "=== ProcessCache mtime recompile (binary only; smoke waits) ==="
+set +e
+(
+  set -e
+  cd "${SCRATCH}/src/ProcessCache"
+  python3 - <<'PY'
+from pathlib import Path
+path = Path("src/execution_utils.rs")
+text = path.read_text()
+old = """        // HASH
+        Some(CheckMechanism::Hash(generate_hash(full_path.clone())))
+        // MTIME
+        // let curr_metadata = metadata(&full_path).unwrap();
+        // Some(CheckMechanism::Mtime(curr_metadata.st_mtime()))
+"""
+new = """        // HASH (commented for the protocol's mtime recompile)
+        // Some(CheckMechanism::Hash(generate_hash(full_path.clone())))
+        // MTIME — upstream comment calls metadata(); that name is not in scope.
+        // The recompile uses std::fs::metadata and MetadataExt::st_mtime.
+        let curr_metadata = fs::metadata(&full_path).unwrap();
+        Some(CheckMechanism::Mtime(curr_metadata.st_mtime()))
+"""
+if old not in text:
+    raise SystemExit("mtime site not found; refusing to edit a different ProcessCache")
+if "use std::os::unix::fs::MetadataExt;" not in text:
+    text = text.replace("use std::{fs, path::PathBuf};\n", "use std::os::unix::fs::MetadataExt;\nuse std::{fs, path::PathBuf};\n", 1)
+path.write_text(text.replace(old, new, 1))
+PY
+  cargo build --release
+  cp -a target/release/process_cache "${ROOT}/bin/process_cache_mtime"
+) > "${PROBE}/processcache_mtime.log" 2>&1
+note_exit processcache_mtime $?
+set -e
+python3 - <<PY
+import json, pathlib
+meta = {
+  "binary": "${ROOT}/bin/process_cache_mtime",
+  "recompile": "execution_utils.rs Hash line commented; Mtime line enabled with fs::metadata",
+  "smoke": "not submitted in the build job",
+}
+pathlib.Path("${PROBE}/processcache_mtime.json").write_text(json.dumps(meta, indent=2) + "\n")
+PY
+
+echo "=== INCR ==="
+set +e
+(
+  set -e
+  clone_depth https://github.com/atlas-brown/incr.git "${SCRATCH}/src/incr"
+  cd "${SCRATCH}/src/incr"
+  python3 -m venv "${ROOT}/venv"
+  "${ROOT}/venv/bin/pip" install --no-cache-dir -r requirements.txt
+  cargo build --release
+  mkdir -p "${ROOT}/src/incr/target/release" "${ROOT}/src/incr/src"
+  cp -a src/. "${ROOT}/src/incr/src/"
+  cp -a target/release/incr "${ROOT}/src/incr/target/release/incr"
+  git rev-parse HEAD > "${ROOT}/src/incr.commit"
+  # Confirm the shipped annotation lists. Do not add hmmscan or hmmsearch.
+  grep -n -E "STATELESS_COMMANDS|hmmscan|hmmsearch" src/annotation/rules.rs || true
+) > "${PROBE}/incr.log" 2>&1
+note_exit incr $?
+set -e
+python3 - <<PY
+import json, pathlib
+commit = pathlib.Path("${ROOT}/src/incr.commit")
+meta = {
+  "remote": "https://github.com/atlas-brown/incr.git",
+  "commit": commit.read_text().strip() if commit.is_file() else "",
+  "binary": "${ROOT}/src/incr/target/release/incr",
+  "incr_sh": "${ROOT}/src/incr/src/incr.sh",
+  "top": "${ROOT}/src/incr",
+  "python": "${ROOT}/venv/bin/python3",
+  "annotations": "column uses INCR_SYS_PATH with --enable_annotations; rules.rs is unmodified",
+}
+pathlib.Path("${PROBE}/incr.json").write_text(json.dumps(meta, indent=2) + "\n")
+PY
+
+echo BUILD_DONE
