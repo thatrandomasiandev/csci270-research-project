@@ -1,0 +1,62 @@
+#!/bin/bash
+# Does this kernel implement PTRACE_GET_SYSCALL_INFO (0x420e)?
+# Riker's release calls it. glibc 2.28 and linux/ptrace.h do not declare it.
+#SBATCH --job-name=base_ptrace_abi
+#SBATCH --account=biyik_1165
+#SBATCH --partition=debug
+#SBATCH --constraint=xeon-4116
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=2G
+#SBATCH --time=00:10:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/logs/%x-%j.err
+
+set -eu
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009
+WORKDIR="${TMPDIR:-/tmp}/ptrace_abi_${SLURM_JOB_ID}"
+mkdir -p "${WORKDIR}"
+cat > "${WORKDIR}/abi.c" << 'END'
+#define _GNU_SOURCE
+#include <errno.h>
+#include <signal.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/ptrace.h>
+#include <sys/syscall.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#ifndef PTRACE_GET_SYSCALL_INFO
+#define PTRACE_GET_SYSCALL_INFO 0x420e
+#endif
+struct abi_info { unsigned char raw[128]; };
+int main(void) {
+  pid_t child = fork();
+  if (child == 0) {
+    ptrace(PTRACE_TRACEME, 0, 0, 0);
+    raise(SIGSTOP);
+    syscall(SYS_getpid);
+    _exit(0);
+  }
+  int status = 0;
+  waitpid(child, &status, 0);
+  ptrace(PTRACE_SYSCALL, child, 0, 0);
+  waitpid(child, &status, 0);
+  struct abi_info info;
+  memset(&info, 0, sizeof info);
+  errno = 0;
+  long rc = ptrace(PTRACE_GET_SYSCALL_INFO, child, (void *)sizeof info, &info);
+  printf("request=0x420e rc=%ld errno=%d %s\n", rc, errno, strerror(errno));
+  ptrace(PTRACE_KILL, child, 0, 0);
+  waitpid(child, &status, 0);
+  return 0;
+}
+END
+gcc -O2 -Wall -o "${WORKDIR}/abi" "${WORKDIR}/abi.c"
+"${WORKDIR}/abi"
+echo "UNAME $(uname -r)"
+echo "HEADER"
+grep -n "0x420" /usr/include/sys/ptrace.h /usr/include/linux/ptrace.h || true
+rm -rf "${WORKDIR}"
+echo ABI_DONE

@@ -1,0 +1,18 @@
+{
+  "label": "MEASURED",
+  "question": "Does Discovery's kernel implement PTRACE_GET_SYSCALL_INFO (0x420e), which Riker's release calls from Thread::syscallExitPtrace?",
+  "job_id": "12866431",
+  "job_script": "pipeline/jobs/baseline_ptrace_abi.job",
+  "partition": "debug",
+  "constraint": "xeon-4116",
+  "node": "d05-41",
+  "uname": "4.18.0-553.126.1.el8_10.x86_64",
+  "request": "0x420e",
+  "rc": -1,
+  "errno": 5,
+  "errno_name": "EIO",
+  "strerror": "Input/output error",
+  "header_stops_at": "PTRACE_SECCOMP_GET_METADATA 0x420d; next installed constant is PTRACE_GET_RSEQ_CONFIGURATION 0x420f",
+  "stdout": "request=0x420e rc=-1 errno=5 Input/output error\nUNAME 4.18.0-553.126.1.el8_10.x86_64\nHEADER\n/usr/include/sys/ptrace.h:189:  PTRACE_SECCOMP_GET_METADATA = 0x420d\n/usr/include/linux/ptrace.h:69:#define PTRACE_SECCOMP_GET_METADATA\t0x420d\n/usr/include/linux/ptrace.h:76:#define PTRACE_GET_RSEQ_CONFIGURATION\t0x420f\nABI_DONE\n",
+  "meaning": "The kernel rejected the request. A userspace declaration of struct __ptrace_syscall_info would compile and still fail at ptrace time. Riker's current release cannot trace on this host."
+}

@@ -446,3 +446,68 @@ note; Zenodo 19488802 **403** from this network.
 - **Related-work agent:** if INCR Zenodo 403 persists, say
   “GitHub live, Zenodo unverified” rather than dropping the cite.
 - **Do not** implement wrappers in this commit. Protocol only.
+
+---
+
+## Addendum 2026-10-09 — host capability (smoke walls not measured)
+
+Written after the build and the ptrace-ABI probe, before any
+wrapper timing. Locked sections above are unchanged. No number
+below is a genome wall. `results/baseline_smoke.json` does not
+exist yet, so the rerun/skip falsifier is **not** decided.
+
+### What was measured
+
+Build report: `results/baseline_build.json`, job **12865942**,
+debug node `d05-41`, xeon-4116, not exclusive, not epyc-7542.
+Git sidecar `2791df5`. HMMER 3.4 binaries are installed.
+ProcessCache SHA-256 commit `a89d132` linked (unmodified
+`CheckMechanism::Hash`). ProcessCache mtime binary linked and
+**not** submitted. INCR commit `4b8e5dd` built; `STATELESS_COMMANDS`
+is empty. Probes on that node: ptrace ok, seccomp-bpf ok,
+user-namespace unshare ok, OverlayFS ok, strace 5.18, `ptrace_scope`
+0. Docker is absent (exit 127). mergerfs is absent (exit 1).
+INCR's native path is the one the queued jobs will run.
+
+Riker did not link. `g++ -D_GNU_SOURCE` still stops in
+`src/rkr/tracing/Thread.cc:95`: `struct __ptrace_syscall_info`
+is an incomplete type. glibc 2.28 does not declare it. The job's
+commit file is empty because `git rev-parse` is written only
+after `make` succeeds. Codeberg HEAD observed via the API on
+this date is `bae684b455a4` (2026-09-04); that is an API
+observation, not a line in the build JSON.
+
+ABI probe: `results/baseline_ptrace_abi.json`, job **12866431**,
+same node. `ptrace(PTRACE_GET_SYSCALL_INFO /* 0x420e */)` returned
+`rc=-1 errno=5` (EIO). Installed headers jump from `0x420d` to
+`0x420f`. A header shim would not make the release run. No older
+Riker was substituted.
+
+### What is queued, and what is not
+
+Pending on `main`, `--constraint=xeon-4116`, 8 cpus, 48G,
+1-20:00:00, not exclusive: **12866390** ProcessCache SHA-256,
+**12866391** INCR default, **12866392** INCR `--enable_annotations`.
+At submit, `squeue --start` was N/A, reason Priority, priority
+3222, and `squeue -p main -t PENDING` counted 1849 jobs. No
+xeon-4116 was idle. Debug's 1 hour limit cannot hold an HMMER
+smoke, so these stay on main.
+
+Not submitted: Riker smoke, ProcessCache mtime smoke, eggNOG,
+full collection A (30) or B (40).
+
+### Projection and recommendation
+
+Genome-2 wall is unmeasured, so this addendum does **not**
+compute `n_genomes * T_genome2_s / 3600`. That formula is the
+one to apply after a genome-2 **RERUN**, on this shared
+xeon-4116 allocation, with the assumptions stated in the harness
+(later genomes cost the same as genome 2; proteome size is not
+scaled; this is not the locked exclusive epyc-7542 table).
+
+The smoke has not decided the falsifier. Riker's missing run
+is a host limit, not evidence about whole-command reuse.
+Exclusive Phase 2 node-hours are not worth buying until
+12866390, 12866391, and 12866392 finish and show genome 2
+RERUN and the replay SKIP. Josh decides. A Riker release run
+needs a kernel that accepts request `0x420e`.
