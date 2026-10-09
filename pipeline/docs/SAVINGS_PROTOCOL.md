@@ -761,3 +761,19 @@ When all 58 JSONs exist, `scripts/analyze_savings_measured.py` replaces
 each imputed stock wall with the new measurement and reports cumulative
 speedup with and without singleton_8 `P`. That fully measured pair is
 the paper number. No threshold is applied after the run.
+
+### Submit record
+
+The text above was committed at `465edf5` before `sbatch`. Submitted
+2026-10-08 from the Mac onto
+`/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/`.
+`GIT_HASH` there is `465edf548ca68e3e6a72824b8bac056b2c5300c1`.
+
+| Job | Name | State at submit | Start |
+|-----|------|-----------------|-------|
+| 12862906 | `stock_hmm_build` | PENDING, Reason=Priority | Unknown |
+| 12862907, tasks 0–57 | `stock_hmm_measure` | PENDING, `afterok:12862906` | Unknown |
+
+`squeue --start -A biyik_1165` gave no start time for either job. Another
+pending job on the account, 12850670, was estimated at
+2026-10-11T04:28:41. The node type was not changed.
