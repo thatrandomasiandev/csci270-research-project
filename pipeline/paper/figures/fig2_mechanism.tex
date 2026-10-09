@@ -1,0 +1,49 @@
+% Reference-side mechanism. Teal: inference. Orange: rescaling merge.
+\begin{tikzpicture}[
+  font=\scriptsize\sffamily,
+  box/.style={draw=black!55, fill=black!3, rounded corners=1.5pt,
+              align=center, inner sep=2.6pt, minimum height=6.5mm},
+  novel/.style={box, draw=teal!75!black, fill=teal!14, line width=0.7pt},
+  rescale/.style={box, draw=orange!85!black, fill=orange!18, line width=0.7pt},
+  refuse/.style={box, draw=red!70!black, fill=red!8},
+  arr/.style={-{Stealth[length=1.6mm]}, draw=black!65, semithick},
+  phase/.style={font=\footnotesize\bfseries\sffamily, anchor=west}
+]
+
+\node[phase] at (0, 0.2) {(A) Fit on one reference};
+\node[box, text width=16mm] (r) at (1.1, -1.05) {$R$\\all entries};
+\node[box, text width=14mm] (r1) at (3.55, -1.05) {$R_1$};
+\node[box, text width=14mm] (r2) at (5.35, -1.05) {$R_2$};
+\node[novel, text width=32mm] (dec) at (3.3, -2.55)
+  {(a) Halves merge to the whole?\\else refuse};
+\node[novel, text width=36mm] (fit) at (3.3, -4.25)
+  {(b) Each numeric column:\\one closed-family member.\\Tie-break by entry length.\\None or a surviving tie: refuse};
+\node[novel, text width=36mm, align=left] (rules) at (3.3, -6.35)
+  {T1, \texttt{hmmscan --cut\_ga}:\\
+   E-values: \texttt{entry\_count}\\
+   c-Evalue: \texttt{per\_key\_row\_count}\\
+   other numeric: \texttt{identity}};
+
+\draw[arr] (r.south) -- (dec.north -| r.south);
+\draw[arr] (r1.south) -- (dec.north);
+\draw[arr] (r2.south) -- (dec.north -| r2.south);
+\draw[arr] (dec) -- (fit);
+\draw[arr] (fit) -- (rules);
+
+\node[phase] at (7.15, 0.2) {(B) New release $R'$};
+\node[box, text width=28mm] (hash) at (9.3, -1.15)
+  {Hash entries\\unchanged / changed / removed};
+\node[box, text width=28mm] (only) at (9.3, -2.7)
+  {Run on changed entries only};
+\node[rescale, text width=34mm] (merge) at (9.3, -4.45)
+  {Merge and rescale\\
+   cached $\times N'/N$\\
+   new $\times N'/|\mathrm{changed}|$\\
+   recount per-key};
+\node[box, text width=30mm] (out) at (9.3, -6.25)
+  {Output ref-merge-equal\\to a full run on $R'$};
+
+\draw[arr] (hash) -- (only);
+\draw[arr] (only) -- (merge);
+\draw[arr] (merge) -- (out);
+\end{tikzpicture}

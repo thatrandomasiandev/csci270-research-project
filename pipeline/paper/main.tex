@@ -1,36 +1,27 @@
-%% ACTS conference-paper skeleton (ACM sigconf).
-%% Not the CSCI 270 STAR write-up (that lives in star/writeup/).
-%%
-%% Citation policy: every measured number names a committed results file
-%% and the commit that introduced it. Unmeasured work is \TODO{}.
-%% Predictions are labeled as predictions. Novelty matches
-%% pipeline/docs/RELATED_WORK.md section 3 exactly in substance.
-%%
-%% Worktree HEAD at drafting: 427fcbb (branch agent/paper).
+%% ACTS laboratory draft. Not the CSCI 270 STAR write-up.
+%% Every measured or projected number has a % source comment on its line.
+%% Unmeasured results are \pending. No placeholder numbers.
 \documentclass[sigconf]{acmart}
 
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{amsmath}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{arrows.meta,positioning,calc}
 
-%% Unpublished lab draft: no ACM rights form.
 \setcopyright{none}
 \renewcommand{\footnotetextcopyrightpermission}[1]{}
 \settopmatter{printacmref=true}
 
-\newcommand{\TODO}[1]{%
-  \textcolor{red}{\textbf{TODO}\if\relax\detokenize{#1}\relax\else: #1\fi}}
-
-%% Shortcut for result-file provenance (printed only in TeX comments).
-%% Example at the call site:
-%%   $1.1668\times$
-%%   % source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
+\newcommand{\pending}[1]{\textcolor{red}{[PENDING: #1]}}
 
 \acmConference[Draft]{Laboratory draft; not submitted}{2026}{}
 \acmYear{2026}
 \copyrightyear{2026}
 
-\title{ACTS: Automatic Record-Level Incremental Computation for Unmodified Scientific CLIs}
+\title{Reference-Side Contract Inference for Unmodified Scientific CLIs}
 
 \author{Joshua Terranova}
 \affiliation{%
@@ -59,34 +50,34 @@
 \ccsdesc[500]{Software and its engineering~Software performance}
 \ccsdesc[300]{Applied computing~Bioinformatics}
 
-\keywords{incremental computation, memoization, black-box tools, scientific CLIs, VCF, HMMER}
+\keywords{incremental computation, black-box inference, scientific CLIs, HMMER, reference databases}
 
 \begin{abstract}
-Whole-command caches rerun an unmodified binary when any input byte
-changes. Hand-built per-record caches exist for one tool at a time.
-Nothing occupies automatic record-level reuse \emph{inside one
-invocation} of an unmodified scientific CLI, persisted across runs.
-ACTS infers records and field roles of a VCF or FASTA$\to$table
-binary with no per-tool code, memos those records, and ships a
-reassembly only when probes (and, in deployment, a Dune-style hit
-audit) pass. On SnpEff the later-run speedup is real and small:
-median $1.1668\times$ (95\% CI $[1.1595, 1.1705]$) on an exclusive
-Linux node, with body MATCH on all $52{,}638$ records.
-% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
-% source: pipeline/results/snpeff_cached_identity.json commit 81d472d
-Startup caps the tool at about $1.3\times$ even at 100\% hits.
-% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d (a_now, locked b, N)
-The deployed probe suite's unsafe-ship rate is a
-\emph{measurement}, not a new testing theory: $68/288$ overall,
-$4/224$ in-scope (canonical: every class except F6-env and F6-file),
-and $36/256$ excluding F6-env only (macOS, no tracing).
-F6-file is covered by probe-time tracing on Linux and is not yet
-measured; F6-env is the real limitation.
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0
-%   unsafe_ship_n=68 / 288; F6-env 32/32; F6-file 32/32 on macOS
-%   canonical in-scope 4/224; JSON in_scope_* 36/256 (excl F6-env only)
-HMMER collection savings, running baselines, and a head-to-head with
-command-grain incrementalizers remain \TODO{}.
+A whole-command cache misses when a reference database is replaced, because the reference bytes changed.
+Hand-built incremental search repairs one tool's scores in that tool's code.
+This paper centres on one generic fitter.
+With no per-tool code, it infers for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$ that the output decomposes over reference entries, and which numeric columns carry a global normalizer drawn from a closed family: identity, entry count, total entry length, or per-key row count.
+Ties are broken by an entry-length partition.
+If no member fits, or a tie survives, the fitter refuses and the caller runs the tool once on the whole reference.
+A later release then reruns only changed entries, merges, and rescales.
+The prior-art verdict on that pair of inferences is narrow.
+iBLAST, iSeqSearch, and GeStore are hand-built per tool.
+KumQuat infers input-stream combiners and does not fit a normalizer.
+Record-side reuse with a copy-aware minimal key is secondary.
+Safety is infer-or-refuse.
+The probes are credited mechanisms, not a novelty claim.
+On \texttt{hmmscan --cut\_ga} the fitter ships the measured contract, and it refuses the same argv without that flag.
+Locked record-side cumulative wall speedups on hmmsearch are
+$2.740\times$ and $6.847\times$;
+% source: pipeline/results/savings_summary.json cumulative.cum_speedup_wall A=2.740193934015858 B=6.846592216443059
+a post-hoc correction for a stock-time fit that misses every sampled genome lowers them to
+$1.856\times$ and $4.404\times$.
+% source: pipeline/results/savings_sensitivity.json cum_speedup_wall A=1.8561541144638773 B=4.4038095881881
+Deployed in-scope unsafe-ship is
+$4/224$.
+% source: pipeline/results/probe_eval_audit.md canonical in-scope
+A timed Pfam 38.1 to 38.2 re-annotation, a DIAMOND comparison, and whole-command baselines are
+\pending{not yet measured}.
 \end{abstract}
 
 \begin{document}
@@ -95,701 +86,1094 @@ command-grain incrementalizers remain \TODO{}.
 \section{Introduction}
 \label{sec:intro}
 
-Scientific command-line tools often map each record of a file---a
-VCF variant, a FASTA sequence---to an output row, independently of
-its neighbors. A later sample shares many of those records with an
-earlier one. Whole-command incrementalizers
-(Rattle~\cite{spall2020rattle}, Riker~\cite{curtsinger2022riker},
-ProcessCache~\cite{shiptoski2023processcache}, and
-INCR~\cite{xie2026incr}) treat the invocation as one unit: one new
-record in a large file is a changed input, so the process reruns.
-Hand-built per-record caches (eggNOG-mapper \texttt{-m
-cache}~\cite{cantalapiedra2021eggnog,eggnog-cache-wiki},
-Oculus~\cite{veeneman2012oculus},
-SeAlM~\cite{stene2019sealm}) do the useful thing for one grammar and
-do not infer field roles of an unmodified third-party binary.
+Profile search and variant annotation are run again when the reference changes.
+Pfam 38.2 contains
+$30{,}134$
+% source: pipeline/results/reference_kill_r1.json:z_new
+models, of which
+$26{,}082$
+% source: pipeline/results/reference_kill_r1.json:unchanged_strict
+are unchanged from 38.1 under the strict entry hash, so
+$4{,}052$
+% source: pipeline/results/reference_kill_r1.json derived 30134-26082; also reference_reannot_churn.json:n_changed_and_new
+entries are new or changed.
+A cache keyed by the reference file sees a miss on every query.
+The unchanged models are the reusable work, if the tool's output on a reference is the merge of its outputs on the entries, up to a normalizer the merge can reapply.
 
-The gap we claim is narrow. \textbf{Nothing occupies automatic
-record-level reuse inside one invocation of an unmodified scientific
-CLI, persisted across runs.} Whole-command incrementalization of
-unmodified binaries is occupied. Hand-built per-record caches are
-occupied. Safety \emph{theory} is occupied (Chen/Segura metamorphic
-relations~\cite{chen1998metamorphic,segura2016survey}; Dune's
-cache-check audit~\cite{dune-cache-check}; vCache's
-$\delta$~\cite{schroeder2026vcache}). Cost-model gating is
-engineering, not a prior theorem.
+Whole-command incrementalizers already wrap unmodified binaries.
+Rattle, Riker, ProcessCache, and INCR skip a command when its traced inputs are unchanged~\cite{spall2020rattle,curtsinger2022riker,shiptoski2023processcache,xie2026incr}.
+A new Pfam release changes the reference argument, so the command reruns.
+Hand-built incremental search does the reference-side job for one tool family.
+iBLAST writes a Karlin--Altschul or Spouge repair for NCBI BLAST~\cite{dash2021iblast,karlin1990significance}.
+iSeqSearch copies that rescale onto m8 producers, including DIAMOND~\cite{yoo2025iseqsearch}.
+GeStore incrementalizes unmodified genomics tools with a per-tool plugin; its BLAST plugin repairs E-values and its HMMER plugin does not~\cite{pedersen2014gestore}.
+KumQuat infers a combiner for an unmodified Unix command split on its input stream~\cite{shen2022kumquat}.
+The combiner language has no global scale factor tied to a reference.
 
-ACTS is a wrapper, not a rewrite. On the first run of a given argv
-it probes a sample of records: determinism, shuffle,
-subset-invariance, field-role perturbation, late keys. The probes
-produce a cache key and a reassembly contract. Later runs pay the
-tool only for misses, reassemble, and---in the deployed
-mode---accept on probes plus a Bernoulli hit audit rather than a
-second full stock run. Byte-identical \texttt{cmp} is the VCF-body
-gate; HMMER \texttt{tblout} is token identity after whitespace
-normalization, because the format pads columns.
-
-Three claims, judged against the related-work read
-(\S\ref{sec:rw};~\cite{xie2026incr} is the sharpest 2026 neighbor):
+The contribution is the following, and nothing further.
 
 \begin{enumerate}
-  \item \textbf{Automatic record and field-role inference, no
-    per-tool code --- survives}, with a named neighbor. KumQuat
-    infers \emph{combiners}~\cite{shen2022kumquat}; ProcessCache /
-    Rattle / Riker / INCR infer \emph{file} dependencies of a
-    process or command; PaSh/POSH \emph{declare}
-    statelessness~\cite{vasilakis2021pash,kallas2022pash};
-    eggNOG/Oculus/SeAlM hard-code one grammar. INCR's optional
-    chunking still needs a crowdsourced ``stateless'' /
-    ``argument-independent'' annotation and applies to Unix stream
-    utilities, not inferred \texttt{CHROM,POS,REF,ALT} versus
-    \texttt{INFO/ANN}. What we own is per-\emph{format} probes that
-    produce a cache key and a reassembly contract for an unmodified
-    VCF or FASTA$\to$table binary.
-
-  \item \textbf{Safety probes with a measured miss rate in
-    deployment mode --- the measurement survives; the theory does
-    not.} Our shuffle / subset / perturbation probes \emph{are}
-    metamorphic relations~\cite{chen1998metamorphic,segura2016survey}.
-    Dune occupies random re-exec plus
-    diff~\cite{dune-cache-check}. vCache occupies a user-set
-    $\delta$ for semantic LLM caches~\cite{schroeder2026vcache}
-    (different object, stronger claim). What we own is the
-    \emph{measured} unsafe-ship rate of \emph{this} probe suite
-    under \texttt{--verify audit} (probes plus 2\% hit audit, no
-    full MATCH) on faults F1--F8 / controls C1--C5. Full-MATCH is
-    an experimental upper bound, not the deployed number. We do not
-    claim a $\delta$, and we do not say ``first statistical cache.''
-
-  \item \textbf{Cost-model gating that predicts speedup before
-    caching --- survives as engineering, not as a literature gap
-    worth a paper by itself.} We do not lead with this. It is the
-    screen, not the method: $t = a + b\cdot n$, refuse if the
-    predicted ratio cannot pay for wrapper overhead $w$.
+  \item \textbf{Primary: reference-side contract inference.}
+  One generic fitter, with no per-tool code, infers for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$
+  (a)~that the output decomposes over reference entries and
+  (b)~which numeric columns carry a global normalizer, and its form, from a closed family (identity, entry count, total entry length, per-key row count), with a tie-break partition and refusal.
+  This enables re-annotation across reference releases by rerunning only changed entries.
+  The prior-art verdict is \textbf{narrow}.
+  The surviving claim is the sentence in the prior-art pass: no prior system infers, for an unmodified CLI and with no per-tool plugin, both that the output decomposes over reference entries and which numeric columns are global normalizers of a form fitted from a small fixed family, so that a later reference release can rerun only new or changed entries and rescale those columns.
+  iBLAST, iSeqSearch, and GeStore are hand-built per tool.
+  KumQuat is input-side only.
+  \item \textbf{Secondary: record-side reuse with a copy-aware minimal key.}
+  Fields the output depends on split into transport fields, which are copied, and the rest.
+  The cache key is the rest.
+  Transport fields are spliced from the new record.
+  On the pre-registered workloads the dependency-key recall is
+  $0.5567$
+  % source: pipeline/results/copy_aware_key.json:vcf.ratio = 0.5566627258908967
+  of the copy-aware recall for VCF/SnpEff and
+  $0$
+  % source: pipeline/results/copy_aware_key.json:genbank_hmmscan.curve ratio at every k
+  at every $k$ for GenBank proteins under hmmscan.
+  The RefSeq control ratio is
+  $1$
+  % source: pipeline/results/copy_aware_key.json:refseq_hmmscan_control.curve ratio at every k
+  at every $k$.
+  The locked kill rule did not fire.
+  \item \textbf{Safety is infer-or-refuse.}
+  Determinism, shuffle, subset, field perturbation, round-trip, and pre-flight decide whether a contract ships.
+  These are metamorphic tests, a Dune-style audit, and group testing of subsets~\cite{chen1998metamorphic,segura2016survey,dune-cache-check}.
+  They are not claimed as novel.
 \end{enumerate}
 
-STAR~\cite{dobin2013star} is a kill test for the \emph{aligner
-instance}, not for the method: BAM is not a per-read function of
-the FASTQ, and Suite~B cross-sample overlap is rare (human airway
-\texttt{recall\_in\_new} $0.067$--$0.108$, nf-core $0.087$, fly
-$0.017$--$0.020$).
-% source: pipeline/results/suiteB_overlap.csv commit 402bd26
-% source: pipeline/results/star_identity_refuse.txt commit 402bd26
-Within-file uniqueness tops out at $1.15\times$ on i03.
-% source: pipeline/results/suiteB_dups.csv commit 402bd26 (max_speedup_if_pure 1.1528)
-We do not claim we invented align-uniques-once; Oculus already
-occupies that instance~\cite{veeneman2012oculus}.
+What is measured, and what is not, is separated in the evaluation.
+The fitter recovers the hmmscan \texttt{--cut\_ga} contract and refuses the E-value-thresholded argv (\S\ref{sec:rq3}).
+Record-side hmmsearch savings are reported as the locked imputation and, beside it, a post-hoc correction (\S\ref{sec:rq2}).
+The deployed probe suite's in-scope unsafe-ship rate is
+$4/224$
+% source: pipeline/results/probe_eval_audit.md
+(\S\ref{sec:rq1}).
+A timed 38.1$\to$38.2 re-annotation, DIAMOND against iSeqSearch, head-to-head baselines, and a boundary refusal on a further unmodified CLI are
+\pending{RQ4--RQ7}.
 
-Ensembl VEP's official \texttt{--cache} is a \emph{reference-data}
-store (transcripts, known variants), not a memo of prior user
-VCFs~\cite{mclaren2016vep}. Adding sample 1{,}001 still annotates
-every variant in that VCF. We do not treat it as a competitor.
+\section{Background and cost model}
+\label{sec:model}
 
-\paragraph{Contributions.}
-(1)~Per-format inference of records and field roles for unmodified
-VCF and FASTA$\to$table CLIs (\S\ref{sec:infer}).
-(2)~A probe suite whose deployed unsafe-ship rate is measured, with
-theory explicitly disclaimed (\S\ref{sec:probes}--\S\ref{sec:audit}).
-(3)~A two-parameter cost screen used to pick tools, not sold as
-novelty (\S\ref{sec:cost}).
-(4)~An evaluation plan that separates committed measurements from
-predictions and from work that has not run (\S\ref{sec:eval}).
-
-\section{Background}
-\label{sec:bg}
-
-\subsection{Scientific CLIs as per-record maps}
-
-A typical annotator reads a file of records and writes a file of
-the same cardinality, or a table with zero or more rows per input
-record. SnpEff~\cite{cingolani2012snpeff} annotates each VCF
-variant. HMMER~\cite{eddy2011hmmer} searches each protein against a
-profile database. If record $i$'s output depends only on record
-$i$ (plus argv-named inputs: binary, flags, database files), then a
-later file that repeats keys can reuse stored outputs.
-
-Independence is an empirical property, not a type. A tool that
-writes the file length into every row, or that copies a neighbor's
-key, is not per-record. STAR's BAM carries QNAME, alignment
-coordinates, and headers that are not a function of the read
-sequence alone; ACTS refuses that argv on identity grounds.
-% source: pipeline/results/star_identity_refuse.txt commit 402bd26
-
-\subsection{Formats we handle}
-
-\textbf{VCF.} A record is a non-\texttt{\#} line. The default
-correspondence key is \texttt{CHROM POS REF ALT} (full ALT). Output
-order follows input order. MATCH is the record \emph{body}, not
-full-file \texttt{cmp}: SnpEff rewrites \texttt{\#\#SnpEffCmd} on
-every run. On 200 HG00096 \texttt{-c1} variants, two stock runs and
-a shuffled run MATCH on the body; full-file identity fails on that
-header line only.
-% source: pipeline/results/snpeff_identity/report.json commit 402bd26
-
-\textbf{FASTA$\to$table.} A record is one sequence. The cache key
-is the amino-acid string. The query-name column is inferred, not
-hard-coded. Some tools emit rows in input order
-(\texttt{hmmscan}); others globally sort
-(\texttt{hmmsearch}). The contract records \texttt{order} versus
-\texttt{multiset} MATCH. HMMER \texttt{--tblout} pads columns and
-right-aligns numbers, so MATCH is whitespace-normalized
-(\texttt{split()}), not bytes.
-% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
-%   scan_cut_ga: match=order, match_ws=true; search_fixed_Z: match=multiset, match_ws=true
-
-\subsection{The grain of reuse}
-
-Workflow managers (Nextflow \texttt{-resume}~\cite{ditommaso2017nextflow},
-Snakemake's skip and \texttt{--cache}~\cite{molder2021snakemake},
-Cromwell call caching~\cite{cromwell-call-cache}) hash a
-\emph{task} and its declared inputs. They are the right answer when
-the scientist already split the work into processes. They do not
-look inside \texttt{snpeff -i cohort.vcf}. Interpreter-level memo
-(IncPy~\cite{guo2011incpy}, Mandala~\cite{makelov2024mandala})
-cannot wrap a closed binary. Process-grain caches skip or rerun the
-whole exec-unit. ACTS sits between those grains: inside one
-invocation, at record resolution, without modifying the tool.
-
-\section{Method}
-\label{sec:method}
-
-ACTS wraps an unmodified argv. Example:
-\texttt{python3 -m acts run --kind vcf --input X -- <tool>}.
-\texttt{\{input\}} in argv is replaced with a file the wrapper
-wrote (probe subset, miss batch, or one-record header harvest).
-Stdout is the format the kind declared. That is format wiring, not
-a per-tool parser. \texttt{snpeff\_ann.py} is a test oracle, not
-the runtime path.
-
-A persistent JSONL cache is keyed by a \emph{namespace}
-(kind, argv strings, content hash of the binary, content hash of
-every argv-named path) and a \emph{record key}. Files the tool
-opens that do not appear in argv are out of scope unless
-probe-time tracing saw them (\S\ref{sec:probes}). Environment
-variables are a stated limitation (fault F6-env).
-
-\subsection{Record and field-role inference}
-\label{sec:infer}
-
-Inference is per \emph{format}, not per tool. The first run of a
-namespace draws \texttt{probe\_n} records (code default $500$;
-drawn without replacement, seed $20260927$ in the deployed path)
-and classifies every output column / INFO subfield:
-
-\begin{description}
-  \item[PASS-THROUGH] equal to the (possibly perturbed) input
-    value; taken from the new query record at reassembly.
-  \item[PRODUCED] unchanged across perturbation and not present in
-    the input; cached, keyed by the current cache key.
-  \item[DEPENDS-ON-NON-KEY] changed, but not equal to the input;
-    widen the cache key once to include the perturbed input
-    field(s) and re-probe. Still ambiguous $\to$
-    \texttt{REFUSE\_AMBIGUOUS}.
-\end{description}
-
-\paragraph{VCF.}
-Keys start as \texttt{CHROM,POS,REF,ALT}. Non-key fields (ID,
-QUAL, FILTER, INFO subfields, FORMAT, samples) are perturbed.
-A rewrite (output $\neq$ input, stable across perturbation) is
-PRODUCED, never silently treated as pass-through. Late INFO keys
-that appear only on a later miss batch trigger a bounded
-re-probe. Generic VCF inference replaced a SnpEff-specific splicer
-(commits \texttt{8540926}, \texttt{3f47a00}).
-% source: pipeline/results/inference_checks.json commit 8540926 (introduced);
-%   subset-invariance and late keys in commit 3f47a00
-
-\paragraph{FASTA$\to$table.}
-The query-name column is the column that follows the FASTA header
-name under perturbation. Sequence is the only cache-key field.
-Columns that still depend on the description after one widen
-attempt (there is no extra FASTA field to add) refuse. Empty
-outputs (no domain hits) are cached as \texttt{EMPTY} so a later
-genome with the same sequence and a new locus tag is a hit, not a
-miss. Local HMMER on 200 K-12 proteins SHIPs both
-\texttt{hmmscan --cut\_ga} (order MATCH) and
-\texttt{hmmsearch} with $Z$ and \texttt{domZ} fixed (multiset MATCH).
-% source: pipeline/results/inference_fasta_local.json commit 9172807
-A reuse test on 500 proteins with 202 shared sequences SHIPs both
-modes after whitespace-normalized MATCH; 192/202 scan hits and
-190/202 search hits were EMPTY, so NON-EMPTY reuse was not the
-bulk of that fixture.
-% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
-%   n_empty_hits: scan_cut_ga 192, search_fixed_Z 190; overlap 202
-
-Default \texttt{hmmsearch} E-values scale with the number of
-targets and fail subset-invariance; the locked argv therefore
-fixes $Z$. That is a flag choice the screen is allowed to make,
-not a per-tool parser.
-
-\subsection{Probes}
-\label{sec:probes}
-
-On the probe sample:
-
-{\raggedright
-\begin{enumerate}
-  \item[(a)] \textbf{Determinism.} Run twice; differing bodies
-    refuse as nondeterministic.
-  \item[(b)] \textbf{Shuffle.} Permute records; differing bodies
-    refuse as neighbor leakage.
-  \item[(b2)] \textbf{Subset-invariance.} A singleton (or small
-    subset) must match the corresponding rows of the full probe;
-    else refuse as a global (file-level) dependence.
-  \item[(c)] \textbf{Field-role perturbation.} As in
-    \S\ref{sec:infer}.
-  \item[(d)] \textbf{Late keys.} Unseen INFO keys / extra table
-    columns on a miss batch trigger a bounded re-classification.
-\end{enumerate}
-}
-
-These are metamorphic relations in Chen and Segura's
-sense~\cite{chen1998metamorphic,segura2016survey}. We do not claim
-a new MR theory. A program can satisfy the MRs and still be wrong;
-that is why MATCH (experimental) and the hit audit (deployed) sit
-behind the probes.
-
-STAR argv is a special-case identity refuse from a
-pre-registered check, not from these probes.
-
-\paragraph{Probe-time tracing.}
-On Linux, the first probe invocation may run under
-\texttt{strace -f -e trace=openat,open}. Regular files opened
-read-only (excluding \texttt{/proc}, \texttt{/sys}, \texttt{/dev},
-the per-run input, and temp dirs) are fingerprinted into the
-namespace. This is Rattle's traced-input idea transferred to the
-first infer run, not a new key theory~\cite{spall2020rattle}.
-macOS, or \texttt{strace} missing: no tracing, so F6-file is not
-fingerprinted on that host. F6-file is covered by this probe-time
-tracing on Linux; it is not unhandled. Tracing is probe-time only,
-not every later run.
-
-\subsection{Hit audit}
-\label{sec:audit}
-
-Dune's \texttt{cache-check-probability} re-executes randomly chosen
-\emph{build rules} and diffs them~\cite{dune-cache-check}. ACTS
-\texttt{--verify audit} (the default) is that idea at record grain:
-Bernoulli $p=0.02$ of cache hits, then pad to at least 20 hits
-(or all hits), one batch, seed $20260927$. A disagreement is
-\texttt{REFUSE\_AUDIT}. This is engineering transfer, not a
-theorem, and not vCache's user-set $\delta$ on a semantic LLM
-cache~\cite{schroeder2026vcache}.
-
-\texttt{--verify full} still runs a stock tool on the whole input
-and requires MATCH. That number is an experimental upper bound
-(\S\ref{sec:eval}). Deployment does not pay for it.
-
-\subsection{Cost model}
-\label{sec:cost}
-
-Stock wall time on random subsets is fit as $t = a + b\cdot n$
-(OLS on per-size mean wall). Wrapper overhead $w$ is measured
-(full $N$, tool replaced by a no-op that writes empty-but-valid
-output). For a later-run miss fraction $m$,
-\begin{align*}
-  \mathrm{ceiling}(m)
-    &= \frac{a + b\cdot N}{a + b\cdot m\cdot N + w}, \\
-  \mathrm{saved}(m)
-    &= (a + b\cdot N) - (a + b\cdot m\cdot N + w).
-\end{align*}
-A tool advances the headline screen only if $a>0$, $b>0$,
-$\mathrm{ceiling}(m)\ge 3.0$, and $\mathrm{saved}(m)\ge 60$~s, with
-$m$ the \emph{measured} miss fraction on a locked later input---not
-a hoped-for $0.2$.
-% protocol: pipeline/docs/HEADLINE_SCREEN.md (erratum after ruff)
-
-This is the screen, not the paper's method. Workflow papers that
-predict \emph{memory or runtime for scheduling} (Ponder /
-KS+~\cite{bader2023ponder}) are a different question.
-ProcessCache reports overheads after the fact. We do not claim a
-literature gap here.
-
-On SnpEff, $a$ is large relative to $b\cdot N$. After the exclusive
-Linux alternating run, $a_{\mathrm{now}}=15.98$~s predicts
-$1.203\times$ versus measured median $1.167\times$; the same fit
-caps the tool at about $1.3\times$ even at 100\% hits.
-% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
-%   a_now.mean_s = 15.9805; r_from_a_now = 1.2032; median_r = 1.1668
-%   locked b, N=52638, miss_n=11191
-Heavier SnpEff (stats on, \texttt{-ud 20000}) fails the advance
-rule: $\mathrm{ceiling}(0.2)=1.30\times$.
-% source: pipeline/results/tool_screen.json commit 81d472d
-%   ceiling_m0.2 = 1.2971 (reported 1.30)
-\texttt{ruff check --no-cache} passes the locked formula at
-$4.52\times$ but is rejected: ruff already caches per file,
-\texttt{--no-cache} is a strawman, full-run wall is $0.705$~s, and
-the first formula omitted $w$.
-% source: pipeline/results/tool_screen.json commit 81d472d
-%   ceiling_m0.2 = 4.519; mean wall at N=16259 is 0.705 s
-% protocol commit c51ed61; erratum in pipeline/docs/TOOL_SCREEN.md
-
-\section{Related Work}
-\label{sec:rw}
-
-Automatic incremental reuse is an old idea. The question is the
-grain, and whether the tool must be changed. This section follows
-the deep read in \texttt{pipeline/docs/RELATED\_WORK.md} (\S3); we do not
-add a fourth claim.
-
-At process or command grain, several systems already wrap
-\textbf{unmodified} binaries. Rattle traces each build command and
-skips it when argv, environment, and hashed file inputs
-match~\cite{spall2020rattle}. Riker extends that model to the POSIX
-filesystem---directories, pipes, links---so a spec as short as
-\texttt{gcc *.c} still rebuilds
-correctly~\cite{curtsinger2022riker}. ProcessCache generalizes the
-same idea off the build system and onto arbitrary Linux process
-trees~\cite{shiptoski2023processcache}. It memos \textbf{exec-units}
-(from \texttt{execve} to the end of the descendant tree), computes
-preconditions from a syscall log, and skips when those
-preconditions hold. On unchanged inputs it reports up to
-$65\times$; when a few input \emph{files} change, speedup
-collapses, and a changed FASTA is one file. HMMER under
-ProcessCache is one process.
-
-INCR~\cite{xie2026incr} is the 2026 form of this line, and the
-closest neighbor: bolt-on incrementalization of unmodified
-\textbf{shell programs}, OverlayFS isolation plus strace, reuse of
-command effects across edits. With optional PaSh/POSH
-annotations~\cite{vasilakis2021pash,kallas2022pash} it can chunk
-stdin of a \emph{declared} stateless utility or split per argument.
-Default grain remains the command. A lone \texttt{hmmsearch} on a
-proteome is one command; one new sequence reruns it. Chunk memo
-needs that crowdsourced ``stateless'' annotation; it does not infer
-VCF/FASTA field roles. INCR does \textbf{not} occupy claim~1. We
-use their tracing idea at \textbf{probe time} to fingerprint files
-the tool opens. We do not claim first automatic cache keys.
-
-Workflow managers occupy the next-coarser grain. Nextflow
-\texttt{-resume}~\cite{ditommaso2017nextflow}, Snakemake's
-intra-workflow skip and \texttt{--cache}~\cite{molder2021snakemake},
-and Cromwell call-caching~\cite{cromwell-call-cache} all hash a
-\textbf{task} and its declared inputs. They do not look inside
-\texttt{snpeff -i cohort.vcf}.
-
-Finer grain exists if the language is under control.
-IncPy~\cite{guo2011incpy} memos Python functions inside a modified
-CPython. Mandala~\cite{makelov2024mandala} does the same with
-\texttt{@op} annotations. Neither reaches a closed binary.
-
-Per-record reuse for \emph{one} scientific tool is also occupied,
-and we should say so. Oculus collapses duplicate reads before
-Bowtie/BWA and reprints SAM; it is nearly lossless, not
-byte-identical~\cite{veeneman2012oculus}. SeAlM caches alignment
-queries~\cite{stene2019sealm}. eggNOG-mapper's \texttt{-m cache} is
-the cleanest neighbor: \texttt{--md5} then a user-supplied
-annotations file, exact amino-acid identity, misses
-re-searched~\cite{cantalapiedra2021eggnog,eggnog-cache-wiki}. That
-is a hand-built memo of prior user sequences---our job, for one
-tool. Ensembl VEP \texttt{--cache} is the trap citation: it is a
-\textbf{reference-data} store, not a memo of the user's last
-VCF~\cite{mclaren2016vep}.
-
-Black-box \emph{structure} inference without caching is
-KumQuat~\cite{shen2022kumquat}: combiners for data-parallel Unix
-commands, 113 of 121 unique commands, no cross-run store. PaSh and
-POSH annotate the same commands for
-parallelism~\cite{vasilakis2021pash,kallas2022pash}. We infer a
-different contract (which fields are keys, which are produced,
-whether neighbors leak) so we can memoize.
-
-Correctness arguments for caches are also occupied, at other
-grains. Dune's \texttt{cache-check-probability} re-executes random
-\textbf{build rules} and diffs them~\cite{dune-cache-check}.
-vCache~\cite{schroeder2026vcache} gives a user-set error bound
-$\delta$ for \emph{semantic} LLM caches under i.i.d.\ prompts and a
-sigmoid model---a stronger claim than we can make, on a different
-object. Our shuffle, subset, and perturbation probes are
-metamorphic relations~\cite{chen1998metamorphic,segura2016survey}.
-The paper's correctness contribution is not a new MR theory and not
-a $\delta$. It is a \textbf{measured} unsafe-ship rate of this
-probe suite in the mode we actually ship (\texttt{--verify audit}:
-no full stock run; 2\% hit audit, at least 20 hits). The earlier
-full-MATCH number is an experimental upper bound.
-
-What is left, and what we claim, is narrow: infer records and field
-roles of an unmodified VCF or FASTA$\to$table binary with no
-per-tool code; memoize those records across runs; refuse when the
-probes fail; and, in deployment, accept on probes plus a Dune-style
-audit rather than a second full run. ProcessCache, Rattle, Riker,
-and INCR will rerun the process when any input byte changes.
-eggNOG will not annotate a SnpEff VCF. KumQuat will parallelize
-\texttt{sort} and leave tomorrow's proteome uncached.
-
-\section{Evaluation Plan}
-\label{sec:eval}
-
-We separate (i)~committed measurements, (ii)~model predictions,
-and (iii)~experiments that have not produced a result file on this
-branch. No number below is taken from uncommitted dirty-main
-artifacts.
-
-\subsection{Already measured}
-
-\paragraph{SnpEff later-run speedup (reference).}
-SnpEff~5.4c (GRCh38.86; \texttt{-noStats -noLog}) on HG00099
-\texttt{-c1} ($N=52{,}638$). Exclusive Linux node \texttt{b22-02}
-(AMD EPYC 7542), alternating stock vs cached, ten pairs. Median
-wall ratio $1.1668\times$ (95\% bootstrap CI $[1.1595, 1.1705]$;
-seed $20260924$, $10{,}000$ resamples). All ten pairs have equal
-bodies. MATCH on all $52{,}638$ reassembled records versus stock.
-% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d
-%   median_r=1.1668229; ci95_lo=1.159457; ci95_hi=1.170514
-% source: pipeline/results/snpeff_cached_identity.json commit 81d472d
-%   n_reassembled=52638; bodies_equal=true
-A same-day Mac run reported $1.29\times$ and is \emph{withdrawn as a
-headline}: the idle precondition failed (load $5\to 27$). It
-remains a recorded result, not the claim.
-% source: pipeline/results/snpeff_alternating.json commit 81d472d
-%   also copied under mac_side_by_side in snpeff_alternating_carc.json
-%   median_r=1.2907
-
-1000~Genomes CEU chr22 \texttt{-c1} overlap: pairwise
-\texttt{recall\_in\_new} $0.620$--$0.637$; after two samples the
-third is already $0.787$ seen. Overlap is not a speedup.
-% source: pipeline/results/vep_chr22_overlap.json commit 402bd26
-%   pairwise 0.620406, 0.636935, 0.632661; union-of-two 0.787397
-
-\paragraph{Probe miss rate.}
-Synthetic faults F1--F8 and controls C1--C5, both VCF and FASTA,
-$N_{\mathrm{rec}}=2500$, \texttt{probe\_n}${}\in\{50,200,500,2000\}$,
-seed $20260927$. Protocol locked in
-\texttt{PROBE\_EVAL\_PROTOCOL.md} (\texttt{b4c878f};
-audit addendum \texttt{4679264}).
+One run of a per-record tool on $n$ records is modelled as
+\begin{equation}
+T = a + b \cdot n .
+\label{eq:linear}
+\end{equation}
+Startup $a$ does not shrink with $n$.
+The per-record term is $b$.
+A wrapper that parses, hashes, and splices adds $w$ on a cached run.
+A one-time probe costs $P$.
+The screen that chose the workload fitted~\eqref{eq:linear} on an exclusive \texttt{epyc-7542} node for Pfam 38.2 and
+$N = 4192$
+% source: pipeline/results/headline_screen.json:N
+proteins (Table~\ref{tab:amdahl}).
 
 \begin{table}[t]
-\caption{Probe-eval unsafe-ship rates. Full-MATCH is an experimental
-upper bound; \texttt{--verify audit} is the deployed number.
-Canonical in-scope excludes F6-env and F6-file (denominator 224).
-F6-file is covered by probe-time tracing on Linux and is not yet
-measured; F6-env is the real limitation.}
-\label{tab:probe}
+\caption{Amdahl split of one stock run.
+Shares are $(a)/(a+bN)$ and $(bN)/(a+bN)$.
+The hit-all ceiling is $(a+bN)/(a+w)$, projected from the same fit.
+Wrapper $w$ is the mean of three \texttt{cat}-equivalent reads.}
+\label{tab:amdahl}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+& hmmscan & hmmsearch \\
+\midrule
+$a$ (s) & 31.960 & 132.558 \\
+% source: pipeline/results/headline_screen.json a_s hmmscan=31.959641573764316 hmmsearch=132.55764028895294
+$b$ (s/record) & 0.72286 & 0.11890 \\
+% source: pipeline/results/headline_screen.json b_s_per_record hmmscan=0.7228553909794854 hmmsearch=0.11889530446294444
+$bN$ (s) & 3030.210 & 498.409 \\
+% source: computed b_s_per_record * N from pipeline/results/headline_screen.json; hmmscan=3030.2097989860026 hmmsearch=498.4091163086631
+$w$ (s) & 0.01906 & 0.01834 \\
+% source: pipeline/results/headline_screen.json w.w_s hmmscan=0.019063675698513787 hmmsearch=0.018338670022785664
+$a$ share & 1.044\% & 21.009\% \\
+% source: computed a/(a+bN) from those fields; hmmscan=0.01043692786899541 hmmsearch=0.210086567799147
+$bN$ share & 98.956\% & 78.991\% \\
+% source: computed bN/(a+bN); hmmscan=0.9895630721310046 hmmsearch=0.789913432200853
+ceiling & $95.76\times$ & $4.759\times$ \\
+% source: PROJECTED (a+bN)/(a+w) from the same fields; hmmscan=95.75651724083495 hmmsearch=4.759284159560023
+\bottomrule
+\end{tabular}
+\end{table}
+
+The dominant term on this screen is $b \cdot n$.
+Record memoization can remove only the hit portion of that term.
+Even with every record a hit, hmmscan's projected ceiling is
+$95.76\times$
+% source: Table~\ref{tab:amdahl}, PROJECTED from pipeline/results/headline_screen.json
+and hmmsearch's is
+$4.759\times$,
+% source: Table~\ref{tab:amdahl}, PROJECTED from pipeline/results/headline_screen.json
+because hmmsearch pays
+$21.009\%$
+% source: pipeline/results/headline_screen.json computed a share 0.210086567799147
+of a full run in startup.
+Optimizing $w$ is the wrong target: the hmmscan wrapper is
+$0.01906\,\mathrm{s}$
+% source: pipeline/results/headline_screen.json hmmscan w.w_s = 0.019063675698513787
+against a
+$3030.210\,\mathrm{s}$
+% source: computed b*N = 3030.2097989860026 from pipeline/results/headline_screen.json
+record term.
+
+Reference-side reuse has the same shape with a different miss fraction.
+Let $c$ be the fraction of reference entries that are new or changed.
+Under the assumptions in \S\ref{sec:formal}, one re-annotation costs $a + c\, b n$ rather than $a + b n$.
+The probe that learns the contract is paid once.
+On the screen's hmmscan parameters that probe is a small fraction of $b n$ when $c$ is the measured 38.1$\to$38.2 churn (\S\ref{sec:formal}).
+The timed confirmation of that projection is
+\pending{RQ4}.
+
+\section{Design}
+\label{sec:design}
+
+Figure~\ref{fig:arch} is the wrapper.
+Phase one probes an unmodified binary and either emits a contract or refuses.
+Phase two, on later inputs, runs the binary only on the work the contract says is new, then merges.
+Two stages are the contribution: reference-side inference, and the rescaling merge that uses the fitted member.
+Record-side key inference is the secondary mechanism.
+Safety probes are the gate.
+
+\begin{figure*}[t]
 \centering
+\input{figures/fig1_architecture.tex}
+\Description{Two rows. The first row is probe and infer: record-side key, reference-side family fit, and safety probes feed a contract, or a refusal that runs the tool once. The second row is every later run: diff entries, run the tool on changed entries, merge and rescale, with a cache and a verify step.}
+\caption{Two phases.
+Teal is reference-side inference.
+Orange is the rescaling merge.
+A refusal runs the tool once on the full inputs and does not reuse probe rows.
+Later output matches stock under ref-merge (\S\ref{sec:formal}), which is equality of hit sets and unnormalized columns, and printed-precision agreement on normalized columns.}
+\label{fig:arch}
+\end{figure*}
+
+\subsection{What is inferred}
+\label{sec:contract}
+
+The tool is an unmodified function of two argv-named inputs, $F(\mathrm{records},\mathrm{reference})$.
+The fitter does not read the tool's source, a manual, or the environment.
+Inputs outside argv are fault class F6 and stay outside the guarantee (\S\ref{sec:limits}).
+A per-format parser splits the reference into entries and exposes each entry's length.
+Parsers in scope are HMMER3 profile text (length is the \texttt{LENG} integer; volatile tags are \texttt{DATE}, \texttt{BM}, \texttt{SM}, \texttt{COM}), FASTA (length is the residue count), and a one-line fixture format used only in tests.
+Length is data on the parser.
+The fitter refuses if the format has no parser or a profile has no \texttt{LENG} line.
+Entry identity is the SHA-256 of the entry after volatile lines are dropped.
+An entry whose hash is stable across a release is the unit of reuse.
+
+\subsection{Record side}
+\label{sec:record}
+
+A record's fields partition into a dependency set $D$ and irrelevant fields.
+Inside $D$, transport fields $U$ are those whose perturbation reappears at fixed output positions and changes nothing else.
+The copy-aware key is $K^{\ast} = D \setminus U$.
+The cache stores the produced fields under a hash of $x|_{K^{\ast}}$ and splices the new record's transport fields on a hit.
+Joint transport---the same identity when every transport field is substituted at once---is tested on the probe sample.
+It is not proved for the whole domain.
+The minimality argument in \S\ref{sec:formal} says that, when joint transport holds, $K^{\ast}$ is a sound splice key and no smaller sound splice key exists.
+Dependency inference that keys all of $D$ is prior art (\S\ref{sec:rw}); the secondary claim is the split that drops pure copies from the key.
+
+\subsection{Reference side}
+\label{sec:reference}
+
+Figure~\ref{fig:refmech} is the reference-side mechanism.
+
+\begin{figure*}[t]
+\centering
+\input{figures/fig2_mechanism.tex}
+\Description{Panel A fits a contract by running the tool on the full reference and on two halves, refusing unless the halves merge and each numeric column matches one closed-family member after a length tie-break. Panel B hashes a new release into unchanged, changed, and removed entries, runs the tool on the changed entries, and rescales.}
+\caption{Reference-side inference and reuse.
+(A)~The primary probe runs the same records on $R$, $R_1$, and $R_2$.
+Decomposition fails closed.
+Each numeric column must match one member of the closed family; a tie is broken by a length-unbalanced partition, and a column that still ties, or matches nothing, refuses the argv.
+The rules in the teal box are the T1 assignment for \texttt{hmmscan --cut\_ga}, not code in the fitter (\S\ref{sec:rq3}).
+(B)~On a later release the entry-count member rescales cached rows by $N'/N$ and rows from the changed sub-reference by $N'/|\mathrm{changed}|$.
+Per-key counts are recounted on the merged row set.
+Total entry length uses sums of parser lengths in place of $N$.
+Equality to stock is ref-merge.}
+\label{fig:refmech}
+\end{figure*}
+
+\paragraph{Decomposition.}
+The primary probe draws
+$k = 2$
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md addendum 2026-10-06, parameter k
+parts of the reference and a sample of
+$n_p = 300$
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md addendum 2026-10-06, parameter n_p
+records, then invokes $F$ on the whole reference and on each part
+($k+1 = 3$
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md k+1 invocations
+calls, plus two more if a tie-break runs).
+T1 and T2 reuse the historical halves from the earlier kill tests rather than the Fisher--Yates partition pinned for new references.
+A row key is the format's record key, entry key, and optional row index.
+The fitter ships decomposition only together with a completed normalizer assignment, and only when the union of the parts matches the whole under ref-merge: equal row-key sets, byte-identical non-numeric columns, byte-identical identity columns, and the half-ULP predicate of \S\ref{sec:formal} on every linearly normalized column.
+
+\paragraph{Closed family.}
+A column is numeric when every aligned token parses as a finite float.
+A mixed column refuses the argv.
+The members, fixed before the fitter was run, are:
+\begin{enumerate}
+  \item \textbf{identity}: the printed token is byte-identical on every aligned row.
+  \item \textbf{entry\_count}: rescale by $|R| / |R_{\mathrm{part}}|$.
+  \item \textbf{total\_entry\_length}: rescale by $L(R) / L(R_{\mathrm{part}})$, with $L$ the sum of parser lengths.
+  \item \textbf{per\_key\_row\_count} of an output table of the same run: rescale by the ratio of row counts for that record key.
+  A zero denominator does not fit.
+\end{enumerate}
+No member's definition names a tool, a flag, or a HMMER statistic.
+Entry count and per-key row count recover HMMER's database size and its per-sequence reported-target count when the probe says so.
+A candidate fits when every aligned row satisfies the consistency predicate.
+Two candidates that agree with each other on every row, within that predicate, are one candidate.
+An all-zero column collapses to identity.
+
+\paragraph{Tie-break and refusal.}
+A primary split that balances both entry count and total length gives the same factor to both size measures, so they tie even when only one is the law.
+The disambiguating partition orders entries by length descending, then by content hash ascending, and fills one part until it holds at least half the total length and is a proper subset.
+The complement is the other part.
+A tied candidate survives only if it still fits.
+If the probe leaves zero members, or more than one distinct member, the column refuses.
+A column that no candidate fits refuses the whole reference-incremental path for that argv.
+The caller runs one full $F$ and does not splice a partially fitted column into the output.
+This is stricter than the earlier column-wise rule that recomputed a single non-fitting column and reused the others.
+\texttt{--cut\_ga} and the default threshold are different contracts.
+
+The primary partition used for new references is a Fisher--Yates shuffle on \texttt{random.Random(seed).random}, not CPython's \texttt{shuffle}, then a cut into parts whose sizes differ by at most one.
+The pinned check is seed
+$20261006$
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md disambiguating-probe and partition seed
+and
+$n = 4$:
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md guard n=4
+the shuffled index list is
+$[0, 3, 2, 1]$.
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md Fisher--Yates guard
+An implementation that disagrees on that input is the wrong partitioner.
+T1 and T2 do not use it.
+They reuse halves already drawn by the kill-test script.
+
+\subsection{Merge and rescale}
+\label{sec:merge}
+
+On a new reference the fitter hashes entries into unchanged, changed, and removed.
+Removed rows are dropped.
+Unchanged rows are reused.
+Changed and new entries are scanned as a sub-reference, after the caller-declared index command (\texttt{hmmpress} for HMMER; the command is data, not a compiled tool name).
+Cached numeric cells are multiplied by the fitted factor from the old reference to the new one.
+Cells produced on the sub-reference are multiplied by the factor from that sub-reference to the new one.
+For entry count those factors are $N'/N$ and $N'/|\mathrm{changed}|$.
+For total entry length they are the corresponding length ratios.
+Per-key row counts are computed from the merged row set after the merge, because the normalizer depends on which rows survived.
+The value is re-printed with the source token's significant digits.
+Identity columns are copied as bytes.
+
+\subsection{Verification}
+\label{sec:verify}
+
+Before a contract ships, the record-side probes test determinism, order, subset invariance on batches of size
+$1, 2, 4, 8$,
+% source: pipeline/docs/ARCHITECT_REVIEW.md algorithm; group-testing schedule
+and field perturbation.
+A perturbation that changes only copied fields classifies the field as transport.
+A perturbation that changes produced fields widens the key.
+The round-trip guard rebuilds perturbed output from the inferred contract and compares it to the tool; it was added after a cached-MATCH stop, recorded as \texttt{STOP\_MATCH} at collection A, hmmsearch, position
+$5$.
+% source: pipeline/results/savings_failed_20260928/STOP.json position=5 decision=STOP_MATCH
+The first run on a contract must match a full run under the relation for that path (record-body or whitespace MATCH on the record side; ref-merge on the reference side).
+In deployment the hit audit re-executes each hit with probability
+$q = 0.02$
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md fitter-build addendum, audit q
+and refuses on disagreement.
+\texttt{--verify full} compares against a stock run.
+A GeStore-style baseline runs the decomposition probe and refuses any numeric column that is not identity, so a size-dependent column cannot be reused.
+
+Record-side global dependence and reference-side normalization are different decisions.
+A record whose output depends on its neighbors, or on the stream length, is a refusal on the record side: there is no per-record key.
+A numeric column that scales with one family member is an assignment on the reference side, and the merge reapplies that scale.
+Table~\ref{tab:decide} is the split.
+The mechanisms in the left column are metamorphic tests and an audit.
+The right column is the contract inference.
+
+\begin{table}[t]
+\caption{What a probe observation becomes.
+Record-side global dependence refuses.
+Reference-side scale, when it is a single family member, is inferred and rescaled.}
+\label{tab:decide}
+\small
+\begin{tabular}{@{}p{0.46\columnwidth}p{0.46\columnwidth}@{}}
+\toprule
+Observation & Decision \\
+\midrule
+Perturbation changes only copied positions & transport field; splice it \\
+Perturbation changes produced fields & widen the key \\
+Same argv, different output & refuse, nondeterministic \\
+Output depends on order or neighbors & refuse, record side \\
+Column matches one family member & assign that member \\
+Column matches none, or a tie survives & refuse the argv \\
+Tool reads inputs outside argv & outside the guarantee (F6) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Formal model}
+\label{sec:formal}
+
+The statements below are the definitions used by the fitter and the consequences of those definitions under the assumptions written next to them.
+They are not claimed as theorems about HMMER beyond what the probes measure.
+
+\subsection{Decomposition and the family}
+
+Let $R$ be a reference with $|R| \ge 2$, split into parts that are non-empty, disjoint, and exhaustive.
+Write $\mathrm{keys}(F(X, R))$ for the set of row keys in the output.
+\textbf{Decomposition} holds for a probe sample $X$ when, after the normalizer assignment,
+$\mathrm{keys}(F(X, R))$ equals the union of $\mathrm{keys}(F(X, R_i))$, no key appears in two parts, non-numeric and identity columns are byte-identical on aligned rows, and every linear column satisfies the consistency predicate.
+The fitter does not ship decomposition without an assignment.
+
+The \textbf{normalizer family} is the four members in \S\ref{sec:reference}.
+It is closed: a fifth measure, including Karlin--Altschul effective length, is outside the claim unless a later addendum marked post-hoc extends the family.
+Results measured before that addendum would not confirm the extension.
+The family is not the polynomial search of Zhang et al.~\cite{zhang2014mri}, which fits linear and quadratic relations between scalar outputs of a library function on affinely related numeric inputs.
+
+\subsection{Consistency predicate}
+
+For a printed token, let $\mathrm{dec}$ be the number of digits after the decimal point in the mantissa, or zero if there is no decimal point, and let $\mathrm{exp}$ be the integer exponent if the token contains \texttt{e} or \texttt{E}, otherwise zero.
+\[
+\mathrm{half\text{-}ULP}(\mathrm{printed})
+  = 0.5 \times 10^{-\mathrm{dec}} \times 10^{\mathrm{exp}}.
+\]
+A part value $v$, rescaled by a finite factor $\phi$, is consistent with a whole value $w$ when
+\begin{equation}
+|v \phi - w|
+  \le \mathrm{half\text{-}ULP}(w_{\mathrm{printed}})
+    + \mathrm{half\text{-}ULP}(v_{\mathrm{printed}}) \cdot |\phi|.
+\label{eq:consistent}
+\end{equation}
+This is the predicate the kill tests and the fitter implement.
+Identity is the case $\phi = 1$ with byte-identical tokens.
+
+\subsection{Ref-merge error bound}
+
+The merge does not emit the real product $v\phi$.
+It re-prints that product at the source token's precision.
+Assume that the re-printed token $\mathrm{emitted}$ satisfies
+$|\mathrm{emitted} - v\phi| \le \mathrm{half\text{-}ULP}(\mathrm{emitted})$,
+and that the probe accepted the row under~\eqref{eq:consistent} with $\mathrm{source}$ the cached printed value and $\mathrm{stock}$ the full-run printed value.
+The triangle inequality then gives
+\begin{equation}
+\begin{aligned}
+|\mathrm{emitted} - \mathrm{stock}|
+  &\le \mathrm{half\text{-}ULP}(\mathrm{stock})
+    + \mathrm{half\text{-}ULP}(\mathrm{emitted}) \\
+  &\quad + |\phi|\cdot \mathrm{half\text{-}ULP}(\mathrm{source}).
+\end{aligned}
+\label{eq:bound}
+\end{equation}
+Each half-ULP term is the quantity defined above, evaluated on that printed token.
+This is the same bound as $\tfrac{1}{2}\mathrm{ulp}$ of each token.
+The bound is a relation between printed numbers.
+It is not a claim about the tool's real-valued score before printing, and it is not byte identity.
+Ref-merge uses byte identity for hit sets, unnormalized columns, and identity columns, and~\eqref{eq:bound} for columns assigned a linear member.
+If the re-print assumption fails for a format, \texttt{--verify full} is the check that compares the emitted table to stock.
+
+\subsection{Break-even churn}
+
+One later re-annotation, with the probe already defined, uses
+\begin{align*}
+T_{\mathrm{stock}}(n) &= a + b n, \\
+T_{\mathrm{inc}}(n, c) &= a + c\, b n, \\
+S(c) &= (1 - c)\, b n .
+\end{align*}
+Assumptions, all stated, none of them a new measurement:
+$a$ does not shrink on a smaller reference;
+$b$ scales linearly with the fraction of entries searched;
+the two parts partition the entries, so their per-record costs sum to $b n_p$;
+merge and rescale are ignored next to these terms.
+The measured hmmscan wrapper is
+$3.60\times 10^{-5}$
+% source: computed w/P with w from pipeline/results/headline_screen.json hmmscan w.w_s and P=3a+2 b n_p = 529.5921593089842; ratio=3.5996899431797134e-05
+of the primary probe cost below, so $w$ is left out of $P$.
+Per-entry cost is not assumed uniform.
+That is why a timed release run is required before a speedup is claimed.
+
+With $k = 2$,
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md
+the primary probe costs $P = 3a + 2 b n_p$.
+The tie-break reuses the whole-reference run and adds two calls, for $P_{\mathrm{both}} = 5a + 3 b n_p$.
+Savings on one later re-annotation exceed the probe when $b n > P$ and $c < c^{\ast}$, where
+\begin{equation}
+c^{\ast} = 1 - \frac{P}{b n}.
+\label{eq:cstar}
+\end{equation}
+More releases only amortize $P$.
+Substituting the screen's hmmscan fit
+($a = 31.960\,\mathrm{s}$,
+% source: pipeline/results/headline_screen.json hmmscan a_s=31.959641573764316
+$b = 0.72286\,\mathrm{s}/\mathrm{record}$,
+% source: pipeline/results/headline_screen.json hmmscan b_s_per_record=0.7228553909794854
+$n = 4192$,
+% source: pipeline/results/headline_screen.json:N
+$n_p = 300$)
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md
+and the measured churn
+$c_{\mathrm{R1}} = 4052/30134 = 0.13447$
+% source: pipeline/results/reference_kill_r1.json z_new=30134, unchanged_strict=26082, so changed=4052; ratio=0.13446605163602576
+gives Table~\ref{tab:breakeven}.
+These cells are projected from~\eqref{eq:cstar} and $S(c)$.
+They are not timings of a 38.2 run.
+Length-weighted churn on the same release pair is
+$c_{\mathrm{length}} = 600557/4754065 = 0.12632$,
+% source: pipeline/results/reference_reannot_churn.json c_length=0.12632494507332145, length_changed_and_new=600557, length_new=4754065; timed=false
+lower than the count churn because changed and new models are shorter than average.
+The confirmatory gate uses the count churn.
+The measurement is
+\pending{RQ4}.
+
+\begin{table}[t]
+\caption{Projected probe cost and break-even churn for one hmmscan re-annotation at the screen's $a$, $b$, and $n$.
+$S$ uses $c_{\mathrm{R1}}$.}
+\label{tab:breakeven}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+Probe & $P$ (s) & $c^{\ast}$ & $S$ (s) & $S/P$ \\
+\midrule
+Primary & 529.592 & 0.8252 & 2622.749 & 4.952 \\
+% source: PROJECTED P=3a+2bn_p=529.5921593089842, c*=0.8252292103714398, S=2622.7494516875595, S/P=4.9523947920787625 from headline_screen.json and reference_kill_r1.json
+Both & 810.368 & 0.7326 & 2622.749 & 3.236 \\
+% source: PROJECTED P_both=5a+3bn_p=810.3680597503585, c*=0.7325703124511275, S/P=3.2364916412124165
+\bottomrule
+\end{tabular}
+\end{table}
+
+$c_{\mathrm{R1}}$ lies below both thresholds, so on these assumptions one re-annotation's projected savings cover the probe, including the tie-break.
+The attack that the probe costs more than the savings lands if a release has $c > c^{\ast}$, or if $b$ does not scale with the fraction of entries searched.
+Neither is answered by Table~\ref{tab:breakeven}.
+
+\subsection{Copy-aware key}
+
+Assume joint transport, as defined in \S\ref{sec:record}, and that irrelevant fields do not affect the per-record function.
+Then $K^{\ast}$ is a sound splice key: the output is determined by $x|_{K^{\ast}}$ together with the transport values written at their positions.
+Every sound splice key contains $K^{\ast}$, because a field in $K^{\ast}$ left out of the key would have to be transport or irrelevant, contradicting the partition.
+Recall is therefore at least as high under $K^{\ast}$ as under any larger sound key, including the full dependency set $D$.
+The probes test single-field transport and one all-at-once substitution.
+A violation they miss is a residual of the same kind as the probe miss rate in \S\ref{sec:rq1}, and the audit catches a hit-affecting fault with probability $1 - (1-q)^{h}$ on $h$ hits.
+The argument does not extend past what the probes establish.
+
+\section{Implementation}
+\label{sec:impl}
+
+The reference-side path is a library the scripts call.
+$F(\mathrm{records},\mathrm{reference})$ is the reference runner.
+The reference is the argv-named file that is not the record input and parses as entries, unless a flag names it.
+Per-format parsers cover profile text whose header token is \texttt{HMMER3/f}, FASTA, and the fixture lines.
+The strict entry hash is shared with the kill-test script.
+The probe parameters are the pre-registered ones.
+There are two parts and 300 records, seed \texttt{20261006}. % source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md k=2, n_p=300, seed 20261006
+T1 and T2 reuse the historical shuffle.
+Cache rows are keyed by record key, entry content hash, and argv with the reference path removed.
+A later reference reuses unchanged entries, scans changed entries as a sub-reference, drops removed entries, rescales fitted columns, recomputes per-key counts from the merged rows, and re-renders.
+Sidecar indexes are built by a caller-declared prep command.
+The command is data.
+No tool name is compiled into the fitter.
+Refusal is one full run, with a stated reason, when there are fewer than two entries, the record input is empty, a column is mixed or matches no member, a non-numeric column is not byte-identical, the tie-break cannot separate the survivors, primary row-key sets differ, or prep or the tool fails.
+A tool failure is not cached.
+The GeStore baseline refuses when a numeric column is not identity.
+Audit mismatch and full-verify mismatch are separate refusal reasons.
+
+The record-side path is the existing VCF and FASTA inference, cache, and audit.
+It is unchanged by the reference fitter.
+Ship controls that must still hold are SnpEff reassembly on
+$52{,}638$
+% source: pipeline/results/inference_checks.json snpeff.n_reassembled = snpeff.n_stock = 52638, bodies_equal true
+records
+($41{,}447$ hits,
+% source: pipeline/results/inference_checks.json snpeff.HG00099.n_hits = 41447
+$11{,}191$ misses)
+% source: pipeline/results/inference_checks.json snpeff.HG00099.n_misses = 11191
+and \texttt{bcftools +fill-tags} widened to \texttt{SAMPLES} with
+$23{,}072$
+% source: pipeline/results/inference_checks.json fill_tags_real.HG00099.n_hits = 23072
+hits on HG00099.
+
+\section{Evaluation}
+\label{sec:eval}
+
+Each research question uses committed results or is marked pending.
+Anything computed after seeing a fit error is labelled post-hoc in the text.
+Hmmscan record-side savings are not the pre-registered primary and are not reported here.
+
+\subsection{RQ1: Safety}
+\label{sec:rq1}
+
+The probe suite is a measurement of this wrapper, not a new testing theory.
+The full-MATCH run is an upper bound: the stock tool is invoked on the evaluation input.
+The deployed mode is probes plus the hit audit, with no stock run on that input.
+Canonical in-scope cells exclude F6-env and F6-file.
+The macOS host had no \texttt{strace}, so F6-file is unmeasured there even though probe-time tracing on Linux is the intended cover.
+Table~\ref{tab:safety} is taken from the two result writeups.
+
+\begin{table}[t]
+\caption{Probe evaluation.
+Full MATCH is the upper bound.
+Audit is the deployed mode.}
+\label{tab:safety}
 \small
 \begin{tabular}{@{}lrr@{}}
 \toprule
-Metric & \texttt{--verify full} & \texttt{--verify audit} \\
+& Full MATCH & Audit \\
 \midrule
-Unsafe-ship overall
-  & $33/256$ & $68/288$ \\
-In-scope (canonical; excl.\ F6-env+F6-file)
-  & $1/224$ & $4/224$ \\
-Excl.\ F6-env only (macOS, no tracing)
-  & --- & $36/256$ \\
-F6-env (limitation)
-  & $32/32$ & $32/32$ \\
-F6-file (Linux tracing; unmeasured here)
-  & --- & $32/32$ (macOS) \\
-False-refuse (C1--C5 $\times$ 4)
-  & $0/20$ & $0/20$ \\
-Audit-only catch
-  & --- & $12$ \\
+Unsafe-ship & 33/256 & 68/288 \\
+% source: pipeline/results/probe_eval.md 33/256; pipeline/results/probe_eval_audit.md 68/288
+In-scope & 1/224 & 4/224 \\
+% source: pipeline/results/probe_eval.md 1/224; pipeline/results/probe_eval_audit.md canonical 4/224
+Excl.\ F6-env only & --- & 36/256 \\
+% source: pipeline/results/probe_eval_audit.md 36/256
+False-refuse & 0/20 & 0/20 \\
+% source: pipeline/results/probe_eval.md and probe_eval_audit.md
+Audit-only catches & --- & 12 \\
+% source: pipeline/results/probe_eval_audit.md
+F6-env unsafe & 32/32 & 32/32 \\
+% source: pipeline/results/probe_eval.md undivided F6 32/32; probe_eval_audit.md F6-env 32/32
+F6-file unsafe & --- & 32/32 \\
+% source: pipeline/results/probe_eval_audit.md F6-file 32/32 on this Mac, trace unavailable
 \bottomrule
 \end{tabular}
 \end{table}
-% source: pipeline/results/probe_eval.json commit 96f786b
-%   unsafe_ship_n=33 / n_unsafe_cells=256; false_refuse_n=0
-%   excl F6: 33-32=1 over 256-32=224 (one in-scope miss: vcf F4 p=0.01 probe_n=50)
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0
-%   unsafe_ship_n=68 / 288; false_refuse_n=0; audit_only_catch=12
-%   canonical in-scope excl F6-env and F6-file: 4/224
-%   JSON in_scope_* excl F6-env only: 36/256 (macOS, no tracing)
-%   F6-env 32/32; F6-file 32/32 on macOS (Linux tracing not yet measured)
 
-Canonical in-scope unsafe-ship (56 cells per \texttt{probe\_n}: 7 classes
-$\times$ 4 frequencies $\times$ 2 formats, excluding F6-env and
-F6-file): $3/56$ at $50$, $1/56$ at $200$, $0/56$ at $500$,
-$0/56$ at $2000$. The same audit JSON labeled $36/256$ if F6-file
-is left in (macOS, no tracing).
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0
-%   tabulated from rows; also protocol addendum after 3723d74
-The post-hoc recommendation is \texttt{probe\_n}${}=500$ (about 504
-first-infer tool calls). That recommendation was not locked in
-\texttt{b4c878f} or \texttt{4679264}. The code default is already
-$500$; the savings runner used $8$ (\S\ref{sec:threats}).
+The one full-MATCH in-scope miss is VCF field-dependence at fault rate
+$p = 0.01$
+% source: pipeline/results/probe_eval.md vcf F4, p=0.01, probe_n=50
+and probe size
+$50$.
+% source: pipeline/results/probe_eval.md
+No live record fell in that draw, the key was not widened, and a later input with changed identifiers disagreed.
+That cell remains under the audit.
+The audit adds two FASTA field-dependence misses and one subset miss, because full MATCH no longer runs, and it recovers
+$12$
+% source: pipeline/results/probe_eval_audit.md audit-only catch 12
+cells the probes missed.
+False refusals on the ship controls are
+$0/20$.
+% source: pipeline/results/probe_eval_audit.md
 
-\paragraph{HMMER stock screen (no cache, no speedup claim).}
-Exclusive-node stock $t=a+b\cdot n$ on BW25113 ($N=4{,}192$),
-HMMER 3.4, Pfam-A 38.2, \texttt{--cpu 32}. Both modes ADVANCE the
-locked rule. \texttt{paper\_uses}${}={}$\texttt{hmmsearch} (first
-mode that passes; if both, hmmsearch).
-% source: pipeline/results/headline_screen.json commit 81e1aae
-%   hmmscan ceiling=81.092; hmmsearch ceiling=4.725; paper_uses=hmmsearch
-K-12 miss fraction $m=0.0019$ is a best case, not a diverse-collection
-claim.
-% source: pipeline/results/kprot_overlap.json commit 7e82f1f
-%   cited from headline_screen.md / headline_screen.json m field
+If a fault hits each record independently with probability $p$, a probe of $n$ records misses it with probability $(1-p)^{n}$.
+At $p = 0.01$ and $n = 50$ that probability is
+$0.6050$.
+% source: PROJECTED closed form (1-0.01)^50 = 0.6050060671375364
+The measured miss at that cell is consistent with the formula.
+It is not a guarantee of zero unsafe-ship.
+F6-env is undetectable by these probes and is a limitation.
 
-\subsection{Predictions (not measurements)}
+\subsection{RQ2: Record-side savings}
+\label{sec:rq2}
 
-The Part~2 model applies the screen fit to recurrence curves with
-$N$ locked at the screen proteome $4{,}192$, not per-genome
-$N_i$. Numbers in this subsection are \textbf{predictions}.
+The pre-registered primary is hmmsearch on two proteome collections, A (diverse \textit{E.\ coli},
+$30$
+% source: pipeline/results/savings_summary.json jobs A n_genomes=30, n_complete=30
+genomes) and B (O157:H7,
+$40$
+% source: pipeline/results/savings_summary.json jobs B n_genomes=40, n_complete=40
+genomes), on exclusive \texttt{epyc-7542} nodes.
+Jobs
+$12739228$
+% source: pipeline/results/savings_20261006/A_hmmsearch.json host.slurm_job_id
+and
+$12739230$
+% source: pipeline/results/savings_20261006/B_hmmsearch.json host.slurm_job_id
+finished with no MATCH, audit, or stop failures.
+An earlier A/hmmsearch run stopped at cached MATCH on genome
+$5$
+% source: pipeline/results/savings_failed_20260928/STOP.json
+and is not a speedup.
+Probe cost in the queued jobs is the singleton schedule, twelve calls at \texttt{probe\_n}${}=8$,
+\[
+P = 1595.447\,\mathrm{s}.
+\]
+% source: pipeline/results/savings_summary.json probe.P_s = 1595.4474956459528; sizes [8,8,8,8,1,1,1,1,1,1,1,1]
+
+Stock wall was measured at six positions per collection.
+Every other genome's stock wall in the locked total is the screen fit $a + b N_i$, with
+$a = 132.558\,\mathrm{s}$
+% source: pipeline/results/headline_screen.json hmmsearch a_s=132.55764028895294; also savings_summary.json fit.a
+and
+$b = 0.11890\,\mathrm{s}/\mathrm{record}$.
+% source: pipeline/results/headline_screen.json hmmsearch b_s_per_record=0.11889530446294444
+The locked rule flags a point when $|{\mathrm{predicted}}-\mathrm{measured}|/\mathrm{measured} > 0.10$.
+The flag fired at all
+$12$
+% source: pipeline/results/savings_summary.md fit-error lists, six genomes in each of A and B
+sampled genomes.
+On A the measured walls are
+$384.227\,\mathrm{s}$
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 5 stock_wall_s=384.2266291019041
+to
+$526.950\,\mathrm{s}$,
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 1 stock_wall_s=526.9502419009805
+against fitted values
+$618.958\,\mathrm{s}$
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 2 stock_predicted_s=618.9583308468586
+to
+$740.945\,\mathrm{s}$.
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 1 stock_predicted_s=740.9449132258396
+Relative error runs from
+$0.351$
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 2 stock_pred_rel_error=0.3510653617567179
+to
+$0.772$.
+% source: pipeline/results/savings_20261006/A_hmmsearch.json position 10 stock_pred_rel_error=0.7723552184365543
+On B, measured walls are
+$399.806\,\mathrm{s}$
+% source: pipeline/results/savings_20261006/B_hmmsearch.json position 40 stock_wall_s=399.805808005156
+to
+$506.925\,\mathrm{s}$,
+% source: pipeline/results/savings_20261006/B_hmmsearch.json position 1 stock_wall_s=506.9247997889761
+relative error
+$0.457$
+% source: pipeline/results/savings_20261006/B_hmmsearch.json position 2 stock_pred_rel_error=0.4570367279830513
+to
+$0.807$.
+% source: pipeline/results/savings_20261006/B_hmmsearch.json position 40 stock_pred_rel_error=0.8065729310661807
+The fit over-predicts stock time.
+Imputing the unsampled genomes with that fit inflates cumulative stock wall, and therefore inflates speedup.
+The fit is not replaced.
+The locked numbers stand, and the correction is printed beside them.
+
+The correction was computed after seeing the flag.
+It is post-hoc.
+Let $r$ be the sum of sampled measured stock walls divided by the sum of sampled fitted stock walls.
+Sampled stock stays measured.
+Each unsampled stock wall is multiplied by $r$.
+Cached wall and $P$ stay as in the locked analyzer.
+The assumption is that the sampled ratio represents the unsampled genomes.
+That assumption is not a measurement of those genomes.
+$r$ is
+$0.6277$
+% source: pipeline/results/savings_sensitivity.json collections.A.measured_over_predicted_ratio=0.627662232339967
+on A and
+$0.6053$
+% source: pipeline/results/savings_sensitivity.json collections.B.measured_over_predicted_ratio=0.6052815600933489
+on B.
+A fully measured stock series, one wall per genome, is specified and not in the results directory, so it is
+\pending{per-genome stock completion}.
 
 \begin{table}[t]
-\caption{Predicted later-genome speedup from
-$t=a+b\cdot n$ and median miss fraction $m(k)$ over 20 orderings.
-Not a timed result.}
-\label{tab:pred}
-\centering
+\caption{Cumulative hmmsearch wall speedup.
+Locked: sampled stock measured, other genomes $a+b N_i$.
+Corrected: post-hoc, unsampled stock scaled by $r$.
+``With $P$'' adds the singleton probe once.}
+\label{tab:savings}
 \small
-\begin{tabular}{@{}llrrr@{}}
+\begin{tabular}{@{}llrr@{}}
 \toprule
-Collection & Mode & $k{=}10$ & $k{=}30$ & $k{=}39$ \\
+& & No $P$ & With $P$ \\
 \midrule
-A (diverse \emph{E.\ coli}) & hmmscan
-  & $2.96\times$ & $4.10\times$ & $4.87\times$ \\
-A & hmmsearch (primary)
-  & $2.12\times$ & $2.52\times$ & $2.73\times$ \\
-B (O157:H7) & hmmscan
-  & $36.7\times$ & $59.8\times$ & $50.7\times$ \\
-B & hmmsearch (primary)
-  & $4.47\times$ & $4.65\times$ & $4.60\times$ \\
+A & Locked & 2.740 & 2.233 \\
+% source: pipeline/results/savings_summary.json A cum_speedup_wall=2.740193934015858 cum_speedup_wall_with_P=2.23308564806322
+A & Corrected & 1.856 & 1.513 \\
+% source: pipeline/results/savings_sensitivity.json A cum_speedup_wall=1.8561541144638773 cum_speedup_wall_with_P=1.5126488173514772
+B & Locked & 6.847 & 4.900 \\
+% source: pipeline/results/savings_summary.json B cum_speedup_wall=6.846592216443059 cum_speedup_wall_with_P=4.900397318731101
+B & Corrected & 4.404 & 3.152 \\
+% source: pipeline/results/savings_sensitivity.json B cum_speedup_wall=4.4038095881881 cum_speedup_wall_with_P=3.1519938702250814
 \bottomrule
 \end{tabular}
 \end{table}
-% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea
-%   A hmmscan k=10/30/39: 2.9561, 4.0967, 4.8676
-%   A hmmsearch k=10/30/39: 2.1195, 2.5213, 2.7340
-%   B hmmscan k=10/30/39: 36.6610, 59.7812, 50.7171
-%   B hmmsearch k=10/30/39: 4.4732, 4.6483, 4.5973
-% SAVINGS_PROTOCOL quotes A hmmscan 2.96x/4.10x and B 36.7x/50.7x;
-%   hmmsearch ``startup-capped (le 4.8x even at K-12 m; on A ~2.1-2.5x
-%   at k=10 and 30)''.
 
-Cumulative predicted wall on the locked savings workloads (30
-genomes of A, 40 of B; $N=4{,}192$ stand-in): A/hmmscan cached
-$31{,}288$~s vs stock $91{,}865$~s (predicted cum.\ $2.94\times$);
-A/hmmsearch predicted cum.\ $2.11\times$. A $3\times$ claim on
-hmmsearch from this experiment is not licensed by the model on
-collection A.
-% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea
-%   savings_budget.A.hmmscan cached_wall_s=31287.6 stock_full_s=91865.1 cum_speedup=2.936
-%   savings_budget.A.hmmsearch cum_speedup=2.111
-% protocol: pipeline/docs/SAVINGS_PROTOCOL.md
+Table~\ref{tab:savings} is the paper pair.
+The pre-registered prediction at a stand-in $N = 4192$, before these walls, was
+$2.111\times$
+% source: pipeline/results/savings_summary.json A predicted_part2_cum_speedup=2.111277644648017
+(A, no $P$) and
+$4.077\times$
+% source: pipeline/results/savings_summary.json B predicted_part2_cum_speedup=4.076971858042789
+(B, no $P$), or
+$1.792\times$
+% source: pipeline/results/savings_summary.json A predicted_singleton_8_cum_speedup=1.7923308058746414
+and
+$3.242\times$
+% source: pipeline/results/savings_summary.json B predicted_singleton_8_cum_speedup=3.241549003659075
+with the singleton probe.
+Corrected A lies below both of those predictions.
+Corrected B without $P$ lies above the no-probe prediction; corrected B with $P$ lies below the with-probe prediction.
+The protocol's locked comparison is the imputed total.
+Both columns are reported because the imputation's error is measured.
+Figure~\ref{fig:savings} plots only measured stock walls, paired with the cached wall at the same genomes, and the four cumulative ratios.
 
-\subsection{Not yet measured}
-\label{sec:todo}
+\begin{figure*}[t]
+\centering
+\input{figures/fig3_savings.tex}
+\Description{Left: measured stock wall and cached wall at the six sampled genomes of collections A and B. Right: cumulative wall speedup, locked and post-hoc corrected, with and without probe cost.}
+\caption{Record-side hmmsearch savings.
+Left: stock wall only where it was measured (six genomes per collection), with the cached wall at those genomes.
+Unsampled stock is omitted because the locked total imputes it.
+Right: cumulative wall speedup.
+Corrected bars are post-hoc (\S\ref{sec:rq2}).}
+\label{fig:savings}
+\end{figure*}
 
-\begin{itemize}
-  \item \textbf{HMMER accumulated savings.}
-    Sequential stock-vs-cached wall and CPU over collections A and B,
-    both modes, MATCH plus Dune-style audit (pre-registered).
-    \TODO{jobs pending; no savings result JSON on this branch.}
-  \item \textbf{Running baselines.} The tool's own cache (eggNOG
-    \texttt{-m cache} on the HMMER instance; SnpEff has none at
-    record grain); Riker; ProcessCache; INCR on the same
-    argv. \TODO{comparison not run.}
-  \item \textbf{Linux F6-file and \texttt{snpEff.config}
-    namespace.} F6-file is covered by probe-time tracing on Linux,
-    not unhandled. The Mac audit JSON is
-    \texttt{trace\_status=unavailable}. This session:
-    \texttt{docker info} failed (daemon not running);
-    \texttt{scripts/run\_f6\_trace\_linux.py} was not run.
-    \TODO{Linux catch / unsafe-ship / namespace-on-edit still unmeasured.}
-  \item \textbf{VEP.} Protocol locked; binary and cache not on
-    disk. \TODO{}
-\end{itemize}
+\subsection{RQ3: Reference-side fitter}
+\label{sec:rq3}
 
-\section{Threats to Validity}
-\label{sec:threats}
+T1 asks the fitter to recover the hmmscan \texttt{--cut\_ga} contract with no HMMER normalizer in the code, on the historical R2p and R3c halves
+($2{,}435$ and $2{,}436$ entries,
+% source: pipeline/results/reference_kill_r2p.json models_halves [2435, 2436]; models_full=4871
+$Z = 4871$).
+% source: pipeline/results/reference_kill_r2p.json models_full=4871
+T1 passes.
+Both argv bundles ship.
+Tblout columns
+$4$ and $7$
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals and r2p/r3c column members
+and domtblout columns
+$6$ and $12$
+% source: pipeline/results/reference_fitter_t1.json r3c.domtblout members entry_count
+are entry count.
+Domtblout column
+$11$
+% source: pipeline/results/reference_fitter_t1.json r3c.domtblout.11 member per_key_row_count count_table=tblout
+is per-key row count of the tblout table.
+Every other numeric column is identity.
 
-\paragraph{Savings jobs used \texttt{probe\_n}${=}8$.}
-The HMMER savings runner hard-codes \texttt{PROBE\_N = 8}, while
-probe-eval (post-hoc) recommends $500$ to reach $0/56$ in-scope
-unsafe-ship. A collection result, when it lands, is evidence under
-the smaller probe, not under the recommended size.
-% source: pipeline/scripts/run_hmmer_savings.py (PROBE_N = 8)
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0 (0/56 at probe_n=500)
-% protocol: pipeline/docs/SAVINGS_PROTOCOL.md, pipeline/docs/HEADLINE_SCREEN.md
-%   headline_screen.md: ``both subset-invariant, k = 8''
+On R2p the primary partition left entry count and total entry length tied on columns 4 and 7
+($578/578$ rows each).
+% source: pipeline/results/reference_fitter_t1.json tie_break n=578; also reference_kill_r2p.json hits_full=578
+The length partition kept entry count and dropped total length (Figure~\ref{fig:residuals}).
+Column 4's maximum absolute residual is
+$6.658\times 10^{-7}$
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.entry_count.max_abs_residual=6.65754174650969e-07
+under entry count
+($578/578$ consistent)
+% source: pipeline/results/reference_fitter_t1.json n_consistent=578
+and
+$2.403\times 10^{-5}$
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.total_entry_length.max_abs_residual=2.4029899858449707e-05
+under total length
+($17/578$).
+% source: pipeline/results/reference_fitter_t1.json n_consistent=17
+Column 7's maxima are
+$0.004008$
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.7.entry_count.max_abs_residual=0.004008486175745979
+($578/578$)
+% source: pipeline/results/reference_fitter_t1.json n_consistent=578
+and
+$1.402$
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.7.total_entry_length.max_abs_residual=1.401697018993092
+($19/578$).
+% source: pipeline/results/reference_fitter_t1.json n_consistent=19
 
-\paragraph{Whitespace-normalized MATCH for tables.}
-HMMER \texttt{tblout} is not byte-identical across equivalent runs
-(column padding, right-aligned numbers). The paper claims token
-identity (\texttt{split()}), order MATCH for \texttt{hmmscan
---cut\_ga} and multiset MATCH for \texttt{hmmsearch} with fixed
-$Z$. A reviewer who expects \texttt{cmp} will call this a weaker
-oracle. It is the declared oracle, not a silent switch after a
-mismatch.
-% source: pipeline/results/inference_fasta_reuse.json commit 7eeb40e
-% protocol: pipeline/docs/SAVINGS_PROTOCOL.md (MATCH table)
+\begin{figure}[t]
+\centering
+\input{figures/fig4_residuals.tex}
+\Description{Log-scale bars of the maximum absolute residual on tblout columns 4 and 7. Entry count is far below total entry length, and only entry count fits every row.}
+\caption{T1 tie-break on R2p tblout.
+Maximum absolute residual after rescaling.
+Entry count fits every row.
+Total entry length does not.
+Source: \texttt{reference\_fitter\_t1.json}.}
+\label{fig:residuals}
+\end{figure}
 
-\paragraph{F6-env.}
-A tool that reads \texttt{ACTS\_PROBE\_EVAL\_ENV} (or any
-environment variable not in argv) is undetectable by construction.
-All 32 F6-env cells unsafe-ship. This is a limitation of
-argv-named-input namespaces, not a probe bug.
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0
-% protocol: pipeline/docs/PROBE_EVAL_PROTOCOL.md, pipeline/docs/CACHE_KEY_PROTOCOL.md
+One row shows why the two factors separate.
+On column 4 the worst entry-count row prints
+\texttt{1e-05}
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.entry_count.worst.part_printed
+on the part and
+\texttt{1.4e-05}
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.entry_count.worst.whole_printed
+on the whole, at factor
+$1.33342$.
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.entry_count.worst.phi = 1.333424582534903
+The absolute residual is the column maximum,
+$6.658\times 10^{-7}$,
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.entry_count.max_abs_residual = 6.65754174650969e-07
+inside~\eqref{eq:consistent}.
+The worst total-length row on the same column prints
+\texttt{3.7e-05}
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.total_entry_length.worst.part_printed
+against
+\texttt{5e-05}
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.total_entry_length.worst.whole_printed
+at factor
+$2.00081$,
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.total_entry_length.worst.phi = 2.0008081042824246
+residual
+$2.403\times 10^{-5}$,
+% source: pipeline/results/reference_fitter_t1.json tie_break_residuals.r2p.tblout.4.total_entry_length.max_abs_residual = 2.4029899858449707e-05
+which fails the predicate.
+The primary halves had nearly equal entry counts and nearly equal total length, so both size measures fitted until the length-unbalanced partition pulled the factors apart.
+Skipping the tie-break would have left those two columns unassigned, and the argv would have refused.
 
-\paragraph{Tracing only on Linux.}
-Probe-time \texttt{strace} is how F6-file (a hidden config next to
-the input) enters the namespace. That is coverage, not a hole in
-the method. The committed audit run is macOS:
-\texttt{trace\_status=unavailable}, F6-file $32/32$ unsafe-ship.
-Linux F6-file plus a \texttt{snpEff.config} check is not yet
-measured (\texttt{docker info} failed 2026-09-27).
-% source: pipeline/results/probe_eval_audit.json commit c1ddad0
-%   f6_note; rows show trace_status unavailable
-%   no results/f6_trace_linux.json this session
+R3c did not tie, so the tie-break did not run.
+On the primary partition, entry count is consistent on
+$528/528$
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals tblout columns 4 and 7, n=528 n_consistent=528
+tblout rows and
+$511/511$
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout columns 6 and 12; reference_kill_r3c.json n_lines=511
+domain rows of the full-sequence and i-Evalue columns.
+Total length is
+$436/528$,
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals tblout.4.total_entry_length n_consistent=436 n=528
+$449/528$,
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals tblout.7.total_entry_length n_consistent=449
+$424/511$,
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout.6.total_entry_length n_consistent=424 n=511
+and
+$435/511$
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout.12.total_entry_length n_consistent=435
+on those four columns.
+Domtblout column 11 fits only per-key row count of tblout
+($511/511$);
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout.11 per_key_row_count:tblout n_consistent=511
+entry count is
+$119/511$
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout.11.entry_count n_consistent=119
+and total length is
+$104/511$.
+% source: pipeline/results/reference_fitter_t1.json r3c primary_residuals domtblout.11.total_entry_length n_consistent=104
+The earlier domain check that called c-Evalue not reusable is superseded by this assignment: the normalizer is the merged per-sequence row count, which is why the rescale runs after the merge.
+The kill-test files that predate the fitter already showed the property the fitter had to find.
+R2p:
+$1{,}156/1{,}156$
+% source: pipeline/results/reference_kill_r2p.json evalue_consistent_within_print=1156 evalue_tokens=1156; check2_unnormalized_mismatches=0; check1_hitset_equal true
+E-values consistent with entry count and
+$0$
+% source: pipeline/results/reference_kill_r2p.json check2_unnormalized_mismatches=0
+unnormalized mismatches, hit sets equal at
+$578$
+% source: pipeline/results/reference_kill_r2p.json hits_full=578 hits_union=578
+hits.
+R3c:
+$511/511$
+% source: pipeline/results/reference_kill_r3c.json consistent.full_seq_E, i_Evalue, and c_Evalue all 511; check2_unnormalized_mismatches=0
+on full-sequence E, i-Evalue, and c-Evalue, with equal domain sets.
+Those files did not compare total entry length and did not run the tie-break.
+T1 is the comparison.
 
-\paragraph{Mac versus exclusive-node timing.}
-SnpEff Mac $1.29\times$ broke its idle precondition and is not the
-claim. The reference is the exclusive Linux alternating run
-($1.1668\times$). HMMER screen $a$/$b$ were fit on a different
-exclusive node (\texttt{b22-16}) than the SnpEff run
-(\texttt{b22-02}); both are EPYC 7542. Savings jobs, when they
-run, interleave stock and cached on one exclusive node to avoid
-that confound. Do not mix Mac wall times with Linux speedups.
-% source: pipeline/results/snpeff_alternating.json commit 81d472d (Mac, withdrawn headline)
-% source: pipeline/results/snpeff_alternating_carc.json commit 81d472d (reference)
-% source: pipeline/results/headline_screen.json commit 81e1aae (HMMER a, b)
+T2 is the negative control: the same inputs without \texttt{--cut\_ga}.
+The union has
+$1{,}085$
+% source: pipeline/results/reference_kill_r2n.json hits_union=1085
+hits and the full run
+$1{,}082$,
+% source: pipeline/results/reference_kill_r2n.json hits_full=1082
+with
+$3$
+% source: pipeline/results/reference_kill_r2n.json hits_only_in_union=3
+hits only in the union, so the row-key sets differ.
+The fitter refuses.
+The recorded reason is that tblout column
+$16$
+% source: pipeline/results/reference_fitter_t2.json r2n.reason
+matches no normalizer, and the primary key sets are unequal.
+No reuse.
+A separate
+$400$-model
+% source: pipeline/results/reference_kill_r2.json models_full=400
+run is underpowered relative to R2p and is not this control.
 
-\paragraph{\texttt{hmmscan} is a declared post-hoc deviation.}
-\texttt{HEADLINE\_SCREEN.md} locked \texttt{paper\_uses =
-hmmsearch} if both modes ADVANCE. Both did. The Part~2 model then
-showed hmmsearch is startup-capped on collection A, while hmmscan
-scales with recurrence. \textbf{Both modes are run.} hmmsearch
-stays the pre-registered primary. hmmscan is a post-hoc selection,
-justified by that model and by the official EBI
-\texttt{pfam\_scan.pl} (retrieved 2026-09-27; \texttt{PfamScan.pm}
-sets the binary to \texttt{hmmscan} and default \texttt{--cut\_ga}).
-A $3\times$ sentence, if it appears, is licensed only for the mode
-the measured totals support, and hmmscan $3\times$ on A would be
-post-hoc.
-% protocol: pipeline/docs/SAVINGS_PROTOCOL.md (Deviation from HEADLINE_SCREEN.md)
-% PREDICTION source: pipeline/results/hmmer_predicted_speedup.json commit f3c0fea (pfam_scan block)
-% source: pipeline/results/headline_screen.json commit 81e1aae (paper_uses=hmmsearch)
+The synthetic fixtures are not HMMER-shaped.
+They use the \texttt{entryline} format, a column printed to six decimal places and deliberately named \texttt{evalue}, seed
+$20261006$,
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 seed
+and the pinned shuffle above.
+Table~\ref{tab:t3} is the oracle written before the fitter ran.
+The outcome addendum records every row as passed: A, B, and C ship the member in the table, and D and E refuse.
+A fitter that skips the tie-break and guesses entry count fails B.
+A fitter that hard-codes the column name \texttt{evalue} fails B the same way.
+There is no separate results JSON for these fixtures; the record is that outcome addendum.
+The GeStore baseline refuses law A, which is the synthetic form of a merge that will not rescale.
 
-\paragraph{Other threats (brief).}
-Probe-eval tools are small Python faults, not SnpEff/HMMER with a
-injected bug. Directory fingerprints hash metadata, not contents.
-\texttt{save()} is last-writer-wins. VEP is absent. Collection C
-is not in the savings run. Synthetic overlap on chr22 CEU is not a
-clinical cohort.
+\begin{table}[t]
+\caption{Pre-registered synthetic oracle.
+The outcome addendum records each required decision as passed.
+No HMMER binary is involved.}
+\label{tab:t3}
+\small
+\begin{tabular}{@{}clp{0.42\columnwidth}@{}}
+\toprule
+& Law & Required decision \\
+\midrule
+A & $|R|\cdot p$ & ship \texttt{entry\_count}, only after the tie-break \\
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 fixture A
+B & $L(R)\cdot p$ & ship \texttt{total\_entry\_length} \\
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 fixture B
+C & per-key count $\cdot p$ & ship \texttt{per\_key\_row\_count} \\
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 fixture C
+D & hash rank in this run & REFUSE \\
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 fixture D
+E & one row per entry pair & REFUSE, key sets differ \\
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md T3 fixture E
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{RQ4: Pfam 38.1 to 38.2}
+\label{sec:rq4}
+
+The pre-registered timing runs five proteomes, three repeats, stock against reference-incremental, on one exclusive node, with ref-merge as the match relation and the count-churn prediction as the gate.
+The churn file records model-file accounting only and sets timed to false.
+The speedup is
+\pending{measured 38.1$\to$38.2 re-annotation}.
+Table~\ref{tab:breakeven} stays a projection.
+
+\subsection{RQ5: Generality}
+\label{sec:rq5}
+
+The second tool, pre-registered before any DIAMOND run, is DIAMOND blastp at a pinned release, compared with iSeqSearch's hand-built rescale.
+MMseqs2 is excluded in that protocol because its prefilter couples the hit set to the rest of the database.
+The comparison is
+\pending{DIAMOND versus iSeqSearch}.
+Smoke artifacts under \texttt{results/reference\_diamond\_smoke/} are not that comparison and are not reported as a speedup or as a fitter decision.
+
+\subsection{RQ6: Baselines}
+\label{sec:rq6}
+
+Riker, ProcessCache, and INCR key a command or a byte chunk.
+On a reference release their expected behaviour is a full rerun, because the reference bytes changed.
+A GeStore-style path that refuses every non-identity numeric column is implemented and refuses the synthetic entry-count law.
+A timed comparison on the Pfam release pair, and a head-to-head with INCR on the record-side proteomes, are
+\pending{Riker, ProcessCache, INCR, and GeStore-style timing}.
+
+\subsection{RQ7: A boundary the fitter refuses}
+\label{sec:rq7}
+
+T2 is the pre-registered refusal on hmmscan without \texttt{--cut\_ga}, and the synthetic rank and pairwise fixtures refuse.
+A boundary on an unmodified CLI outside that argv pair, where decomposition fails or no closed-family member fits and the result is still a refusal rather than a silent rescale, is
+\pending{boundary refusal beyond T2 and the synthetic fixtures}.
+
+\section{Related work}
+\label{sec:rw}
+
+\begin{table*}[t]
+\caption{Prior-art placement against the two inferences.
+(a) is decomposition over reference entries.
+(b) is a fitted numeric normalizer.
+``Hand-built'' means the partition or the formula is written for that tool.}
+\label{tab:prior}
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+System & (a) & (b) & Code \\
+\midrule
+iBLAST~\cite{dash2021iblast} & BLAST, append-shaped & derived E-value formula & hand-built \\
+iSeqSearch~\cite{yoo2025iseqsearch} & m8 producers & Spouge rescale, copied & hand-built \\
+GeStore~\cite{pedersen2014gestore} & inside a plugin & BLAST plugin only & hand-built \\
+KumQuat~\cite{shen2022kumquat} & input stream & none & automatic, input-side \\
+Caruca~\cite{lamprou2025caruca} & line statelessness & none & stops before the aggregator \\
+INCR~\cite{xie2026incr} & annotated byte chunks & none & command grain by default \\
+This fitter & probed partition, or refuse & closed family, or refuse & no per-tool branch \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\paragraph{Hand-built reference incrementality.}
+iBLAST wraps NCBI BLAST+, builds a delta database from filenames and sizes, and applies a Karlin--Altschul recount or a Spouge rescale $E_{\mathrm{total}} = E_{\mathrm{part}} \cdot n_{\mathrm{total}} / n_{\mathrm{part}}$ that the authors derive~\cite{dash2021iblast}.
+``Automated'' means the user does not type the formula.
+The partition is append-shaped growth of one tool, not a probed partition of an arbitrary reference.
+iSeqSearch adopts that rescale for tools that emit m8, including MMseqs2 and DIAMOND, and judges E-values by correlation~\cite{yoo2025iseqsearch}.
+It does not discover which column is normalized.
+GeStore runs unmodified binaries, including BLASTP and HMMER, by rewriting inputs and merging outputs through an administrator-written plugin~\cite{pedersen2014gestore}.
+The BLAST plugin corrects E-values following Turcu, Nestorov, and Foster (DaWaK 2008), as GeStore describes that repair; that PDF was not obtained in the prior-art pass.
+The HMMER plugin only generates input files, and GeStore's Pfam accounting marks every update significant.
+MMseqs2's \texttt{clusterupdate} mode is hand-built incremental clustering, not a search-result cache~\cite{steinegger2017mmseqs2}.
+InterProScan's precalculated lookup and eggNOG-mapper's cache mode key the query sequence, not a diff of the member database~\cite{cantalapiedra2021eggnog,eggnog-cache-wiki}.
+The HMMER daemon keeps one database resident for many queries~\cite{eddy2011hmmer}.
+UniRule recomputes annotations from expert-written rules~\cite{macdougall2020unirule}.
+Ensembl VEP's cache is a per-release data dump~\cite{mclaren2016vep}.
+None of these infer both decomposition over reference entries and a fitted column normalizer.
+
+\paragraph{Input-side decomposition, and a polynomial search.}
+KumQuat synthesizes a combiner for an unmodified command so that $f(x_1 \mathbin{+\kern-0.2em+} x_2) = g(f(x_1), f(x_2))$, in a language of concat, merge, rerun, stitch, add, first, and second~\cite{shen2022kumquat}.
+That is decomposition of an input stream.
+There is no reference argument and no multiplicative database-size term.
+Caruca classifies opaque commands as stateless, pure, or side-effectful and leaves aggregator synthesis to that line of work~\cite{lamprou2025caruca}.
+INCR memoizes command effects; finer chunks require crowdsourced annotations and are keyed by bytes~\cite{xie2026incr}.
+Zhang et al.\ infer polynomial metamorphic relations for numeric library functions by particle-swarm search~\cite{zhang2014mri}.
+The relation is between two scalar outputs on affinely related inputs.
+It does not partition a reference or identify a coefficient with a count of entries.
+MapReduce and divide-and-conquer synthesis start from examples or a semantic model of a program, not from an opaque CLI and a statistical column~\cite{smith2016mapreduce,farzan2017divide}.
+Incremental view maintenance and self-adjusting computation maintain a computation the user has already written down~\cite{blakeley1986views,acar2003selective}.
+
+\paragraph{Record side, which is occupied up to the copy split.}
+Whole-command caches are the systems above plus workflow task hashes~\cite{ditommaso2017nextflow,molder2021snakemake,cromwell-call-cache}.
+IncPy and Mandala memoize inside a language runtime~\cite{guo2011incpy,makelov2024mandala}.
+GREYONE infers which input bytes affect which values by mutation~\cite{gan2020greyone}.
+DUST learns which URL components do not change page content~\cite{baryossef2007dust}.
+Param Miner finds request inputs that change a response, including inputs reflected verbatim~\cite{kettle2018paramminer}.
+A cache keyed by any of those dependency sets still contains copied fields.
+The secondary claim is narrower: transport fields are removed from the key and spliced back.
+On VCF the dependency recall is
+$0.4383$
+% source: pipeline/results/copy_aware_key.json vcf.dep_recall=0.4383145256278734
+and the copy-aware recall is
+$0.7874$,
+% source: pipeline/results/copy_aware_key.json vcf.copy_aware_recall=0.7873969375736161
+ratio
+$0.5567$,
+% source: pipeline/results/copy_aware_key.json vcf.ratio=0.5566627258908967
+equal to the byte-key ratio because SnpEff copies every field.
+On GenBank the dependency recall is
+$0$
+% source: pipeline/results/copy_aware_key.json genbank_hmmscan.curve dep_recall=0 at k=1..6
+at every $k$ while copy-aware recall at the last $k$ is
+$0.4053$.
+% source: pipeline/results/copy_aware_key.json genbank_hmmscan.curve k=6 copy_aware_recall=0.4052907915993538
+The RefSeq control, where accessions are shared, stays at ratio
+$1$.
+% source: pipeline/results/copy_aware_key.json refseq_hmmscan_control.curve ratio=1 at k=1..9
+
+\paragraph{Three attacks from the prior-art pass.}
+The kill rule was fixed before the search: kill the claim if any prior system infers both (a) and (b) for unmodified black-box tools; narrow it if prior work does one of them automatically for one family, or hand-builds both for a specific tool.
+The kill branch did not fire.
+The narrow branch did.
+
+\begin{enumerate}
+  \item \textit{GeStore and iBLAST already did this, including HMMER.}
+  GeStore's HMMER plugin does not rescale, and iBLAST's formula is BLAST-specific code.
+  The defeat on disk is that pair of designs together with a fitter that has no per-tool branch.
+  T1 passes on hmmscan and the length fixture ships total entry length on a column named \texttt{evalue}.
+  A hand-coded HMMER plugin can be adjusted until T1 passes and still fail the length fixture.
+  \item \textit{KumQuat already infers decomposition for black boxes.}
+  Its equation splits the input stream, and the combiner language has no reference scale factor.
+  A merge that demands byte equality is what the no-\texttt{--cut\_ga} run rejects: the union is a strict superset of the full run
+  ($1{,}085$ vs.\ $1{,}082$ hits).
+  % source: pipeline/results/reference_kill_r2n.json hits_union=1085 hits_full=1082
+  That combiner would refuse or rerun.
+  It would not fit entry count or per-key row count.
+  \item \textit{The ASE 2014 search already infers the normalizer, because a rescale is a polynomial.}
+  That search does not partition a reference, choose a table column, or tie the coefficient to a measured size of the reference.
+  The experiment that would make the attack real is fitting the pre-registered family on partition probes of an unmodified CLI.
+  T1 is that experiment for one argv.
+  It is not a result in the ASE paper.
+\end{enumerate}
+
+The sentence the verdict leaves standing is the one in the introduction.
+It does not say that incremental search is new, that E-value correction is new, or that black-box decomposition of an input stream is new.
+
+\section{Limitations}
+\label{sec:limits}
+
+F6 is any input the tool reads outside argv: environment variables, unnamed paths, configuration beside the input.
+The macOS probe run marks both F6-env and F6-file as unsafe-ship
+($32/32$ each).
+% source: pipeline/results/probe_eval_audit.md
+Linux file tracing is the stated cover for F6-file and has no committed measurement here.
+F6-env remains outside the guarantee.
+The error bound~\eqref{eq:bound} is a printed-precision relation under a re-print assumption.
+It is not bit identity of the tool's internal score, and a column whose law is outside the four members refuses rather than approximating.
+Parsers are per format.
+A reference format with no parser refuses; the fitter does not invent a length.
+All wall-clock numbers in the committed timing files used above were taken on CARC exclusive nodes of class \texttt{epyc-7542}, except the probe-evaluation counts, which are a macOS measurement of decisions rather than of speed.
+A speedup for the 38.1$\to$38.2 release is not among those numbers.
 
 \section{Conclusion}
-\label{sec:conc}
 
-ACTS infers records and field roles of an unmodified VCF or
-FASTA-to-table CLI and memos those records across runs. The
-literature already occupies whole-command incrementalization,
-hand-built per-record caches, MR theory, Dune-style audits, and
-vCache-style $\delta$ bounds. The remaining object is automatic
-record-level reuse inside one invocation, persisted across runs,
-with a measured---not theorized---unsafe-ship rate.
-
-SnpEff shows the method can MATCH and still be a bad headline
-($1.17\times$, startup-capped). Probe-eval shows the deployed
-audit mode misses $4/224$ in-scope cells on this suite
-(canonical: excl.\ F6-env and F6-file; $36/256$ if F6-file is
-left in on this Mac), and systematically misses env-hidden
-inputs (F6-env). F6-file is covered by Linux tracing and is not
-yet measured. Whether FASTA$\to$table
-reuse on recurring proteomes pays for the wrapper is the
-measurement that is still out:
-\TODO{HMMER savings, baselines, comparison}.
+One fitter, with no per-tool code, accepts or refuses a reference-side contract for an unmodified CLI: decomposition over entries, and a normalizer from a four-member family, with a length tie-break.
+On \texttt{hmmscan --cut\_ga} it ships entry count and per-key row count; without that flag it refuses.
+Record-side reuse with a copy-aware key is the secondary result, and its locked speedups are reported next to the post-hoc correction the fit error requires.
+The release-level speedup, the second search tool, and the whole-command baselines remain to be measured.
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
