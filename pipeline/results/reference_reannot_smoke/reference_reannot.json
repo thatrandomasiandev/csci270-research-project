@@ -1,0 +1,432 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "addendum": "2026-10-06 \u2014 timed 38.1\u219238.2 re-annotation",
+  "predictions": {
+    "addendum": "2026-10-06 \u2014 timed 38.1\u219238.2 re-annotation",
+    "a_s": 31.959641573764316,
+    "b_s_per_record": 0.7228553909794854,
+    "c_count": 0.13446605163602576,
+    "c_count_numerator": 4052,
+    "c_count_denominator": 30134,
+    "c_length": 0.12632494507332145,
+    "length_new": 4754065,
+    "length_unchanged": 4153508,
+    "length_changed_and_new": 600557,
+    "primary_at_n_4192": 6.968662141244353,
+    "secondary_at_n_4192": 7.383156276518736,
+    "primary_mean": 6.99924607283027,
+    "secondary_mean": 7.417839942599294,
+    "confirm_tolerance": 0.25,
+    "repeats": 1,
+    "old_sha256": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+    "new_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+    "genomes": [
+      {
+        "position": 1,
+        "index": 9,
+        "accession": "GCF_002853805.1",
+        "n_proteins": 200,
+        "primary_speedup": 7.048181565546971,
+        "secondary_speedup": 7.4733276423250805,
+        "smoke_truncated_from": 5117
+      },
+      {
+        "position": 2,
+        "index": 5,
+        "accession": "GCF_002090355.1",
+        "n_proteins": 200,
+        "primary_speedup": 6.9579639131287525,
+        "secondary_speedup": 7.371035883891939,
+        "smoke_truncated_from": 4091
+      }
+    ]
+  },
+  "whole_invocation_cache": "not run; a new reference is a miss",
+  "runs": [
+    {
+      "genome_position": 1,
+      "accession": "GCF_002853805.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "stock",
+      "timed": true,
+      "wall_s": 0.9372821720317006,
+      "cpu_s": 1.0376349999999999,
+      "decision": "stock",
+      "load": [
+        14.25,
+        15.48,
+        18.29
+      ]
+    },
+    {
+      "genome_position": 1,
+      "accession": "GCF_002853805.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "acts",
+      "timed": true,
+      "wall_s": 0.38243556790985167,
+      "cpu_s": 0.0,
+      "decision": "SHIP",
+      "reason": "decomposition and normalizers fitted",
+      "phases": {
+        "parse_s": 0.0903842719271779,
+        "diff_s": 0.01110541494563222,
+        "cache_load_s": 0.023037021979689598,
+        "merge_rescale_s": 0.0003500899765640497,
+        "cache_store_s": 0.25092771113850176,
+        "render_s": 0.0010479451157152653,
+        "total_s": 0.3807238209992647,
+        "probe_wall_s": 0.0
+      },
+      "probe_phases": {},
+      "n_stable": 80,
+      "n_fresh": 0,
+      "n_partial": 0,
+      "n_entries": 80,
+      "length_fresh": 0,
+      "length_entries": 11479,
+      "reused_rows": 17,
+      "fallback_full_scan": null,
+      "match": {
+        "ok": true,
+        "why": "",
+        "tables": [
+          {
+            "table": "targets",
+            "ok": true,
+            "why": "",
+            "n_stock": 10,
+            "n_acts": 10
+          },
+          {
+            "table": "domains",
+            "ok": true,
+            "why": "",
+            "n_stock": 7,
+            "n_acts": 7
+          }
+        ]
+      },
+      "load": [
+        14.25,
+        15.48,
+        18.29
+      ]
+    },
+    {
+      "genome_position": 1,
+      "accession": "GCF_002853805.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "gestore",
+      "timed": true,
+      "wall_s": 1.1853360119275749,
+      "cpu_s": 1.1766520000000007,
+      "decision": "REFUSE",
+      "reason": "targets: column 4 depends on the reference; baseline does not infer a normalizer, so the row cannot be reused",
+      "phases": {
+        "parse_s": 0.0897892510984093,
+        "subref_build_s": 0.013078857911750674,
+        "prep_s": 0.14458460290916264,
+        "tool_s": 0.9356136231217533,
+        "read_output_s": 0.0001341740135103464,
+        "total_s": 1.1848396069835871,
+        "probe_wall_s": 0.0
+      },
+      "probe_phases": {},
+      "n_stable": null,
+      "n_fresh": null,
+      "n_partial": null,
+      "n_entries": 80,
+      "length_fresh": null,
+      "length_entries": null,
+      "reused_rows": 0,
+      "fallback_full_scan": true,
+      "match": null,
+      "load": [
+        14.31,
+        15.47,
+        18.27
+      ],
+      "expected_decision": "REFUSE"
+    },
+    {
+      "genome_position": 2,
+      "accession": "GCF_002090355.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "stock",
+      "timed": true,
+      "wall_s": 0.978973823832348,
+      "cpu_s": 1.0776009999999978,
+      "decision": "stock",
+      "load": [
+        14.31,
+        15.47,
+        18.27
+      ]
+    },
+    {
+      "genome_position": 2,
+      "accession": "GCF_002090355.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "acts",
+      "timed": true,
+      "wall_s": 0.7298364909365773,
+      "cpu_s": 0.4320900000000023,
+      "decision": "SHIP",
+      "reason": "decomposition and normalizers fitted",
+      "phases": {
+        "parse_s": 0.08607565308921039,
+        "diff_s": 0.013149619800969958,
+        "cache_load_s": 0.018641402013599873,
+        "subref_build_s": 0.0032320842146873474,
+        "prep_s": 0.035448553040623665,
+        "tool_s": 0.29639247502200305,
+        "read_output_s": 0.0001766590867191553,
+        "merge_rescale_s": 0.0005290410481393337,
+        "cache_store_s": 0.2686164539773017,
+        "render_s": 0.0013281439896672964,
+        "total_s": 0.7285399481188506,
+        "probe_wall_s": 0.0
+      },
+      "probe_phases": {},
+      "n_stable": 60,
+      "n_fresh": 20,
+      "n_partial": 0,
+      "n_entries": 80,
+      "length_fresh": 2538,
+      "length_entries": 11479,
+      "reused_rows": 27,
+      "fallback_full_scan": null,
+      "match": {
+        "ok": true,
+        "why": "",
+        "tables": [
+          {
+            "table": "targets",
+            "ok": true,
+            "why": "",
+            "n_stock": 20,
+            "n_acts": 20
+          },
+          {
+            "table": "domains",
+            "ok": true,
+            "why": "",
+            "n_stock": 7,
+            "n_acts": 7
+          }
+        ]
+      },
+      "load": [
+        14.31,
+        15.47,
+        18.27
+      ]
+    },
+    {
+      "genome_position": 2,
+      "accession": "GCF_002090355.1",
+      "n_proteins": 200,
+      "repeat": 1,
+      "arm": "gestore",
+      "timed": true,
+      "wall_s": 1.2323909159749746,
+      "cpu_s": 1.2279869999999988,
+      "decision": "REFUSE",
+      "reason": "targets: column 4 depends on the reference; baseline does not infer a normalizer, so the row cannot be reused",
+      "phases": {
+        "parse_s": 0.08638705289922655,
+        "subref_build_s": 0.013550595147535205,
+        "prep_s": 0.13871117308735847,
+        "tool_s": 0.9913275081198663,
+        "read_output_s": 0.00014001200906932354,
+        "total_s": 1.2318562550935894,
+        "probe_wall_s": 0.0
+      },
+      "probe_phases": {},
+      "n_stable": null,
+      "n_fresh": null,
+      "n_partial": null,
+      "n_entries": 80,
+      "length_fresh": null,
+      "length_entries": null,
+      "reused_rows": 0,
+      "fallback_full_scan": true,
+      "match": null,
+      "load": [
+        14.31,
+        15.47,
+        18.27
+      ],
+      "expected_decision": "REFUSE"
+    }
+  ],
+  "setup": {
+    "cache_fill": [
+      {
+        "accession": "GCF_002853805.1",
+        "position": 1,
+        "n_proteins": 200,
+        "wall_s": 3.8580746790394187,
+        "cpu_s": 4.147113,
+        "decision": "SHIP",
+        "probe_wall_s": 2.776142249116674,
+        "phases": {
+          "parse_s": 0.07217587600462139,
+          "diff_s": 0.00033551896922290325,
+          "cache_load_s": 5.718087777495384e-06,
+          "subref_build_s": 0.004651348106563091,
+          "prep_s": 0.11109789297915995,
+          "tool_s": 0.7258300019893795,
+          "read_output_s": 0.00012684310786426067,
+          "merge_rescale_s": 0.0002233909908682108,
+          "cache_store_s": 0.15489195194095373,
+          "render_s": 0.0005498949903994799,
+          "total_s": 3.856859466060996,
+          "probe_wall_s": 2.776142249116674
+        },
+        "timed": false
+      },
+      {
+        "accession": "GCF_002090355.1",
+        "position": 2,
+        "n_proteins": 200,
+        "wall_s": 0.8171930708922446,
+        "cpu_s": 0.5716250000000009,
+        "decision": "SHIP",
+        "probe_wall_s": 0.0,
+        "phases": {
+          "parse_s": 0.06598136201500893,
+          "diff_s": 0.008779540192335844,
+          "cache_load_s": 0.007738063810393214,
+          "subref_build_s": 0.0066278858575969934,
+          "prep_s": 0.11457509198226035,
+          "tool_s": 0.40293332608416677,
+          "read_output_s": 0.00012760795652866364,
+          "merge_rescale_s": 0.00030223606154322624,
+          "cache_store_s": 0.1950444160029292,
+          "render_s": 0.0005979880224913359,
+          "total_s": 0.8125334121286869,
+          "probe_wall_s": 0.0
+        },
+        "timed": false
+      }
+    ],
+    "press_new_s": 0.14126319997012615,
+    "probe_wall_s": 2.776142249116674,
+    "probe_phases": {
+      "subref_build_s": 0.017267940333113074,
+      "prep_s": 0.3448379123583436,
+      "tool_s": 2.404019597917795,
+      "read_output_s": 0.0006929049268364906
+    },
+    "gestore_probe": {
+      "accession": "GCF_002853805.1",
+      "wall_s": 3.3279494799207896,
+      "cpu_s": 3.5981950000000005,
+      "decision": "REFUSE",
+      "reason": "targets: column 4 depends on the reference; baseline does not infer a normalizer, so the row cannot be reused",
+      "probe_wall_s": 2.146541776135564,
+      "expected_decision": "REFUSE",
+      "timed": false
+    },
+    "preflight": {
+      "accession": "GCF_002853805.1",
+      "timed": false,
+      "stock_wall_s": 0.9457731519360095,
+      "stock_cpu_s": 1.0438349999999996,
+      "acts_wall_s": 0.6984597910195589,
+      "acts_cpu_s": 0.41042799999999957,
+      "acts_decision": "SHIP",
+      "acts_phases": {
+        "parse_s": 0.08933864394202828,
+        "diff_s": 0.008954750839620829,
+        "cache_load_s": 0.01702094916254282,
+        "subref_build_s": 0.0034608631394803524,
+        "prep_s": 0.03445701813325286,
+        "tool_s": 0.2833660771138966,
+        "read_output_s": 0.00012493599206209183,
+        "merge_rescale_s": 0.0003666449338197708,
+        "cache_store_s": 0.2542460449039936,
+        "render_s": 0.0011513789650052786,
+        "total_s": 0.6968119810335338,
+        "probe_wall_s": 0.0
+      },
+      "match": {
+        "ok": true,
+        "why": "",
+        "tables": [
+          {
+            "table": "targets",
+            "ok": true,
+            "why": "",
+            "n_stock": 10,
+            "n_acts": 10
+          },
+          {
+            "table": "domains",
+            "ok": true,
+            "why": "",
+            "n_stock": 7,
+            "n_acts": 7
+          }
+        ]
+      }
+    }
+  },
+  "stop": null,
+  "provenance": {
+    "git": "9cbd81bbdb73876ab788ed75c0e0aa532447cb76",
+    "git_dirty": false,
+    "host": "d05-30.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "versions": {},
+    "finished_utc": "2026-10-09T08:53:33.928126+00:00",
+    "cpu_model": "Intel(R) Xeon(R) Silver 4116 CPU @ 2.10GHz",
+    "slurm_job_id": "12866095",
+    "slurm_nodelist": "d05-30",
+    "hmmer": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "hmmpress": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "pfam_old_sha256": "873604a6ee17ca88895a15e8aea348dbf215d77c4c7e7312ed566eefa9a89d0b",
+    "pfam_new_sha256": "cbeb732855efcc743bf352de28554f61f64e219b9f1b3ec4504203b13d685208",
+    "pfam_old_version": "Pfam release       : 38.1\nPfam-A families    : 27481\nDate               : 2025-09\nBased on UniProtKB : 2025_03",
+    "pfam_new_version": "",
+    "pfam_old_path": "/tmp/reannot_smoke_12866095/old_subset.hmm",
+    "pfam_new_path": "/tmp/reannot_smoke_12866095/new_subset.hmm"
+  },
+  "smoke": true,
+  "measurement": false,
+  "smoke_label": "not a measurement",
+  "smoke_plan": {
+    "label": "not a measurement",
+    "measurement": false,
+    "proteins": 200,
+    "genomes": 2,
+    "repeats": 1,
+    "subset": {
+      "n_unchanged": 60,
+      "n_changed": 20,
+      "n_old": 60,
+      "n_preferred": 60
+    },
+    "full_old": "/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/data/pfam38.1/Pfam-A.hmm.gz",
+    "full_new": "/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz",
+    "accessions": [
+      "GCF_002853805.1",
+      "GCF_002090355.1"
+    ],
+    "verified_full_sha256": {
+      "old": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+      "new": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab"
+    }
+  },
+  "confirmed": null,
+  "confirmed_note": "smoke is not a measurement; the reannotation gate is not applied",
+  "complete": true
+}

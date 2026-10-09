@@ -1,0 +1,134 @@
+{
+  "protocol": "pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md",
+  "addendum": "2026-10-06 \u2014 timed 38.1\u219238.2 re-annotation",
+  "predictions": {
+    "addendum": "2026-10-06 \u2014 timed 38.1\u219238.2 re-annotation",
+    "a_s": 31.959641573764316,
+    "b_s_per_record": 0.7228553909794854,
+    "c_count": 0.13446605163602576,
+    "c_count_numerator": 4052,
+    "c_count_denominator": 30134,
+    "c_length": 0.12632494507332145,
+    "length_new": 4754065,
+    "length_unchanged": 4153508,
+    "length_changed_and_new": 600557,
+    "primary_at_n_4192": 6.968662141244353,
+    "secondary_at_n_4192": 7.383156276518736,
+    "primary_mean": 6.99924607283027,
+    "secondary_mean": 7.417839942599294,
+    "confirm_tolerance": 0.25,
+    "repeats": 3,
+    "old_sha256": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+    "new_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+    "genomes": [
+      {
+        "position": 1,
+        "index": 9,
+        "accession": "GCF_002853805.1",
+        "n_proteins": 5117,
+        "primary_speedup": 7.048181565546971,
+        "secondary_speedup": 7.4733276423250805
+      },
+      {
+        "position": 2,
+        "index": 5,
+        "accession": "GCF_002090355.1",
+        "n_proteins": 4091,
+        "primary_speedup": 6.9579639131287525,
+        "secondary_speedup": 7.371035883891939
+      },
+      {
+        "position": 3,
+        "index": 2,
+        "accession": "GCF_001650275.1",
+        "n_proteins": 5176,
+        "primary_speedup": 7.052346971503922,
+        "secondary_speedup": 7.478054963227952
+      },
+      {
+        "position": 4,
+        "index": 75,
+        "accession": "GCF_052050745.1",
+        "n_proteins": 4197,
+        "primary_speedup": 6.969179352246338,
+        "secondary_speedup": 7.383742308241676
+      },
+      {
+        "position": 5,
+        "index": 29,
+        "accession": "GCF_016659085.1",
+        "n_proteins": 4191,
+        "primary_speedup": 6.968558561725364,
+        "secondary_speedup": 7.3830389153098235
+      }
+    ]
+  },
+  "whole_invocation_cache": "not run; a new reference is a miss",
+  "runs": [],
+  "setup": {
+    "cache_fill": [
+      {
+        "accession": "GCF_002853805.1",
+        "position": 1,
+        "n_proteins": 5117,
+        "wall_s": 53738.4260711621,
+        "cpu_s": 4598.1557,
+        "decision": "SHIP",
+        "probe_wall_s": 332.40365300280973,
+        "phases": {
+          "parse_s": 22.49004952912219,
+          "diff_s": 0.08317426196299493,
+          "cache_load_s": 0.0002603130415081978,
+          "subref_build_s": 1.3201463280711323,
+          "prep_s": 33.894816782092676,
+          "tool_s": 2197.194533935981,
+          "read_output_s": 0.001689322991296649,
+          "merge_rescale_s": 0.2080295269843191,
+          "cache_store_s": 51126.26736750291,
+          "render_s": 0.05886834114789963,
+          "total_s": 53735.76261182106,
+          "probe_wall_s": 332.40365300280973
+        },
+        "timed": false
+      }
+    ],
+    "press_new_s": 37.754937449935824,
+    "probe_wall_s": 332.40365300280973,
+    "probe_phases": {
+      "subref_build_s": 2.637092261807993,
+      "prep_s": 68.23239915864542,
+      "tool_s": 261.42726491577923,
+      "read_output_s": 0.0004156581126153469
+    },
+    "gestore_probe": {
+      "accession": "GCF_002853805.1",
+      "wall_s": 4311.850220039021,
+      "cpu_s": 6968.563633,
+      "decision": "REFUSE",
+      "reason": "targets: column 4 depends on the reference; baseline does not infer a normalizer, so the row cannot be reused",
+      "probe_wall_s": 358.9966236378532,
+      "expected_decision": "REFUSE",
+      "timed": false
+    }
+  },
+  "stop": null,
+  "provenance": {
+    "git": "b46adccc9f7b0d8408089f9409328f53cb60e154",
+    "git_dirty": false,
+    "host": "b22-07.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "finished_utc": "2026-10-08T10:27:55.281891+00:00",
+    "cpu_model": "AMD EPYC 7542 32-Core Processor",
+    "slurm_job_id": "12760029",
+    "slurm_nodelist": "b22-07",
+    "hmmer": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "hmmpress": "HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "pfam_old_sha256": "d3d30c8e6801bfedecf783408ecc98916f8f1dda8974c6e51036fcbdd765f591",
+    "pfam_new_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+    "pfam_old_version": "Pfam release       : 38.1\nPfam-A families    : 27481\nDate               : 2025-09\nBased on UniProtKB : 2025_03",
+    "pfam_new_version": "Pfam release       : 38.2\nPfam-A families    : 30134\nDate               : 2026-01\nBased on UniProtKB : 2025_03",
+    "pfam_old_path": "/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/data/pfam38.1/Pfam-A.hmm.gz",
+    "pfam_new_path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz"
+  }
+}
