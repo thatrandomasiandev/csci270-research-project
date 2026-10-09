@@ -32,6 +32,8 @@ OUT="${ROOT}/results/reference_diamond_smoke"
 WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_diamond_smoke_${SLURM_JOB_ID:-local}"
 mkdir -p "${OUT}" "${WORK}"
 
+# The venv is built on this compute node. The transfer host is not used.
+bash "${ROOT}/pipeline/scripts/create_diamond_venv.sh" "${ROOT}"
 PY="${ROOT}/venv/bin/python"
 if [[ ! -x "${PY}" ]]; then
   echo "STOP_INPUTS: pinned venv is missing at ${ROOT}/venv" >&2
