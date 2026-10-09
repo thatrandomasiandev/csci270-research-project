@@ -777,3 +777,133 @@ The text above was committed at `465edf5` before `sbatch`. Submitted
 `squeue --start -A biyik_1165` gave no start time for either job. Another
 pending job on the account, 12850670, was estimated at
 2026-10-11T04:28:41. The node type was not changed.
+
+---
+
+## Addendum 2026-10-09 — hmmscan outcome (post-hoc mode)
+
+Locked sections above are unchanged. This records jobs 12755547 and
+12755548 after they finished. The analyzer is still the copy locked at
+`00f9403`; it was not edited to produce these numbers. hmmscan stays
+post-hoc. It is not promoted to `paper_uses`.
+
+### Locked analyzer
+
+Inputs, with the two hmmsearch dumps from the 2026-10-08 addendum:
+`results/savings_20261006/A_hmmscan.json` (job 12755547, `b22-10`,
+exclusive `epyc-7542`, `sacct` elapsed 12:25:49, exit 0, ended
+2026-10-08T09:39:25) and `results/savings_20261006/B_hmmscan.json`
+(job 12755548, `b22-14`, exclusive `epyc-7542`, `sacct` elapsed
+07:30:47, exit 0, ended 2026-10-08T04:54:50). Both ran git
+`9c9f51acc596d2a0e85a77cf6b1e31c5909ac4c7` from
+`/project2/biyik_1165/jjt_373/csci270-star/pipeline_layout_20261006`,
+Python 3.11.9, and HMMER 3.4 built on the node with gcc 13.3.0 (SSE).
+Logs: `results/savings_20261006/sav_A_scan-12755547.{out,err}` and
+`sav_B_scan-12755548.{out,err}`.
+
+The A log prints `contract gate: match agrees; whitespace-normalized
+MATCH` and `preflight: 0 mismatches on 5 stock file(s)`. The B log
+prints the same contract-gate line and `preflight: no stock outputs
+available`. Both logs end with `SAVINGS_DONE`.
+
+`scripts/analyze_savings.py --jobs` on all four dumps
+(`A_hmmsearch`, `A_hmmscan`, `B_hmmsearch`, `B_hmmscan`) wrote
+`results/savings_summary.json`, `results/savings_summary.md`, and
+figures 25–28. The run found no MATCH, audit, or STOP failures. A is
+30/30 and B is 40/40 in both modes.
+
+Kill rule, printed without *P*: cached wall must be < 50% of stock wall
+at the end of A / hmmscan. It does not trip. The analyzer printed
+`cached/stock = 0.280`. The summary JSON field is
+`0.2802743995990811`.
+
+Locked cumulative wall speedup, sampled stock measured and every other
+genome imputed as `a + b·N_i`. Printed by the analyzer:
+
+| Collection | Mode | Without P | With singleton_8 P |
+|------------|------|----------:|-------------------:|
+| A | hmmsearch (primary) | 2.740× | 2.233× |
+| A | hmmscan (post-hoc) | 3.568× | 3.516× |
+| B | hmmsearch (primary) | 6.847× | 4.900× |
+| B | hmmscan (post-hoc) | 19.468× | 18.429× |
+
+The analyzer printed 3× sentences for hmmscan (3.57× on A, 19.47× on B)
+and for hmmsearch (6.85× on B). Those sentences describe the locked
+imputed totals. They are not the paper number. hmmscan is not
+`paper_uses`.
+
+### Fit-error flag
+
+The locked >10% flag fired for hmmscan. The fit is not replaced.
+
+A, printed genomes: 2 (0.410), 5 (0.392), 10 (0.417), 20 (0.394), 30
+(0.140). Genome 1 is under the threshold
+(`stock_pred_rel_error` 0.005842). B, all six sampled genomes: 1
+(0.120), 2 (0.101), 5 (0.312), 10 (0.330), 20 (0.298), 40 (0.326).
+
+### POST-HOC sensitivity
+
+Computed after seeing the fit-error flag, by
+`scripts/savings_sensitivity.py`, which reads only the two hmmscan run
+JSONs. Output: `results/savings_sensitivity_hmmscan.json`. This is not
+the locked analysis. The formula is the same one used for hmmsearch.
+
+Formula: `r = sum(sampled measured stock) / sum(sampled fitted stock)`.
+Sampled stock stays measured. Unsampled stock becomes `r` times its
+fitted value. Cached wall and singleton_8 `P` stay as in the locked
+analyzer. Assumption: the sampled ratio represents the unsampled
+genomes.
+
+| Collection | r | Without P | With P |
+|------------|--:|----------:|-------:|
+| A | 0.7927799008702291 | 2.948637587003392× | 2.9054086230922684× |
+| B | 0.8072987014937392 | 16.181558210274485× | 15.318572090685732× |
+
+Rounded as 2.95× (2.91× with P) and 16.18× (15.32× with P).
+
+The paper's headline will use measured stock wherever a measurement
+exists. It will not use the locked imputation unless this correction is
+printed beside it. Neither number promotes hmmscan to primary.
+
+### Pre-registered stock completion
+
+Written before the hmmscan stock-completion submit. Report the result
+whatever it is. No threshold is applied after the run.
+
+Measure stock hmmscan on every genome in
+`results/hmmscan_stock_tasks.json` (58 tasks: A positions that were
+not sampled, then B; indexes 0–57). Same stock argv as
+`scripts/run_hmmer_savings.py`: `--cpu 32 --cut_ga --noali --tblout`.
+Same HMMER 3.4 build method (gcc 13.3.0, SSE, prefix install on the
+node) and the same Pfam-A file the savings jobs staged from
+`pipeline/data/hmmer/` on the data tree. Same node class: exclusive
+`epyc-7542`, partition `main`, account `biyik_1165`, 32 CPUs, 64 GB.
+
+One genome per array task. A build job on the same node class installs
+HMMER and presses Pfam once; the array starts `afterok` that job so
+the 58 tasks do not each compile. Code and `ACTS_GIT_HASH_FILE` live
+on `/project2/biyik_1165/jjt_373/csci270-star/acts-hmmscan-stock-20261009/`,
+not in the savings checkout and not in `results/savings/GIT_HASH`.
+Each task writes `results/hmmscan_stock/{collection}_{position}.json`
+with `kind = hmmscan_stock_completion`. A finished successful JSON is
+not overwritten.
+
+Requested time: build `01:00:00`, each genome `02:00:00` (117
+node-hours requested). The per-genome limit is 1.5× the maximum fitted
+unsampled wall (4022.121 s → 6033 s) snapped up to 2 h. MEASURED
+sampled stock wall in the two run JSONs is 2119.441–3709.141 s (A)
+and 2697.764–3333.578 s (B). PROJECTED unsampled wall, using this
+addendum's post-hoc `r` times each unsampled fitted wall, is 18.243 h
+(A) + 27.995 h (B). The expected measurement is about 46 node-hours
+plus one build. The pad is the slack. Do not change the node type in the
+queue without a later addendum.
+
+Both `sbatch` commands pass `--nice=10000`, so this build and this
+array yield queue priority to other work on the account, including
+the reference-side jobs.
+
+When all 58 JSONs exist, `scripts/analyze_savings_measured.py` on the
+two hmmscan dumps replaces each imputed stock wall with the new
+measurement and reports cumulative speedup with and without
+singleton_8 `P`. That fully measured pair is the hmmscan number. It
+is still post-hoc. It is not the paper's primary.

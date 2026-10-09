@@ -1,0 +1,412 @@
+{
+  "kind": "hmmscan_stock_tasks",
+  "n_tasks": 58,
+  "tasks": [
+    {
+      "array_index": 0,
+      "collection": "A",
+      "position": 3,
+      "accession": "GCF_001650275.1",
+      "input_path": "data/recurrence/A/GCF_001650275.1_protein.faa.gz"
+    },
+    {
+      "array_index": 1,
+      "collection": "A",
+      "position": 4,
+      "accession": "GCF_052050745.1",
+      "input_path": "data/recurrence/A/GCF_052050745.1_protein.faa.gz"
+    },
+    {
+      "array_index": 2,
+      "collection": "A",
+      "position": 6,
+      "accession": "GCF_041316645.1",
+      "input_path": "data/recurrence/A/GCF_041316645.1_protein.faa.gz"
+    },
+    {
+      "array_index": 3,
+      "collection": "A",
+      "position": 7,
+      "accession": "GCF_013201215.1",
+      "input_path": "data/recurrence/A/GCF_013201215.1_protein.faa.gz"
+    },
+    {
+      "array_index": 4,
+      "collection": "A",
+      "position": 8,
+      "accession": "GCF_054510725.1",
+      "input_path": "data/recurrence/A/GCF_054510725.1_protein.faa.gz"
+    },
+    {
+      "array_index": 5,
+      "collection": "A",
+      "position": 9,
+      "accession": "GCF_002058765.1",
+      "input_path": "data/recurrence/A/GCF_002058765.1_protein.faa.gz"
+    },
+    {
+      "array_index": 6,
+      "collection": "A",
+      "position": 11,
+      "accession": "GCF_025254305.1",
+      "input_path": "data/recurrence/A/GCF_025254305.1_protein.faa.gz"
+    },
+    {
+      "array_index": 7,
+      "collection": "A",
+      "position": 12,
+      "accession": "GCF_041235215.1",
+      "input_path": "data/recurrence/A/GCF_041235215.1_protein.faa.gz"
+    },
+    {
+      "array_index": 8,
+      "collection": "A",
+      "position": 13,
+      "accession": "GCF_016904475.1",
+      "input_path": "data/recurrence/A/GCF_016904475.1_protein.faa.gz"
+    },
+    {
+      "array_index": 9,
+      "collection": "A",
+      "position": 14,
+      "accession": "GCF_015571655.1",
+      "input_path": "data/recurrence/A/GCF_015571655.1_protein.faa.gz"
+    },
+    {
+      "array_index": 10,
+      "collection": "A",
+      "position": 15,
+      "accession": "GCF_005389605.2",
+      "input_path": "data/recurrence/A/GCF_005389605.2_protein.faa.gz"
+    },
+    {
+      "array_index": 11,
+      "collection": "A",
+      "position": 16,
+      "accession": "GCF_030515405.1",
+      "input_path": "data/recurrence/A/GCF_030515405.1_protein.faa.gz"
+    },
+    {
+      "array_index": 12,
+      "collection": "A",
+      "position": 17,
+      "accession": "GCF_002180275.1",
+      "input_path": "data/recurrence/A/GCF_002180275.1_protein.faa.gz"
+    },
+    {
+      "array_index": 13,
+      "collection": "A",
+      "position": 18,
+      "accession": "GCF_020905655.1",
+      "input_path": "data/recurrence/A/GCF_020905655.1_protein.faa.gz"
+    },
+    {
+      "array_index": 14,
+      "collection": "A",
+      "position": 19,
+      "accession": "GCF_048568975.1",
+      "input_path": "data/recurrence/A/GCF_048568975.1_protein.faa.gz"
+    },
+    {
+      "array_index": 15,
+      "collection": "A",
+      "position": 21,
+      "accession": "GCF_013343615.1",
+      "input_path": "data/recurrence/A/GCF_013343615.1_protein.faa.gz"
+    },
+    {
+      "array_index": 16,
+      "collection": "A",
+      "position": 22,
+      "accession": "GCF_049949635.1",
+      "input_path": "data/recurrence/A/GCF_049949635.1_protein.faa.gz"
+    },
+    {
+      "array_index": 17,
+      "collection": "A",
+      "position": 23,
+      "accession": "GCF_052882435.1",
+      "input_path": "data/recurrence/A/GCF_052882435.1_protein.faa.gz"
+    },
+    {
+      "array_index": 18,
+      "collection": "A",
+      "position": 24,
+      "accession": "GCF_036884535.1",
+      "input_path": "data/recurrence/A/GCF_036884535.1_protein.faa.gz"
+    },
+    {
+      "array_index": 19,
+      "collection": "A",
+      "position": 25,
+      "accession": "GCF_012934475.1",
+      "input_path": "data/recurrence/A/GCF_012934475.1_protein.faa.gz"
+    },
+    {
+      "array_index": 20,
+      "collection": "A",
+      "position": 26,
+      "accession": "GCF_013315695.1",
+      "input_path": "data/recurrence/A/GCF_013315695.1_protein.faa.gz"
+    },
+    {
+      "array_index": 21,
+      "collection": "A",
+      "position": 27,
+      "accession": "GCF_004377995.2",
+      "input_path": "data/recurrence/A/GCF_004377995.2_protein.faa.gz"
+    },
+    {
+      "array_index": 22,
+      "collection": "A",
+      "position": 28,
+      "accession": "GCF_046107165.1",
+      "input_path": "data/recurrence/A/GCF_046107165.1_protein.faa.gz"
+    },
+    {
+      "array_index": 23,
+      "collection": "A",
+      "position": 29,
+      "accession": "GCF_022846215.1",
+      "input_path": "data/recurrence/A/GCF_022846215.1_protein.faa.gz"
+    },
+    {
+      "array_index": 24,
+      "collection": "B",
+      "position": 3,
+      "accession": "GCF_000730345.1",
+      "input_path": "data/recurrence/B/GCF_000730345.1_protein.faa.gz"
+    },
+    {
+      "array_index": 25,
+      "collection": "B",
+      "position": 4,
+      "accession": "GCF_013167335.1",
+      "input_path": "data/recurrence/B/GCF_013167335.1_protein.faa.gz"
+    },
+    {
+      "array_index": 26,
+      "collection": "B",
+      "position": 6,
+      "accession": "GCF_009627495.1",
+      "input_path": "data/recurrence/B/GCF_009627495.1_protein.faa.gz"
+    },
+    {
+      "array_index": 27,
+      "collection": "B",
+      "position": 7,
+      "accession": "GCF_022869945.1",
+      "input_path": "data/recurrence/B/GCF_022869945.1_protein.faa.gz"
+    },
+    {
+      "array_index": 28,
+      "collection": "B",
+      "position": 8,
+      "accession": "GCF_001753525.1",
+      "input_path": "data/recurrence/B/GCF_001753525.1_protein.faa.gz"
+    },
+    {
+      "array_index": 29,
+      "collection": "B",
+      "position": 9,
+      "accession": "GCF_013167775.1",
+      "input_path": "data/recurrence/B/GCF_013167775.1_protein.faa.gz"
+    },
+    {
+      "array_index": 30,
+      "collection": "B",
+      "position": 11,
+      "accession": "GCF_013168035.1",
+      "input_path": "data/recurrence/B/GCF_013168035.1_protein.faa.gz"
+    },
+    {
+      "array_index": 31,
+      "collection": "B",
+      "position": 12,
+      "accession": "GCF_020423165.1",
+      "input_path": "data/recurrence/B/GCF_020423165.1_protein.faa.gz"
+    },
+    {
+      "array_index": 32,
+      "collection": "B",
+      "position": 13,
+      "accession": "GCF_017164815.1",
+      "input_path": "data/recurrence/B/GCF_017164815.1_protein.faa.gz"
+    },
+    {
+      "array_index": 33,
+      "collection": "B",
+      "position": 14,
+      "accession": "GCF_017164915.1",
+      "input_path": "data/recurrence/B/GCF_017164915.1_protein.faa.gz"
+    },
+    {
+      "array_index": 34,
+      "collection": "B",
+      "position": 15,
+      "accession": "GCF_046272065.1",
+      "input_path": "data/recurrence/B/GCF_046272065.1_protein.faa.gz"
+    },
+    {
+      "array_index": 35,
+      "collection": "B",
+      "position": 16,
+      "accession": "GCF_013167675.1",
+      "input_path": "data/recurrence/B/GCF_013167675.1_protein.faa.gz"
+    },
+    {
+      "array_index": 36,
+      "collection": "B",
+      "position": 17,
+      "accession": "GCF_017165115.1",
+      "input_path": "data/recurrence/B/GCF_017165115.1_protein.faa.gz"
+    },
+    {
+      "array_index": 37,
+      "collection": "B",
+      "position": 18,
+      "accession": "GCF_012915625.1",
+      "input_path": "data/recurrence/B/GCF_012915625.1_protein.faa.gz"
+    },
+    {
+      "array_index": 38,
+      "collection": "B",
+      "position": 19,
+      "accession": "GCF_021184105.1",
+      "input_path": "data/recurrence/B/GCF_021184105.1_protein.faa.gz"
+    },
+    {
+      "array_index": 39,
+      "collection": "B",
+      "position": 21,
+      "accession": "GCF_013167415.1",
+      "input_path": "data/recurrence/B/GCF_013167415.1_protein.faa.gz"
+    },
+    {
+      "array_index": 40,
+      "collection": "B",
+      "position": 22,
+      "accession": "GCF_001753465.1",
+      "input_path": "data/recurrence/B/GCF_001753465.1_protein.faa.gz"
+    },
+    {
+      "array_index": 41,
+      "collection": "B",
+      "position": 23,
+      "accession": "GCF_021166395.1",
+      "input_path": "data/recurrence/B/GCF_021166395.1_protein.faa.gz"
+    },
+    {
+      "array_index": 42,
+      "collection": "B",
+      "position": 24,
+      "accession": "GCF_001695515.1",
+      "input_path": "data/recurrence/B/GCF_001695515.1_protein.faa.gz"
+    },
+    {
+      "array_index": 43,
+      "collection": "B",
+      "position": 25,
+      "accession": "GCF_013167455.1",
+      "input_path": "data/recurrence/B/GCF_013167455.1_protein.faa.gz"
+    },
+    {
+      "array_index": 44,
+      "collection": "B",
+      "position": 26,
+      "accession": "GCF_017164935.1",
+      "input_path": "data/recurrence/B/GCF_017164935.1_protein.faa.gz"
+    },
+    {
+      "array_index": 45,
+      "collection": "B",
+      "position": 27,
+      "accession": "GCF_009650175.1",
+      "input_path": "data/recurrence/B/GCF_009650175.1_protein.faa.gz"
+    },
+    {
+      "array_index": 46,
+      "collection": "B",
+      "position": 28,
+      "accession": "GCF_013167655.1",
+      "input_path": "data/recurrence/B/GCF_013167655.1_protein.faa.gz"
+    },
+    {
+      "array_index": 47,
+      "collection": "B",
+      "position": 29,
+      "accession": "GCF_001753565.1",
+      "input_path": "data/recurrence/B/GCF_001753565.1_protein.faa.gz"
+    },
+    {
+      "array_index": 48,
+      "collection": "B",
+      "position": 30,
+      "accession": "GCF_013167395.1",
+      "input_path": "data/recurrence/B/GCF_013167395.1_protein.faa.gz"
+    },
+    {
+      "array_index": 49,
+      "collection": "B",
+      "position": 31,
+      "accession": "GCF_004118915.1",
+      "input_path": "data/recurrence/B/GCF_004118915.1_protein.faa.gz"
+    },
+    {
+      "array_index": 50,
+      "collection": "B",
+      "position": 32,
+      "accession": "GCF_013168095.1",
+      "input_path": "data/recurrence/B/GCF_013168095.1_protein.faa.gz"
+    },
+    {
+      "array_index": 51,
+      "collection": "B",
+      "position": 33,
+      "accession": "GCF_001558995.2",
+      "input_path": "data/recurrence/B/GCF_001558995.2_protein.faa.gz"
+    },
+    {
+      "array_index": 52,
+      "collection": "B",
+      "position": 34,
+      "accession": "GCF_017165375.1",
+      "input_path": "data/recurrence/B/GCF_017165375.1_protein.faa.gz"
+    },
+    {
+      "array_index": 53,
+      "collection": "B",
+      "position": 35,
+      "accession": "GCF_000021125.1",
+      "input_path": "data/recurrence/B/GCF_000021125.1_protein.faa.gz"
+    },
+    {
+      "array_index": 54,
+      "collection": "B",
+      "position": 36,
+      "accession": "GCF_013343595.1",
+      "input_path": "data/recurrence/B/GCF_013343595.1_protein.faa.gz"
+    },
+    {
+      "array_index": 55,
+      "collection": "B",
+      "position": 37,
+      "accession": "GCF_017165055.1",
+      "input_path": "data/recurrence/B/GCF_017165055.1_protein.faa.gz"
+    },
+    {
+      "array_index": 56,
+      "collection": "B",
+      "position": 38,
+      "accession": "GCF_017165415.1",
+      "input_path": "data/recurrence/B/GCF_017165415.1_protein.faa.gz"
+    },
+    {
+      "array_index": 57,
+      "collection": "B",
+      "position": 39,
+      "accession": "GCF_013167535.1",
+      "input_path": "data/recurrence/B/GCF_013167535.1_protein.faa.gz"
+    }
+  ]
+}

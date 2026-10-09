@@ -1,0 +1,104 @@
+#!/bin/bash
+# Pre-registered hmmscan stock completion (SAVINGS_PROTOCOL.md, 2026-10-09).
+# ACTS_STOCK_PHASE=build prepares one HMMER 3.4 install and pressed Pfam.
+# ACTS_STOCK_PHASE=measure times the manifest genome at SLURM_ARRAY_TASK_ID.
+# Post-hoc mode. Not paper_uses. Report the wall time whatever it is.
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=64G
+
+set -euo pipefail
+
+: "${ACTS_CODE_ROOT:?}"
+: "${ACTS_DATA_ROOT:?}"
+: "${ACTS_STOCK_PHASE:?}"
+
+CODE="${ACTS_CODE_ROOT}"
+DATA="${ACTS_DATA_ROOT}"
+INSTALL="${CODE}/hmmer-3.4"
+PFAM="${CODE}/pfam/Pfam-A.hmm"
+SCRATCH="${SLURM_TMPDIR:-${TMPDIR:-/tmp}}/acts_scan_stock_${SLURM_JOB_ID}_${SLURM_ARRAY_TASK_ID:-build}"
+
+mkdir -p "${CODE}/results/hmmscan_stock/logs" "${SCRATCH}"
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+export ACTS_GIT_HASH_FILE="${ACTS_GIT_HASH_FILE:-${CODE}/GIT_HASH}"
+unset ACTS_GIT_HASH || true
+export PYTHONPATH="${CODE}"
+
+echo "=== host / cpu ==="
+hostname
+date -Is
+nproc
+python3 --version
+lscpu || true
+echo "PHASE=${ACTS_STOCK_PHASE}"
+echo "CODE=${CODE}"
+echo "DATA=${DATA}"
+echo "GIT_HASH_FILE=${ACTS_GIT_HASH_FILE}"
+echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-epyc-7542} NODELIST=${SLURM_NODELIST:-}"
+
+build_hmmer() {
+  if [[ -x "${INSTALL}/bin/hmmscan" && -x "${INSTALL}/bin/hmmpress" ]]; then
+    return 0
+  fi
+  curl -L --fail -o "${SCRATCH}/hmmer-3.4.tar.gz" \
+    http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+  tar -C "${SCRATCH}" -xf "${SCRATCH}/hmmer-3.4.tar.gz"
+  (
+    cd "${SCRATCH}/hmmer-3.4"
+    ./configure --prefix="${INSTALL}"
+    make -j"${SLURM_CPUS_PER_TASK:-32}"
+    make install
+  )
+}
+
+stage_pfam() {
+  mkdir -p "${CODE}/pfam"
+  if [[ ! -s "${PFAM}" ]]; then
+    if [[ -f "${DATA}/data/hmmer/Pfam-A.hmm.gz" ]]; then
+      gzip -dc "${DATA}/data/hmmer/Pfam-A.hmm.gz" > "${PFAM}.partial"
+    elif [[ -f "${DATA}/data/hmmer/Pfam-A.hmm" ]]; then
+      cp "${DATA}/data/hmmer/Pfam-A.hmm" "${PFAM}.partial"
+    else
+      echo "Pfam-A.hmm is not on the data tree" >&2
+      exit 1
+    fi
+    mv "${PFAM}.partial" "${PFAM}"
+  fi
+  "${INSTALL}/bin/hmmpress" -f "${PFAM}"
+}
+
+if [[ "${ACTS_STOCK_PHASE}" == "build" ]]; then
+  build_hmmer
+  stage_pfam
+  "${INSTALL}/bin/hmmscan" -h | head -n 3
+  echo STOCK_BUILD_DONE
+  exit 0
+fi
+
+if [[ "${ACTS_STOCK_PHASE}" != "measure" ]]; then
+  echo "unknown ACTS_STOCK_PHASE=${ACTS_STOCK_PHASE}" >&2
+  exit 1
+fi
+
+test -x "${INSTALL}/bin/hmmscan"
+test -s "${PFAM}.h3m"
+python3 "${CODE}/scripts/run_hmmscan_stock.py" \
+  --manifest "${CODE}/hmmscan_stock_tasks.json" \
+  --data-root "${DATA}" \
+  --hmm "${PFAM}" \
+  --hmmscan "${INSTALL}/bin/hmmscan" \
+  --hmmpress "${INSTALL}/bin/hmmpress" \
+  --out-dir "${CODE}/results/hmmscan_stock" \
+  --work "${SCRATCH}" \
+  --cpu "${SLURM_CPUS_PER_TASK:-32}"
+echo STOCK_MEASURE_DONE

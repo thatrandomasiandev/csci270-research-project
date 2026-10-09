@@ -1,0 +1,51 @@
+{
+  "label": "POST-HOC sensitivity; not the pre-registered analysis. hmmscan is a post-hoc mode and is not paper_uses.",
+  "inputs": [
+    "results/savings_20261006/A_hmmscan.json",
+    "results/savings_20261006/B_hmmscan.json"
+  ],
+  "formula": "r = sum(sampled measured stock) / sum(sampled fitted stock); unsampled corrected stock_i = r * fitted stock_i; sampled stock remains measured",
+  "assumptions": [
+    "The sampled measured/predicted ratio is representative of unsampled genomes.",
+    "Cached wall and singleton_8 probe cost P are unchanged."
+  ],
+  "collections": {
+    "A": {
+      "collection": "A",
+      "n_genomes": 30,
+      "n_sampled_stock": 6,
+      "measured_over_predicted_ratio": 0.7927799008702291,
+      "corrected_stock_wall_s": 81734.22516571818,
+      "cached_wall_s": 27719.318754524225,
+      "probe_wall_s": 412.42991452435115,
+      "cum_speedup_wall": 2.948637587003392,
+      "cum_speedup_wall_with_P": 2.9054086230922684,
+      "mode": "hmmscan",
+      "post_hoc": true
+    },
+    "B": {
+      "collection": "B",
+      "n_genomes": 40,
+      "n_sampled_stock": 6,
+      "measured_over_predicted_ratio": 0.8072987014937392,
+      "corrected_stock_wall_s": 118463.612536223,
+      "cached_wall_s": 7320.902659485815,
+      "probe_wall_s": 412.42991452435115,
+      "cum_speedup_wall": 16.181558210274485,
+      "cum_speedup_wall_with_P": 15.318572090685732,
+      "mode": "hmmscan",
+      "post_hoc": true
+    }
+  },
+  "provenance": {
+    "git": "17457a6c03c499c71362cf915116b31acf450416",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {},
+    "finished_utc": "2026-10-09T08:00:41.610719+00:00"
+  },
+  "mode": "hmmscan",
+  "post_hoc": true
+}

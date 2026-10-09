@@ -10,44 +10,72 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from acts.provenance import provenance  # noqa: E402
-from acts.savings_analysis import load_job, sensitivity  # noqa: E402
+from acts.savings_analysis import sensitivity  # noqa: E402
+from savings_job_load import load_savings_job  # noqa: E402
+
+FORMULA = (
+    "r = sum(sampled measured stock) / sum(sampled fitted stock); "
+    "unsampled corrected stock_i = r * fitted stock_i; sampled stock "
+    "remains measured"
+)
+ASSUMPTIONS = [
+    "The sampled measured/predicted ratio is representative of unsampled genomes.",
+    "Cached wall and singleton_8 probe cost P are unchanged.",
+]
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--jobs", nargs=2, required=True, type=Path)
-    parser.add_argument(
-        "--out",
-        type=Path,
-        default=ROOT / "results" / "savings_sensitivity.json",
-    )
+    parser.add_argument("--jobs", nargs="+", required=True, type=Path)
+    parser.add_argument("--out", type=Path, default=None)
     return parser.parse_args(argv)
+
+
+def default_out(mode: str) -> Path:
+    name = (
+        "savings_sensitivity.json"
+        if mode == "hmmsearch"
+        else "savings_sensitivity_hmmscan.json"
+    )
+    return ROOT / "results" / name
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
-    jobs = [load_job(path) for path in args.jobs]
-    rows = [sensitivity(job) for job in jobs]
+    jobs = [load_savings_job(path) for path in args.jobs]
+    modes = {job["mode"] for job in jobs}
+    if len(modes) != 1:
+        raise SystemExit("pass jobs from one mode; hmmscan stays a separate POST-HOC file")
+    mode = modes.pop()
+    rows = []
+    for job in jobs:
+        row = sensitivity(job)
+        if mode == "hmmscan":
+            row["mode"] = "hmmscan"
+            row["post_hoc"] = True
+        rows.append(row)
+    label = "POST-HOC sensitivity; not the pre-registered analysis"
     payload = {
-        "label": "POST-HOC sensitivity; not the pre-registered analysis",
+        "label": label,
         "inputs": [str(path) for path in args.jobs],
-        "formula": (
-            "r = sum(sampled measured stock) / sum(sampled fitted stock); "
-            "unsampled corrected stock_i = r * fitted stock_i; sampled stock "
-            "remains measured"
-        ),
-        "assumptions": [
-            "The sampled measured/predicted ratio is representative of unsampled genomes.",
-            "Cached wall and singleton_8 probe cost P are unchanged.",
-        ],
+        "formula": FORMULA,
+        "assumptions": list(ASSUMPTIONS),
         "collections": {row["collection"]: row for row in rows},
         "provenance": provenance(),
     }
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, indent=2) + "\n")
-    print(f"wrote {args.out}")
+    if mode == "hmmscan":
+        payload["label"] = (
+            label + ". hmmscan is a post-hoc mode and is not paper_uses."
+        )
+        payload["mode"] = "hmmscan"
+        payload["post_hoc"] = True
+    out = args.out or default_out(mode)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(payload, indent=2) + "\n")
+    print(f"wrote {out}")
     return 0
 
 
