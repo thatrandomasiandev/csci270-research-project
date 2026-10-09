@@ -1,0 +1,45 @@
+{
+  "label": "POST-HOC sensitivity; not the pre-registered analysis",
+  "inputs": [
+    "results/savings_20261006/A_hmmsearch.json",
+    "results/savings_20261006/B_hmmsearch.json"
+  ],
+  "formula": "r = sum(sampled measured stock) / sum(sampled fitted stock); unsampled corrected stock_i = r * fitted stock_i; sampled stock remains measured",
+  "assumptions": [
+    "The sampled measured/predicted ratio is representative of unsampled genomes.",
+    "Cached wall and singleton_8 probe cost P are unchanged."
+  ],
+  "collections": {
+    "A": {
+      "collection": "A",
+      "n_genomes": 30,
+      "n_sampled_stock": 6,
+      "measured_over_predicted_ratio": 0.627662232339967,
+      "corrected_stock_wall_s": 13040.70956235586,
+      "cached_wall_s": 7025.660994815873,
+      "probe_wall_s": 1595.4474956459528,
+      "cum_speedup_wall": 1.8561541144638773,
+      "cum_speedup_wall_with_P": 1.5126488173514772
+    },
+    "B": {
+      "collection": "B",
+      "n_genomes": 40,
+      "n_sampled_stock": 6,
+      "measured_over_predicted_ratio": 0.6052815600933489,
+      "corrected_stock_wall_s": 17691.147899191597,
+      "cached_wall_s": 4017.2372453710996,
+      "probe_wall_s": 1595.4474956459528,
+      "cum_speedup_wall": 4.4038095881881,
+      "cum_speedup_wall_with_P": 3.1519938702250814
+    }
+  },
+  "provenance": {
+    "git": "b46adccc9f7b0d8408089f9409328f53cb60e154",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {},
+    "finished_utc": "2026-10-09T06:45:06.730890+00:00"
+  }
+}

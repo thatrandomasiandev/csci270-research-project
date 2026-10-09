@@ -258,6 +258,8 @@ class PassRunTests(unittest.TestCase):
             out = td / "out"
             jobs_dir.mkdir()
             out.mkdir()
+            default_summary = PIPE / "results" / "savings_summary.json"
+            before = default_summary.read_bytes() if default_summary.is_file() else None
             jobs = _dump_jobs(
                 jobs_dir,
                 [
@@ -296,7 +298,9 @@ class PassRunTests(unittest.TestCase):
             if results_savings.is_dir():
                 leaked = list(results_savings.glob("savings_A*")) + list(results_savings.glob("savings_B*"))
                 self.assertEqual(leaked, [])
-            self.assertFalse((PIPE / "results" / "savings_summary.json").exists())
+            default_summary = PIPE / "results" / "savings_summary.json"
+            after = default_summary.read_bytes() if default_summary.is_file() else None
+            self.assertEqual(before, after)
 
     def test_pass_formulas(self) -> None:
         job = make_job("A", "hmmsearch", cached_frac=0.2, fit_err=0.0)

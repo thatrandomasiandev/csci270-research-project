@@ -659,3 +659,105 @@ or caches that 12739228 and 12739230 read. Resubmit A and B hmmscan
 with the same resources (exclusive `epyc-7542`, 22 h and 12 h). Set
 `ACTS_GIT_HASH_FILE` per job. Point preflight at the archived tblout
 directory.
+
+---
+
+## Addendum 2026-10-08 — hmmsearch outcome
+
+Locked sections above are unchanged. This records jobs 12739228 and
+12739230 after they finished. The analyzer is still the copy locked at
+`00f9403`; it was not edited to produce these numbers.
+
+### Locked analyzer
+
+Inputs: `results/savings_20261006/A_hmmsearch.json` (job 12739228,
+`b22-04`, exclusive `epyc-7542`, elapsed 03:39:04, exit 0) and
+`results/savings_20261006/B_hmmsearch.json` (job 12739230, `b22-05`,
+exclusive `epyc-7542`, elapsed 03:15:02, exit 0). Both ran git
+`5245c29a64896e14cdb8ba3b2a0e94166cb5ae38`, Python 3.11.9, and HMMER
+3.4 built on the node with gcc 13.3.0. Logs:
+`results/savings_20261006/sav_A_search-12739228.{out,err}` and
+`sav_B_search-12739230.{out,err}`.
+
+`scripts/analyze_savings.py --jobs` those two files wrote
+`results/savings_summary.json`, `results/savings_summary.md`, and
+figures 25–28. The run found no MATCH, audit, or STOP failures. A is
+30/30 and B is 40/40. The kill rule is A/hmmscan and was not evaluated;
+hmmscan dumps were not in this analysis.
+
+Locked cumulative wall speedup, sampled stock measured and every other
+genome imputed as `a + b·N_i`:
+
+| Collection | Without P | With singleton_8 P |
+|------------|----------:|-------------------:|
+| A | 2.740× | 2.233× |
+| B | 6.847× | 4.900× |
+
+The analyzer printed a 3× sentence for hmmsearch because the B total is
+6.847×. A is 2.740×. That sentence describes the locked imputed total.
+It is not the paper number.
+
+### Fit-error flag
+
+The locked >10% flag fired at every sampled genome. Measured stock wall
+was 384–527 s. `a + b·N_i` predicted 619–741 s. The flag stands. The
+fit is not replaced.
+
+### POST-HOC sensitivity
+
+Computed after seeing the fit-error flag, by
+`scripts/savings_sensitivity.py`, which reads only the two run JSONs.
+Output: `results/savings_sensitivity.json`. This is not the locked
+analysis.
+
+Formula: `r = sum(sampled measured stock) / sum(sampled fitted stock)`.
+Sampled stock stays measured. Unsampled stock becomes `r` times its
+fitted value. Cached wall and singleton_8 `P` stay as in the locked
+analyzer. Assumption: the sampled ratio represents the unsampled
+genomes.
+
+| Collection | r | Without P | With P |
+|------------|--:|----------:|-------:|
+| A | 0.627662232339967 | 1.8561541144638773× | 1.5126488173514772× |
+| B | 0.6052815600933489 | 4.4038095881881× | 3.1519938702250814× |
+
+Rounded as 1.86× (1.51× with P) and 4.40× (3.15× with P).
+
+The paper's headline will use measured stock wherever a measurement
+exists. It will not use the locked imputation unless this correction is
+printed beside it.
+
+### Pre-registered stock completion
+
+Written before the stock-completion submit. Report the result whatever
+it is.
+
+Measure stock hmmsearch on every genome in
+`results/hmmsearch_stock_tasks.json` (58 tasks: A positions that were
+not sampled, then B; indexes 0–57). Same stock argv as
+`scripts/run_hmmer_savings.py`: `--cpu 32 --noali -Z 1000000 --domZ
+1000000 --tblout`. Same HMMER 3.4 build method (gcc 13.3.0, SSE, prefix
+install on the node) and the same Pfam-A file the savings jobs staged
+from `pipeline/data/hmmer/` on the data tree. Same node class:
+exclusive `epyc-7542`, partition `main`, account `biyik_1165`, 32 CPUs,
+64 GB.
+
+One genome per array task. A build job on the same node class installs
+HMMER and presses Pfam once; the array starts `afterok` that job so
+the 58 tasks do not each compile. Code and `ACTS_GIT_HASH_FILE` live
+on `/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/`,
+not in the savings checkout and not in `results/savings/GIT_HASH`.
+Each task writes `results/hmmsearch_stock/{collection}_{position}.json`
+with `kind = hmmsearch_stock_completion`. A finished successful JSON is
+not overwritten.
+
+Requested time: build `01:00:00`, each genome `00:45:00` (44.5
+node-hours requested). The sampled measurements in the two run JSONs
+are 384–527 s, so the expected measurement is about 6–9 node-hours plus
+one build. The pad is the slack. Do not change the node type in the
+queue without a later addendum.
+
+When all 58 JSONs exist, `scripts/analyze_savings_measured.py` replaces
+each imputed stock wall with the new measurement and reports cumulative
+speedup with and without singleton_8 `P`. That fully measured pair is
+the paper number. No threshold is applied after the run.
