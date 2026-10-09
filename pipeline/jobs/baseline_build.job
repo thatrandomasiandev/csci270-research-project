@@ -193,6 +193,13 @@ if ! command -v cargo >/dev/null 2>&1; then
 fi
 cargo --version | tee "${PROBE}/cargo.version"
 rustc --version | tee -a "${PROBE}/cargo.version"
+# libseccomp.so.2 is installed; the unversioned linker name is not.
+mkdir -p "${SCRATCH}/lib"
+if [[ -e /usr/lib64/libseccomp.so.2 && ! -e "${SCRATCH}/lib/libseccomp.so" ]]; then
+  ln -s /usr/lib64/libseccomp.so.2 "${SCRATCH}/lib/libseccomp.so"
+fi
+export RUSTFLAGS="-L native=${SCRATCH}/lib ${RUSTFLAGS:-}"
+echo "RUSTFLAGS=${RUSTFLAGS}" | tee "${PROBE}/rustflags.log"
 
 clone_depth() {
   local url="$1" dest="$2"
@@ -209,11 +216,14 @@ set +e
   set -e
   clone_depth https://codeberg.org/curtsinger/riker.git "${SCRATCH}/src/riker"
   cd "${SCRATCH}/src/riker"
-  if ! command -v clang++ >/dev/null 2>&1; then
-    echo "clang++ not on PATH" >&2
-    exit 3
+  if command -v clang++ >/dev/null 2>&1; then
+    echo "compiler clang++ $(clang++ --version | head -n 1)"
+    make release -j "${SLURM_CPUS_PER_TASK:-8}"
+  else
+    echo "clang++ not on PATH. Discovery has no clang module; llvm/14.0.2 requires legacy/CentOS7."
+    echo "release objects compiled with g++ $(g++ --version | head -n 1) via make CC=gcc CXX=g++"
+    make release -j "${SLURM_CPUS_PER_TASK:-8}" CC=gcc CXX=g++
   fi
-  make release -j "${SLURM_CPUS_PER_TASK:-8}"
   bin=$(find release -type f -name rkr -perm -111 | head -n 1)
   test -n "${bin}"
   cp -a "${bin}" "${ROOT}/bin/rkr"
@@ -285,8 +295,11 @@ new = """        // HASH (commented for the protocol's mtime recompile)
 """
 if old not in text:
     raise SystemExit("mtime site not found; refusing to edit a different ProcessCache")
-if "use std::os::unix::fs::MetadataExt;" not in text:
-    text = text.replace("use std::{fs, path::PathBuf};\n", "use std::os::unix::fs::MetadataExt;\nuse std::{fs, path::PathBuf};\n", 1)
+needle = "use std::{fs, path::PathBuf};"
+if "MetadataExt" not in text:
+    if needle not in text:
+        raise SystemExit("ProcessCache import site not found")
+    text = text.replace(needle, "use std::os::linux::fs::MetadataExt;\n" + needle, 1)
 path.write_text(text.replace(old, new, 1))
 PY
   cargo build --release
