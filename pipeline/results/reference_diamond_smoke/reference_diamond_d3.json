@@ -1,0 +1,233 @@
+{
+  "a": 0.05275334027828649,
+  "acts_mean_s": 1.1421201289631426,
+  "arms": [
+    {
+      "arm": "stock",
+      "bytes": 2083,
+      "repeat": 1,
+      "wall_s": 0.05463659414090216
+    },
+    {
+      "arm": "ACTS",
+      "decision": "SHIP",
+      "extra": {
+        "audit_checked": 0,
+        "length_entries": 463792,
+        "length_fresh": 5915,
+        "length_partial": 0,
+        "n_entries": 2000,
+        "n_fresh": 21,
+        "n_partial": 0,
+        "n_stable": 1979,
+        "phases": {
+          "cache_load_s": 0.03988927602767944,
+          "cache_store_s": 0.9672676981426775,
+          "diff_s": 0.04965857998467982,
+          "merge_rescale_s": 0.00025462894700467587,
+          "parse_s": 0.026407355908304453,
+          "prep_s": 0.009532059077173471,
+          "probe_wall_s": 0.0,
+          "read_output_s": 9.383587166666985e-05,
+          "render_s": 0.0005272109992802143,
+          "subref_build_s": 0.00031040399335324764,
+          "tool_s": 0.02390948194079101,
+          "total_s": 1.1372321050148457
+        },
+        "probe_phases": {},
+        "reused_rows": 26,
+        "rows": 26,
+        "verify": "audit"
+      },
+      "reason": "decomposition and normalizers fitted",
+      "repeat": 1,
+      "wall_s": 1.1421201289631426
+    },
+    {
+      "arm": "iSeqSearch",
+      "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
+      "merge_s": 0.5272014499641955,
+      "ran": true,
+      "repeat": 1,
+      "search_s": 0.026114435167983174,
+      "wall_s": 0.5533158851321787
+    }
+  ],
+  "assumptions": [
+    "smoke truncates both releases to 2000 entries and the queries to 50",
+    "one fit wall at n=10 and one at n=50; one alternating repeat",
+    "these walls are not a D3 measurement"
+  ],
+  "b": 6.979365716688334e-05,
+  "c": 0.010499999999999954,
+  "confirmed": null,
+  "confirmed_note": "smoke is not a measurement; the D3 predicate is not applied",
+  "d0_letters_equal": {
+    "new": true,
+    "old": true
+  },
+  "d2_decision": "SHIP",
+  "d2n_decision": "REFUSE",
+  "diamond_version": "diamond version 2.2.5",
+  "discarded_cold_start_s": 0.060462801018729806,
+  "finished_utc": "2026-10-09T07:32:50.384707+00:00",
+  "fit_walls": [
+    {
+      "n": 10,
+      "wall_s": 0.05345127684995532
+    },
+    {
+      "n": 50,
+      "wall_s": 0.056243023136630654
+    }
+  ],
+  "formula": "(a + b*50) / (a + c*b*50)",
+  "git": "45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "git_dirty": false,
+  "host": "b04-07.hpc.usc.edu",
+  "inputs": {
+    "diamond": {
+      "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond",
+      "size": 28553136
+    },
+    "iseq": {
+      "md5": "2c0762059f0229add06bf351edb2f979",
+      "member": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search/source/main.py",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search",
+      "size": 2477
+    },
+    "new": {
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+      "size": 93801562
+    },
+    "old": {
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz",
+      "size": 93457057
+    },
+    "queries": {
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz",
+      "size": 1074926
+    }
+  },
+  "iseq": {
+    "bars": [
+      {
+        "evalue_pearson": 0.9999937946013877,
+        "i": 0,
+        "n_intersection": 26,
+        "n_only_other": 1,
+        "n_only_stock": 0,
+        "n_other": 27,
+        "n_pearson": 26,
+        "n_stock": 26,
+        "ref_merge": {
+          "ok": false,
+          "why": "row-key sets differ (stock 26, ours 27, only-stock 0, only-ours 1)"
+        }
+      }
+    ],
+    "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
+    "ran": true,
+    "why": null
+  },
+  "iseq_mean_s": 0.5533158851321787,
+  "measured_speedup": 0.047837869901218896,
+  "measurement": false,
+  "n": 50,
+  "new_fasta": {
+    "bytes": 93801562,
+    "expected_bytes": 93801562,
+    "expected_md5": "bc9d398533e6df582b563c6c03093bd0",
+    "md5": "bc9d398533e6df582b563c6c03093bd0",
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+    "release": "2026_03",
+    "url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz"
+  },
+  "old_fasta": {
+    "bytes": 93457057,
+    "md5": "5245b19456d9a063b13c46602269bc5f",
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz",
+    "release": "2026_01"
+  },
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "predicted_speedup": 1.065410918149458,
+  "python": "3.11.9",
+  "ref_merge_acts": [
+    {
+      "i": 0,
+      "ok": false,
+      "why": "column 10 mismatch on ('WP_000010284.1', 'sp|Q84P26|4CLL8_ARATH', '')"
+    }
+  ],
+  "release_pair": "2026_01 -> 2026_03",
+  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "setting": "S1",
+  "smoke": true,
+  "smoke_label": "not a measurement",
+  "smoke_plan": {
+    "entries": 2000,
+    "fit": [
+      [
+        10,
+        1
+      ],
+      [
+        50,
+        1
+      ]
+    ],
+    "queries": 50,
+    "repeats": 1,
+    "threads": "4"
+  },
+  "smoke_truncated": {
+    "entries": 2000,
+    "n_queries": 50,
+    "new": "/tmp/acts_ref_diamond_smoke_12863759/smoke_new.fasta",
+    "old": "/tmp/acts_ref_diamond_smoke_12863759/smoke_old.fasta",
+    "queries": "/tmp/acts_ref_diamond_smoke_12863759/smoke_queries.fasta"
+  },
+  "stage": "D3",
+  "stock_mean_s": 0.05463659414090216,
+  "versions": {
+    "biopython": "1.85",
+    "numpy": "2.4.6",
+    "tqdm": "4.67.1"
+  },
+  "warm": {
+    "decision": "SHIP",
+    "extra": {
+      "length_entries": 462481,
+      "length_fresh": 462481,
+      "length_partial": 0,
+      "n_entries": 2000,
+      "n_fresh": 2000,
+      "n_partial": 0,
+      "n_stable": 0,
+      "phases": {
+        "cache_load_s": 2.5748740881681442e-06,
+        "cache_store_s": 0.7476492179557681,
+        "diff_s": 0.007374215172603726,
+        "merge_rescale_s": 0.00012473389506340027,
+        "parse_s": 0.02610366395674646,
+        "prep_s": 0.015940899960696697,
+        "probe_wall_s": 0.0,
+        "read_output_s": 8.847587741911411e-05,
+        "render_s": 0.0005544009618461132,
+        "subref_build_s": 0.0008468008600175381,
+        "tool_s": 0.04976887907832861,
+        "total_s": 0.8533278219401836
+      },
+      "probe_phases": {},
+      "reused_rows": 0,
+      "rows": 27,
+      "verify": "audit"
+    },
+    "reason": "decomposition and normalizers fitted",
+    "wall_s": 0.8573195319622755
+  }
+}
