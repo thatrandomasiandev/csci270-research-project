@@ -1,0 +1,523 @@
+=== host / cpu ===
+b22-05.hpc.usc.edu
+2026-10-06T18:07:54-07:00
+ 18:07:54 up 17 days, 22:10,  0 users,  load average: 4.90, 8.69, 11.18
+64
+Python 3.11.9
+Architecture:         x86_64
+CPU op-mode(s):       32-bit, 64-bit
+Byte Order:           Little Endian
+CPU(s):               128
+On-line CPU(s) list:  0-63
+Off-line CPU(s) list: 64-127
+Thread(s) per core:   1
+Core(s) per socket:   32
+Socket(s):            2
+NUMA node(s):         2
+Vendor ID:            AuthenticAMD
+CPU family:           23
+Model:                49
+Model name:           AMD EPYC 7542 32-Core Processor
+Stepping:             0
+CPU MHz:              2894.460
+BogoMIPS:             5788.92
+Virtualization:       AMD-V
+L1d cache:            32K
+L1i cache:            32K
+L2 cache:             512K
+L3 cache:             16384K
+NUMA node0 CPU(s):    0-31
+NUMA node1 CPU(s):    32-63
+Flags:                fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpb cat_l3 cdp_l3 hw_pstate ssbd mba ibrs ibpb stibp vmmcall fsgsbase bmi1 avx2 smep bmi2 cqm rdt_a rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local clzero irperf xsaveerptr wbnoinvd amd_ppin arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif v_spec_ctrl umip rdpid overflow_recov succor smca sme sev sev_es
+GIT_HASH=5245c29a64896e14cdb8ba3b2a0e94166cb5ae38
+COLLECTION=B MODE=hmmsearch
+CONSTRAINT=epyc-7542 NODELIST=b22-05
+SCRATCH=/tmp/SLURM_12739230/acts_savings_12739230
+=== build HMMER 3.4 on the compute node ===
+configure: Configuring HMMER3 for your system.
+checking build system type... x86_64-pc-linux-gnu
+checking host system type... x86_64-pc-linux-gnu
+checking whether to compile using MPI... no
+checking for gcc... /apps/generic/gcc/13.3.0/bin/gcc
+checking whether the C compiler works... yes
+checking for C compiler default output file name... a.out
+checking for suffix of executables... 
+checking whether we are cross compiling... no
+checking for suffix of object files... o
+checking whether the compiler supports GNU C... yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc accepts -g... yes
+checking for /apps/generic/gcc/13.3.0/bin/gcc option to enable C11 features... none needed
+checking for gcc... (cached) /apps/generic/gcc/13.3.0/bin/gcc
+checking whether the compiler supports GNU C... (cached) yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc accepts -g... (cached) yes
+checking for /apps/generic/gcc/13.3.0/bin/gcc option to enable C11 features... (cached) none needed
+checking how to run the C preprocessor... /apps/generic/gcc/13.3.0/bin/gcc -E
+checking for a BSD-compatible install... /usr/bin/install -c
+checking for strip... strip
+checking for ranlib... ranlib
+checking for ar... /usr/bin/ar
+checking whether ln -s works... yes
+checking for a sed that does not truncate output... /usr/bin/sed
+checking for grep that handles long lines and -e... /usr/bin/grep
+checking for egrep... /usr/bin/grep -E
+checking whether /apps/generic/gcc/13.3.0/bin/gcc is Clang... no
+checking whether pthreads work with "-pthread" and "-lpthread"... yes
+checking for joinable pthread attribute... PTHREAD_CREATE_JOINABLE
+checking whether more special flags are required for pthreads... no
+checking for PTHREAD_PRIO_INHERIT... yes
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our NEON code... no
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our Altivec/VMX code... no
+checking whether /apps/generic/gcc/13.3.0/bin/gcc can compile our SSE code... yes
+configure: Activating Intel/AMD SSE vector DP implementation
+checking whether _MM_SET_FLUSH_ZERO_MODE is supported... yes
+checking compiler support --start-group... yes
+checking for gzip... /usr/bin/gzip
+checking for python3... yes
+checking for library containing clock_gettime... none required
+checking for stdio.h... yes
+checking for stdlib.h... yes
+checking for string.h... yes
+checking for inttypes.h... yes
+checking for stdint.h... yes
+checking for strings.h... yes
+checking for sys/stat.h... yes
+checking for sys/types.h... yes
+checking for unistd.h... yes
+checking for endian.h... yes
+checking for inttypes.h... (cached) yes
+checking for stdint.h... (cached) yes
+checking for unistd.h... (cached) yes
+checking for sys/types.h... (cached) yes
+checking for netinet/in.h... yes
+checking for sys/param.h... yes
+checking for sys/sysctl.h... yes
+checking for uint8_t... yes
+checking for uint16_t... yes
+checking for uint32_t... yes
+checking for uint64_t... yes
+checking for off_t... yes
+checking whether byte ordering is bigendian... no
+checking for __attribute__((noreturn))... yes
+checking for __attribute__((format))... yes
+checking for mkstemp... yes
+checking for popen... yes
+checking for putenv... yes
+checking for strcasecmp... yes
+checking for strsep... yes
+checking for times... yes
+checking for getpid... yes
+checking for sysctl... yes
+checking for sysconf... yes
+checking for getcwd... yes
+checking for chmod... yes
+checking for stat... yes
+checking for fstat... yes
+checking for erfc... no
+checking for library containing ntohs... none required
+checking for library containing ntohl... none required
+checking for library containing htons... none required
+checking for library containing htonl... none required
+checking for library containing socket... none required
+checking for library containing inet_pton... none required
+checking for _LARGEFILE_SOURCE value needed for large files... no
+checking for special C compiler options needed for large files... no
+checking for _FILE_OFFSET_BITS value needed for large files... no
+configure: creating ./config.status
+config.status: creating Makefile
+config.status: creating src/Makefile
+config.status: creating testsuite/Makefile
+config.status: creating profmark/Makefile
+config.status: creating src/impl_sse/Makefile
+config.status: creating documentation/Makefile
+config.status: creating documentation/man/Makefile
+config.status: creating documentation/userguide/Makefile
+config.status: creating documentation/userguide/inclusions/Makefile
+config.status: creating libdivsufsort/Makefile
+config.status: creating easel/Makefile
+config.status: creating easel/miniapps/Makefile
+config.status: creating easel/testsuite/Makefile
+config.status: creating easel/documentation/Makefile
+config.status: creating documentation/userguide/titlepage.tex
+config.status: creating documentation/userguide/titlepage_daemon.tex
+config.status: creating documentation/userguide/copyright.tex
+config.status: creating documentation/man/alimask.man
+config.status: creating documentation/man/hmmalign.man
+config.status: creating documentation/man/hmmbuild.man
+config.status: creating documentation/man/hmmc2.man
+config.status: creating documentation/man/hmmconvert.man
+config.status: creating documentation/man/hmmemit.man
+config.status: creating documentation/man/hmmer.man
+config.status: creating documentation/man/hmmfetch.man
+config.status: creating documentation/man/hmmlogo.man
+config.status: creating documentation/man/hmmpgmd.man
+config.status: creating documentation/man/hmmpgmd_shard.man
+config.status: creating documentation/man/hmmpress.man
+config.status: creating documentation/man/hmmscan.man
+config.status: creating documentation/man/hmmsearch.man
+config.status: creating documentation/man/hmmsim.man
+config.status: creating documentation/man/hmmstat.man
+config.status: creating documentation/man/jackhmmer.man
+config.status: creating documentation/man/makehmmerdb.man
+config.status: creating documentation/man/nhmmer.man
+config.status: creating documentation/man/nhmmscan.man
+config.status: creating documentation/man/phmmer.man
+config.status: creating easel/miniapps/esl-afetch.man
+config.status: creating easel/miniapps/esl-alimanip.man
+config.status: creating easel/miniapps/esl-alimap.man
+config.status: creating easel/miniapps/esl-alimask.man
+config.status: creating easel/miniapps/esl-alimerge.man
+config.status: creating easel/miniapps/esl-alipid.man
+config.status: creating easel/miniapps/esl-alirev.man
+config.status: creating easel/miniapps/esl-alistat.man
+config.status: creating easel/miniapps/esl-compalign.man
+config.status: creating easel/miniapps/esl-compstruct.man
+config.status: creating easel/miniapps/esl-construct.man
+config.status: creating easel/miniapps/esl-histplot.man
+config.status: creating easel/miniapps/esl-mask.man
+config.status: creating easel/miniapps/esl-mixdchlet.man
+config.status: creating easel/miniapps/esl-reformat.man
+config.status: creating easel/miniapps/esl-selectn.man
+config.status: creating easel/miniapps/esl-seqrange.man
+config.status: creating easel/miniapps/esl-seqstat.man
+config.status: creating easel/miniapps/esl-sfetch.man
+config.status: creating easel/miniapps/esl-shuffle.man
+config.status: creating easel/miniapps/esl-ssdraw.man
+config.status: creating easel/miniapps/esl-translate.man
+config.status: creating easel/miniapps/esl-weight.man
+config.status: creating easel/decoy_config.h
+config.status: creating src/p7_config.h
+config.status: creating easel/esl_config.h
+config.status: creating libdivsufsort/divsufsort.h
+config.status: linking src/impl_sse to src/impl
+
+
+HMMER configuration:
+   compiler:             /apps/generic/gcc/13.3.0/bin/gcc -O3    -pthread 
+   host:                 x86_64-pc-linux-gnu
+   linker:               
+   libraries:              -lpthread
+   DP implementation:    sse
+
+Now do 'make'  to build HMMER, and optionally:
+       'make check'  to run self tests,
+       'make install'  to install programs and man pages,
+       '(cd easel; make install)'  to install Easel tools.
+
+     SUBDIR easel
+     CC easel.o
+     CC esl_alloc.o
+     CC esl_alphabet.o
+     CC esl_arr2.o
+     CC esl_bitfield.o
+     CC esl_buffer.o
+     CC esl_arr3.o
+     CC esl_cluster.o
+     CC esl_dirichlet.o
+     CC esl_cpu.o
+     CC esl_composition.o
+     CC esl_exponential.o
+     CC esl_distance.o
+     CC esl_dmatrix.o
+     CC esl_dsqdata.o
+     CC esl_fileparser.o
+     CC esl_gamma.o
+     CC esl_gencode.o
+     CC esl_getopts.o
+     CC esl_gumbel.o
+     CC esl_graph.o
+     CC esl_hmm.o
+     CC esl_gev.o
+     CC esl_heap.o
+     CC esl_histogram.o
+     CC esl_hyperexp.o
+     CC esl_huffman.o
+     CC esl_iset.o
+     CC esl_json.o
+     CC esl_matrixops.o
+     CC esl_keyhash.o
+     CC esl_lognormal.o
+     CC esl_mem.o
+     CC esl_minimizer.o
+     CC esl_mixdchlet.o
+     CC esl_mixgev.o
+     CC esl_mpi.o
+     CC esl_msa.o
+     CC esl_msacluster.o
+     CC esl_msafile.o
+     CC esl_msafile2.o
+     CC esl_msafile_a2m.o
+     CC esl_msafile_afa.o
+     CC esl_msafile_clustal.o
+     CC esl_msafile_phylip.o
+     CC esl_msafile_psiblast.o
+     CC esl_msafile_selex.o
+     CC esl_msafile_stockholm.o
+     CC esl_msashuffle.o
+     CC esl_msaweight.o
+     CC esl_normal.o
+     CC esl_paml.o
+     CC esl_quicksort.o
+     CC esl_random.o
+     CC esl_rand64.o
+     CC esl_randomseq.o
+     CC esl_ratematrix.o
+     CC esl_recorder.o
+     CC esl_red_black.o
+     CC esl_regexp.o
+     CC esl_rootfinder.o
+     CC esl_scorematrix.o
+     CC esl_sq.o
+     CC esl_sqio.o
+     CC esl_sqio_ascii.o
+     CC esl_sqio_ncbi.o
+     CC esl_ssi.o
+     CC esl_stack.o
+     CC esl_stats.o
+     CC esl_stopwatch.o
+     CC esl_stretchexp.o
+     CC esl_subcmd.o
+     CC esl_threads.o
+     CC esl_tree.o
+     CC esl_varint.o
+     CC esl_vectorops.o
+     CC esl_weibull.o
+     CC esl_workqueue.o
+     CC esl_wuss.o
+     CC esl_sse.o
+     CC esl_avx.o
+     CC esl_avx512.o
+     CC esl_neon.o
+     CC esl_vmx.o
+     AR libeasel.a
+     SUBDIR miniapps
+     GEN esl-alimanip
+     GEN esl-afetch
+     GEN esl-alimap
+     GEN esl-alipid
+     GEN esl-alimask
+     GEN esl-alimerge
+     GEN esl-alirev
+     GEN esl-compalign
+     GEN esl-mixdchlet
+     GEN esl-selectn
+     GEN esl-alistat
+     GEN esl-seqstat
+     GEN esl-mask
+     GEN esl-construct
+     GEN esl-reformat
+     GEN esl-compstruct
+     GEN esl-seqrange
+     GEN esl-histplot
+     GEN esl-weight
+     GEN esl-ssdraw
+     GEN esl-shuffle
+     GEN esl-translate
+     GEN esl-sfetch
+     CC cmd_alistat.o
+     CC cmd_filter.o
+     CC cmd_index.o
+     CC cmd_downsample.o
+     GEN easel
+     SUBDIR libdivsufsort
+     CC divsufsort.o
+     AR libdivsufsort.a
+     SUBDIR src
+     CC build.o
+     CC alimask.o
+     CC cachedb.o
+     CC cachedb_shard.o
+     CC emit.o
+     CC errors.o
+     CC eweight.o
+     CC evalues.o
+     CC generic_fwdback.o
+     CC generic_fwdback_banded.o
+     CC generic_decoding.o
+     CC generic_null2.o
+     CC generic_stotrace.o
+     CC generic_fwdback_chk.o
+     CC generic_msv.o
+     CC generic_optacc.o
+     CC generic_viterbi.o
+     CC hmmlogo.o
+     CC generic_vtrace.o
+     CC h2_io.o
+     CC heatmap.o
+     CC hmmdmstr.o
+     CC hmmdwrkr.o
+     CC hmmdmstr_shard.o
+     CC hmmd_search_status.o
+     CC hmmdwrkr_shard.o
+     CC hmmdutils.o
+     CC hmmer.o
+     CC modelconfig.o
+     CC modelstats.o
+     CC logsum.o
+     CC mpisupport.o
+     CC seqmodel.o
+     CC tracealign.o
+     CC p7_alidisplay.o
+     CC p7_bg.o
+     CC p7_builder.o
+     CC p7_domain.o
+     CC p7_domaindef.o
+     CC p7_gbands.o
+     CC p7_gmx.o
+     CC p7_gmxb.o
+     CC p7_gmxchk.o
+     CC p7_hit.o
+     CC p7_hmm.o
+     CC p7_hmmcache.o
+     CC p7_hmmd_search_stats.o
+     CC p7_hmmfile.o
+     CC p7_hmmwindow.o
+     CC p7_pipeline.o
+     CC p7_prior.o
+     CC p7_profile.o
+     CC p7_spensemble.o
+     CC p7_tophits.o
+     CC p7_trace.o
+     CC p7_scoredata.o
+     CC hmmpgmd2msa.o
+     CC fm_alphabet.o
+     CC fm_general.o
+     CC fm_sse.o
+     CC fm_ssv.o
+     CC hmmalign.o
+     CC hmmbuild.o
+     CC hmmconvert.o
+     CC hmmemit.o
+     CC hmmfetch.o
+     CC hmmpgmd.o
+     CC hmmpgmd_shard.o
+     CC hmmpress.o
+     CC hmmscan.o
+     CC hmmsearch.o
+     CC hmmsim.o
+     CC hmmstat.o
+     CC jackhmmer.o
+     CC phmmer.o
+     CC nhmmer.o
+     CC nhmmscan.o
+     CC makehmmerdb.o
+     CC hmmc2.o
+     CC hmmerfm-exactmatch.o
+     AR libhmmer-src.stamp
+     SUBDIR impl_sse
+     CC fwdback.o
+     CC decoding.o
+     CC msvfilter.o
+     CC io.o
+     CC null2.o
+     CC ssvfilter.o
+     CC optacc.o
+     CC stotrace.o
+     CC vitfilter.o
+     CC p7_oprofile.o
+     CC p7_omx.o
+     CC mpi.o
+     AR libhmmer-impl.stamp
+     GEN alimask
+     GEN hmmbuild
+     GEN hmmalign
+     GEN hmmconvert
+     GEN hmmemit
+     GEN hmmpgmd
+     GEN hmmscan
+     GEN hmmlogo
+     GEN hmmsearch
+     GEN hmmfetch
+     GEN hmmpress
+     GEN hmmpgmd_shard
+     GEN hmmsim
+     GEN phmmer
+     GEN hmmstat
+     GEN nhmmer
+     GEN jackhmmer
+     GEN nhmmscan
+     GEN makehmmerdb
+     GEN hmmc2
+     GEN hmmerfm-exactmatch
+     SUBDIR profmark
+     CC create-profmark.o
+     CC rocplot.o
+     GEN rocplot
+     GEN create-profmark
+     SUBDIR easel
+     SUBDIR miniapps
+     SUBDIR libdivsufsort
+     SUBDIR src
+     SUBDIR impl_sse
+     SUBDIR profmark
+if [ ! -d /tmp/SLURM_12739230/acts_savings_12739230/bin ]; then /usr/bin/install -c -d /tmp/SLURM_12739230/acts_savings_12739230/bin; fi
+if [ ! -d /tmp/SLURM_12739230/acts_savings_12739230/share/man/man1 ]; then /usr/bin/install -c -d /tmp/SLURM_12739230/acts_savings_12739230/share/man/man1; fi
+make -C src install
+make[1]: Entering directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/src'
+for file in alimask hmmalign hmmbuild hmmconvert hmmemit hmmfetch hmmlogo hmmpgmd hmmpgmd_shard hmmpress hmmscan hmmsearch hmmsim hmmstat jackhmmer phmmer nhmmer nhmmscan makehmmerdb; do \
+   /usr/bin/install -c -m 0755 $file /tmp/SLURM_12739230/acts_savings_12739230/bin/ ;\
+done
+make[1]: Leaving directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/src'
+make -C documentation install
+make[1]: Entering directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/documentation'
+make -C man install
+make[2]: Entering directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/documentation/man'
+for file in hmmer hmmalign hmmbuild hmmconvert hmmemit hmmfetch hmmlogo hmmpgmd hmmpgmd_shard hmmpress hmmscan hmmsearch hmmsim hmmstat jackhmmer makehmmerdb phmmer nhmmer nhmmscan alimask; do \
+   /usr/bin/install -c -m 0664 $file.man /tmp/SLURM_12739230/acts_savings_12739230/share/man/man1/${file}.1 ;\
+done
+make[2]: Leaving directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/documentation/man'
+make[1]: Leaving directory '/tmp/SLURM_12739230/acts_savings_12739230/hmmer-3.4/documentation'
+/tmp/SLURM_12739230/acts_savings_12739230/bin/hmmsearch
+# hmmsearch :: search profile(s) against a sequence database
+# HMMER 3.4 (Aug 2023); http://hmmer.org/
+# Copyright (C) 2023 Howard Hughes Medical Institute.
+=== stage inputs to node-local scratch ===
+=== run ===
+inferring table contract (probe_n=8) …
+stock B hmmsearch genome 1 GCF_001651945.2
+cached B hmmsearch genome 1 GCF_001651945.2
+stock B hmmsearch genome 2 GCF_000732965.1
+cached B hmmsearch genome 2 GCF_000732965.1
+cached B hmmsearch genome 3 GCF_000730345.1
+cached B hmmsearch genome 4 GCF_013167335.1
+stock B hmmsearch genome 5 GCF_017165295.1
+cached B hmmsearch genome 5 GCF_017165295.1
+cached B hmmsearch genome 6 GCF_009627495.1
+cached B hmmsearch genome 7 GCF_022869945.1
+cached B hmmsearch genome 8 GCF_001753525.1
+cached B hmmsearch genome 9 GCF_013167775.1
+stock B hmmsearch genome 10 GCF_013167375.1
+cached B hmmsearch genome 10 GCF_013167375.1
+cached B hmmsearch genome 11 GCF_013168035.1
+cached B hmmsearch genome 12 GCF_020423165.1
+cached B hmmsearch genome 13 GCF_017164815.1
+cached B hmmsearch genome 14 GCF_017164915.1
+cached B hmmsearch genome 15 GCF_046272065.1
+cached B hmmsearch genome 16 GCF_013167675.1
+cached B hmmsearch genome 17 GCF_017165115.1
+cached B hmmsearch genome 18 GCF_012915625.1
+cached B hmmsearch genome 19 GCF_021184105.1
+stock B hmmsearch genome 20 GCF_003722195.1
+cached B hmmsearch genome 20 GCF_003722195.1
+cached B hmmsearch genome 21 GCF_013167415.1
+cached B hmmsearch genome 22 GCF_001753465.1
+cached B hmmsearch genome 23 GCF_021166395.1
+cached B hmmsearch genome 24 GCF_001695515.1
+cached B hmmsearch genome 25 GCF_013167455.1
+cached B hmmsearch genome 26 GCF_017164935.1
+cached B hmmsearch genome 27 GCF_009650175.1
+cached B hmmsearch genome 28 GCF_013167655.1
+cached B hmmsearch genome 29 GCF_001753565.1
+cached B hmmsearch genome 30 GCF_013167395.1
+cached B hmmsearch genome 31 GCF_004118915.1
+cached B hmmsearch genome 32 GCF_013168095.1
+cached B hmmsearch genome 33 GCF_001558995.2
+cached B hmmsearch genome 34 GCF_017165375.1
+cached B hmmsearch genome 35 GCF_000021125.1
+cached B hmmsearch genome 36 GCF_013343595.1
+cached B hmmsearch genome 37 GCF_017165055.1
+cached B hmmsearch genome 38 GCF_017165415.1
+cached B hmmsearch genome 39 GCF_013167535.1
+stock B hmmsearch genome 40 GCF_013167595.1
+cached B hmmsearch genome 40 GCF_013167595.1
+wrote /project2/biyik_1165/jjt_373/csci270-star/pipeline/results/savings/B_hmmsearch.json
+SAVINGS_DONE
