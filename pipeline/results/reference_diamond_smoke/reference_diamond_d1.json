@@ -3,10 +3,10 @@
   "c_is": "1 - n_unchanged_hash / n_new, fitter content hash",
   "c_length_descriptive": 0.012753561941560009,
   "diamond_version": "diamond version 2.2.5",
-  "finished_utc": "2026-10-09T07:32:50.384707+00:00",
-  "git": "45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "finished_utc": "2026-10-09T08:21:05.382509+00:00",
+  "git": "e85f24d4dcfe857d2409a3bb1cb44c07900c808b",
   "git_dirty": false,
-  "host": "b04-07.hpc.usc.edu",
+  "host": "a02-12.hpc.usc.edu",
   "inputs": {
     "diamond": {
       "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b",
@@ -68,7 +68,7 @@
   "release_pair": "2026_01 -> 2026_03",
   "residue_id_unchanged": 1984,
   "residue_id_unchanged_fraction": 0.992,
-  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-e85f24d4dcfe857d2409a3bb1cb44c07900c808b",
   "setting": "S1",
   "smoke": true,
   "smoke_label": "not a measurement",
@@ -91,9 +91,9 @@
   "smoke_truncated": {
     "entries": 2000,
     "n_queries": 50,
-    "new": "/tmp/acts_ref_diamond_smoke_12863759/smoke_new.fasta",
-    "old": "/tmp/acts_ref_diamond_smoke_12863759/smoke_old.fasta",
-    "queries": "/tmp/acts_ref_diamond_smoke_12863759/smoke_queries.fasta"
+    "new": "/tmp/acts_ref_diamond_smoke_12865057/smoke_new.fasta",
+    "old": "/tmp/acts_ref_diamond_smoke_12865057/smoke_old.fasta",
+    "queries": "/tmp/acts_ref_diamond_smoke_12865057/smoke_queries.fasta"
   },
   "stage": "D1",
   "versions": {

@@ -1,12 +1,12 @@
 {
-  "a": 0.05275334027828649,
-  "acts_mean_s": 1.1421201289631426,
+  "a": 0.05455428018467501,
+  "acts_mean_s": 1.2096657059155405,
   "arms": [
     {
       "arm": "stock",
       "bytes": 2083,
       "repeat": 1,
-      "wall_s": 0.05463659414090216
+      "wall_s": 0.06550972606055439
     },
     {
       "arm": "ACTS",
@@ -21,18 +21,18 @@
         "n_partial": 0,
         "n_stable": 1979,
         "phases": {
-          "cache_load_s": 0.03988927602767944,
-          "cache_store_s": 0.9672676981426775,
-          "diff_s": 0.04965857998467982,
-          "merge_rescale_s": 0.00025462894700467587,
-          "parse_s": 0.026407355908304453,
-          "prep_s": 0.009532059077173471,
+          "cache_load_s": 0.04386959597468376,
+          "cache_store_s": 1.012687373906374,
+          "diff_s": 0.04986114986240864,
+          "merge_rescale_s": 0.0002686448860913515,
+          "parse_s": 0.02718287194147706,
+          "prep_s": 0.014933604979887605,
           "probe_wall_s": 0.0,
-          "read_output_s": 9.383587166666985e-05,
-          "render_s": 0.0005272109992802143,
-          "subref_build_s": 0.00031040399335324764,
-          "tool_s": 0.02390948194079101,
-          "total_s": 1.1372321050148457
+          "read_output_s": 9.484798647463322e-05,
+          "render_s": 0.001112096942961216,
+          "subref_build_s": 0.0003399481065571308,
+          "tool_s": 0.035231166053563356,
+          "total_s": 1.2054262598976493
         },
         "probe_phases": {},
         "reused_rows": 26,
@@ -41,16 +41,16 @@
       },
       "reason": "decomposition and normalizers fitted",
       "repeat": 1,
-      "wall_s": 1.1421201289631426
+      "wall_s": 1.2096657059155405
     },
     {
       "arm": "iSeqSearch",
       "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
-      "merge_s": 0.5272014499641955,
+      "merge_s": 0.5829216388519853,
       "ran": true,
       "repeat": 1,
-      "search_s": 0.026114435167983174,
-      "wall_s": 0.5533158851321787
+      "search_s": 0.043231087969616055,
+      "wall_s": 0.6261527268216014
     }
   ],
   "assumptions": [
@@ -58,7 +58,7 @@
     "one fit wall at n=10 and one at n=50; one alternating repeat",
     "these walls are not a D3 measurement"
   ],
-  "b": 6.979365716688334e-05,
+  "b": 0.00017138637485913932,
   "c": 0.010499999999999954,
   "confirmed": null,
   "confirmed_note": "smoke is not a measurement; the D3 predicate is not applied",
@@ -69,22 +69,22 @@
   "d2_decision": "SHIP",
   "d2n_decision": "REFUSE",
   "diamond_version": "diamond version 2.2.5",
-  "discarded_cold_start_s": 0.060462801018729806,
-  "finished_utc": "2026-10-09T07:32:50.384707+00:00",
+  "discarded_cold_start_s": 0.07630213885568082,
+  "finished_utc": "2026-10-09T08:21:05.382509+00:00",
   "fit_walls": [
     {
       "n": 10,
-      "wall_s": 0.05345127684995532
+      "wall_s": 0.0562681439332664
     },
     {
       "n": 50,
-      "wall_s": 0.056243023136630654
+      "wall_s": 0.06312359892763197
     }
   ],
   "formula": "(a + b*50) / (a + c*b*50)",
-  "git": "45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "git": "e85f24d4dcfe857d2409a3bb1cb44c07900c808b",
   "git_dirty": false,
-  "host": "b04-07.hpc.usc.edu",
+  "host": "a02-12.hpc.usc.edu",
   "inputs": {
     "diamond": {
       "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b",
@@ -116,7 +116,7 @@
   "iseq": {
     "bars": [
       {
-        "evalue_pearson": 0.9999937946013877,
+        "evalue_pearson": 0.9999937946013879,
         "i": 0,
         "n_intersection": 26,
         "n_only_other": 1,
@@ -134,8 +134,8 @@
     "ran": true,
     "why": null
   },
-  "iseq_mean_s": 0.5533158851321787,
-  "measured_speedup": 0.047837869901218896,
+  "iseq_mean_s": 0.6261527268216014,
+  "measured_speedup": 0.054155231267776646,
   "measurement": false,
   "n": 50,
   "new_fasta": {
@@ -154,17 +154,17 @@
     "release": "2026_01"
   },
   "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
-  "predicted_speedup": 1.065410918149458,
+  "predicted_speedup": 1.1551735022419312,
   "python": "3.11.9",
   "ref_merge_acts": [
     {
       "i": 0,
-      "ok": false,
-      "why": "column 10 mismatch on ('WP_000010284.1', 'sp|Q84P26|4CLL8_ARATH', '')"
+      "ok": true,
+      "why": ""
     }
   ],
   "release_pair": "2026_01 -> 2026_03",
-  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-45a0b6e56cbc21edca69ba37ddd8bcdb032e7c0f",
+  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-e85f24d4dcfe857d2409a3bb1cb44c07900c808b",
   "setting": "S1",
   "smoke": true,
   "smoke_label": "not a measurement",
@@ -187,12 +187,12 @@
   "smoke_truncated": {
     "entries": 2000,
     "n_queries": 50,
-    "new": "/tmp/acts_ref_diamond_smoke_12863759/smoke_new.fasta",
-    "old": "/tmp/acts_ref_diamond_smoke_12863759/smoke_old.fasta",
-    "queries": "/tmp/acts_ref_diamond_smoke_12863759/smoke_queries.fasta"
+    "new": "/tmp/acts_ref_diamond_smoke_12865057/smoke_new.fasta",
+    "old": "/tmp/acts_ref_diamond_smoke_12865057/smoke_old.fasta",
+    "queries": "/tmp/acts_ref_diamond_smoke_12865057/smoke_queries.fasta"
   },
   "stage": "D3",
-  "stock_mean_s": 0.05463659414090216,
+  "stock_mean_s": 0.06550972606055439,
   "versions": {
     "biopython": "1.85",
     "numpy": "2.4.6",
@@ -209,18 +209,18 @@
       "n_partial": 0,
       "n_stable": 0,
       "phases": {
-        "cache_load_s": 2.5748740881681442e-06,
-        "cache_store_s": 0.7476492179557681,
-        "diff_s": 0.007374215172603726,
-        "merge_rescale_s": 0.00012473389506340027,
-        "parse_s": 0.02610366395674646,
-        "prep_s": 0.015940899960696697,
+        "cache_load_s": 3.1760428100824356e-06,
+        "cache_store_s": 0.7450156069826335,
+        "diff_s": 0.008253388106822968,
+        "merge_rescale_s": 0.0001504120882600546,
+        "parse_s": 0.02907656505703926,
+        "prep_s": 0.01892958302050829,
         "probe_wall_s": 0.0,
-        "read_output_s": 8.847587741911411e-05,
-        "render_s": 0.0005544009618461132,
-        "subref_build_s": 0.0008468008600175381,
-        "tool_s": 0.04976887907832861,
-        "total_s": 0.8533278219401836
+        "read_output_s": 9.51690599322319e-05,
+        "render_s": 0.0006939820013940334,
+        "subref_build_s": 0.0010631950572133064,
+        "tool_s": 0.0714825950562954,
+        "total_s": 0.8808310399763286
       },
       "probe_phases": {},
       "reused_rows": 0,
@@ -228,6 +228,6 @@
       "verify": "audit"
     },
     "reason": "decomposition and normalizers fitted",
-    "wall_s": 0.8573195319622755
+    "wall_s": 0.8848481790628284
   }
 }
