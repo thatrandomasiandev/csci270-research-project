@@ -445,3 +445,5 @@ User-facing error bound, for a cell that passes:
 iSeqSearch still has no source token. Its ref-merge stays the locked printed comparison: half-ULP at \(\phi = 1\) on `evalue`, every other column byte-identical. That path is not the ACTS checker.
 
 Job 12864042 ran the checker that omitted source rounding. It is superseded, as is 12760029. No measured outcome from either is a result.
+
+The Pfam cache note is in the incremental addendum of the same date. DIAMOND does not use that cache. The smoke of this checker, job 12865057, code `e85f24d`, is recorded under `results/reference_diamond_smoke/`. `ref_merge_acts` passed. That smoke is not a measurement.
