@@ -1,0 +1,51 @@
+{
+  "kind": "input identity",
+  "measurement": true,
+  "not_d0_d3": true,
+  "job_id": "12863550",
+  "node": "a01-04",
+  "command": "md5sum",
+  "started_sacct": "2026-10-09T00:17:52",
+  "ended_sacct": "2026-10-09T00:17:53",
+  "raw_file": "pipeline/results/reference_diamond_input_checksums.txt",
+  "files": [
+    {
+      "role": "old",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz",
+      "bytes": 93457057,
+      "md5": "5245b19456d9a063b13c46602269bc5f"
+    },
+    {
+      "role": "new",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0"
+    },
+    {
+      "role": "diamond",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond",
+      "bytes": 28553136,
+      "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b"
+    },
+    {
+      "role": "queries",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz",
+      "bytes": 1074926,
+      "md5": "b170d133266427c46d87d99284e1fda3"
+    },
+    {
+      "role": "iseq_main",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search/source/main.py",
+      "bytes": 2477,
+      "md5": "2c0762059f0229add06bf351edb2f979"
+    }
+  ],
+  "provenance": {
+    "git": "867451343aa212608fb93cee3e502075df69669f",
+    "git_note": "parent of the input-resolution commit; the checksum job hashed data files, not this commit",
+    "host": "a01-04",
+    "command": "md5sum",
+    "job_id": "12863550",
+    "sacct_end": "2026-10-09T00:17:53"
+  }
+}

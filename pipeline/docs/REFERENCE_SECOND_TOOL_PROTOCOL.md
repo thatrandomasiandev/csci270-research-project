@@ -403,3 +403,27 @@ The older archive may be fetched. Conditions, fixed by the approval:
 The newer FASTA (93,801,562 bytes, MD5
 `bc9d398533e6df582b563c6c03093bd0`) is fetched the same way. It is
 under 1 GB. The DIAMOND v2.2.5 Linux binary is fetched the same way.
+
+## Addendum 2026-10-09 — input resolution
+
+Job 12759635 failed on input resolution before any measurement; fix; resubmission.
+
+The locked D0–D3 definitions do not change. Smoke output is not a measurement.
+
+Job 12759635 (`acts_ref_diamond`, commit `d5d5a66`) started 2026-10-08 03:25 on b22-22, working directory `/home1/jjt_373`, and exited 1 after 11 seconds. `data/swissprot/OLD_PATH` held the relative path `data/swissprot/uniprot_sprot_2026_01.fasta.gz`. No D0–D3 file was written.
+
+Before any DIAMOND invocation, every input path is resolved against a declared absolute root and checked for existence, size, and MD5. A miss stops with `STOP_INPUTS`. The job `cd`s to that root and passes only absolute paths. Runtime Python dependencies are pinned in `pipeline/requirements-diamond.txt` (`biopython==1.85`, `numpy==2.4.6`, `tqdm==4.67.1`) and installed once into `${ACTS_CODE_ROOT}/venv`. The job does not pip-install into `~/.local`. The checkout's own `requirements.txt` still says `biopython==1.79` and `tqdm==4.64.0` and does not name numpy; those older pins are not what this job loads.
+
+Measured identities, `md5sum` on compute node a01-04, job 12863550, 2026-10-09. The raw lines are `pipeline/results/reference_diamond_input_checksums.txt`. The 2026_01 tar MD5 in the locked table is unchanged. This row is the extracted FASTA the driver opens.
+
+| Input | Bytes | MD5 |
+|---|---|---|
+| 2026_01 Swiss-Prot FASTA | 93457057 | `5245b19456d9a063b13c46602269bc5f` |
+| 2026_03 Swiss-Prot FASTA | 93801562 | `bc9d398533e6df582b563c6c03093bd0` |
+| DIAMOND v2.2.5 linux64 binary | 28553136 | `7de14b7f9f4c440ddfb5142ad96b1d8b` |
+| Collection A queries `GCF_002853805.1_protein.faa.gz` | 1074926 | `b170d133266427c46d87d99284e1fda3` |
+| iSeqSearch `source/main.py` at `7e862bf3afa52b65b3cca4255de66ab4cb764fe3` | 2477 | `2c0762059f0229add06bf351edb2f979` |
+
+`--smoke` keeps the first 2,000 entries of each release and the first 50 query proteins, runs D0–D3 with one fit wall at n=10, one at n=50, and one alternating repeat (stock, ACTS, iSeqSearch) on 4 threads. It writes only under `results/reference_diamond_smoke/`. It does not satisfy D3.
+
+Resubmission uses a new code tree, these same files by absolute path, and the original resources: exclusive `epyc-7542`, 32 CPUs, 64 GB, 24 h.

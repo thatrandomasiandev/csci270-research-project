@@ -1,0 +1,5 @@
+5245b19456d9a063b13c46602269bc5f  /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz
+bc9d398533e6df582b563c6c03093bd0  /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz
+7de14b7f9f4c440ddfb5142ad96b1d8b  /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond
+b170d133266427c46d87d99284e1fda3  /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz
+2c0762059f0229add06bf351edb2f979  /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search/source/main.py

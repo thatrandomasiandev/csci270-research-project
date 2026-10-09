@@ -49,6 +49,33 @@ def read_fasta(path: Path) -> list[FastaRec]:
     return parse_fasta(path.read_text())
 
 
+def count_fasta_records(lines) -> int:
+    """Count FASTA records in a line stream. Does not parse sequence bodies."""
+    return sum(1 for line in lines if line.startswith(">"))
+
+
+def copy_fasta_head(lines, dest: Path, n: int) -> int:
+    """Copy the first n FASTA records, stopping before record n+1.
+
+    The copy is the original text, not a rewritten FASTA. Returns how many
+    records were written. A short file returns the count it actually had.
+    """
+    if n < 1:
+        raise ValueError("n must be at least 1")
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    seen = 0
+    with dest.open("w") as out:
+        for line in lines:
+            if line.startswith(">"):
+                if seen == n:
+                    break
+                seen += 1
+            elif seen == 0:
+                continue
+            out.write(line if line.endswith("\n") else line + "\n")
+    return seen
+
+
 def write_fasta(path: Path, recs: list[FastaRec]) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
     lines: list[str] = []

@@ -1,18 +1,16 @@
 #!/bin/bash
-# Exclusive-node DIAMOND second-tool run. Not a savings job.
-# Submit with absolute --output and --error under this code tree.
-#SBATCH --job-name=acts_ref_diamond
+# Smoke of the DIAMOND driver. Not a measurement. Not exclusive.
+# Submit with absolute --output and --error under reference_diamond_smoke/.
+#SBATCH --job-name=acts_ref_diamond_smoke
 #SBATCH --account=biyik_1165
 #SBATCH --partition=main
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=32
-#SBATCH --exclusive
-#SBATCH --mem=64G
-#SBATCH --constraint=epyc-7542
-#SBATCH --time=24:00:00
-#SBATCH --output=diamond-%j.out
-#SBATCH --error=diamond-%j.err
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=02:00:00
+#SBATCH --output=diamond-smoke-%j.out
+#SBATCH --error=diamond-smoke-%j.err
 
 set -euo pipefail
 
@@ -30,8 +28,8 @@ cd "${ROOT}"
 source "${ROOT}/pipeline/scripts/absolute_inputs.sh"
 
 PIPE="${ROOT}/pipeline"
-OUT="${ROOT}/results/reference_diamond"
-WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_diamond_${SLURM_JOB_ID:-local}"
+OUT="${ROOT}/results/reference_diamond_smoke"
+WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_diamond_smoke_${SLURM_JOB_ID:-local}"
 mkdir -p "${OUT}" "${WORK}"
 
 PY="${ROOT}/venv/bin/python"
@@ -57,19 +55,16 @@ QUERIES="$(require_absolute queries "${ACTS_QUERIES:?STOP_INPUTS: ACTS_QUERIES i
 DIAMOND="$(require_absolute diamond "${ACTS_DIAMOND:?STOP_INPUTS: ACTS_DIAMOND is unset}")"
 ISEQ="$(require_absolute iseq "${ACTS_ISEQ:?STOP_INPUTS: ACTS_ISEQ is unset}")"
 
-echo "=== host ==="
+echo "=== smoke host (not a measurement) ==="
 hostname
 date -Is
-lscpu | grep -E 'Model name|CPU\(s\)' || true
 "${PY}" --version
-"${DIAMOND}" version
 echo "ROOT=${ROOT}"
 echo "OLD=${OLD}"
 echo "NEW=${NEW}"
 echo "QUERIES=${QUERIES}"
 echo "DIAMOND=${DIAMOND}"
 echo "ISEQ=${ISEQ}"
-df -h "${WORK}" "${ROOT}" || true
 
 "${PY}" "${PIPE}/scripts/run_reference_diamond.py" \
   --root "${ROOT}" \
@@ -79,6 +74,7 @@ df -h "${WORK}" "${ROOT}" || true
   --queries "${QUERIES}" \
   --iseq "${ISEQ}" \
   --out "${OUT}" \
-  --work "${WORK}"
+  --work "${WORK}" \
+  --smoke
 
-echo REF_DIAMOND_DONE
+echo REF_DIAMOND_SMOKE_DONE

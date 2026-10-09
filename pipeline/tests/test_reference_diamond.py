@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import argparse
 import importlib.util
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -26,6 +28,9 @@ fitter_churn_c = _DRIVER.fitter_churn_c
 residue_identity = _DRIVER.residue_identity
 s1_argv = _DRIVER.s1_argv
 speedup = _DRIVER.speedup
+timing_plan = _DRIVER.timing_plan
+check_output_dir = _DRIVER.check_output_dir
+EXPECTED = _DRIVER.EXPECTED
 
 
 class DiamondProtocolGuards(unittest.TestCase):
@@ -82,6 +87,90 @@ class DiamondProtocolGuards(unittest.TestCase):
         self.assertIn("6042adf20dad1ab62112c9053bdebd20", text)
         self.assertIn("2026_01 → 2026_03", text)
         self.assertIn("MMseqs2 is not the second tool", text)
+        self.assertIn(
+            "Job 12759635 failed on input resolution before any measurement; fix; resubmission.",
+            text,
+        )
+        for _name, (size, digest) in EXPECTED.items():
+            self.assertIn(digest, text)
+            self.assertIn(str(size), text)
+
+    def test_smoke_plan_is_not_the_measurement(self) -> None:
+        smoke = timing_plan(True)
+        real = timing_plan(False)
+        self.assertFalse(smoke["measurement"])
+        self.assertEqual(smoke["entries"], 2000)
+        self.assertEqual(smoke["n_queries"], 50)
+        self.assertEqual(smoke["repeats"], 1)
+        self.assertEqual(smoke["threads"], "4")
+        self.assertTrue(real["measurement"])
+        self.assertEqual(real["threads"], "32")
+        self.assertEqual(real["repeats"], 3)
+        self.assertEqual(real["fit"], ((300, 3), (5117, 3)))
+        argv = s1_argv("diamond", k="0")
+        self.assertEqual(argv[argv.index("--threads") + 1], "32")
+
+    def test_smoke_cannot_write_the_real_result_directory(self) -> None:
+        from acts.inputs import InputManifestError
+
+        with self.assertRaises(InputManifestError) as caught:
+            check_output_dir(Path("/tmp/reference_diamond"), smoke=True)
+        self.assertIn("STOP_INPUTS", str(caught.exception))
+        with self.assertRaises(InputManifestError):
+            check_output_dir(Path("/tmp/reference_diamond_smoke"), smoke=False)
+
+    def test_missing_input_stops_before_diamond(self) -> None:
+        called: list[str] = []
+
+        def _boom(*_args, **_kwargs):
+            called.append("diamond")
+            raise AssertionError("diamond ran")
+
+        original = _DRIVER._diamond_version
+        _DRIVER._diamond_version = _boom
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / "root"
+                root.mkdir()
+                work = Path(tmp) / "work"
+                args = argparse.Namespace(
+                    root=root,
+                    diamond=Path("/no/such/diamond"),
+                    old=Path("/no/such/old.fasta.gz"),
+                    new=Path("/no/such/new.fasta.gz"),
+                    queries=Path("/no/such/queries.faa.gz"),
+                    iseq=Path("/no/such/iseq"),
+                    out=Path(tmp) / "reference_diamond",
+                    work=work,
+                    smoke=False,
+                )
+                with self.assertRaises(SystemExit) as caught:
+                    _DRIVER.run(args)
+                self.assertIn("STOP_INPUTS", str(caught.exception))
+                self.assertEqual(called, [])
+                self.assertFalse(work.exists())
+        finally:
+            _DRIVER._diamond_version = original
+
+    def test_diamond_jobs_pin_a_venv_and_absolute_inputs(self) -> None:
+        for name in ("reference_diamond.job", "reference_diamond_smoke.job"):
+            text = (PIPE / "jobs" / name).read_text()
+            self.assertNotIn("pip install", text)
+            self.assertIn('cd "${ROOT}"', text)
+            self.assertIn("venv/bin/python", text)
+            self.assertNotIn("OLD_PATH", text)
+        pins = (PIPE / "requirements-diamond.txt").read_text()
+        self.assertIn("biopython==1.85", pins)
+        self.assertIn("numpy==2.4.6", pins)
+        self.assertIn("tqdm==4.67.1", pins)
+        smoke = (PIPE / "jobs" / "reference_diamond_smoke.job").read_text()
+        self.assertNotIn("--exclusive", smoke)
+        real = (PIPE / "jobs" / "reference_diamond.job").read_text()
+        self.assertIn("--exclusive", real)
+        self.assertIn("--constraint=epyc-7542", real)
+        self.assertIn("--cpus-per-task=32", real)
+        self.assertIn("--mem=64G", real)
+        self.assertIn("--time=24:00:00", real)
 
 
 def parse_reference_text(text: str):

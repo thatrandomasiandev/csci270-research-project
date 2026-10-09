@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import argparse
 import gzip
-import hashlib
 import json
 import os
 import platform
@@ -24,7 +23,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from acts.fasta import parse_fasta  # noqa: E402
+from acts.fasta import copy_fasta_head, count_fasta_records, parse_fasta  # noqa: E402
+from acts.inputs import (  # noqa: E402
+    InputManifestError,
+    InputSpec,
+    ResolvedInput,
+    check_manifest,
+    check_requirement_pins,
+)
 from acts.predict import fit_ab  # noqa: E402
 from acts.provenance import provenance  # noqa: E402
 from acts.reference_cache import argv_namespace, connect_cache  # noqa: E402
@@ -58,9 +64,90 @@ OUTFMT = (
 EVALUE_COL = OUTFMT.index("evalue")
 N_FULL = 5117
 QUERY_N_FIT = PROBE_N
+PIN_FILE = ROOT / "requirements-diamond.txt"
+SMOKE_DIR = "reference_diamond_smoke"
+# Identities measured by CARC job 12863550 (md5sum on a01-04, 2026-10-09).
+# 2026_03 matches the locked protocol row. The 2026_01 row is the extracted
+# FASTA, not the tar. Recorded in the 2026-10-09 addendum.
+EXPECTED = {
+    "diamond": (28_553_136, "7de14b7f9f4c440ddfb5142ad96b1d8b"),
+    "old": (93_457_057, "5245b19456d9a063b13c46602269bc5f"),
+    "new": (93_801_562, "bc9d398533e6df582b563c6c03093bd0"),
+    "queries": (1_074_926, "b170d133266427c46d87d99284e1fda3"),
+    "iseq_main": (2477, "2c0762059f0229add06bf351edb2f979"),
+}
+_REPEAT_ORDER = (
+    ("stock", "ACTS", "iSeqSearch"),
+    ("ACTS", "iSeqSearch", "stock"),
+    ("iSeqSearch", "stock", "ACTS"),
+)
 
 
-def s1_argv(diamond: str, *, k: str) -> list[str]:
+def timing_plan(smoke: bool) -> dict:
+    """Real D3 is the locked plan. Smoke is one pass and is not a measurement."""
+    if smoke:
+        return {
+            "smoke": True,
+            "measurement": False,
+            "threads": "4",
+            "entries": 2000,
+            "n_queries": 50,
+            "fit": ((10, 1), (50, 1)),
+            "repeats": 1,
+            "formula": "(a + b*50) / (a + c*b*50)",
+            "label": "not a measurement",
+        }
+    return {
+        "smoke": False,
+        "measurement": True,
+        "threads": THREADS,
+        "entries": None,
+        "n_queries": N_FULL,
+        "fit": ((QUERY_N_FIT, 3), (N_FULL, 3)),
+        "repeats": 3,
+        "formula": "(a + b*5117) / (a + c*b*5117)",
+        "label": "D3",
+    }
+
+
+def repeat_order(repeats: int) -> tuple:
+    if repeats == 3:
+        return _REPEAT_ORDER
+    if repeats == 1:
+        return _REPEAT_ORDER[:1]
+    raise ValueError(f"repeats must be 1 (smoke) or 3 (D3), not {repeats}")
+
+
+def protocol_manifest(args: argparse.Namespace) -> list[InputSpec]:
+    """Size and MD5 from the protocol addendum. Paths come from the caller."""
+    iseq = "" if args.iseq is None else str(args.iseq)
+    return [
+        InputSpec("diamond", str(args.diamond), *EXPECTED["diamond"], executable=True),
+        InputSpec("old", str(args.old), *EXPECTED["old"]),
+        InputSpec("new", str(args.new), *EXPECTED["new"]),
+        InputSpec("queries", str(args.queries), *EXPECTED["queries"]),
+        InputSpec(
+            "iseq",
+            iseq,
+            *EXPECTED["iseq_main"],
+            kind="directory",
+            member="source/main.py",
+        ),
+    ]
+
+
+def check_output_dir(out: Path, smoke: bool) -> None:
+    if not out.is_absolute():
+        raise InputManifestError(f"output path is not absolute: {out}")
+    if smoke and out.name != SMOKE_DIR:
+        raise InputManifestError(
+            "smoke refuses to write outside a directory named reference_diamond_smoke"
+        )
+    if not smoke and SMOKE_DIR in out.parts:
+        raise InputManifestError("measurement refuses the smoke output directory")
+
+
+def s1_argv(diamond: str, *, k: str, threads: str = THREADS) -> list[str]:
     """Locked S1 command. k is "0" for S1 and "25" for the negative control."""
     return [
         diamond,
@@ -82,15 +169,15 @@ def s1_argv(diamond: str, *, k: str) -> list[str]:
         "--comp-based-stats",
         "1",
         "--threads",
-        THREADS,
+        threads,
         "--outfmt",
         "6",
         *OUTFMT,
     ]
 
 
-def prep_command(diamond: str) -> str:
-    return f"{diamond} makedb --in {{reference}} --db {{reference}} --threads {THREADS}"
+def prep_command(diamond: str, threads: str = THREADS) -> str:
+    return f"{diamond} makedb --in {{reference}} --db {{reference}} --threads {threads}"
 
 
 def fitter_churn_c(report: dict) -> float:
@@ -149,14 +236,6 @@ def pearson(xs: list[float], ys: list[float]) -> float | None:
     return num / (dx * dy)
 
 
-def file_md5(path: Path) -> str:
-    digest = hashlib.md5()
-    with path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
 def _write(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(payload, indent=2, sort_keys=True) + "\n"
@@ -165,12 +244,20 @@ def _write(path: Path, payload: dict) -> None:
     tmp.replace(path)
 
 
-def _base_provenance(diamond_version: str) -> dict:
+def _base_provenance(
+    diamond_version: str,
+    *,
+    versions: dict[str, str],
+    resolved: dict[str, ResolvedInput],
+    root: Path,
+    plan: dict,
+) -> dict:
     block = {}
     try:
-        block.update(provenance())
+        block.update(provenance(versions=versions))
     except Exception as exc:  # a copied tree may have no git repo
         block["provenance_error"] = str(exc)
+        block["versions"] = dict(versions)
     env_hash = os.environ.get("ACTS_GIT_HASH", "").strip()
     hash_file = os.environ.get("ACTS_GIT_HASH_FILE", "").strip()
     if not env_hash and hash_file:
@@ -185,6 +272,19 @@ def _base_provenance(diamond_version: str) -> dict:
     block["host"] = block.get("host") or platform.node()
     block["python"] = block.get("python") or platform.python_version()
     block["release_pair"] = "2026_01 -> 2026_03"
+    block["root"] = str(root)
+    block["inputs"] = {name: item.as_dict() for name, item in sorted(resolved.items())}
+    block["measurement"] = plan["measurement"]
+    block["smoke"] = plan["smoke"]
+    if plan["smoke"]:
+        block["smoke_label"] = plan["label"]
+        block["smoke_plan"] = {
+            "entries": plan["entries"],
+            "queries": plan["n_queries"],
+            "repeats": plan["repeats"],
+            "threads": plan["threads"],
+            "fit": [list(item) for item in plan["fit"]],
+        }
     return block
 
 
@@ -200,9 +300,9 @@ def _diamond_version(diamond: str) -> str:
     return text.strip()
 
 
-def _makedb(diamond: str, fasta: Path) -> None:
+def _makedb(diamond: str, fasta: Path, threads: str) -> None:
     proc = _run(
-        [diamond, "makedb", "--in", str(fasta), "--db", str(fasta), "--threads", THREADS]
+        [diamond, "makedb", "--in", str(fasta), "--db", str(fasta), "--threads", threads]
     )
     if proc.returncode != 0:
         raise SystemExit(f"makedb failed for {fasta}:\n{(proc.stderr or proc.stdout)[-1000:]}")
@@ -220,7 +320,7 @@ def _fasta_length_sum(path: Path) -> tuple[int, int]:
     return len(entries), sum(entry.length for entry in entries)
 
 
-def _time_blast(diamond: str, db: Path, query: Path, out: Path, *, k: str) -> float:
+def _time_blast(diamond: str, db: Path, query: Path, out: Path, *, k: str, threads: str) -> float:
     cmd = [
         diamond,
         "blastp",
@@ -241,7 +341,7 @@ def _time_blast(diamond: str, db: Path, query: Path, out: Path, *, k: str) -> fl
         "--comp-based-stats",
         "1",
         "--threads",
-        THREADS,
+        threads,
         "--outfmt",
         "6",
         *OUTFMT,
@@ -254,10 +354,12 @@ def _time_blast(diamond: str, db: Path, query: Path, out: Path, *, k: str) -> fl
     return elapsed
 
 
-def _write_sample(records_path: Path, dest: Path, n: int) -> int:
+def _write_sample(records_path: Path, dest: Path, n: int, *, expect: int) -> int:
     records = read_records(records_path)
-    if len(records) != N_FULL:
-        raise SystemExit(f"query file has {len(records)} records, protocol locks {N_FULL}")
+    if len(records) != expect:
+        raise SystemExit(
+            f"STOP_INPUTS: query file has {len(records)} records, expected {expect}"
+        )
     chosen = sample_record_indices(len(records), n, PROBE_SEED)
     picked = [records[i] for i in chosen]
     # write_entries is for reference entries. Queries go through the FASTA writer
@@ -387,43 +489,102 @@ def _gunzip_if_needed(path: Path, dest: Path) -> Path:
     return dest
 
 
-def run(args: argparse.Namespace) -> int:
-    diamond = str(args.diamond)
-    version = _diamond_version(diamond)
-    base = _base_provenance(version)
-    out = args.out
-    out.mkdir(parents=True, exist_ok=True)
-    work = args.work
-    work.mkdir(parents=True, exist_ok=True)
-    old_fa = _gunzip_if_needed(args.old, work / "sprot_2026_01.fasta")
-    new_fa = _gunzip_if_needed(args.new, work / "sprot_2026_03.fasta")
-    queries = args.queries
+def _open_text(path: Path):
+    if path.name.endswith(".gz"):
+        return gzip.open(path, "rt")
+    return path.open("rt")
 
-    old_md5 = file_md5(args.old)
-    new_md5 = file_md5(args.new)
+
+def _count_records(path: Path) -> int:
+    with _open_text(path) as handle:
+        return count_fasta_records(handle)
+
+
+def _head_fasta(src: Path, dest: Path, n: int) -> int:
+    with _open_text(src) as handle:
+        got = copy_fasta_head(handle, dest, n)
+    if got != n:
+        raise SystemExit(f"STOP_INPUTS: {src} has {got} FASTA records, smoke needs {n}")
+    return got
+
+
+def _gate(args: argparse.Namespace) -> tuple[dict[str, ResolvedInput], dict[str, str], dict]:
+    """Resolve and check inputs. Returns before any DIAMOND invocation."""
+    plan = timing_plan(bool(getattr(args, "smoke", False)))
+    try:
+        root = Path(args.root)
+        resolved = check_manifest(protocol_manifest(args), root)
+        check_output_dir(Path(args.out), plan["smoke"])
+        work = Path(args.work)
+        if not work.is_absolute():
+            raise InputManifestError(f"work path is not absolute: {work}")
+        if not plan["smoke"]:
+            n_queries = _count_records(resolved["queries"].path)
+            if n_queries != N_FULL:
+                raise InputManifestError(
+                    f"queries have {n_queries} records, protocol locks {N_FULL}"
+                )
+        versions = check_requirement_pins(PIN_FILE)
+    except InputManifestError as exc:
+        raise SystemExit(str(exc)) from None
+    return resolved, versions, plan
+
+
+def run(args: argparse.Namespace) -> int:
+    resolved, versions, plan = _gate(args)
+    threads = plan["threads"]
+    diamond = str(resolved["diamond"].path)
+    version = _diamond_version(diamond)
+    root = Path(args.root)
+    base = _base_provenance(
+        version, versions=versions, resolved=resolved, root=root, plan=plan
+    )
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    work = Path(args.work)
+    work.mkdir(parents=True, exist_ok=True)
+    old_src = resolved["old"].path
+    new_src = resolved["new"].path
+    query_src = resolved["queries"].path
+    iseq_repo = resolved["iseq"].path
+    if plan["smoke"]:
+        old_fa = work / "smoke_old.fasta"
+        new_fa = work / "smoke_new.fasta"
+        queries = work / "smoke_queries.fasta"
+        _head_fasta(old_src, old_fa, int(plan["entries"]))
+        _head_fasta(new_src, new_fa, int(plan["entries"]))
+        _head_fasta(query_src, queries, int(plan["n_queries"]))
+        base["smoke_truncated"] = {
+            "old": str(old_fa),
+            "new": str(new_fa),
+            "queries": str(queries),
+            "entries": plan["entries"],
+            "n_queries": plan["n_queries"],
+        }
+    else:
+        old_fa = _gunzip_if_needed(old_src, work / "sprot_2026_01.fasta")
+        new_fa = _gunzip_if_needed(new_src, work / "sprot_2026_03.fasta")
+        queries = query_src
+
     base["old_fasta"] = {
-        "path": str(args.old),
-        "bytes": args.old.stat().st_size,
-        "md5": old_md5,
+        "path": str(old_src),
+        "bytes": resolved["old"].size,
+        "md5": resolved["old"].md5,
         "release": "2026_01",
     }
     base["new_fasta"] = {
-        "path": str(args.new),
-        "bytes": args.new.stat().st_size,
-        "md5": new_md5,
+        "path": str(new_src),
+        "bytes": resolved["new"].size,
+        "md5": resolved["new"].md5,
         "release": "2026_03",
         "url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz",
-        "expected_md5": "bc9d398533e6df582b563c6c03093bd0",
-        "expected_bytes": 93801562,
+        "expected_md5": EXPECTED["new"][1],
+        "expected_bytes": EXPECTED["new"][0],
     }
-    if new_md5 != "bc9d398533e6df582b563c6c03093bd0":
-        raise SystemExit(f"2026_03 FASTA md5 is {new_md5}, not the metalink value")
-    if args.new.stat().st_size != 93801562 and args.new.name.endswith(".gz"):
-        raise SystemExit(f"2026_03 FASTA size is {args.new.stat().st_size}")
 
     print("D0 makedb and letters", flush=True)
-    _makedb(diamond, old_fa)
-    _makedb(diamond, new_fa)
+    _makedb(diamond, old_fa, threads)
+    _makedb(diamond, new_fa, threads)
     old_letters = _letters(diamond, old_fa)
     new_letters = _letters(diamond, new_fa)
     old_n, old_sum = _fasta_length_sum(old_fa)
@@ -478,8 +639,8 @@ def run(args: argparse.Namespace) -> int:
     del old_entries, old_res
     print(json.dumps({"c": c, "c_length": churn["c_length"], "n_new": churn["n_new"]}), flush=True)
 
-    argv = s1_argv(diamond, k="0")
-    prep = prep_command(diamond)
+    argv = s1_argv(diamond, k="0", threads=threads)
+    prep = prep_command(diamond, threads)
     print("D2 probe", flush=True)
     records = read_records(queries)
     invoke = subprocess_invoke(
@@ -513,7 +674,7 @@ def run(args: argparse.Namespace) -> int:
     print(fit.decision, fit.reason, flush=True)
 
     print("D2n probe", flush=True)
-    argv_k = s1_argv(diamond, k="25")
+    argv_k = s1_argv(diamond, k="25", threads=threads)
     invoke_k = subprocess_invoke(
         argv_k,
         input_slot=queries,
@@ -544,27 +705,30 @@ def run(args: argparse.Namespace) -> int:
     del new_entries, records
 
     print("D3 timing", flush=True)
-    sample_fa = work / "queries_300.fasta"
-    _write_sample(queries, sample_fa, QUERY_N_FIT)
-    # Discarded cold start, then the six fit runs. Not the alternating means.
-    cold = _time_blast(diamond, new_fa, queries, work / "cold.m8", k="0")
+    # Discarded cold start, then the fit runs. Not the alternating means.
+    # The real plan is three walls at 300 and three at 5117. Smoke is one
+    # wall at 10 and one at 50, labelled not a measurement.
+    cold = _time_blast(diamond, new_fa, queries, work / "cold.m8", k="0", threads=threads)
     fit_walls = []
-    for i in range(3):
-        fit_walls.append(
-            {
-                "n": QUERY_N_FIT,
-                "wall_s": _time_blast(diamond, new_fa, sample_fa, work / f"fit300_{i}.m8", k="0"),
-            }
-        )
-    for i in range(3):
-        fit_walls.append(
-            {
-                "n": N_FULL,
-                "wall_s": _time_blast(diamond, new_fa, queries, work / f"fit5117_{i}.m8", k="0"),
-            }
-        )
+    for n_fit, times in plan["fit"]:
+        # The full query set is the file already validated. A subset is a
+        # sample. Rewriting the full file would change line wrapping.
+        if int(n_fit) == int(plan["n_queries"]):
+            sample_fa = queries
+        else:
+            sample_fa = work / f"queries_{n_fit}.fasta"
+            _write_sample(queries, sample_fa, int(n_fit), expect=int(plan["n_queries"]))
+        for i in range(int(times)):
+            fit_walls.append(
+                {
+                    "n": int(n_fit),
+                    "wall_s": _time_blast(
+                        diamond, new_fa, sample_fa, work / f"fit{n_fit}_{i}.m8", k="0", threads=threads
+                    ),
+                }
+            )
     a, b = fit_ab([row["n"] for row in fit_walls], [row["wall_s"] for row in fit_walls])
-    predicted = speedup(a, b, c, N_FULL)
+    predicted = speedup(a, b, c, int(plan["n_queries"]))
 
     warm = None
     cache_snapshot = work / "cache_after_warm.sqlite"
@@ -591,21 +755,17 @@ def run(args: argparse.Namespace) -> int:
         if cache_path.is_file():
             _checkpoint_cache(cache_path, cache_snapshot)
 
-    ns = [QUERY_N_FIT, QUERY_N_FIT, QUERY_N_FIT, N_FULL, N_FULL, N_FULL]
-    assert [row["n"] for row in fit_walls] == ns
+    expected_ns = [n for n, times in plan["fit"] for _ in range(times)]
+    assert [row["n"] for row in fit_walls] == expected_ns
 
-    order = [
-        ("stock", "ACTS", "iSeqSearch"),
-        ("ACTS", "iSeqSearch", "stock"),
-        ("iSeqSearch", "stock", "ACTS"),
-    ]
+    order = repeat_order(int(plan["repeats"]))
     arms: list[dict] = []
     stock_texts: list[str] = []
     acts_texts: list[str] = []
     iseq_texts: list[str] = []
     iseq_error = None
     if fresh:
-        _makedb(diamond, delta_fa)
+        _makedb(diamond, delta_fa, threads)
         try:
             delta_letters = _letters(diamond, delta_fa)
         except SystemExit as exc:
@@ -616,7 +776,7 @@ def run(args: argparse.Namespace) -> int:
 
     def stock_arm(tag: str) -> dict:
         dest = work / f"{tag}.m8"
-        wall = _time_blast(diamond, new_fa, queries, dest, k="0")
+        wall = _time_blast(diamond, new_fa, queries, dest, k="0", threads=threads)
         text = dest.read_text()
         stock_texts.append(text)
         return {"arm": "stock", "wall_s": wall, "bytes": dest.stat().st_size}
@@ -654,7 +814,7 @@ def run(args: argparse.Namespace) -> int:
         started = time.perf_counter()
         delta_out = work / f"{tag}_delta.m8"
         if fresh and delta_letters:
-            _time_blast(diamond, delta_fa, queries, delta_out, k="0")
+            _time_blast(diamond, delta_fa, queries, delta_out, k="0", threads=threads)
         else:
             delta_out.write_text("")
         search_s = time.perf_counter() - started
@@ -665,7 +825,7 @@ def run(args: argparse.Namespace) -> int:
             why = "warm diamond output is absent, so the published merger was not run"
         else:
             why = _iseq_merge(
-                args.iseq,
+                iseq_repo,
                 old_m8,
                 delta_out,
                 merged,
@@ -740,22 +900,35 @@ def run(args: argparse.Namespace) -> int:
         "a": a,
         "b": b,
         "c": c,
-        "n": N_FULL,
+        "n": int(plan["n_queries"]),
         "predicted_speedup": predicted,
-        "formula": "(a + b*5117) / (a + c*b*5117)",
-        "assumptions": [
-            "a does not shrink on the smaller reference",
-            "per-record cost scales with D1 entry-count c, not c_length",
-            "merge and rescale stay inside the ACTS wall",
-            "the probe and the six fit runs are outside the alternating means",
-        ],
+        "formula": plan["formula"],
+        "assumptions": (
+            [
+                "smoke truncates both releases to 2000 entries and the queries to 50",
+                "one fit wall at n=10 and one at n=50; one alternating repeat",
+                "these walls are not a D3 measurement",
+            ]
+            if plan["smoke"]
+            else [
+                "a does not shrink on the smaller reference",
+                "per-record cost scales with D1 entry-count c, not c_length",
+                "merge and rescale stay inside the ACTS wall",
+                "the probe and the six fit runs are outside the alternating means",
+            ]
+        ),
         "warm": warm,
         "arms": arms,
         "stock_mean_s": stock_mean,
         "acts_mean_s": acts_mean,
         "iseq_mean_s": (sum(iseq_walls) / len(iseq_walls)) if iseq_walls else None,
         "measured_speedup": measured,
-        "confirmed": confirmed(stock_mean, acts_mean, predicted),
+        "confirmed": None if plan["smoke"] else confirmed(stock_mean, acts_mean, predicted),
+        "confirmed_note": (
+            "smoke is not a measurement; the D3 predicate is not applied"
+            if plan["smoke"]
+            else None
+        ),
         "ref_merge_acts": matches,
         "iseq": {
             "ran": bool(iseq_walls),
@@ -831,6 +1004,7 @@ def _iseq_merge(
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--diamond", type=Path, required=True)
     parser.add_argument("--old", type=Path, required=True)
     parser.add_argument("--new", type=Path, required=True)
@@ -838,6 +1012,7 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--iseq", type=Path)
+    parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
     return run(args)
 

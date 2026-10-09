@@ -1,0 +1,8 @@
+# Runtime pins for the DIAMOND second-tool job.
+# Installed once into ${ACTS_CODE_ROOT}/venv. The job must not pip install.
+# iSeqSearch's own requirements.txt says biopython==1.79 and tqdm==4.64.0
+# and does not name numpy. 1.79 does not target the Python 3.11 the job
+# loads. These are the versions the failed job resolved, now pinned.
+biopython==1.85
+numpy==2.4.6
+tqdm==4.67.1
