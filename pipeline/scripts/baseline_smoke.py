@@ -553,17 +553,41 @@ class Runner:
                 extra["inserted_head"] = f"insert.py failed: {exc}"
             extra["script_sha256"] = hashlib.sha256(body.encode()).hexdigest()
             extra["annotations_flag"] = self.args.column == "annotations"
-            extra["incr_cwd"] = incr["top"]
             extra["incr_python"] = incr.get("python")
             extra["documented_invocation"] = "bash ./src/incr.sh myscript.sh"
-            return documented_incr_argv(str(script), str(cache)), Path(incr["top"]), extra
+            # The checkout and the project cache are on NFS. try.sh then
+            # does `cd "$START_DIR"` inside the sandbox. On d05-41 that
+            # cd returns "Operation not supported" (preflight 12899307).
+            # A /tmp cwd lets the sandbox start (preflight 12899342).
+            # The FASTA and Pfam paths inside the script stay on /project2.
+            # /tmp is not used as the FASTA path: INCR drops /tmp from
+            # the dependency set, which would hide the new-file rerun.
+            local = self._incr_local(mode)
+            local.mkdir(parents=True, exist_ok=True)
+            if not (local / ".git").exists():
+                subprocess.run(["git", "init", str(local)], check=False, capture_output=True)
+            local_script = local / "run.sh"
+            local_script.write_text(script.read_text())
+            local_cache = local / "cache"
+            local_cache.mkdir(parents=True, exist_ok=True)
+            extra["incr_cwd"] = str(local)
+            extra["project_script"] = str(script)
+            extra["cwd_reason"] = (
+                "node-local /tmp; NFS checkout is not a usable try.sh START_DIR"
+            )
+            return documented_incr_argv(str(local_script), str(local_cache)), local, extra
         raise ValueError(self.args.tool)
+
+    def _incr_local(self, mode: str) -> Path:
+        return Path("/tmp") / f"acts_incr_{os.environ.get('SLURM_JOB_ID', 'local')}" / mode
 
     def _cache_dir(self, mode: str) -> Path:
         if self.args.tool == "processcache":
             return self.work / "pc" / mode / "cache"
         if self.args.tool == "incr":
-            return self.work / "incr" / mode / "cache"
+            path = self._incr_local(mode) / "cache"
+            path.mkdir(parents=True, exist_ok=True)
+            return path
         return self.work / "riker" / mode / ".rkr"
 
     def _modes(self) -> list[str]:
@@ -616,6 +640,17 @@ class Runner:
         )
         rec["unshare_path"] = shutil.which("unshare")
         rec["unshare_version"] = (unshare.stdout or unshare.stderr or "").splitlines()[:1]
+        merger = self.root / "bin" / "mergerfs"
+        rec["mergerfs"] = str(merger)
+        rec["mergerfs_present"] = merger.is_file()
+        if merger.is_file():
+            ver = subprocess.run([str(merger), "-v"], capture_output=True, text=True)
+            rec["mergerfs_version"] = (ver.stdout or "").splitlines()[:1]
+        else:
+            raise SystemExit(
+                f"mergerfs is not at {merger}. try.sh needs it when overlay "
+                "cannot mount this node's tmpfs /usr."
+            )
         help_text = subprocess.run(
             ["unshare", "--help"], capture_output=True, text=True
         )
