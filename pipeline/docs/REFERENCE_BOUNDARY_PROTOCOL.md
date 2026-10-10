@@ -263,3 +263,85 @@ reason, per-column member residuals, the key-set counts, and
 
 Submit with `ssh discovery sbatch` after `rsync` through `discovery`.
 No login-node search.
+
+## Addendum 2026-10-09 — outcome
+
+Job `12864923` on `a01-16`, elapsed 21m48s, exit 0. Git
+`2ea39e2b93df41aea17c6663bafb00b7a40d7c54`. `blastp` and `makeblastdb`
+reported `2.14.1`. `OLD_FSC` was unset. The measured file is
+`results/reference_boundary_blast.json`.
+
+**Overall.** REFUSE, as predicted. The reason string is
+`out: column 2 matches no normalizer`. Column 2 is `pident`. The locked
+text said a B1-fit miss would surface as that sentence, and that the
+JSON would still carry the key-set counts. Both happened. The fitter
+stops at the first column failure, so the row-key sentence was not the
+recorded reason.
+
+**B1-rows.** Confirmed. Whole 15,125, union 28,937, only-union 13,812,
+only-whole 0, in-two-parts 0. The halves keep rows the whole drops. The
+100000 cap did not place any key only in the whole.
+
+**B1-fit, as locked, on the fitter's aligned keys.** Falsified.
+Identity holds for `pident` on 15,124 of 15,125 aligned keys. The miss
+is query `WP_000153074.1`: part `21.875`, whole `33.333`. That same key
+is the sole miss for `length`, `mismatch`, `gapopen`, `qend`, `send`,
+and `bitscore`, and the sole miss for `evalue` against
+`total_entry_length` (15,124 of 15,125). `qstart` and `sstart` are
+identity on all 15,125. The sentence "on aligned rows, `evalue` fits
+`total_entry_length` and `bitscore` is identity" is false for the
+fitter's own aligned set, because of this one key. `pident` was
+predicted to be identity. It is the column the fitter named.
+
+### Post-hoc
+
+The outputs of job `12864923` lived on node-local scratch and were
+gone. Job `12897373` re-ran the same argv and the same probe on
+`d05-41` (partition `debug`, 59-minute cap) and wrote the three tables
+under `/tmp/acts_ref_bdiag_12897373/call{1,2,3}/out`. Those files are
+`results/reference_boundary_tables/{whole,part0,part1}.tsv`. Their key
+sets match job `12864923`. The fitter was not modified. The job was
+cancelled after the copy, while `column_residuals` was still scanning.
+Classification and the same-HSP residuals below were computed from the
+copied tables with the shipped `consistent` / `half_ulp` predicate.
+Details are in `results/reference_boundary_diagnosis.json`.
+
+`infer_key_columns` selects `sstart` (column 8). `length`, `mismatch`,
+`gapopen`, `qstart`, and `qend` are integers and are not unique inside
+`(qseqid, sseqid)`. The whole table has 15,078 pairs, 32 of them with
+more than one row. `index_rows` accepts every table: there is no
+duplicate `(qseqid, sseqid, sstart)`.
+
+One joined key fails the alignment body. It is one pair, and each
+table has one row for it:
+
+```
+whole  WP_000153074.1 sp|A0KJE6|LOLA_AERHH 33.333 36 23 1 3 37 1 36 205 25.0
+part0  WP_000153074.1 sp|A0KJE6|LOLA_AERHH 21.875 128 72 5 3 105 1 125 180 24.3
+```
+
+Both rows start at query residue 3 and subject residue 1. The intervals
+differ (`qend`/`send` 37/36 against 105/125). The whole interval is
+absent from the part. Classification: `different_hsp`. Counts:
+`same_hsp` 15,124, `different_hsp` 1, `misaligned_row_key` 0,
+`same_interval_different_score` 0, duplicate row keys 0.
+
+On those 15,124 joins the alignment body is byte-identical, and the
+shipped predicate gives:
+
+- `pident`, `length`, `mismatch`, `gapopen`, `qstart`, `qend`,
+  `sstart`, `send`, and `bitscore` are identity (15,124/15,124).
+- `evalue` fits `total_entry_length` (15,124/15,124). `identity` fits
+  77. `entry_count` fits 14,183. `per_key_row_count` fits 88.
+- The worst `evalue` residual under `total_entry_length` is
+  1.489 on `WP_029396194.1` (`245` × 1.99791 against printed `488`).
+  The half-ULP tolerance on that row is 1.499, so the predicate
+  accepts it.
+
+Where the reported HSP is the same alignment, the 2.14.1 reading
+holds: printed E-value tracks database length, and bit score has no
+database factor. The REFUSE is the one pair whose reported HSP changes
+between the half and the whole. That single `pident` change is enough
+for column 2 to match no member. The hit-set cut is also present
+(only-union 13,812) and would have been the refusal if column 2 had
+fitted. Both are reported. No member was added.

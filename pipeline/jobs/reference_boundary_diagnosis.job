@@ -1,0 +1,58 @@
+#!/bin/bash
+# Post-hoc: keep the B1 tabular outputs and classify the column-2 join.
+# Same argv, same probe, ordinary shared node. Not a timing run.
+# debug: the partition's one-hour cap covers the 21m48s measurement,
+# and main had no start time for this rerun. B1 itself stays job 12864923.
+# Stage with rsync through discovery, then:
+#   ssh discovery sbatch /project2/biyik_1165/jjt_373/csci270-star/acts-reference-boundary-20261009/pipeline/jobs/reference_boundary_diagnosis.job
+#SBATCH --job-name=acts_ref_bdiag
+#SBATCH --account=biyik_1165
+#SBATCH --partition=debug
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=00:59:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/acts-reference-boundary-20261009/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/acts-reference-boundary-20261009/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/acts-reference-boundary-20261009
+PIPE="${ROOT}/pipeline"
+REF=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz
+QUERIES=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz
+OUT="${ROOT}/results/reference_boundary_diagnosis.json"
+TABLES="${ROOT}/results/reference_boundary_tables"
+WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_bdiag_${SLURM_JOB_ID}"
+
+mkdir -p "${ROOT}/logs" "${ROOT}/results" "${TABLES}" "${WORK}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || true
+module load python/3.11.9
+module load blast-plus/2.14.1
+
+export PYTHONPATH="${PIPE}"
+export ACTS_GIT_HASH_FILE="${ROOT}/GIT_HASH"
+export OMP_NUM_THREADS=4
+unset OLD_FSC || true
+
+echo "=== reference boundary diagnosis (not a timing run) ==="
+hostname
+python3 --version
+blastp -version
+echo "WORK=${WORK}"
+
+python3 "${PIPE}/scripts/diagnose_reference_boundary.py" \
+  --reference "${REF}" \
+  --queries "${QUERIES}" \
+  --blastp "$(command -v blastp)" \
+  --makeblastdb "$(command -v makeblastdb)" \
+  --out "${OUT}" \
+  --tables "${TABLES}" \
+  --work "${WORK}" \
+  --threads 4
+
+echo REF_BOUNDARY_DIAG_DONE

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib.util
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -27,6 +29,14 @@ _SPEC = importlib.util.spec_from_file_location(
 assert _SPEC and _SPEC.loader
 _DRIVER = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_DRIVER)
+
+_DIAG_SPEC = importlib.util.spec_from_file_location(
+    "diagnose_reference_boundary",
+    PIPE / "scripts" / "diagnose_reference_boundary.py",
+)
+assert _DIAG_SPEC and _DIAG_SPEC.loader
+_DIAG = importlib.util.module_from_spec(_DIAG_SPEC)
+_DIAG_SPEC.loader.exec_module(_DIAG)
 
 b1_argv = _DRIVER.b1_argv
 column_residuals = _DRIVER.column_residuals
@@ -135,4 +145,51 @@ class ReferenceBoundaryTests(unittest.TestCase):
         self.assertIn("total_entry_length", PROTOCOL)
         self.assertIn("bitscore", PROTOCOL)
         self.assertIn("Overall.** REFUSE", PROTOCOL)
-        self.assertNotIn("Addendum 2026-10-09 — outcome", PROTOCOL)
+        self.assertIn("Addendum 2026-10-09 — outcome", PROTOCOL)
+        self.assertIn("different_hsp", PROTOCOL)
+        self.assertIn("out: column 2 matches no normalizer", PROTOCOL)
+        self.assertIn("15,124", PROTOCOL)
+        locked = PROTOCOL.split("## Addendum 2026-10-09 — outcome", 1)[0]
+        self.assertNotIn("different_hsp", locked)
+
+    def test_outcome_files_agree_with_the_addendum(self) -> None:
+        measured = json.loads((PIPE / "results" / "reference_boundary_blast.json").read_text())
+        diagnosis = json.loads((PIPE / "results" / "reference_boundary_diagnosis.json").read_text())
+        self.assertEqual(measured["decision"], "REFUSE")
+        self.assertEqual(measured["reason"], "out: column 2 matches no normalizer")
+        keys = measured["primary_residuals"]["key_sets"]
+        self.assertEqual(keys["only_union"], 13812)
+        self.assertEqual(keys["only_whole"], 0)
+        self.assertEqual(keys["whole"], 15125)
+        self.assertEqual(diagnosis["label"], "POST-HOC")
+        self.assertEqual(diagnosis["key_sets"]["only_union"], 13812)
+        self.assertEqual(diagnosis["joined_same_hsp"], 15124)
+        self.assertEqual(diagnosis["mismatch_counts"], {"different_hsp": 1})
+        self.assertEqual(diagnosis["mismatches"][0]["subject"], "sp|A0KJE6|LOLA_AERHH")
+        evalue = next(
+            col for col in diagnosis["same_hsp_residuals"]["columns"] if col["field"] == "evalue"
+        )
+        bitscore = next(
+            col for col in diagnosis["same_hsp_residuals"]["columns"] if col["field"] == "bitscore"
+        )
+        self.assertTrue(evalue["members"]["total_entry_length"]["fits"])
+        self.assertFalse(evalue["members"]["identity"]["fits"])
+        self.assertTrue(bitscore["members"]["identity"]["fits"])
+        for name in ("whole", "part0", "part1"):
+            path = PIPE / "results" / "reference_boundary_tables" / f"{name}.tsv"
+            digest = hashlib.md5(path.read_bytes()).hexdigest()
+            self.assertEqual(digest, diagnosis["table_md5"][name])
+
+    def test_classify_a_different_hsp_and_a_misjoined_interval(self) -> None:
+        classify = _DIAG.classify_joined
+        whole = "q s 33.333 36 23 1 10 37 5 36 205 25.0".split()
+        other = "q s 21.875 128 72 5 10 105 5 125 180 24.3".split()
+        self.assertEqual(classify(whole, other, [other]), "different_hsp")
+        hidden = "q s 33.333 36 23 1 10 37 5 36 205 25.0".split()
+        self.assertEqual(classify(whole, other, [other, hidden]), "misaligned_row_key")
+        same_interval = "q s 21.875 36 23 1 10 37 5 36 180 24.3".split()
+        self.assertEqual(
+            classify(whole, same_interval, [same_interval]),
+            "same_interval_different_score",
+        )
+        self.assertEqual(classify(whole, list(whole), [list(whole)]), "same_hsp")
