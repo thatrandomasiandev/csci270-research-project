@@ -8,7 +8,7 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
 #SBATCH --exclusive
-#SBATCH --mem=64G
+#SBATCH --mem=0
 #SBATCH --constraint=epyc-7542
 #SBATCH --time=24:00:00
 #SBATCH --output=diamond-%j.out
@@ -31,8 +31,21 @@ source "${ROOT}/pipeline/scripts/absolute_inputs.sh"
 
 PIPE="${ROOT}/pipeline"
 OUT="${ROOT}/results/reference_diamond"
-WORK="${SLURM_TMPDIR:-/tmp}/acts_ref_diamond_${SLURM_JOB_ID:-local}"
+# /tmp on CARC compute nodes is tmpfs. Those bytes count against the job
+# memory cgroup. D3 scratch is the Lustre scratch filesystem.
+SCRATCH_PARENT="/scratch1/${USER}"
+if [[ ! -d "${SCRATCH_PARENT}" ]]; then
+  echo "STOP_SCRATCH: ${SCRATCH_PARENT} is not a directory" >&2
+  exit 2
+fi
+WORK="${SCRATCH_PARENT}/acts_ref_diamond_${SLURM_JOB_ID:?}"
 mkdir -p "${OUT}" "${WORK}"
+FSTYPE="$(findmnt -n -o FSTYPE -T "${WORK}" || true)"
+echo "WORK=${WORK} FSTYPE=${FSTYPE}"
+if [[ -z "${FSTYPE}" || "${FSTYPE}" == "tmpfs" ]]; then
+  echo "STOP_SCRATCH: D3 scratch ${WORK} fstype '${FSTYPE}' is not a disk" >&2
+  exit 2
+fi
 
 PY="${ROOT}/venv/bin/python"
 if [[ ! -x "${PY}" ]]; then
@@ -71,6 +84,7 @@ echo "DIAMOND=${DIAMOND}"
 echo "ISEQ=${ISEQ}"
 df -h "${WORK}" "${ROOT}" || true
 
+set +e
 "${PY}" "${PIPE}/scripts/run_reference_diamond.py" \
   --root "${ROOT}" \
   --diamond "${DIAMOND}" \
@@ -79,6 +93,14 @@ df -h "${WORK}" "${ROOT}" || true
   --queries "${QUERIES}" \
   --iseq "${ISEQ}" \
   --out "${OUT}" \
-  --work "${WORK}"
-
-echo REF_DIAMOND_DONE
+  --work "${WORK}" \
+  --resume-d3
+status=$?
+set -e
+if [[ "${status}" -eq 0 ]]; then
+  rm -rf "${WORK}"
+  echo REF_DIAMOND_DONE
+else
+  echo "leaving scratch ${WORK} after exit ${status}"
+fi
+exit "${status}"

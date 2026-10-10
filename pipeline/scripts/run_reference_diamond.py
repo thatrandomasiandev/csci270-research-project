@@ -13,6 +13,7 @@ import gzip
 import json
 import os
 import platform
+import resource
 import shutil
 import sqlite3
 import subprocess
@@ -149,6 +150,135 @@ def check_output_dir(out: Path, smoke: bool) -> None:
         raise InputManifestError("measurement refuses the smoke output directory")
 
 
+PRIOR_STAGES = (
+    ("D0", "reference_diamond_d0.json"),
+    ("D1", "reference_diamond_d1.json"),
+    ("D2", "reference_diamond_d2.json"),
+    ("D2n", "reference_diamond_d2n.json"),
+)
+
+
+def filesystem_type(path: Path, mounts: str | None = None) -> str:
+    """Filesystem type of the longest mount covering ``path``.
+
+    Empty when ``/proc/mounts`` cannot be read. Callers treat only the
+    explicit type ``tmpfs`` as the RAM disk.
+    """
+    if mounts is None:
+        try:
+            mounts = Path("/proc/mounts").read_text()
+        except OSError:
+            return ""
+    try:
+        target = str(path.resolve())
+    except OSError:
+        target = str(path)
+    best = -1
+    found = ""
+    for line in mounts.splitlines():
+        parts = line.split()
+        if len(parts) < 3:
+            continue
+        mount = parts[1].replace("\\040", " ")
+        kind = parts[2]
+        if target == mount or target.startswith(mount.rstrip("/") + "/"):
+            if len(mount) > best:
+                best = len(mount)
+                found = kind
+    return found
+
+
+def require_durable_scratch(path: Path, *, allow_tmpfs: bool) -> str:
+    """Refuse D3 when its scratch is a RAM disk.
+
+    CARC compute-node ``/tmp`` is tmpfs. Files written there count against
+    the job memory cgroup. ``allow_tmpfs`` is the explicit override.
+    """
+    kind = filesystem_type(path)
+    if kind == "tmpfs" and not allow_tmpfs:
+        raise SystemExit(
+            f"STOP_SCRATCH: D3 scratch {path} is on tmpfs. "
+            "That filesystem is RAM and counts against the job memory cgroup. "
+            "Pass --allow-tmpfs-scratch to override."
+        )
+    return kind
+
+
+def memory_snapshot() -> dict:
+    """Host memory and this process's peak RSS, for the result JSON."""
+    snap: dict = {
+        "ru_maxrss_self": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,
+        "ru_maxrss_children": resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss,
+        "ru_maxrss_unit": "bytes" if sys.platform == "darwin" else "kilobytes",
+    }
+    meminfo = Path("/proc/meminfo")
+    if meminfo.is_file():
+        wanted = {"MemTotal:", "MemAvailable:"}
+        for line in meminfo.read_text().splitlines():
+            fields = line.split()
+            if fields and fields[0] in wanted:
+                snap[fields[0][:-1]] = int(fields[1])
+                snap[fields[0][:-1] + "_unit"] = "kilobytes"
+    return snap
+
+
+def load_prior_stages(out: Path) -> dict[str, dict]:
+    """Read committed D0–D2n. Does not write them."""
+    loaded: dict[str, dict] = {}
+    for stage, name in PRIOR_STAGES:
+        path = out / name
+        if not path.is_file():
+            raise SystemExit(f"STOP_RESUME: {path} is missing; D3 was not started")
+        try:
+            payload = json.loads(path.read_text())
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            raise SystemExit(f"STOP_RESUME: {path} is not readable JSON ({exc})") from None
+        if payload.get("stage") != stage:
+            raise SystemExit(
+                f"STOP_RESUME: {path} stage is {payload.get('stage')!r}, expected {stage}"
+            )
+        loaded[stage] = payload
+    return loaded
+
+
+def index_out_file(
+    path: Path,
+    record_col: int,
+    entry_col: int,
+    index_col: int | None,
+) -> dict[tuple[str, str, str], list[str]]:
+    """Index an m8 one line at a time. The file text is not retained."""
+    from acts.reference_fit import row_key
+
+    indexed: dict[tuple[str, str, str], list[str]] = {}
+    with path.open("rt") as handle:
+        for line_no, line in enumerate(handle, start=1):
+            if not line.strip() or line.startswith("#"):
+                continue
+            cells = line.split()
+            try:
+                key = row_key(cells, record_col, entry_col, index_col)
+            except IndexError as exc:
+                raise ValueError(f"{path}:{line_no} has too few columns") from exc
+            if key in indexed:
+                raise ValueError(f"duplicate row key {key}")
+            indexed[key] = cells
+    return indexed
+
+
+def _out_key_columns(fit: dict) -> tuple[int, int, int | None]:
+    tables = fit.get("tables") or []
+    if not tables:
+        raise ValueError("no fitted table")
+    table = tables[0]
+    index = table.get("index_col")
+    return (
+        int(table["record_col"]),
+        int(table["entry_col"]),
+        None if index is None else int(index),
+    )
+
+
 def s1_argv(diamond: str, *, k: str, threads: str = THREADS) -> list[str]:
     """Locked S1 command. k is "0" for S1 and "25" for the negative control."""
     return [
@@ -278,6 +408,7 @@ def _base_provenance(
     block["inputs"] = {name: item.as_dict() for name, item in sorted(resolved.items())}
     block["measurement"] = plan["measurement"]
     block["smoke"] = plan["smoke"]
+    block["memory"] = memory_snapshot()
     if plan["smoke"]:
         block["smoke_label"] = plan["label"]
         block["smoke_plan"] = {
@@ -450,6 +581,41 @@ def _published_bar(stock_text: str, other_text: str) -> dict:
     }
 
 
+def _column_reports(table: dict):
+    from acts.reference_fit import ColumnReport
+
+    return [
+        ColumnReport(
+            index=int(col["index"]),
+            role=str(col["role"]),
+            member=col.get("member"),
+            count_table=col.get("count_table"),
+        )
+        for col in table.get("columns") or []
+    ]
+
+
+def _ref_merge_indexed(
+    stock_rows: dict,
+    our_rows: dict,
+    fit: dict,
+    provenance: dict | None = None,
+    *,
+    printed: bool = False,
+) -> dict:
+    tables = fit.get("tables") or []
+    if not tables:
+        return {"ok": False, "why": "no fitted table"}
+    columns = _column_reports(tables[0])
+    if printed:
+        ok, why = ref_merge_printed_rows(stock_rows, our_rows, columns)
+    elif provenance is None:
+        return {"ok": False, "why": "rescale provenance is required"}
+    else:
+        ok, why = ref_merge_rows(stock_rows, our_rows, columns, provenance)
+    return {"ok": ok, "why": why}
+
+
 def _ref_merge_files(
     stock_text: str,
     ours_text: str,
@@ -464,33 +630,59 @@ def _ref_merge_files(
     table = tables[0]
     stock = parse_table_text("stock", stock_text)
     ours = parse_table_text("ours", ours_text)
+    record_col = int(table["record_col"])
+    entry_col = int(table["entry_col"])
+    index_col = table.get("index_col")
     try:
-        stock_rows = index_rows(
-            stock.rows, int(table["record_col"]), int(table["entry_col"]), table.get("index_col")
-        )
-        our_rows = index_rows(
-            ours.rows, int(table["record_col"]), int(table["entry_col"]), table.get("index_col")
-        )
+        stock_rows = index_rows(stock.rows, record_col, entry_col, index_col)
+        our_rows = index_rows(ours.rows, record_col, entry_col, index_col)
     except ValueError as exc:
         return {"ok": False, "why": str(exc)}
-    from acts.reference_fit import ColumnReport
+    return _ref_merge_indexed(
+        stock_rows, our_rows, fit, provenance, printed=printed
+    )
 
-    columns = [
-        ColumnReport(
-            index=int(col["index"]),
-            role=str(col["role"]),
-            member=col.get("member"),
-            count_table=col.get("count_table"),
-        )
-        for col in table.get("columns") or []
-    ]
-    if printed:
-        ok, why = ref_merge_printed_rows(stock_rows, our_rows, columns)
-    elif provenance is None:
-        return {"ok": False, "why": "rescale provenance is required"}
-    else:
-        ok, why = ref_merge_rows(stock_rows, our_rows, columns, provenance)
-    return {"ok": ok, "why": why}
+
+def _published_bar_indexed(
+    stock_rows: dict[tuple[str, str, str], list[str]],
+    other_rows: dict[tuple[str, str, str], list[str]],
+) -> dict:
+    """Pearson and hit counts from indexed rows. No second copy of the file text."""
+
+    def pairs(indexed: dict[tuple[str, str, str], list[str]]) -> dict[tuple[str, str], str]:
+        out: dict[tuple[str, str], str] = {}
+        for (query, subject, _index), cells in indexed.items():
+            key = (query, subject)
+            if key in out:
+                raise ValueError(f"duplicate query-subject row {key}")
+            if len(cells) <= EVALUE_COL:
+                continue
+            out[key] = cells[EVALUE_COL]
+        return out
+
+    try:
+        stock = pairs(stock_rows)
+        other = pairs(other_rows)
+    except ValueError as exc:
+        return {"ok": False, "why": str(exc)}
+    both = set(stock) & set(other)
+    xs = []
+    ys = []
+    for key in both:
+        try:
+            xs.append(float(stock[key]))
+            ys.append(float(other[key]))
+        except ValueError:
+            continue
+    return {
+        "n_stock": len(stock),
+        "n_other": len(other),
+        "n_intersection": len(both),
+        "n_only_stock": len(set(stock) - set(other)),
+        "n_only_other": len(set(other) - set(stock)),
+        "evalue_pearson": pearson(xs, ys),
+        "n_pearson": len(xs),
+    }
 
 
 def _gunzip_if_needed(path: Path, dest: Path) -> Path:
@@ -546,6 +738,14 @@ def _gate(args: argparse.Namespace) -> tuple[dict[str, ResolvedInput], dict[str,
 
 def run(args: argparse.Namespace) -> int:
     resolved, versions, plan = _gate(args)
+    work = Path(args.work)
+    scratch_kind = ""
+    if plan["measurement"]:
+        work.mkdir(parents=True, exist_ok=True)
+        scratch_kind = require_durable_scratch(
+            work, allow_tmpfs=bool(getattr(args, "allow_tmpfs_scratch", False))
+        )
+        print(f"D3 scratch {work} fstype {scratch_kind}", flush=True)
     threads = plan["threads"]
     diamond = str(resolved["diamond"].path)
     version = _diamond_version(diamond)
@@ -595,6 +795,25 @@ def run(args: argparse.Namespace) -> int:
         "expected_md5": EXPECTED["new"][1],
         "expected_bytes": EXPECTED["new"][0],
     }
+    base["scratch"] = {
+        "path": str(work),
+        "fstype": scratch_kind or filesystem_type(work),
+    }
+    if getattr(args, "resume_d3", False):
+        if plan["smoke"]:
+            raise SystemExit("STOP_RESUME: smoke cannot resume a measurement")
+        return _resume_d3(
+            diamond=diamond,
+            threads=threads,
+            plan=plan,
+            work=work,
+            out=out,
+            queries=queries,
+            new_fa=new_fa,
+            old_fa=old_fa,
+            base=base,
+            iseq_repo=iseq_repo,
+        )
 
     print("D0 makedb and letters", flush=True)
     _makedb(diamond, old_fa, threads)
@@ -718,11 +937,78 @@ def run(args: argparse.Namespace) -> int:
     print("D2n", fit_k.decision, flush=True)
     del new_entries, records
 
+    has_fresh = bool(fresh)
+    del fresh
+    return _execute_d3(
+        diamond=diamond,
+        threads=threads,
+        plan=plan,
+        work=work,
+        out=out,
+        queries=queries,
+        new_fa=new_fa,
+        old_fa=old_fa,
+        argv=argv,
+        prep=prep,
+        c=c,
+        fit_decision=fit.decision,
+        fit_dict=fit_dict,
+        fit_k_decision=fit_k.decision,
+        d0_old_equal=bool(d0["old_equal"]),
+        d0_new_equal=bool(d0["new_equal"]),
+        base=base,
+        cache_path=cache_path,
+        has_fresh=has_fresh,
+        delta_fa=delta_fa,
+        old_letters=old_letters,
+        iseq_repo=iseq_repo,
+        resumed_from=None,
+    )
+
+
+def _measured_then_unlink(path: Path) -> int:
+    """Byte size of a scratch file, then delete it. Zero when it is absent."""
+    if not path.is_file():
+        return 0
+    size = path.stat().st_size
+    path.unlink()
+    return size
+
+
+def _execute_d3(
+    *,
+    diamond: str,
+    threads: str,
+    plan: dict,
+    work: Path,
+    out: Path,
+    queries: Path,
+    new_fa: Path,
+    old_fa: Path,
+    argv: list[str],
+    prep: str,
+    c: float,
+    fit_decision: str,
+    fit_dict: dict,
+    fit_k_decision: str,
+    d0_old_equal: bool,
+    d0_new_equal: bool,
+    base: dict,
+    cache_path: Path,
+    has_fresh: bool,
+    delta_fa: Path,
+    old_letters: int,
+    iseq_repo: Path,
+    resumed_from: dict | None,
+) -> int:
+    """Clocked D3. Indexes m8 files one at a time and does not keep their text."""
     print("D3 timing", flush=True)
     # Discarded cold start, then the fit runs. Not the alternating means.
     # The real plan is three walls at 300 and three at 5117. Smoke is one
     # wall at 10 and one at 50, labelled not a measurement.
-    cold = _time_blast(diamond, new_fa, queries, work / "cold.m8", k="0", threads=threads)
+    cold_path = work / "cold.m8"
+    cold = _time_blast(diamond, new_fa, queries, cold_path, k="0", threads=threads)
+    cold_bytes = _measured_then_unlink(cold_path)
     fit_walls = []
     for n_fit, times in plan["fit"]:
         # The full query set is the file already validated. A subset is a
@@ -733,12 +1019,13 @@ def run(args: argparse.Namespace) -> int:
             sample_fa = work / f"queries_{n_fit}.fasta"
             _write_sample(queries, sample_fa, int(n_fit), expect=int(plan["n_queries"]))
         for i in range(int(times)):
+            dest = work / f"fit{n_fit}_{i}.m8"
+            wall = _time_blast(diamond, new_fa, sample_fa, dest, k="0", threads=threads)
             fit_walls.append(
                 {
                     "n": int(n_fit),
-                    "wall_s": _time_blast(
-                        diamond, new_fa, sample_fa, work / f"fit{n_fit}_{i}.m8", k="0", threads=threads
-                    ),
+                    "wall_s": wall,
+                    "output_bytes": _measured_then_unlink(dest),
                 }
             )
     a, b = fit_ab([row["n"] for row in fit_walls], [row["wall_s"] for row in fit_walls])
@@ -746,7 +1033,7 @@ def run(args: argparse.Namespace) -> int:
 
     warm = None
     cache_snapshot = work / "cache_after_warm.sqlite"
-    if fit.decision == "SHIP":
+    if fit_decision == "SHIP":
         started = time.perf_counter()
         warm_rec = ReferenceIncremental(
             argv=argv,
@@ -774,11 +1061,8 @@ def run(args: argparse.Namespace) -> int:
 
     order = repeat_order(int(plan["repeats"]))
     arms: list[dict] = []
-    stock_texts: list[str] = []
-    acts_texts: list[str] = []
-    iseq_texts: list[str] = []
     iseq_error = None
-    if fresh:
+    if has_fresh:
         _makedb(diamond, delta_fa, threads)
         try:
             delta_letters = _letters(diamond, delta_fa)
@@ -791,9 +1075,13 @@ def run(args: argparse.Namespace) -> int:
     def stock_arm(tag: str) -> dict:
         dest = work / f"{tag}.m8"
         wall = _time_blast(diamond, new_fa, queries, dest, k="0", threads=threads)
-        text = dest.read_text()
-        stock_texts.append(text)
-        return {"arm": "stock", "wall_s": wall, "bytes": dest.stat().st_size}
+        return {
+            "arm": "stock",
+            "tag": tag,
+            "wall_s": wall,
+            "bytes": dest.stat().st_size if dest.is_file() else 0,
+            "output": str(dest) if dest.is_file() else "",
+        }
 
     def acts_arm(tag: str) -> dict:
         if cache_snapshot.is_file():
@@ -811,23 +1099,24 @@ def run(args: argparse.Namespace) -> int:
         ).run()
         wall = time.perf_counter() - started
         table = work / tag / "tables" / "out"
-        text = table.read_text() if table.is_file() else ""
-        acts_texts.append(text)
         return {
             "arm": "ACTS",
+            "tag": tag,
             "wall_s": wall,
             "decision": rec.decision,
             "reason": rec.reason,
             "extra": rec.extra,
+            "output": str(table) if table.is_file() else "",
+            "bytes": table.stat().st_size if table.is_file() else 0,
         }
 
     def iseq_arm(tag: str) -> dict:
         nonlocal iseq_error
         if iseq_error and delta_letters is None:
-            return {"arm": "iSeqSearch", "ran": False, "why": iseq_error}
+            return {"arm": "iSeqSearch", "tag": tag, "ran": False, "why": iseq_error}
         started = time.perf_counter()
         delta_out = work / f"{tag}_delta.m8"
-        if fresh and delta_letters:
+        if has_fresh and delta_letters:
             _time_blast(diamond, delta_fa, queries, delta_out, k="0", threads=threads)
         else:
             delta_out.write_text("")
@@ -847,24 +1136,27 @@ def run(args: argparse.Namespace) -> int:
                 int(delta_letters or 0),
             )
         merge_s = time.perf_counter() - merge_started
+        _measured_then_unlink(delta_out)
         if why:
             iseq_error = why
             return {
                 "arm": "iSeqSearch",
+                "tag": tag,
                 "ran": False,
                 "why": why,
                 "search_s": search_s,
                 "wall_s": search_s + merge_s,
             }
-        text = merged.read_text()
-        iseq_texts.append(text)
         return {
             "arm": "iSeqSearch",
+            "tag": tag,
             "ran": True,
             "wall_s": search_s + merge_s,
             "search_s": search_s,
             "merge_s": merge_s,
             "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
+            "output": str(merged) if merged.is_file() else "",
+            "bytes": merged.stat().st_size if merged.is_file() else 0,
         }
 
     # Each ACTS repeat restores the post-warm cache, so a later repeat does not
@@ -888,37 +1180,69 @@ def run(args: argparse.Namespace) -> int:
     stock_mean = sum(stock_walls) / len(stock_walls) if stock_walls else 0.0
     acts_mean = sum(acts_walls) / len(acts_walls) if acts_walls else 0.0
     measured = (stock_mean / acts_mean) if acts_mean else None
-    stock_text = stock_texts[0] if stock_texts else ""
     matches = []
-    for i, text in enumerate(acts_texts):
-        if not stock_text or not text:
-            matches.append({"i": i, "ok": False, "why": "missing output"})
+    iseq_bars = []
+    stock_index = None
+    stock_error = ""
+    stock_arms = [row for row in arms if row["arm"] == "stock" and row.get("output")]
+    if stock_arms:
+        try:
+            stock_index = index_out_file(Path(stock_arms[0]["output"]), *_out_key_columns(fit_dict))
+        except (OSError, ValueError) as exc:
+            stock_error = str(exc)
+    else:
+        stock_error = "missing output"
+    for i, row in enumerate(arm for arm in arms if arm["arm"] == "ACTS"):
+        output = row.get("output") or ""
+        if stock_index is None or not output or not Path(output).is_file():
+            matches.append({"i": i, "ok": False, "why": stock_error or "missing output"})
             continue
-        prov_path = work / f"r{i + 1}_ACTS" / "tables" / "out.provenance.json"
+        prov_path = work / row["tag"] / "tables" / "out.provenance.json"
         if not prov_path.is_file():
             matches.append({"i": i, "ok": False, "why": "rescale provenance sidecar is missing"})
             continue
         try:
-            provenance = load_rescale_provenance(json.loads(prov_path.read_text()))
+            rescale = load_rescale_provenance(json.loads(prov_path.read_text()))
         except (OSError, UnicodeError, ValueError, KeyError, TypeError) as exc:
             matches.append({"i": i, "ok": False, "why": f"rescale provenance: {exc}"})
             continue
-        row = _ref_merge_files(stock_text, text, fit_dict, provenance)
-        row["i"] = i
-        matches.append(row)
-    iseq_bars = []
-    for i, text in enumerate(iseq_texts):
-        if not stock_text or not text:
+        try:
+            ours = index_out_file(Path(output), *_out_key_columns(fit_dict))
+        except (OSError, ValueError) as exc:
+            matches.append({"i": i, "ok": False, "why": str(exc)})
             continue
-        bar = _published_bar(stock_text, text)
-        bar["ref_merge"] = _ref_merge_files(stock_text, text, fit_dict, printed=True)
+        merged = _ref_merge_indexed(stock_index, ours, fit_dict, rescale)
+        merged["i"] = i
+        matches.append(merged)
+        del ours
+        _measured_then_unlink(Path(output))
+    for i, row in enumerate(arm for arm in arms if arm["arm"] == "iSeqSearch" and row.get("output")):
+        output = row.get("output") or ""
+        if stock_index is None or not output or not Path(output).is_file():
+            continue
+        try:
+            other = index_out_file(Path(output), *_out_key_columns(fit_dict))
+        except (OSError, ValueError) as exc:
+            iseq_bars.append({"i": i, "ok": False, "why": str(exc)})
+            continue
+        try:
+            bar = _published_bar_indexed(stock_index, other)
+        except ValueError as exc:
+            bar = {"ok": False, "why": str(exc)}
+        bar["ref_merge"] = _ref_merge_indexed(stock_index, other, fit_dict, printed=True)
         bar["i"] = i
         iseq_bars.append(bar)
+        del other
+        _measured_then_unlink(Path(output))
+    for row in stock_arms:
+        _measured_then_unlink(Path(row["output"]))
+    del stock_index
     d3 = {
         **base,
         "stage": "D3",
         "setting": "S1",
         "discarded_cold_start_s": cold,
+        "discarded_cold_start_bytes": cold_bytes,
         "fit_walls": fit_walls,
         "a": a,
         "b": b,
@@ -959,14 +1283,124 @@ def run(args: argparse.Namespace) -> int:
             "bars": iseq_bars,
             "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
         },
-        "d2_decision": fit.decision,
-        "d2n_decision": fit_k.decision,
-        "d0_letters_equal": {"old": d0["old_equal"], "new": d0["new_equal"]},
+        "d2_decision": fit_decision,
+        "d2n_decision": fit_k_decision,
+        "d0_letters_equal": {"old": d0_old_equal, "new": d0_new_equal},
+        "memory": memory_snapshot(),
     }
+    if resumed_from is not None:
+        d3["resumed_from"] = resumed_from
     _write(out / "reference_diamond_d3.json", d3)
     print(json.dumps({"confirmed": d3["confirmed"], "predicted": predicted, "measured": measured}), flush=True)
     return 0
 
+
+def _resume_d3(
+    *,
+    diamond: str,
+    threads: str,
+    plan: dict,
+    work: Path,
+    out: Path,
+    queries: Path,
+    new_fa: Path,
+    old_fa: Path,
+    base: dict,
+    iseq_repo: Path,
+) -> int:
+    """Run D3 from committed D0–D2n. Does not rewrite those files."""
+    prior = load_prior_stages(out)
+    d0 = prior["D0"]
+    d1 = prior["D1"]
+    d2 = prior["D2"]
+    d2n = prior["D2n"]
+    print("D3 resume from committed D0-D2n", flush=True)
+    _makedb(diamond, old_fa, threads)
+    _makedb(diamond, new_fa, threads)
+    old_letters = _letters(diamond, old_fa)
+    new_letters = _letters(diamond, new_fa)
+    if old_letters != int(d0["old"]["dbinfo_letters"]) or new_letters != int(
+        d0["new"]["dbinfo_letters"]
+    ):
+        raise SystemExit(
+            "STOP_RESUME: dbinfo letters "
+            f"({old_letters}, {new_letters}) do not match committed D0 "
+            f"({d0['old']['dbinfo_letters']}, {d0['new']['dbinfo_letters']})"
+        )
+    old_entries = parse_reference(old_fa)
+    new_entries = parse_reference(new_fa)
+    churn = length_weighted_churn(old_entries, new_entries)
+    library = d1["library"]
+    for key in ("n_new", "n_old", "n_unchanged_hash", "n_changed_and_new"):
+        if int(churn[key]) != int(library[key]):
+            raise SystemExit(
+                f"STOP_RESUME: recomputed {key}={churn[key]} "
+                f"does not match committed D1 {library[key]}"
+            )
+    c = fitter_churn_c(churn)
+    if c != float(d1["c"]):
+        raise SystemExit(f"STOP_RESUME: recomputed c {c} does not match committed D1 {d1['c']}")
+    new_hashes = {entry.content_hash for entry in new_entries}
+    old_hashes = {entry.content_hash for entry in old_entries}
+    fresh = [entry for entry in new_entries if entry.content_hash not in old_hashes]
+    removed = sum(1 for entry in old_entries if entry.content_hash not in new_hashes)
+    if len(fresh) != int(d1["n_added_or_changed"]) or removed != int(d1["n_removed"]):
+        raise SystemExit("STOP_RESUME: recomputed churn counts do not match committed D1")
+    delta_fa = work / "delta_2026_03.fasta"
+    if fresh:
+        write_entries(fresh, delta_fa)
+    else:
+        delta_fa.write_text("")
+    has_fresh = bool(fresh)
+    del fresh, old_entries, new_entries, old_hashes, new_hashes
+    argv = s1_argv(diamond, k="0", threads=threads)
+    prep = prep_command(diamond, threads)
+    fit_dict = d2["fit"]
+    cache_path = work / "reference.sqlite"
+    if d2.get("decision") == "SHIP":
+        cache = connect_cache(cache_path)
+        try:
+            cache.save_contract(argv_namespace(argv, new_fa, None), fit_dict)
+        finally:
+            cache.close()
+    return _execute_d3(
+        diamond=diamond,
+        threads=threads,
+        plan=plan,
+        work=work,
+        out=out,
+        queries=queries,
+        new_fa=new_fa,
+        old_fa=old_fa,
+        argv=argv,
+        prep=prep,
+        c=float(d1["c"]),
+        fit_decision=str(d2.get("decision")),
+        fit_dict=fit_dict,
+        fit_k_decision=str(d2n.get("decision")),
+        d0_old_equal=bool(d0.get("old_equal")),
+        d0_new_equal=bool(d0.get("new_equal")),
+        base=base,
+        cache_path=cache_path,
+        has_fresh=has_fresh,
+        delta_fa=delta_fa,
+        old_letters=old_letters,
+        iseq_repo=iseq_repo,
+        resumed_from={
+            "git": d0.get("git"),
+            "host": d0.get("host"),
+            "files": [name for _stage, name in PRIOR_STAGES],
+            "c": float(d1["c"]),
+            "d2_decision": d2.get("decision"),
+            "d2n_decision": d2n.get("decision"),
+            "note": (
+                "D0-D2n were not re-run. c, the fitted assignment, and the "
+                "letter counts are the committed files. This process repeats "
+                "the untimed warm load, the discarded cold start, the six fit "
+                "runs, and the alternating block."
+            ),
+        },
+    )
 
 def _checkpoint_cache(path: Path, snapshot: Path) -> None:
     """Copy a closed cache after folding the WAL back into the main file."""
@@ -1036,6 +1470,16 @@ def main() -> int:
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--iseq", type=Path)
     parser.add_argument("--smoke", action="store_true")
+    parser.add_argument(
+        "--resume-d3",
+        action="store_true",
+        help="Run D3 from committed D0-D2n JSON in --out. Does not rewrite those files.",
+    )
+    parser.add_argument(
+        "--allow-tmpfs-scratch",
+        action="store_true",
+        help="Permit a measurement to start D3 with scratch on tmpfs.",
+    )
     args = parser.parse_args()
     return run(args)
 

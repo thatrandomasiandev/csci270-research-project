@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import sys
 import tempfile
 import unittest
@@ -169,8 +170,121 @@ class DiamondProtocolGuards(unittest.TestCase):
         self.assertIn("--exclusive", real)
         self.assertIn("--constraint=epyc-7542", real)
         self.assertIn("--cpus-per-task=32", real)
-        self.assertIn("--mem=64G", real)
+        self.assertIn("--mem=0", real)
+        self.assertNotIn("--mem=64G", real)
         self.assertIn("--time=24:00:00", real)
+        self.assertIn("/scratch1/${USER}", real)
+        self.assertIn("--resume-d3", real)
+        self.assertIn("STOP_SCRATCH", real)
+        self.assertNotIn('WORK="${SLURM_TMPDIR', real)
+        protocol = (PIPE / "docs" / "REFERENCE_SECOND_TOOL_PROTOCOL.md").read_text()
+        self.assertIn("`--mem=64G`", protocol)
+        self.assertIn("Addendum 2026-10-10", protocol)
+        self.assertIn("12866389", protocol)
+
+    def test_filesystem_type_uses_the_longest_mount(self) -> None:
+        mounts = "\n".join(
+            [
+                "tmpfs / tmpfs rw 0 0",
+                "tmpfs /tmp tmpfs rw 0 0",
+                "10.1.1.1:/lfs1 /scratch1 lustre rw 0 0",
+            ]
+        )
+        self.assertEqual(_DRIVER.filesystem_type(Path("/tmp/acts/job"), mounts=mounts), "tmpfs")
+        self.assertEqual(
+            _DRIVER.filesystem_type(Path("/scratch1/jjt_373/acts"), mounts=mounts),
+            "lustre",
+        )
+        self.assertEqual(_DRIVER.filesystem_type(Path("/home/x"), mounts=mounts), "tmpfs")
+
+    def test_d3_refuses_tmpfs_scratch_unless_allowed(self) -> None:
+        original = _DRIVER.filesystem_type
+        _DRIVER.filesystem_type = lambda _path, mounts=None: "tmpfs"
+        try:
+            with self.assertRaises(SystemExit) as caught:
+                _DRIVER.require_durable_scratch(Path("/tmp/acts"), allow_tmpfs=False)
+            self.assertIn("STOP_SCRATCH", str(caught.exception))
+            self.assertEqual(
+                _DRIVER.require_durable_scratch(Path("/tmp/acts"), allow_tmpfs=True),
+                "tmpfs",
+            )
+        finally:
+            _DRIVER.filesystem_type = original
+
+    def test_measurement_refuses_tmpfs_before_diamond(self) -> None:
+        called: list[str] = []
+
+        def _boom(*_args, **_kwargs):
+            called.append("diamond")
+            raise AssertionError("diamond ran")
+
+        def _gate(_args):
+            return {}, {}, _DRIVER.timing_plan(False)
+
+        original_gate = _DRIVER._gate
+        original_version = _DRIVER._diamond_version
+        original_fs = _DRIVER.filesystem_type
+        _DRIVER._gate = _gate
+        _DRIVER._diamond_version = _boom
+        _DRIVER.filesystem_type = lambda _path, mounts=None: "tmpfs"
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                args = argparse.Namespace(
+                    work=Path(tmp) / "work",
+                    allow_tmpfs_scratch=False,
+                    resume_d3=False,
+                )
+                with self.assertRaises(SystemExit) as caught:
+                    _DRIVER.run(args)
+                self.assertIn("STOP_SCRATCH", str(caught.exception))
+                self.assertEqual(called, [])
+        finally:
+            _DRIVER._gate = original_gate
+            _DRIVER._diamond_version = original_version
+            _DRIVER.filesystem_type = original_fs
+
+    def test_index_out_file_matches_the_row_index_and_does_not_keep_the_text(self) -> None:
+        from acts.reference_fit import index_rows, parse_table_text
+
+        text = "q1\ts1\t1\t2\t0\t0\t1\t2\t3\t4\t1e-5\t40\n"
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "out.m8"
+            path.write_text(text)
+            indexed = _DRIVER.index_out_file(path, 0, 1, None)
+        parsed = index_rows(parse_table_text("out", text).rows, 0, 1, None)
+        self.assertEqual(indexed, parsed)
+        self.assertEqual(indexed[("q1", "s1", "")][10], "1e-5")
+
+    def test_committed_d0_through_d2n_are_the_measured_outcomes(self) -> None:
+        prior = _DRIVER.load_prior_stages(PIPE / "results" / "reference_diamond")
+        self.assertTrue(prior["D0"]["old_equal"])
+        self.assertTrue(prior["D0"]["new_equal"])
+        self.assertEqual(prior["D0"]["old"]["dbinfo_letters"], 208482574)
+        self.assertEqual(prior["D0"]["new"]["dbinfo_letters"], 209017843)
+        self.assertEqual(prior["D0"]["new"]["n_entries"], 575748)
+        self.assertEqual(prior["D1"]["c"], 0.01778382208883056)
+        self.assertEqual(prior["D1"]["library"]["n_new"], 575748)
+        self.assertEqual(prior["D1"]["n_added_or_changed"], 10239)
+        self.assertEqual(prior["D1"]["n_removed"], 9118)
+        self.assertEqual(prior["D2"]["decision"], "SHIP")
+        self.assertTrue(prior["D2"]["expectation"]["matches"])
+        by_index = {row["index"]: row for row in prior["D2"]["assignment"]}
+        self.assertEqual(by_index[10]["member"], "total_entry_length")
+        for index in (2, 3, 4, 5, 6, 7, 8, 9, 11):
+            self.assertEqual(by_index[index]["member"], "identity")
+        self.assertEqual(prior["D2n"]["decision"], "REFUSE")
+        self.assertIn("whole 3686", prior["D2n"]["reason"])
+        self.assertIn("union 6121", prior["D2n"]["reason"])
+        self.assertIn("only-union 2435", prior["D2n"]["reason"])
+        self.assertTrue(prior["D0"]["git"].startswith("9cbd81b"))
+
+    def test_resume_stops_when_a_stage_file_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            (out / "reference_diamond_d0.json").write_text(json.dumps({"stage": "D0"}))
+            with self.assertRaises(SystemExit) as caught:
+                _DRIVER.load_prior_stages(out)
+            self.assertIn("STOP_RESUME", str(caught.exception))
 
 
 def parse_reference_text(text: str):

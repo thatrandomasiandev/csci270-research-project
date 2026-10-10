@@ -1,0 +1,126 @@
+#!/bin/bash
+# Diagnostic only. Not a D0–D3 measurement. Ordinary node, output on /scratch1.
+# Same S1 flags as the locked command except the thread count, which matches
+# this allocation. The full D3 job stays at 32 threads.
+#SBATCH --job-name=diamond_oom_probe
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --mem=128G
+#SBATCH --time=01:00:00
+#SBATCH --output=/scratch1/jjt_373/diamond-oom-probe/probe-%j.out
+#SBATCH --error=/scratch1/jjt_373/diamond-oom-probe/probe-%j.err
+
+set -euo pipefail
+
+NEW=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz
+QUERIES=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz
+DIAMOND=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond
+
+SCRATCH=/scratch1/jjt_373/diamond-oom-probe/${SLURM_JOB_ID}
+mkdir -p "${SCRATCH}"
+export TMPDIR="${SCRATCH}"
+
+echo "=== mounts ==="
+hostname
+date -Is
+findmnt -T / -o TARGET,FSTYPE,SIZE || true
+findmnt -T /tmp -o TARGET,FSTYPE,SIZE || true
+findmnt -T "${SCRATCH}" -o TARGET,FSTYPE,SIZE
+free -h
+awk '/MemTotal|MemAvailable/ {print}' /proc/meminfo
+"${DIAMOND}" version
+
+python3 - "${QUERIES}" "${SCRATCH}" <<'PY'
+import gzip, random, sys
+from pathlib import Path
+
+src = Path(sys.argv[1])
+dest_root = Path(sys.argv[2])
+opener = gzip.open if src.name.endswith(".gz") else open
+records = []
+with opener(src, "rt") as handle:
+    chunk = []
+    for line in handle:
+        if line.startswith(">") and chunk:
+            records.append("".join(chunk))
+            chunk = [line]
+        else:
+            chunk.append(line)
+    if chunk:
+        records.append("".join(chunk))
+if len(records) != 5117:
+    raise SystemExit(f"expected 5117 queries, got {len(records)}")
+rng = random.Random(20261006)
+picked = set(rng.sample(range(len(records)), 300))
+sample = [records[i] for i in range(len(records)) if i in picked]
+(dest_root / "q300_seed.fasta").write_text("".join(sample))
+(dest_root / "q300_head.fasta").write_text("".join(records[:300]))
+(dest_root / "q1500_head.fasta").write_text("".join(records[:1500]))
+print(f"queries {len(records)} sample {len(sample)}", flush=True)
+PY
+
+if [[ ! -s "${SCRATCH}/sprot.fasta" ]]; then
+  gzip -dc "${NEW}" > "${SCRATCH}/sprot.fasta"
+fi
+if [[ ! -s "${SCRATCH}/sprot.fasta.dmnd" ]]; then
+  "${DIAMOND}" makedb --in "${SCRATCH}/sprot.fasta" --db "${SCRATCH}/sprot.fasta" --threads 16
+fi
+
+run_one() {
+  local name="$1"
+  local query="$2"
+  local out="${SCRATCH}/${name}.m8"
+  echo "=== blast ${name} ==="
+  date -Is
+  # timeout leaves a partial file if diamond is still growing when killed.
+  set +e
+  /usr/bin/time -v timeout 20m "${DIAMOND}" blastp \
+    --db "${SCRATCH}/sprot.fasta" \
+    --query "${query}" \
+    --out "${out}" \
+    --min-score 40 \
+    -k 0 \
+    --motif-masking 0 \
+    -b 2.0 \
+    --comp-based-stats 1 \
+    --threads 16 \
+    --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \
+    > "${SCRATCH}/${name}.time" 2>&1
+  local rc=$?
+  set -e
+  echo "exit ${rc}"
+  wc -c "${out}" || true
+  wc -l "${out}" || true
+  grep -E 'Maximum resident|Elapsed \(wall|Exit status|Command' "${SCRATCH}/${name}.time" || true
+  python3 - "${out}" <<'PY'
+import sys
+from pathlib import Path
+path = Path(sys.argv[1])
+if not path.is_file():
+    print("no output file")
+    raise SystemExit(0)
+size = path.stat().st_size
+print(f"output_bytes {size}")
+# Holding the whole file is the driver pattern under test. Skip it once the
+# file is large enough that the copy itself would kill this diagnostic.
+if size <= 2_000_000_000:
+    text = path.read_text()
+    print(f"read_text chars {len(text)}")
+    del text
+else:
+    print("read_text skipped; file exceeds 2GB")
+PY
+  if [[ "${rc}" -ne 0 ]]; then
+    echo "stopping after ${name} exit ${rc}"
+    exit 0
+  fi
+}
+
+run_one q300_seed "${SCRATCH}/q300_seed.fasta"
+run_one q300_head "${SCRATCH}/q300_head.fasta"
+run_one q1500_head "${SCRATCH}/q1500_head.fasta"
+echo MEM_PROBE_DONE
+date -Is

@@ -1,0 +1,10 @@
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) python/3.11.9
+
+
+Due to MODULEPATH changes, the following have been reloaded:
+  1) python/3.11.9
+
+/var/spool/slurm/d/job12866389/slurm_script: line 82: 3771782 Killed                  "${PY}" "${PIPE}/scripts/run_reference_diamond.py" --root "${ROOT}" --diamond "${DIAMOND}" --old "${OLD}" --new "${NEW}" --queries "${QUERIES}" --iseq "${ISEQ}" --out "${OUT}" --work "${WORK}"
+[2026-10-10T12:34:04.495] error: Detected 1 oom_kill event in StepId=12866389.batch. Some of the step tasks have been OOM Killed.

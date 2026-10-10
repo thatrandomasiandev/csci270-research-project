@@ -447,3 +447,40 @@ iSeqSearch still has no source token. Its ref-merge stays the locked printed com
 Job 12864042 ran the checker that omitted source rounding. It is superseded, as is 12760029. No measured outcome from either is a result.
 
 The Pfam cache note is in the incremental addendum of the same date. DIAMOND does not use that cache. The smoke of this checker, job 12865057, code `e85f24d`, is recorded under `results/reference_diamond_smoke/`. `ref_merge_acts` passed. That smoke is not a measurement.
+
+## Addendum 2026-10-10 — D0–D2n measured; D3 killed; resume
+
+Job 12866389, code `9cbd81bbdb73876ab788ed75c0e0aa532447cb76`, exclusive `epyc-7542` node `b22-24`. Started 2026-10-10T09:53:06-07:00. Slurm state `OUT_OF_MEMORY`, exit `0:125`, ended 2026-10-10T12:34:04-07:00, elapsed 02:40:58. ReqMem 64G. Batch MaxRSS 47,504,664 KB. The log, the four stage files, and `job_12866389.json` are in `pipeline/results/reference_diamond/`. The locked D0–D3 definitions, S1, and the D3 prediction rule are unchanged.
+
+### D0–D2n against the locked predictions
+
+These four JSON files are the measurement from that code. They were not recomputed. The driver that wrote them records git, host, and package versions. It does not record a memory field. Memory for the job is the sacct MaxRSS in `job_12866389.json`.
+
+D0. `old_equal` and `new_equal` are true. `diamond dbinfo` Letters equals the FASTA length sum on both releases: old 208,482,574 letters and 574,627 entries; new 209,017,843 letters and 575,748 entries. The E-value factor is the pre-registered `total_entry_length` member. MEASURED `reference_diamond_d0.json`, written 2026-10-10T09:53:46-07:00.
+
+D1. `c = 0.01778382208883056 = 1 − 565509/575748`. Added or changed 10,239. Removed 9,118. The residue-and-id fraction 0.9921962386321793 is the descriptive fraction and is not `c`. MEASURED `reference_diamond_d1.json`, written 2026-10-10T09:54:39-07:00.
+
+D2. SHIP. No tie-break. Column 10, `evalue`, is `total_entry_length`. Columns 2–9 and 11 are `identity`. `expectation.matches` is true. MEASURED `reference_diamond_d2.json`, written 2026-10-10T09:54:49-07:00. The three probe invocations are the 10 seconds between the D1 file and this file.
+
+D2n. REFUSE, which is the required negative-control result. The reason is that the row-key sets differ: whole 3,686, union 6,121, only-union 2,435, only-whole 0. MEASURED `reference_diamond_d2n.json`, written 2026-10-10T09:54:57-07:00.
+
+### Why the step was killed
+
+The job set scratch to `${SLURM_TMPDIR:-/tmp}`. The log's `df` on `b22-24` shows `/` is tmpfs, size 126G. CARC documents compute-node `/tmp` as RAM, charged to the job's memory request, and capped at half the node (https://www.carc.usc.edu/user-support/frequently-asked-questions). `sinfo` lists `epyc-7542` nodes at 256000 MB. 126G is half of that.
+
+Stdout was last written at 2026-10-10T09:54:57-07:00. Its last line is `D3 timing`. The shell then reports that the Python driver was killed, and Slurm reports one oom-kill in the batch step. The next statement after that print is one S1 `diamond blastp` of all 5,117 queries with `-k 0`, writing `cold.m8` into the scratch directory. That search ran until 12:34:04, 2h39m07s, and produced no further stdout.
+
+D2 finished in about 10 seconds, including the whole-database `-k 0` probe on 300 queries, so those probe files were not a 45 GiB resident set. MaxRSS 47,504,664 KB is 45.3 GiB of anonymous resident memory. The cgroup limit was 64G. Tmpfs pages are charged to that same cgroup and are not included in MaxRSS. The diamond process and the files on the RAM disk were in one 64G limit.
+
+After that search the driver kept every stock, ACTS, and iSeqSearch m8 via `Path.read_text`. That code had not run yet. The resume indexes one file at a time and deletes the cold-start file and each fit file after the wall is recorded, so those copies are not retained.
+
+Job 12917861 is an ordinary-node probe of the same S1 flags at 16 threads, with output on `/scratch1`, for the seeded 300 queries, the first 300, and the first 1,500. It measures output bytes and maximum resident set. Its numbers are not part of this addendum until that job's log is in the tree. They are not assumed.
+
+### Resume
+
+`--resume-d3` reads the four committed files and does not rewrite them. It rebuilds the databases, checks `dbinfo` letters and the D1 counts against those files, and stops on a mismatch. It stores the committed D2 fit as the cache contract, then runs the untimed warm load, the discarded cold start, the six fit runs, and the alternating block. `c` in the prediction is the committed D1 value. S1 is unchanged. The probe is not repeated: it is outside the alternating means, and its assignment is the committed D2 fit.
+
+Scratch for the rerun is `/scratch1/$USER` (Lustre). On 2026-10-10 that directory had a 10 TB quota and was using 33 KB. The driver refuses to start a measurement when scratch is tmpfs, unless `--allow-tmpfs-scratch` is set. The job also exits before DIAMOND when `findmnt` does not report a non-tmpfs filesystem.
+
+The rerun asks for `--mem=0` on the exclusive node, which is the node's memory. The locked paragraph above still says `--mem=64G`. That is the request the cgroup enforced. This addendum changes the request. It does not change the prediction rule.
+

@@ -1,0 +1,80 @@
+{
+  "c": 0.01778382208883056,
+  "c_is": "1 - n_unchanged_hash / n_new, fitter content hash",
+  "c_length_descriptive": 0.01940682164632232,
+  "diamond_version": "diamond version 2.2.5",
+  "finished_utc": "2026-10-10T16:53:10.851672+00:00",
+  "git": "9cbd81bbdb73876ab788ed75c0e0aa532447cb76",
+  "git_dirty": false,
+  "host": "b22-24.hpc.usc.edu",
+  "inputs": {
+    "diamond": {
+      "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond",
+      "size": 28553136
+    },
+    "iseq": {
+      "md5": "2c0762059f0229add06bf351edb2f979",
+      "member": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search/source/main.py",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search",
+      "size": 2477
+    },
+    "new": {
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+      "size": 93801562
+    },
+    "old": {
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz",
+      "size": 93457057
+    },
+    "queries": {
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz",
+      "size": 1074926
+    }
+  },
+  "library": {
+    "c_length": 0.01940682164632232,
+    "length_changed_and_new": 4056372,
+    "length_new": 209017843,
+    "length_unchanged": 204961471,
+    "n_changed_and_new": 10239,
+    "n_new": 575748,
+    "n_old": 574627,
+    "n_unchanged_hash": 565509
+  },
+  "measurement": true,
+  "n_added_or_changed": 10239,
+  "n_removed": 9118,
+  "new_fasta": {
+    "bytes": 93801562,
+    "expected_bytes": 93801562,
+    "expected_md5": "bc9d398533e6df582b563c6c03093bd0",
+    "md5": "bc9d398533e6df582b563c6c03093bd0",
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+    "release": "2026_03",
+    "url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz"
+  },
+  "old_fasta": {
+    "bytes": 93457057,
+    "md5": "5245b19456d9a063b13c46602269bc5f",
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz",
+    "release": "2026_01"
+  },
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "python": "3.11.9",
+  "release_pair": "2026_01 -> 2026_03",
+  "residue_id_unchanged": 571255,
+  "residue_id_unchanged_fraction": 0.9921962386321793,
+  "root": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-e85f24d4dcfe857d2409a3bb1cb44c07900c808b",
+  "setting": "S1",
+  "smoke": false,
+  "stage": "D1",
+  "versions": {
+    "biopython": "1.85",
+    "numpy": "2.4.6",
+    "tqdm": "4.67.1"
+  }
+}

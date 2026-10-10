@@ -1,0 +1,26 @@
+#!/bin/bash
+# Build the DIAMOND venv on a compute node. Not a measurement.
+#SBATCH --job-name=diamond_venv
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=8G
+#SBATCH --time=00:30:00
+#SBATCH --output=venv-%j.out
+#SBATCH --error=venv-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:?STOP_INPUTS: ACTS_CODE_ROOT is unset}"
+case "${ROOT}" in
+  /*) ;;
+  *)
+    echo "STOP_INPUTS: ACTS_CODE_ROOT is not an absolute path: ${ROOT}" >&2
+    exit 2
+    ;;
+esac
+cd "${ROOT}"
+bash "${ROOT}/pipeline/scripts/create_diamond_venv.sh" "${ROOT}"
+echo DIAMOND_VENV_DONE
