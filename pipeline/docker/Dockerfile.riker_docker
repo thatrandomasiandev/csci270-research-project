@@ -16,7 +16,8 @@ ARG RIKER_COMMIT=bae684b455a4d8fa010fc04b471f5ca9b408f6a8
 RUN git clone --depth 1 --recursive https://codeberg.org/curtsinger/riker.git /opt/riker \
     && test "$(git -C /opt/riker rev-parse HEAD)" = "${RIKER_COMMIT}" \
     && git -C /opt/riker rev-parse HEAD > /opt/riker.commit \
-    && make -C /opt/riker release \
+    && g++ --version | head -n 1 > /opt/compiler.txt \
+    && make -C /opt/riker release CC=gcc CXX="g++ -D_GNU_SOURCE" \
     && install -m 0755 /opt/riker/release/bin/rkr /usr/local/bin/rkr \
     && file /usr/local/bin/rkr > /opt/rkr.file
 

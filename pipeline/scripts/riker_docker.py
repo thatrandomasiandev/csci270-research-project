@@ -362,6 +362,7 @@ def image_provenance(work: Path) -> dict:
 set -e
 echo COMMIT:$(cat /opt/riker.commit)
 echo FILE:$(cat /opt/rkr.file)
+echo COMPILER:$(cat /opt/compiler.txt)
 echo HMMER_SHA:$(cat /opt/hmmer.tar.sha256)
 echo HMMER_VER:$(hmmscan -h | sed -n '2p')
 echo UNAME:$(uname -a)
@@ -444,6 +445,8 @@ def main() -> None:
             "riker_commit": provenance.get("COMMIT"),
             "riker_commit_expected": RIKER_COMMIT,
             "rkr_file": provenance.get("FILE"),
+            "compiler": provenance.get("COMPILER"),
+            "compiler_note": "make release CC=gcc CXX='g++ -D_GNU_SOURCE' after Ubuntu 22.04 clang++ rejected std::source_location",
             "hmmer_tarball_sha256": provenance.get("HMMER_SHA"),
             "hmmer_version_line": provenance.get("HMMER_VER"),
         },

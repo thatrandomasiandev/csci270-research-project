@@ -664,3 +664,18 @@ a Docker timing. Collection totals are `n * T_riker`
 with `n = 30` (A) and `n = 40` (B). If genome 2 skipped,
 the falsifier fired and this projection is not the
 paper cost.
+
+### Compiler (after the clang failure, before the probe)
+
+The first `make release` in this image uses the Makefile's
+default `clang++`. It stopped in `src/rkr/util/log.hh`:
+`no type named 'source_location' in namespace 'std'`.
+Ubuntu 22.04's clang is too old for this commit's C++20.
+No ptrace probe and no HMMER command ran in that attempt.
+The rebuild, still before the probe, uses the invocation
+already written in `pipeline/jobs/baseline_build.job`:
+
+`make release CC=gcc CXX="g++ -D_GNU_SOURCE"`
+
+Same commit. Same `make release` target. `_GNU_SOURCE` is
+what exposes `struct __ptrace_syscall_info` in glibc.
