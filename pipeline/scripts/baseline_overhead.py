@@ -317,6 +317,7 @@ def run_measure(data_root: Path, work: Path, out: Path, n_models: int, n_protein
         )
     prepared = prepare_subset(work, data_root, n_models, n_proteins)
     runs = []
+    partial = work / "partial.json"
     for repeat in range(N_REPEATS):
         for tool in repeat_order(repeat):
             for mode in modes:
@@ -325,6 +326,7 @@ def run_measure(data_root: Path, work: Path, out: Path, n_models: int, n_protein
                 row["repeat"] = repeat
                 row["role"] = "measurement"
                 runs.append(row)
+                partial.write_text(json.dumps(runs, indent=2) + "\n")
                 print(" ", row["wall_s"], "valid", row["valid"], flush=True)
     payload = summarize(runs, prepared)
     payload["provenance"] = uniform.host_provenance()
