@@ -1707,3 +1707,67 @@ ones in the 500-protein pre-registration. Output:
 `pipeline/results/baseline_overhead_hmmsearch.json`.
 Absolute seconds are this arm64 container. Only ratios
 are used.
+
+---
+
+## Addendum 2026-10-10 — ProcessCache amd64 sequence outcome
+
+Written after the sequence. The probe addendum is
+unchanged. One route, no second capability set, and
+`src/regs.rs` was not patched.
+
+The ptrace probe is the earlier record in
+`pipeline/results/baseline_processcache_amd64.json`:
+`request=0x420e`, `rc` 24, `errno` 0, container exit 0,
+inside `uname` `x86_64`. That probe succeeded. It does
+not say ProcessCache traced HMMER.
+
+The sequence used image `acts-processcache-amd64:local`,
+platform `linux/amd64`, `--cap-add SYS_PTRACE`, not
+`--privileged`, default seccomp. ProcessCache
+`a89d132`, `DONT_HASH_FILES` left false. Provenance on
+the sequence: git
+`4b8a7badb8c47228aed45a19ba1fdaa93d774f19`, `git_dirty`
+false. The image's `/opt/ProcessCache.build` was `OK`
+and `/usr/local/bin/process_cache` was present. Every
+step's action is `invalid`: exit 101, tblout absent,
+MATCH false. That is not a caching observation and it
+is not an overhead ratio.
+
+The same error is in each step log. hmmscan genome 1:
+
+```
+Error: process_cache::run_tracee(): Unable to load seccomp rules. file: src/main.rs, line: 155.
+
+Caused by:
+    Unable to load seccomp filter context to kernel.
+thread 'main' panicked at src/recording.rs:218:13:
+Trying to get command for process that has not yet called execve!!
+```
+
+`our_seccomp_rules` runs after `PTRACE_TRACEME` and
+before `execvp` (`src/main.rs` at `a89d132`). The filter
+did not load, the child exited before `execve`, and the
+tracer then panicked. HMMER did not start. The ptrace
+probe can succeed in this capability set while
+ProcessCache's own seccomp load fails. This session
+does not retry with `--privileged` or
+`seccomp=unconfined`.
+
+The genome-2 behavior that did run HMMER is the CARC
+observation in
+`pipeline/results/baseline_smoke_processcache_sha256.json`,
+job `12866390`, host `d11-42`, finished
+`2026-10-10T01:00:21.059503+00:00`, hmmsearch.
+Genome 2 action `RERUN`, match true, exit 0, wall
+`5473.505751182092` s, tblout `4191382` bytes. The
+replay on that job is also `RERUN`, match true, exit 0,
+wall `5742.928985479055` s. Its log panics at
+`src/execution_utils.rs:37` copying `stdout_<pid>`
+(`No such file or directory`). That panic is an
+unresolved ProcessCache defect. It is not the caching
+classification: the replay still re-executed and MATCH
+stayed true. The hmmscan steps in that file have
+0-byte tblout and match false, so they are not this
+citation. No measured ProcessCache overhead ratio
+exists. The paper factor 1.69 stays PROJECTED.
