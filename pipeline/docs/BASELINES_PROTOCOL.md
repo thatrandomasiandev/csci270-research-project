@@ -511,3 +511,156 @@ Exclusive Phase 2 node-hours are not worth buying until
 12866390, 12866391, and 12866392 finish and show genome 2
 RERUN and the replay SKIP. Josh decides. A Riker release run
 needs a kernel that accepts request `0x420e`.
+
+---
+
+## Addendum 2026-10-09 — Riker behavioral falsifier in Docker (pre-registered)
+
+Written after the host-capability addendum above, and **before**
+any container ptrace probe, Riker build, or HMMER command.
+Locked sections above are unchanged. This addendum decides
+only whether Riker **re-executes** `hmmscan` / `hmmsearch`,
+and whether the tblout **MATCH**es a stock run of the same
+argv. It is not a timing measurement. No Docker wall time
+enters a cost.
+
+### Environment (characterized, not a falsifier result)
+
+Docker Desktop engine **29.4.1**. The Linux VM kernel, from
+`docker info` and from `uname -a` inside the image below, is
+`6.12.76-linuxkit` (`#1 SMP Fri Apr 17 14:56:37 UTC 2026`),
+`aarch64`. `nproc` in that VM is 14. Image:
+`ubuntu:22.04.5` (`docker.io/library/ubuntu:22.04`),
+platform `linux/arm64`, digest
+`sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401`.
+Every container is started with `--platform linux/arm64` and
+`--cap-add SYS_PTRACE`. Seccomp stays the **default** Docker
+profile. That profile allowlists the `ptrace` syscall, with
+no request-argument filter, once `CAP_SYS_PTRACE` is present
+(moby `profiles/seccomp/default.json`, kernels ≥ 4.8). This
+run does **not** pass `seccomp=unconfined` and does **not**
+pass `--privileged`.
+
+The probe is the same program as
+`pipeline/jobs/baseline_ptrace_abi.job`: child
+`PTRACE_TRACEME`, stop, parent `PTRACE_SYSCALL` until a
+syscall-stop, then `ptrace(PTRACE_GET_SYSCALL_INFO /* 0x420e */)`.
+Success is `rc != -1` on that syscall-stop. The Discovery
+result in `results/baseline_ptrace_abi.json` is the contrast
+(`rc=-1 errno=5` on kernel 4.18).
+
+### What is built
+
+Riker commit `bae684b455a4d8fa010fc04b471f5ca9b408f6a8`
+(Codeberg `curtsinger/riker`, the HEAD the 2026-10-09 CARC
+clone targeted; that job's commit file is empty because
+`make` failed before `rev-parse`). Build is `make release`.
+The binary is `rkr`. HMMER is 3.4 from
+`http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz`,
+installed under `/opt/hmmer`. Recipe:
+`pipeline/docker/Dockerfile.riker_docker`. Driver:
+`pipeline/scripts/riker_docker.py`. README notes ARM64 has
+had much less testing than x86_64; the architecture stays
+arm64.
+
+### Workload (subset; argv shape unchanged)
+
+Same argv shape as the savings jobs
+(`scripts/baseline_smoke.py` `hmmer_argv` /
+`scripts/run_hmmer_savings.py` `stock_argv`):
+
+- hmmscan: `hmmscan --cpu 32 --cut_ga --noali --tblout TBL HMM FASTA`
+- hmmsearch: `hmmsearch --cpu 32 --noali --tblout TBL -Z 1000000 --domZ 1000000 HMM FASTA`
+
+`--cpu 32` stays even though the VM reports 14 CPUs. That
+flag is not used to classify the run.
+
+HMM is not full Pfam-A. It is the model list in
+`scripts/repro_savings_desc_stop.py` (`MODELS`). That list
+has **73** names. A later docstring calls the same list
+"78-model"; the length of `MODELS` is 73, and all 73 `NAME`
+lines are present in the local
+`pipeline/data/hmmer/Pfam-A.hmm.gz` (418,160,514 bytes,
+already on disk, not re-downloaded). The subset is streamed
+out of that gzip. No download ≥ 1 GB.
+
+Collection A, `orderings[0]`, seed 20260926, the two
+accessions already named in `scripts/baseline_smoke.py`:
+
+| Step | Accession | Proteins in the file | Kept |
+|------|-----------|----------------------|------|
+| genome 1 | `GCF_002853805.1` | 5117 | first **300** records, file order |
+| genome 2 | `GCF_002090355.1` | 4091 | first **300** records, file order |
+
+The prefix is the original FASTA text
+(`acts.fasta.copy_fasta_head`), not a rewritten FASTA.
+300 is the fixed local-subset count already used for a
+small collection-A extract. One working directory per mode.
+`.rkr` is kept across the three steps of that mode. The
+`Rikerfile` is one line, the stock argv, absolute paths.
+It is not marked executable, so `rkr` runs it with `/bin/sh`
+(`src/rkr-launch/launch.c`).
+
+### Prediction (copied from the locked Riker section)
+
+Riker's grain is one command. Genome 2's FASTA is a file
+Riker has not seen, so that command's dependencies moved
+and genome 2 is a **full re-execution**. A second `rkr`
+invocation on genome 2's exact `Rikerfile` bytes, with the
+FASTA, the HMM subset, the pressed HMMER indexes, and the
+`rkr` binary unchanged, **should skip**.
+
+The locked smoke paragraph says the replay is genome 1's
+path. This run replays **genome 2**. The prediction being
+tested is the locked sentence "replay of the same FASTA
+path … should skip," applied to genome 2. Genome 1 is the
+cold start. The falsifier for "whole-command is enough"
+fires only if genome 2 **skips**.
+
+### How executed / skipped is read
+
+`rkr --show` (the README's documented flag) prints a
+command only when that command `mustRun()`
+(`src/rkr/runtime/Build.cc`). The printed line starts
+with the executable's basename (`getShortName`).
+
+- **executed** — stdout has a line whose first field is
+  `hmmscan` or `hmmsearch` (the mode's binary).
+- **skipped** — `rkr` exits 0 and no such line appears.
+- **unresolved** — any other exit, or no parseable trace.
+
+Wall time is not an input to this rule. MATCH uses
+`scripts/baseline_match.py`: hmmscan is order plus
+`split()`; hmmsearch fixed-Z is multiset plus `split()`.
+The stock tblout is a run of the **same** HMMER 3.4
+binary on this same 300-protein / 73-model argv, not the
+full-Pfam savings tables. Replay skip must still MATCH
+and the body must be non-empty.
+
+### Projected cost on the real workload (formula only)
+
+Apply this only in the outcome addendum, and only for a
+mode whose genome 2 trace is **executed**. It is not
+computed from the container.
+
+`T_riker = (T_sample / 6) * (1 + 0.088)` hours per genome.
+
+`T_sample` is the locked stand-in in the table above:
+**5.10 h** per 6 genomes for hmmscan, **1.05 h** per 6
+genomes for hmmsearch. `0.088` is the median full-build
+overhead Riker reports for 14 software packages
+(Curtsinger and Barowy, USENIX ATC 2022, abstract and
+Figure 3: "median overhead of 8.8%"). That figure is a
+**build** overhead, not a measured HMMER overhead.
+Transferring it to HMMER is an assumption. The locked
+table's **1.2×** pad is a different number (job-time
+slack) and is not this projection.
+
+Assumptions, if genome 2 executed: every later genome is
+also a new FASTA, so the replay skip does not apply
+across the collection; proteome size stays the locked
+stand-in and is not scaled to 300 proteins; this is not
+a Docker timing. Collection totals are `n * T_riker`
+with `n = 30` (A) and `n = 40` (B). If genome 2 skipped,
+the falsifier fired and this projection is not the
+paper cost.

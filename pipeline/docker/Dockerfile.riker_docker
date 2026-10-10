@@ -1,0 +1,34 @@
+# Riker release + HMMER 3.4 for the 2026-10-09 behavioral falsifier.
+# Pre-registered in pipeline/docs/BASELINES_PROTOCOL.md.
+# Platform is linux/arm64. The run adds CAP_SYS_PTRACE and keeps
+# Docker's default seccomp profile.
+
+FROM ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        make clang git gcc g++ python3 ca-certificates wget \
+        zlib1g-dev file binutils \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG RIKER_COMMIT=bae684b455a4d8fa010fc04b471f5ca9b408f6a8
+RUN git clone --depth 1 --recursive https://codeberg.org/curtsinger/riker.git /opt/riker \
+    && test "$(git -C /opt/riker rev-parse HEAD)" = "${RIKER_COMMIT}" \
+    && git -C /opt/riker rev-parse HEAD > /opt/riker.commit \
+    && make -C /opt/riker release \
+    && install -m 0755 /opt/riker/release/bin/rkr /usr/local/bin/rkr \
+    && file /usr/local/bin/rkr > /opt/rkr.file
+
+ARG HMMER_URL=http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+RUN wget -O /tmp/hmmer-3.4.tar.gz "${HMMER_URL}" \
+    && sha256sum /tmp/hmmer-3.4.tar.gz > /opt/hmmer.tar.sha256 \
+    && tar -xzf /tmp/hmmer-3.4.tar.gz -C /tmp \
+    && cd /tmp/hmmer-3.4 \
+    && ./configure --prefix=/opt/hmmer \
+    && make -j"$(nproc)" \
+    && make install \
+    && rm -rf /tmp/hmmer-3.4 /tmp/hmmer-3.4.tar.gz
+
+ENV PATH="/opt/hmmer/bin:${PATH}"
+WORKDIR /work
