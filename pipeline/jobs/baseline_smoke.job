@@ -28,6 +28,14 @@ esac
 if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
 module load gcc/13.3.0 2>/dev/null || true
 module load python/3.11.9 2>/dev/null || true
+if [[ "${TOOL}" == "incr" ]]; then
+  # try.sh runs `unshare --root`. util-linux 2.32.1 on this image
+  # does not have --root (added later). 2.40 does. Ubuntu 22.04,
+  # which INCR's README names, ships a new enough unshare.
+  module load util-linux/2.40
+  echo "unshare=$(command -v unshare)"
+  unshare --version | head -1
+fi
 
 echo "=== smoke ${TOOL} ${COLUMN} job ${SLURM_JOB_ID:-} ==="
 hostname

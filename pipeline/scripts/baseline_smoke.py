@@ -611,6 +611,19 @@ class Runner:
             )
         if not py or not Path(py).is_file():
             raise SystemExit("INCR venv python missing from the build report")
+        unshare = subprocess.run(
+            ["unshare", "--version"], capture_output=True, text=True
+        )
+        rec["unshare_path"] = shutil.which("unshare")
+        rec["unshare_version"] = (unshare.stdout or unshare.stderr or "").splitlines()[:1]
+        help_text = subprocess.run(
+            ["unshare", "--help"], capture_output=True, text=True
+        )
+        if "--root" not in (help_text.stdout or "") and "--root" not in (help_text.stderr or ""):
+            raise SystemExit(
+                "unshare has no --root; incr.sh cannot start. "
+                "Load util-linux/2.40. System unshare is 2.32.1."
+            )
         check = subprocess.run(
             [py, "-c", "import libbash, libdash"],
             capture_output=True,
