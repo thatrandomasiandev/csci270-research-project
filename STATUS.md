@@ -1,6 +1,6 @@
 # STATUS — STAR ≥2× (CSCI 270 A-contract)
 
-**Updated:** 2026-09-27 (related-work deep read)
+**Updated:** 2026-10-09 (baseline smoke; reruns queued)
 
 ## Scope — LOCKED (Zhang)
 
@@ -108,8 +108,10 @@ Source: `pipeline/results/tool_screen.json` · protocol commit `c51ed61` · writ
 - [x] Probe miss-rate (protocol `b4c878f`; local `pipeline/results/probe_eval.json`). 276 cells. Unsafe-ship **33/256** (32 are F6; **1/224** excl. F6 = vcf F4 at *p*=0.01, `probe_n`=50). False-refuse **0/20**. F6 is outside the argv-named-input guarantee.
 - [x] Deployed verification (addendum `4679264`): `--verify audit` default; random probes; Linux file tracing. Re-measure `pipeline/results/probe_eval_audit.json`. Unsafe-ship **68/288** (32 F6-env + 32 F6-file on macOS + 4 in-scope). Excl. F6* **4/224**. False-refuse **0/20**. Audit-only catch **12**. Linux F6-file + `snpEff.config` **INCOMPLETE** (no Docker daemon; Discovery SSH timed out).
 - [x] Related-work deep read (`pipeline/docs/RELATED_WORK.md`, 2026-09-27). ProcessCache + vCache + INCR read in full. Core claim not occupied; command grain is.
-- [x] Probe-eval figures renumbered to `17_` / `18_` (avoid collision with recurrence A and HMMER predicted speedup). Post-hoc `probe_n=500` (0/56 in-scope; ~504 first-infer tool calls). Code default unchanged.
-- [ ] Running baselines (the tool’s own cache; Riker / ProcessCache / INCR)
+- [x] Probe-eval figures renumbered to `17_` / `18_` (avoid collision with recurrence A and HMMER predicted speedup). Post-hoc `probe_n=500` (0/56 in-scope; ~504 first-infer tool calls under singleton (b2)).
+- [x] Batched subset-invariance (protocol `427fcbb`). Default (b2) is 1+2+4+8 = 15 comparable batches, independent of `probe_n`. Singleton kept behind `--subset-probe singleton`. Tool-call counts stored on the contract. Comparison eval: `pipeline/results/probe_eval_subset_*.json`; figures `19_` / `20_`. INCR chunk memo still needs a crowdsourced “stateless” annotation (Xie et al. §7) — claim stands.
+- [x] Probe cost *P* folded into cumulative HMMER predictions (`pipeline/results/hmmer_predicted_speedup_with_probe.json`, figure `21_`). Savings addendum records the queued `probe_n=8` gap. Do not touch `jobs/` or `scripts/*savings*`.
+- [~] Running baselines — shared xeon-4116 smoke, not exclusive epyc-7542. ProcessCache hmmsearch executed (job **12866390**); replay did not skip. hmmscan and both INCR columns are **INVALID** (HMMER never ran). Reruns queued: **12898906**, **12898907**, **12898908**, **12899077**. Addendum in `pipeline/docs/BASELINES_PROTOCOL.md`. Riker still needs `ptrace` request `0x420e`.
 - [x] Write-up draft — conference paper at `star/writeup/paper/main.pdf` (update when CARC 10/10 lands)
 - [x] Notion lab notebook + first conference-length entry (Mac Suite B seal)
 

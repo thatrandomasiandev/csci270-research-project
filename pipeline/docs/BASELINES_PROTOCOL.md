@@ -900,3 +900,118 @@ successful SSH, connections to `10.72.0.13` and
 `10.72.0.14` port 22 timed out. The job file is
 `pipeline/jobs/riker_docker_pc_replay.job`. Submit
 it when Discovery accepts SSH.
+
+## Addendum 2026-10-09 — smoke walls, then a harness that was not running HMMER
+
+Written after jobs **12866390**, **12866391**, and **12866392**
+finished on shared `d11-42` (xeon-4116, not exclusive, not
+epyc-7542). Git sidecar on those JSONs is `2791df5`. Locked
+predictions are unchanged: genome 2 **RERUN**, replay **SKIP**,
+annotations do not split FASTA records.
+
+The old harness labeled every non-cold step by wall clock alone.
+A 0.13 s exit 0 was therefore a **RERUN** whenever the cold step
+was also ~0.15 s, and it would have been a **SKIP** if the cold
+step had been a real HMMER run (`classify(0.13, 1200) = SKIP`).
+That label is withdrawn. A step is **executed** only with a
+non-empty newly written tblout that contains an HMMER banner or
+the tblout header. A step is **replayed** only when that tblout
+MATCHes stock and the log or the cache shows a restore. Anything
+else with no HMMER output is **INVALID**, including exit 0.
+`pipeline/tests/test_baseline_smoke.py` locks the 0.13 s empty
+case to INVALID, and locks a refusal to start `hmmscan` when
+`.h3m/.h3i/.h3f/.h3p` are missing.
+
+### What 12866390–92 measured
+
+| Tool | Mode | Step | Wall (s) | Old label | Re-score | MATCH |
+|------|------|------|----------|-----------|----------|-------|
+| ProcessCache SHA-256 | hmmsearch | genome 1 | 1200.0182 | COLD | executed | true |
+| ProcessCache SHA-256 | hmmsearch | genome 2 | 5473.5058 | RERUN | executed | true |
+| ProcessCache SHA-256 | hmmsearch | replay | 5742.9290 | RERUN | executed | true |
+| ProcessCache SHA-256 | hmmscan | genome 1 | 15.2937 | COLD | INVALID | false |
+| ProcessCache SHA-256 | hmmscan | genome 2 | 15.2388 | RERUN | INVALID | false |
+| ProcessCache SHA-256 | hmmscan | replay | 15.2512 | RERUN | INVALID | false |
+| INCR default | both | all six | 0.1317–0.1906 | COLD/RERUN | INVALID | false |
+| INCR annotations | both | all six | 0.1322–0.1404 | COLD/RERUN | INVALID | false |
+
+JSON: `results/baseline_smoke_processcache_sha256.json`,
+`results/baseline_smoke_incr_default.json`,
+`results/baseline_smoke_incr_annotations.json`. Re-score is a
+reading of those logs under the new rule. It is not a second run.
+
+ProcessCache hmmsearch did run HMMER. Genome 2 agrees with
+**RERUN**. Replay does not agree with **SKIP**. The harness
+gave replay its own `--tblout` (`replay.tbl`), so the argv was
+not genome 1's command. After each run ProcessCache panicked in
+`execution_utils.rs` copying `stdout_<pid>` into `./cache/`
+(`No such file or directory`). The cache was not stored. Token
+MATCH is true on all three hmmsearch tables. Replay's tblout is
+4,968,549 bytes against genome 1's 4,968,550; MATCH is token
+identity, not bytes. The hmmsearch genome-2 projection in that
+JSON applies: `T = 5473.5058 s`, so `30 T / 3600 = 45.61 h` and
+`40 T / 3600 = 60.82 h` on this shared xeon-4116, proteome size
+not scaled, not the locked epyc-7542 table. The hmmscan
+projection in the same file does **not** apply. Those steps
+printed `use hmmpress first` and wrote 0 bytes.
+`data/Pfam-A.hmm` had no binary auxfiles. The build copied
+`hmmscan` and `hmmsearch` and not `hmmpress`.
+
+INCR never executed HMMER. `incr.sh` (commit `4b8e5dd`, the
+README command `bash ./src/incr.sh myscript.sh`) calls system
+`python3` on `insert.py`. That interpreter has no `libbash`.
+`incr.sh` has no `set -e`, so the traceback is discarded, the
+script is replaced with an empty file, and bash exits 0. The
+same log shows `git rev-parse` failing because the build copied
+the tree without `.git`. With `INCR_TOP` set, that git line is
+not what skipped HMMER.
+
+### What is queued, and what a debug node already showed
+
+Official reruns, `main`, `--constraint=xeon-4116`, 8 cpus, 48G,
+pending Priority at the time of this addendum. Not started, so
+they are not in the table above.
+
+| Job | What |
+|-----|------|
+| **12898906** | ProcessCache SHA-256, hmmsearch only, genome 1's exact argv including `--tblout`. Script is a byte copy of `baseline_smoke.py` at `acts-baselines-20261009/scripts/baseline_smoke_replayfix.py`. |
+| **12898907** | ProcessCache SHA-256, hmmscan only. Untimed `hmmpress -f` of the smoke HMM before any step wall. Guard refuses to start hmmscan if the auxfiles are absent. |
+| **12898908** | INCR default, both modes. |
+| **12899077** | INCR `--enable_annotations`, both modes. |
+
+Before those jobs started, debug node `d05-41` (xeon-4116,
+`/usr` is tmpfs) was used to see whether the documented
+`incr.sh` can reach HMMER at all:
+
+- Image `unshare` is util-linux **2.32.1** and rejects
+  `unshare --root`, which `try.sh` requires. Module
+  `util-linux/2.40` provides `--root`. The INCR jobs load it.
+- Overlay of tmpfs `/usr` fails (`wrong fs type`). Without
+  `/usr`, the sandbox has no `/bin/bash`. The image has no
+  mergerfs. Static **mergerfs 2.42.0**
+  (`mergerfs-2.42.0-static-linux_amd64.tar.gz`) is installed at
+  `acts-baselines-20261009/bin/mergerfs`. `try.sh` autodetects
+  it. That is their documented native dependency, not a patch
+  to INCR.
+- Job **12899318**: `cd` of the NFS checkout inside the sandbox
+  returns `Operation not supported`. The smoke therefore runs
+  `incr.sh` with cwd on node-local `/tmp`. The FASTA path in
+  the script stays on `/project2`. Putting the FASTA on `/tmp`
+  would drop it from INCR's dependency set.
+- Job **12899342**: `hmmsearch -h` from a `/tmp` copy of the
+  binary prints the HMMER 3.4 banner under `incr.sh` (rc 0).
+  `wc` of the project-path FASTA from that same traced script
+  returns `Operation not supported`. strace cannot stat
+  `/project2`. The queued INCR jobs still point HMMER at the
+  project-path binary and the project-path FASTA. If they fail
+  the same way, those steps are INVALID, not a replay and not
+  a genome-2 RERUN.
+
+No whole-command falsifier is revised here. The Docker Riker
+result above stands: a new FASTA executes, and a same-container
+replay skips. ProcessCache hmmsearch on the host reran on a new
+FASTA path, and the replay of a different `--tblout` also reran,
+for the argv and cache-store reasons above. hmmscan and both
+INCR columns did not run HMMER. Phase 2 is still not submitted.
+Job **12898906** is the ProcessCache submit the previous
+paragraph was waiting on.
