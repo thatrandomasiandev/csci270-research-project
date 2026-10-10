@@ -1179,3 +1179,92 @@ genome 2 is replayed, the falsifier fired and this
 projection is not the paper cost. The annotations factor
 does not mean records were split; the split prediction
 is the behavior row above.
+
+---
+
+## Addendum 2026-10-10 — CARC reruns are environment failures
+
+Written after copying the files below through `discovery`,
+and before the uniform Docker smoke. Locked sections are
+unchanged. None of these rows is tool behavior. A step
+that did not provably run HMMER is INVALID. A step whose
+wrapper could not start, or whose inputs were unreadable
+because another job was pressing the shared HMM, is
+ENVIRONMENT-BLOCKED.
+
+`sacct` at the copy: kernel on the finished hosts is
+`4.18.0-553.126.1.el8_10.x86_64`.
+
+### INCR 12898908 and 12899077
+
+Both FAILED, exit 1, elapsed 4 seconds. Logs:
+`pipeline/results/baseline_carc_logs/incr_def_rerun-12898908.err`
+and `incr_ann_rerun-12899077.err`. The stderr line is:
+
+`unshare has no --root; incr.sh cannot start. Load util-linux/2.40. System unshare is 2.32.1.`
+
+No result JSON was written (the stdout names
+`baseline_smoke_incr_default_rerun.json` and
+`baseline_smoke_incr_annotations_rerun.json`; those paths
+are absent from the results directory). The module reload
+printed in the same stderr is `python/3.11.9` only. The
+`util-linux/2.40` load from commit `af4d0b6` did not take
+effect inside the job. HMMER did not start. This is not a
+skip and not a genome-2 rerun.
+
+The earlier smokes 12866391 and 12866392 stay INVALID for
+the reason already recorded: `incr.sh` called a `python3`
+that could not import `libbash`, the script has no
+`set -e`, and it exited 0 with an empty output.
+
+### ProcessCache SHA-256 replay 12898906
+
+Result:
+`pipeline/results/baseline_riker_docker_pc_replay.json`.
+Host `d05-30`, job elapsed 02:10:52, git sidecar
+`6913af6`. hmmsearch only.
+
+| Step | Wall (s) | tblout bytes | Status in the file | MATCH |
+|------|----------|--------------|--------------------|-------|
+| genome 1 | 17.15200762497261 | 0 | INVALID | false |
+| genome 2 | 20.850172620033845 | 0 | INVALID | false |
+| replay | 7809.07001763396 | 4968570 | executed, action AMBIGUOUS | true |
+
+Genome 1 and genome 2 did not run a search. The log tail
+is HMMER's open error: `File format problem in trying to
+open HMM file .../data/Pfam-A.hmm. Opened .../Pfam-A.hmm.h3m,
+a pressed HMM file; but format of` (the tail is cut there).
+`log_shows_hmmer` is false and `log_says_replay` is false.
+Job 12898907 started at the same second
+(`2026-10-10T02:07:11`) and its untimed `hmmpress -f` of
+that same `Pfam-A.hmm` is in
+`baseline_smoke_processcache_sha256_hmmscan.json`
+(`setup_hmmpress.wall_s` 51.54596920800395, exit 0). The
+format error is that shared press, not a cache decision.
+
+The replay's argv matches genome 1, including `--tblout`.
+`log_says_replay` is false. `cache_unchanged` is false.
+The log tail is the `execution_utils.rs:37` panic copying
+`stdout_<pid>` (`No such file or directory`). The cache
+was not stored. `projection.applies` is false. The 20.85 s
+figure is the format-error exit, not a genome cost, and
+it is not used below.
+
+### ProcessCache hmmscan 12898907, still running
+
+`sacct` state RUNNING, elapsed 11:40:02, at the copy.
+The results file on disk is a partial snapshot,
+`pipeline/results/baseline_smoke_processcache_sha256_hmmscan.json`,
+`finished_utc` `2026-10-10T18:35:57Z`, host `d06-27`.
+It contains genome 1 only. Untimed `hmmpress` had already
+exited 0 and the four auxfiles were present. Genome 1's
+row: wall 34054.85725250002 s, tblout 352256 bytes,
+`log_shows_hmmer` true, `match` false, exit code 1. The
+log tail is the same `stdout_<pid>` copy panic, then
+`Unable to creat file. Error code: -24` (EMFILE) in
+`redirection.rs`. Genome 2 and the replay are not in the
+file. This is not a finished smoke and not a reuse result.
+
+No whole-command falsifier is revised from these jobs.
+The Docker smoke pre-registered above is the one that
+decides behavior.

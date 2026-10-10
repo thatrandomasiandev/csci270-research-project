@@ -1,0 +1,158 @@
+{
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "protocol_locked_commit": "a29c3181adab72feaafa61b52c68549f66510402",
+  "phase": "discriminating_smoke",
+  "tool": "processcache",
+  "column": "sha256",
+  "collection": "A",
+  "ordering_seed": 20260926,
+  "genomes": {
+    "genome1": {
+      "position": 1,
+      "index": 9,
+      "accession": "GCF_002853805.1"
+    },
+    "genome2": {
+      "position": 2,
+      "index": 5,
+      "accession": "GCF_002090355.1"
+    }
+  },
+  "predictions": {
+    "source": "BASELINES_PROTOCOL.md locked 2026-09-27",
+    "genome2_action": "RERUN",
+    "replay_action": "SKIP",
+    "annotations_split_hmmer_records": false,
+    "falsifier_whole_command_is_enough": "fires only if genome 2 skips HMMER on a new FASTA path"
+  },
+  "skip_rule": {
+    "INVALID": "no proof the wrapped command executed HMMER and no proof it replayed from cache. Wall time is not consulted. A fast exit 0 is INVALID, not SKIP.",
+    "FAILED": "replay or wall-SKIP whose tblout does not MATCH stock",
+    "COLD": "genome 1 executed",
+    "RERUN": "executed and wall_s >= 0.50 * genome1_wall_s",
+    "SKIP": "replayed from cache and MATCH, or executed and wall_s <= max(180s, 0.08 * genome1_wall_s) and MATCH",
+    "AMBIGUOUS": "executed, otherwise",
+    "reuse_fraction": "0 on COLD or RERUN, 1 on SKIP, null otherwise",
+    "execution_proof": "tblout exists, is non-empty, was newly written, and the captured output contains an HMMER banner or the tblout header '--- full sequence ----'",
+    "replay_proof": "log contains 'Skip the execution!' or 'Cache valid:', or the wrapper cache fingerprint is unchanged on an argv identical to a prior step and the restored tblout is non-empty, newly written, and MATCH"
+  },
+  "node_class_deviation": "Shared xeon-4116, 8 cpus, not exclusive, not epyc-7542. The locked CARC plan asked for an exclusive epyc-7542. This session reserves those nodes. HMMER argv still passes --cpu 32.",
+  "input_path_note": "FASTA, Pfam, and wrapper state live on the project path. INCR drops dependencies under /tmp (DYNAMIC_EXCLUDED_PATHS), so a /tmp FASTA would not be the locked independent variable. Compiler scratch stays on node-local /tmp.",
+  "eggNOG": "not run; ~45 GB database needs Josh's approval",
+  "modes": [
+    {
+      "mode": "hmmscan",
+      "argv_note": "locked headline argv, including --cpu 32",
+      "blocked": null,
+      "steps": [
+        {
+          "name": "genome1",
+          "status": "executed",
+          "accession": "GCF_002853805.1",
+          "fasta": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/GCF_002853805.1_protein.faa",
+          "n_records": 5117,
+          "argv": [
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/bin/hmmscan",
+            "--cpu",
+            "32",
+            "--cut_ga",
+            "--noali",
+            "--tblout",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/hmmscan/genome1.tbl",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/GCF_002853805.1_protein.faa"
+          ],
+          "argv_sha256": "2fc517b2a01ce54586e2a02f779d37eba6d629bfa43c436d4869663a21edbef9",
+          "wrapped_argv": [
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/bin/process_cache_sha256",
+            "--",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/bin/hmmscan",
+            "--cpu",
+            "32",
+            "--cut_ga",
+            "--noali",
+            "--tblout",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/hmmscan/genome1.tbl",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm",
+            "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/GCF_002853805.1_protein.faa"
+          ],
+          "cwd": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/pc/hmmscan",
+          "exit_code": 1,
+          "wall_s": 34054.85725250002,
+          "action": "COLD",
+          "reuse_fraction": 0.0,
+          "tblout": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/hmmscan/genome1.tbl",
+          "tblout_bytes": 352256,
+          "tblout_sha256": "6565f6a501c9b16ae30764ec9d9bf4b280c7ce1d987b76591f7eedafba95d2fb",
+          "tblout_sha256_before": null,
+          "tblout_mtime_changed": true,
+          "newly_written": true,
+          "output_snapshot": {
+            "source": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/hmmscan/genome1.tbl",
+            "copy": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/comparisons/hmmscan/genome1.tbl",
+            "sha256": "6565f6a501c9b16ae30764ec9d9bf4b280c7ce1d987b76591f7eedafba95d2fb",
+            "source_mtime_ns_unchanged": true
+          },
+          "replay_reuses_genome1_tblout": true,
+          "output_nonempty": true,
+          "stock_tblout": "/project2/biyik_1165/jjt_373/csci270-star/pipeline/results/savings/tblout/A_hmmscan_01_stock.tbl",
+          "stock_present": true,
+          "match": false,
+          "cache_unchanged": false,
+          "argv_matches_prior": false,
+          "log_shows_hmmer": true,
+          "log_says_replay": false,
+          "replay_output_removed_before_launch": false,
+          "log_tail_path": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/logs/hmmscan_genome1.tail",
+          "log_tail": "\nthread '<unnamed>' (1565459) panicked at src/execution_utils.rs:37:27:\nFailed to copy source: \"/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/pc/hmmscan/stdout_1565455\", dest: \"./cache/10954760244484224317/stdout_1565455\", error: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n\nthread '<unnamed>' (1565456) panicked at src/execution_utils.rs:37:27:\nFailed to copy source: \"/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/pc/hmmscan/stdout_1565455\", dest: \"./cache/10954760244484224317/stdout_1565455\", error: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\n\nthread '<unnamed>' (1565457) panicked at src/execution_utils.rs:37:27:\nFailed to copy source: \"/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/smoke/processcache_sha256_hmmscan/pc/hmmscan/stdout_1565455\", dest: \"./cache/10954760244484224317/stdout_1565455\", error: Os { code: 2, kind: NotFound, message: \"No such file or directory\" }\nError: process_cache::run_tracer_and_tracee(): Failed while tracing program. file: src/main.rs, line: 134.\n\nCaused by:\n    0: process_cache::execution::trace_program(): Program tracing failed. Task returned error. file: src/execution.rs, line: 184.\n    1: process_cache::async_runtime::AsyncRuntime::run_task(): Task Pid(1602791) failed. file: src/async_runtime.rs, line: 80.\n    2: process_cache::execution::trace_process(): Unable to redirect stdout. file: src/execution.rs, line: 725.\n    3: process_cache::redirection::redirect_io_stream(): Unable to creat file. Error code: -24 file: src/redirection.rs, line: 107.\n"
+        }
+      ]
+    }
+  ],
+  "provenance": {
+    "git": "6913af6feccd8230b59924355b7301220e25008a",
+    "git_hash_file": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/ACTS_GIT_HASH",
+    "git_dirty": null,
+    "git_note": "hash is ACTS_GIT_HASH_FILE; this CARC path is not an ACTS checkout",
+    "host": "d06-27.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "uname": "Linux 4.18.0-553.126.1.el8_10.x86_64 x86_64",
+    "python": "3.11.9",
+    "slurm_job_id": "12898907",
+    "slurm_nodelist": "d06-27",
+    "slurm_constraint": null,
+    "slurm_cpus": "8",
+    "versions": {
+      "hmmer_version": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute.",
+      "processcache_sha256_commit": "a89d13214d8a0a9527ad4400a0a7284158d952a1",
+      "incr_commit": "4b8e5ddf8e275d947518c7cc0f5d2713fe992307"
+    },
+    "finished_utc": "2026-10-10T18:35:57.787431+00:00"
+  },
+  "setup_hmmpress": {
+    "timed": false,
+    "hmm": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm",
+    "hmmpress": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/bin/hmmpress",
+    "binary_copied": true,
+    "binary_source": "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/hmmer-3.4/bin/hmmpress",
+    "ran": true,
+    "command": [
+      "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/bin/hmmpress",
+      "-f",
+      "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm"
+    ],
+    "exit_code": 0,
+    "wall_s": 51.54596920800395,
+    "stderr_tail": "Working...    done.\nPressed and indexed 30134 HMMs (30134 names and 30134 accessions).\nModels pressed into binary file:   /project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm.h3m\nSSI index for binary model file:   /project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm.h3i\nProfiles (MSV part) pressed into:  /project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm.h3f\nProfiles (remainder) pressed into: /project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/data/Pfam-A.hmm.h3p\n",
+    "hmm_sha256_before": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+    "hmm_sha256_after": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+    "hmm_bytes_unchanged": true,
+    "hmm_mtime_unchanged": true,
+    "aux_present": {
+      "Pfam-A.hmm.h3m": true,
+      "Pfam-A.hmm.h3i": true,
+      "Pfam-A.hmm.h3f": true,
+      "Pfam-A.hmm.h3p": true
+    }
+  }
+}
