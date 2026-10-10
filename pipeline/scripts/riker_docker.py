@@ -15,6 +15,7 @@ import json
 import shutil
 import subprocess
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,8 +30,8 @@ IMAGE = "acts-riker-docker:local"
 DOCKERFILE = ROOT / "docker" / "Dockerfile.riker_docker"
 RIKER_COMMIT = "bae684b455a4d8fa010fc04b471f5ca9b408f6a8"
 N_PROTEINS = 300
-OVERHEAD = 0.088
-SAMPLE_HOURS = {"hmmscan": 5.10, "hmmsearch": 1.05}
+OVERHEAD = Decimal("0.088")
+SAMPLE_HOURS = {"hmmscan": Decimal("5.10"), "hmmsearch": Decimal("1.05")}
 SAMPLE_GENOMES = 6
 GENOMES = {
     "genome1": {
@@ -119,21 +120,40 @@ def classify_trace(stdout: str, mode: str, exit_code: int) -> str:
     return "unresolved"
 
 
+def trace_lines(stdout: str) -> list[str]:
+    """Keep rkr --show command lines, not HMMER's per-query stdout."""
+    kept = []
+    for line in stdout.splitlines():
+        if not line.strip() or line.startswith("#"):
+            continue
+        if line.startswith(("Query:", "Description:", "Accession:", "Scores ")):
+            break
+        kept.append(line)
+    return kept
+
+
+def dec_str(value: Decimal) -> str:
+    text = format(value.quantize(Decimal("0.0001")), "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text
+
+
 def project_hours(mode: str) -> dict:
-    per = (SAMPLE_HOURS[mode] / SAMPLE_GENOMES) * (1.0 + OVERHEAD)
+    per = (SAMPLE_HOURS[mode] / SAMPLE_GENOMES) * (1 + OVERHEAD)
     return {
         "label": "PROJECTED",
         "formula": "T_riker = (T_sample / 6) * (1 + 0.088) hours per genome",
-        "T_sample_h": SAMPLE_HOURS[mode],
-        "overhead": OVERHEAD,
+        "T_sample_h": format(SAMPLE_HOURS[mode], "f"),
+        "overhead": "0.088",
         "overhead_source": (
             "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: "
             "median full-build overhead 8.8% on 14 software packages. "
             "Not a measured HMMER overhead."
         ),
-        "hours_per_genome": per,
-        "hours_A30": 30 * per,
-        "hours_B40": 40 * per,
+        "hours_per_genome": dec_str(per),
+        "hours_A30": dec_str(30 * per),
+        "hours_B40": dec_str(40 * per),
     }
 
 
@@ -285,7 +305,7 @@ echo ABI_DONE
 
 def run_mode(work: Path, mode: str) -> list[dict]:
     home = work / mode
-    home.mkdir(parents=True)
+    home.mkdir(parents=True, exist_ok=True)
     steps = []
     rikerfile = home / "Rikerfile"
     for name in ("genome1", "genome2", "replay"):
@@ -301,8 +321,16 @@ def run_mode(work: Path, mode: str) -> list[dict]:
             "fasta_sha256": sha256_file(work / f"{fasta_key}.faa"),
             "hmm_sha256": sha256_file(work / "subset.hmm"),
         }
-        log = home / f"{name}.log"
-        script = f"cd /work/{mode} && rkr --show > /work/{mode}/{name}.log 2>&1; echo RKR_EXIT:$?"
+        log_dir = work / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log = log_dir / f"{mode}_{name}.log"
+        # The --show log is not written into the traced directory.
+        # A new file there would be an input change on the next step.
+        script = (
+            f"cd /work/{mode} && /opt/riker/release/bin/rkr --show "
+            f"> /tmp/{mode}_{name}.log 2>&1; echo RKR_EXIT:$?; "
+            f"mkdir -p /work/logs && cp /tmp/{mode}_{name}.log /work/logs/{mode}_{name}.log"
+        )
         proc = docker_run(IMAGE, work, script)
         wrapper = (proc.stdout or "") + (proc.stderr or "")
         show = log.read_text(errors="replace") if log.is_file() else ""
@@ -328,8 +356,9 @@ def run_mode(work: Path, mode: str) -> list[dict]:
             "hmm_sha256": before["hmm_sha256"],
             "exit_code": exit_code,
             "action": action,
-            "show_lines": show.splitlines(),
+            "show_lines": trace_lines(show),
             "hmmer_lines": hmmer_lines(show, mode),
+            "stdout_line_count": len(show.splitlines()),
             "tblout_bytes": tbl_path.stat().st_size if tbl_path.is_file() else 0,
             "output_nonempty": nonempty_body(got),
             "match": bool(got) and bool(stock) and tables_match(got, stock, mode),
@@ -392,10 +421,12 @@ def _selfcheck() -> None:
         raise SystemExit("mode filter")
     scan = project_hours("hmmscan")
     search = project_hours("hmmsearch")
-    if abs(scan["hours_per_genome"] - (5.10 / 6) * 1.088) > 1e-12:
-        raise SystemExit("scan projection")
-    if abs(search["hours_per_genome"] - (1.05 / 6) * 1.088) > 1e-12:
-        raise SystemExit("search projection")
+    if scan["hours_per_genome"] != "0.9248" or scan["T_sample_h"] != "5.10":
+        raise SystemExit(f"scan projection {scan}")
+    if search["hours_per_genome"] != "0.1904":
+        raise SystemExit(f"search projection {search['hours_per_genome']}")
+    if scan["hours_A30"] != "27.744" or search["hours_B40"] != "7.616":
+        raise SystemExit("collection projection")
     if len(repro.MODELS) != 73:
         raise SystemExit(f"model count drifted: {len(repro.MODELS)}")
     print("riker_docker selfcheck ok")
@@ -445,6 +476,12 @@ def main() -> None:
             "riker_commit": provenance.get("COMMIT"),
             "riker_commit_expected": RIKER_COMMIT,
             "rkr_file": provenance.get("FILE"),
+            "rkr_invoked": "/opt/riker/release/bin/rkr",
+            "rkr_path_copy": (
+                "Copying only the binary to /usr/local/bin segfaults in "
+                "Build::launch. The falsifier invokes the in-tree release "
+                "binary, which can see release/share/rkr."
+            ),
             "compiler": provenance.get("COMPILER"),
             "compiler_note": (
                 "make release CC=clang-15 "

@@ -694,3 +694,84 @@ diagnostic an error. The release build passes
 warning, and does not edit Riker. Still before the probe:
 
 `make release CC=clang-15 CXX="clang++-15 -Wno-error=invalid-constexpr -fuse-ld=lld"`
+
+---
+
+## Addendum 2026-10-09 — Riker Docker outcome
+
+Written after the run. Locked sections are unchanged.
+Result: `results/baseline_riker_docker.json`.
+
+### Probe
+
+`ptrace(PTRACE_GET_SYSCALL_INFO /* 0x420e */)` on a
+syscall-stop returned **rc=24, errno=0** inside the
+container. `uname` is `6.12.76-linuxkit` aarch64.
+`/usr/include/linux/ptrace.h` in the image defines
+`PTRACE_GET_SYSCALL_INFO` as `0x420e`. Contrast:
+`results/baseline_ptrace_abi.json` on Discovery's
+4.18 kernel returned `rc=-1 errno=5`. Flags were
+`--platform linux/arm64 --cap-add SYS_PTRACE` and the
+default seccomp profile.
+
+### Binary
+
+Riker `bae684b455a4d8fa010fc04b471f5ca9b408f6a8`,
+`make release`, Ubuntu clang 15.0.7. The ELF is
+aarch64 (`/opt/rkr.file` in the JSON). Copying only
+that binary to `/usr/local/bin` segfaults in
+`Build::launch` (exit 139) because `release/share/rkr`
+is not beside it. **POST-HOC:** the recorded steps
+invoke `/opt/riker/release/bin/rkr`, the in-tree
+release binary. HMMER is 3.4 (Aug 2023). Tarball
+sha256 `ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3`.
+
+### Behavior
+
+`rkr --show` prints a command only when it must run.
+HMMER's own stdout follows that line in the same log
+(`stdout_line_count` in the JSON). Both modes:
+
+| Step | Trace | MATCH vs stock on this subset |
+|------|--------|-------------------------------|
+| genome 1 | **executed** | true, body non-empty |
+| genome 2 | **executed** | true, body non-empty |
+| replay of genome 2 | **executed** | true, body non-empty |
+
+Genome 2 agrees with the locked prediction. The
+falsifier for "whole-command is enough" does **not**
+fire: a new FASTA did not skip HMMER.
+
+The replay does **not** agree. Rikerfile sha256, FASTA
+sha256, and HMM sha256 are the same on genome 2 and on
+the replay (JSON). `rkr --show` still printed
+`hmmscan` / `hmmsearch`, and HMMER's stdout followed.
+The log does not say why. This note does not supply a
+cause.
+
+**POST-HOC harness note.** An earlier sequence wrote
+the `--show` log inside the traced directory. That
+sequence is not this JSON. The recorded run writes the
+log outside that directory. Replay still executed.
+
+### Projected cost (applies)
+
+Genome 2 executed, so the pre-registered formula
+applies. **PROJECTED.** Not a container wall time.
+Not a measured HMMER tracing overhead. `0.088` is the
+paper's median full-build overhead (abstract and
+Figure 3), not the locked 1.2× job pad.
+
+| Mode | Per genome | A × 30 | B × 40 |
+|------|------------|--------|--------|
+| hmmscan | 0.9248 h | 27.744 h | 36.992 h |
+| hmmsearch | 0.1904 h | 5.712 h | 7.616 h |
+
+The four collection jobs sum to **78.064 h**
+(`71.75 × 1.088`). Assumptions are the ones in the
+pre-registration: a new FASTA on every later genome,
+stand-in proteome size, no scaling to 300 proteins.
+The replay did not skip even an unchanged path, so
+this projection is not an overestimate that assumes
+only new FASTAs rerun. It is still not an HMMER
+measurement of the 8.8%.
