@@ -37,7 +37,14 @@
     "platform": "macOS-27.0-arm64-arm-64bit",
     "python": "3.11.9",
     "versions": {},
-    "finished_utc": "2026-10-10T20:42:27.024545+00:00"
+    "finished_utc": "2026-10-10T20:42:27.024545+00:00",
+    "rebase": {
+      "measured_at": "9e978af1947a29bb2dfab260f93d54e39077c909",
+      "replayed_as": "f2c48c7c03b7eceee2f661e80f043cf566dca0d8",
+      "onto": "2c92d9ce12130e4e5515bd1f203d7d745378ae1b",
+      "runner_blob": "870052774e3a23b5b8c9b6f04ba8ac0e7df106f9",
+      "note": "origin/main gained pipeline/docs/MOTIVATION_EVIDENCE.md after the run. The runner blob matches the measured commit. Numbers were not recomputed."
+    }
   },
   "work": "/var/folders/_4/rcvyxl616130ts3z3dl812y40000gn/T/acts_probe_eval_n8_k1re7tb3",
   "columns": {

@@ -494,7 +494,10 @@ written after the run and is labelled as such.
 Written **after** `results/probe_eval_n8.json` (git `9e978af`,
 `git_dirty` false, host `Joshuas-MacBook-Pro-3.local`, Python 3.11.9,
 finished `2026-10-10T20:42:27Z`). The pre-registration above is
-unchanged. This is the comparison to that projection.
+unchanged. This is the comparison to that projection. Rebase onto
+`origin/main` replayed `9e978af` as `f2c48c7` (parent `2c92d9c`,
+`MOTIVATION_EVIDENCE.md` only). The runner blob is the same. The
+numbers below were not recomputed.
 
 **In-scope unsafe-ship at `probe_n = 8`, singleton, is 2/56 with full
 verification and 4/56 with the deployed audit.** False-refuse is 0/5

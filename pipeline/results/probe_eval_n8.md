@@ -7,7 +7,10 @@ JSON: `probe_eval_n8.json`.
 
 Provenance in that JSON: git `9e978af`, `git_dirty` false, host
 `Joshuas-MacBook-Pro-3.local`, Python 3.11.9, finished
-`2026-10-10T20:42:27Z`. Mac. No `strace`. No CARC.
+`2026-10-10T20:42:27Z`. Mac. No `strace`. No CARC. A later rebase
+replayed that commit onto `2c92d9c` as `f2c48c7`. The runner blob is
+unchanged (`870052774e3a23b5b8c9b6f04ba8ac0e7df106f9`). Numbers were
+not recomputed.
 
 This is one new size. The locked sizes stay in `probe_eval.md` and
 `probe_eval_audit.md`. Their canonical denominator stays **224**. This
