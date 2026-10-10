@@ -1015,3 +1015,167 @@ for the argv and cache-store reasons above. hmmscan and both
 INCR columns did not run HMMER. Phase 2 is still not submitted.
 Job **12898906** is the ProcessCache submit the previous
 paragraph was waiting on.
+
+---
+
+## Addendum 2026-10-10 — uniform Docker behavioral smoke (pre-registered)
+
+Written before any container build, ptrace probe, or HMMER
+command of this smoke. Locked sections above are unchanged.
+This addendum decides behavior and MATCH only. No container
+wall time enters a cost.
+
+### Environment
+
+The same Docker Desktop Linux VM the Riker same-container
+run used. Record `uname -a` from inside the container in
+the result JSON. The expected kernel, from that earlier
+run, is `6.12.76-linuxkit`, `aarch64`. Image base:
+`ubuntu:22.04` digest
+`sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401`,
+platform `linux/arm64`. Recipe:
+`pipeline/docker/Dockerfile.baselines_uniform`. Driver:
+`pipeline/scripts/baseline_docker_uniform.py`.
+
+Capabilities are the ones each tool documents, not one
+shared privileged flag:
+
+| Column | Invocation | Capabilities |
+|--------|------------|--------------|
+| Riker | `/opt/riker/release/bin/rkr --show` | `--cap-add SYS_PTRACE`, default seccomp, not `--privileged` |
+| ProcessCache SHA-256 | `RUST_LOG=debug /usr/local/bin/process_cache -- <argv>` | same as Riker |
+| INCR default | `bash ./src/incr.sh <script> <cache>` from `/opt/incr` | `--privileged`, the README's Docker invocation at `4b8e5dd` |
+| INCR annotations | the same, with `INCR_SYS_PATH` set to `incr --enable_annotations` | same privileged invocation |
+
+`RUST_LOG=debug` is the README's documented way to see a
+skip. The release binary's skip line is `debug!` and is
+otherwise silent. It does not change `DONT_HASH_FILES`.
+
+INCR's `DEBUG` constant stays false. Setting it switches
+cache serialization from bincode to JSON
+(`src/ops/data.rs`). `DEBUG_LOGS` is changed from
+`DEBUG && true` to `true` so the tool's own log can print
+`Cache valid:`. That is the only source edit. `rules.rs`
+is not edited. `hmmscan` and `hmmsearch` are not added to
+any annotation list.
+
+`unshare --root` comes from Ubuntu 22.04's util-linux.
+The image build refuses to finish if `unshare --help`
+lacks `--root`. `pip3 install -r requirements.txt` is the
+README's native install, so `incr.sh`'s `python3` can
+import `libbash`. mergerfs is the apt package, the
+documented native dependency.
+
+Inputs are copied onto the container's own filesystem
+(`/data`) at the start of the container. `/tmp` is not a
+FASTA path: INCR's `DYNAMIC_EXCLUDED_PATHS` drops it.
+One `docker run` per column holds genome 1, genome 2,
+and the replay. `/sys/devices/system/cpu/online` is
+recorded on every step. Its bytes are expected to stay
+`0-13` and its mtime is expected to stay constant inside
+that container.
+
+### Workload
+
+Same subset as the Riker Docker addendum. 73 models from
+`scripts/repro_savings_desc_stop.py` `MODELS`, streamed
+from the local `Pfam-A.hmm.gz`. No download. `hmmpress -f`
+of that subset is untimed and runs once before any step.
+The harness refuses to treat a missing `.h3m/.h3i/.h3f/.h3p`
+as a run.
+
+Collection A, `orderings[0]`, seed 20260926:
+
+| Step | Accession | Kept |
+|------|-----------|------|
+| genome 1 | `GCF_002853805.1` | first 300 records, original FASTA text |
+| genome 2 | `GCF_002090355.1` | first 300 records, original FASTA text |
+| replay | genome 2 again | the same file, the same argv, the same `--tblout` |
+
+argv shape, unchanged:
+
+- hmmscan: `hmmscan --cpu 32 --cut_ga --noali --tblout TBL HMM FASTA`
+- hmmsearch: `hmmsearch --cpu 32 --noali --tblout TBL -Z 1000000 --domZ 1000000 HMM FASTA`
+
+`--cpu 32` stays. The VM has 14 CPUs. That flag is not
+used to classify the run. Stock HMMER 3.4 of the same
+argv writes `stock/<mode>/genomeN.tbl` in the same
+container, before the wrapped steps. Both modes run in
+that one container. Cache directories are not deleted
+between the three steps of a mode.
+
+The replay does not rewrite the Rikerfile, the INCR
+`run.sh`, or the tblout. A comparison copy for MATCH is
+taken after the step.
+
+### Prediction
+
+Copied from the locked sections. Applied to genome 2,
+which is the command the replay repeats.
+
+| Step | Prediction |
+|------|------------|
+| genome 1 | executed |
+| genome 2 | executed |
+| replay of genome 2 | replayed (skipped) |
+
+INCR annotations do not split FASTA records. Genome 2
+under `--enable_annotations` is still a full HMMER
+re-execution. The falsifier for "whole-command is enough"
+fires only if genome 2 is replayed.
+
+### How executed / replayed / invalid is read
+
+Wall time is not an input.
+
+- **executed** — the tblout was absent or its content or
+  mtime changed, the body is non-empty, the file contains
+  an HMMER tblout header (`# hmmscan ::`, `# hmmsearch ::`,
+  or `--- full sequence ----`), and the tool did not say
+  it replayed.
+- **replayed** — the tblout body is non-empty and MATCHes
+  the stock table for that genome, and either the tool log
+  contains `Skip the execution!` (ProcessCache) or
+  `Cache valid:` (INCR), or `rkr --show` exited 0 and did
+  not print `hmmscan` / `hmmsearch`.
+- **invalid** — anything else, including exit 0 with no
+  HMMER table and no replay line. A replay marker whose
+  table does not MATCH stock is invalid, not replayed.
+
+An `unshare` failure, a missing binary, or
+`ModuleNotFoundError: libbash` is invalid. It is an
+environment failure when the wrapper never started, and
+it is not described as reuse or as a skip. A ProcessCache
+or INCR binary that did not link is
+`environment_blocked` on that column. That is not tool
+behavior.
+
+MATCH is `scripts/baseline_match.py`: hmmscan is order
+plus `split()`; hmmsearch fixed-Z is multiset plus
+`split()`.
+
+### Projected cost (formula only; compute after the run)
+
+Apply in the outcome addendum, and only for a mode whose
+genome 2 action is **executed**.
+
+`T = (T_sample / 6) * factor` hours per genome.
+
+`T_sample` is **5.10 h** per 6 genomes for hmmscan and
+**1.05 h** per 6 genomes for hmmsearch. Collection totals
+are `n * T` with `n = 30` (A) and `n = 40` (B).
+
+| Column | factor | Source |
+|--------|--------|--------|
+| Riker | 1.088 | ATC 2022 abstract and Figure 3, median full-build overhead 8.8% |
+| ProcessCache SHA-256 | 1.69 | Shiptoski thesis 2023, mean empty-cache overhead under content hashing |
+| INCR default | 2.0105 | OSDI 2026 introduction and §8.5, first-run overhead 101.05% |
+| INCR annotations | 1.4355 | OSDI 2026 §8.5, annotated first-run overhead 43.55% |
+
+Each factor is that paper's overhead on its own suite.
+Transferring it to HMMER is an assumption. It is not a
+container timing and not the locked 1.2× job pad. If
+genome 2 is replayed, the falsifier fired and this
+projection is not the paper cost. The annotations factor
+does not mean records were split; the split prediction
+is the behavior row above.

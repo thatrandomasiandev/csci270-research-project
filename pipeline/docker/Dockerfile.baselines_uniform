@@ -1,0 +1,87 @@
+# Uniform behavioral image for Riker, ProcessCache, and INCR.
+# Pre-registered in pipeline/docs/BASELINES_PROTOCOL.md
+# (addendum 2026-10-10). Platform is linux/arm64.
+# The run, not this file, chooses each tool's capabilities.
+
+FROM ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH="/root/.cargo/bin:/opt/hmmer/bin:${PATH}"
+ENV CARGO_BUILD_JOBS=2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        make clang-15 lld-15 git gcc g++ python3 python3-dev python3-pip \
+        ca-certificates wget curl zlib1g-dev file binutils \
+        pkg-config libssl-dev libtool m4 automake \
+        libseccomp-dev strace mergerfs sudo attr fuse3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && unshare --help 2>&1 | grep -q -- '--root' \
+    && unshare --version | head -n 1 > /opt/unshare.version \
+    && mergerfs -v | head -n 1 > /opt/mergerfs.version \
+    && python3 --version > /opt/python.version
+
+# Ubuntu 22.04's util-linux is the documented native unshare.
+# Discovery's image is 2.32.1 and has no --root. This image
+# refuses to build if --root is missing.
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+        | sh -s -- -y --default-toolchain stable --profile minimal \
+    && rustup toolchain install nightly --profile minimal \
+    && rustc --version > /opt/rustc-stable.txt \
+    && rustc +nightly --version > /opt/rustc-nightly.txt
+
+ARG HMMER_URL=http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+RUN wget -O /tmp/hmmer-3.4.tar.gz "${HMMER_URL}" \
+    && sha256sum /tmp/hmmer-3.4.tar.gz > /opt/hmmer.tar.sha256 \
+    && tar -xzf /tmp/hmmer-3.4.tar.gz -C /tmp \
+    && cd /tmp/hmmer-3.4 \
+    && ./configure --prefix=/opt/hmmer \
+    && make -j4 \
+    && make install \
+    && rm -rf /tmp/hmmer-3.4 /tmp/hmmer-3.4.tar.gz \
+    && hmmscan -h | sed -n '2p' > /opt/hmmer.version
+
+ARG RIKER_COMMIT=bae684b455a4d8fa010fc04b471f5ca9b408f6a8
+RUN git clone --depth 1 --recursive https://codeberg.org/curtsinger/riker.git /opt/riker \
+    && test "$(git -C /opt/riker rev-parse HEAD)" = "${RIKER_COMMIT}" \
+    && git -C /opt/riker rev-parse HEAD > /opt/riker.commit \
+    && clang++-15 --version | head -n 1 > /opt/compiler.txt \
+    && make -C /opt/riker release -j4 \
+         CC=clang-15 \
+         CXX="clang++-15 -Wno-error=invalid-constexpr -fuse-ld=lld" \
+    && file /opt/riker/release/bin/rkr > /opt/rkr.file
+
+# ProcessCache SHA-256 default (DONT_HASH_FILES stays false).
+# A compile failure is recorded and does not discard the image:
+# the harness then marks that column environment-blocked.
+ARG PC_COMMIT=a89d13214d8a0a9527ad4400a0a7284158d952a1
+RUN git clone --filter=blob:none --no-checkout https://github.com/upenn-acg/ProcessCache.git /opt/ProcessCache \
+    && git -C /opt/ProcessCache fetch --depth 1 origin "${PC_COMMIT}" \
+    && git -C /opt/ProcessCache checkout "${PC_COMMIT}" \
+    && git -C /opt/ProcessCache rev-parse HEAD > /opt/ProcessCache.commit \
+    && { cargo build --release --manifest-path /opt/ProcessCache/Cargo.toml > /opt/ProcessCache.build.log 2>&1 \
+         && install -m 0755 /opt/ProcessCache/target/release/process_cache /usr/local/bin/process_cache \
+         && echo OK > /opt/ProcessCache.build; } \
+    || echo FAILED > /opt/ProcessCache.build
+
+# INCR native Ubuntu 22.04 path from the README at 4b8e5dd.
+# pip3 install -r requirements.txt puts libbash on the python3
+# that incr.sh calls. DEBUG stays false so the cache format
+# stays bincode. DEBUG_LOGS is set true so the tool's own log
+# can print "Cache valid:" (README: toggle those constants).
+ARG INCR_COMMIT=4b8e5ddf8e275d947518c7cc0f5d2713fe992307
+RUN git clone --filter=blob:none --no-checkout https://github.com/atlas-brown/incr.git /opt/incr \
+    && git -C /opt/incr fetch --depth 1 origin "${INCR_COMMIT}" \
+    && git -C /opt/incr checkout "${INCR_COMMIT}" \
+    && git -C /opt/incr rev-parse HEAD > /opt/incr.commit \
+    && sed -i 's/pub(crate) const DEBUG_LOGS: bool = DEBUG && true;/pub(crate) const DEBUG_LOGS: bool = true;/' \
+         /opt/incr/src/config.rs \
+    && grep -n 'const DEBUG' /opt/incr/src/config.rs > /opt/incr.debug_lines \
+    && git -C /opt/incr diff > /opt/incr.diff \
+    && pip3 install --no-cache-dir -r /opt/incr/requirements.txt \
+    && python3 -c 'import libbash, libdash' \
+    && cargo +nightly build --release --manifest-path /opt/incr/Cargo.toml \
+    && test -x /opt/incr/target/release/incr \
+    && mkdir -p /root/incr
+
+WORKDIR /data
