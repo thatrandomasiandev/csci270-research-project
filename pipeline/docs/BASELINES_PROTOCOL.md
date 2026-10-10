@@ -1634,3 +1634,76 @@ under `DYNAMIC_EXCLUDED_PATHS`, which is `/tmp`, so the
 the path exists. That is INCR's own rule on this HMMER
 argv. It is why the replay executes. It is not a claim
 that INCR never skips a replay of some other command.
+
+---
+
+## Addendum 2026-10-10 — measured first-run overhead outcome
+
+Written after the timed repeats. The lock and the
+classification rule are unchanged. Record:
+`pipeline/results/baseline_overhead.json`, git
+`1f496edfabefb4d7f7bc19f25c58e182934fab64`, `git_dirty`
+false. Image `acts-baselines-uniform:local`. All 32
+runs are valid. Primary statistic is `mean_paired_ratio`
+in that file. Sample standard deviation is
+`stdev_paired_ratio`. `ratio_of_means` is beside it.
+
+Subset: 30134 models, 500 proteins of
+`GCF_002853805.1`. Stock mean wall: hmmscan
+`102.223317523` s, which meets the 60 s gate; hmmsearch
+`59.367682854` s, which does not. The hmmsearch ratios
+below are MEASURED and are not the ≥60 s estimate.
+
+| Tool | Mode | mean paired ratio | stdev | ratio of means | ≥60 s estimate |
+|------|------|-------------------|-------|----------------|----------------|
+| Riker | hmmscan | 1.619289429352418326104538493 | 0.05554274484952832733856946947 | 1.616962630967830402175510502 | yes |
+| INCR default | hmmscan | 2.244894164548521244635278222 | 0.1149303557674785798276810727 | 2.239627256342356264304627033 | yes |
+| INCR annotations | hmmscan | 2.253835027718630972080386539 | 0.1250521087258071289717660267 | 2.248111512452072739799335186 | yes |
+| Riker | hmmsearch | 1.159843722813439182888212874 | 0.08910856104292095551938816474 | 1.155302198507125854684953340 | no |
+| INCR default | hmmsearch | 2.199548412555632188766430929 | 0.1444921394503618556793833449 | 2.192070875720252512720714852 | no |
+| INCR annotations | hmmsearch | 2.201259479212184257465439678 | 0.1514364985694028871355406129 | 2.193336846529401856449285229 | no |
+
+These ratios are the first-run cost in this arm64
+container. Absolute seconds in the file are not
+comparable to EPYC timings. The ratio applies to genome
+2, because every tool re-executes a new FASTA.
+
+Secondary PROJECTED factors, unchanged and not HMMER
+measurements: Riker 1.088, INCR default 2.0105, INCR
+annotations 1.4355. On this HMMER command the
+annotations column, which sets
+`INCR_SYS_PATH` to `incr --enable_annotations`, has
+about the same first-run wall as the default column.
+
+---
+
+## Addendum 2026-10-10 — hmmsearch overhead follow-up (pre-registered)
+
+Written before this follow-up. The 500-protein
+hmmsearch stock mean is under 60 s, so it is not the
+≥60 s estimate. This follow-up times hmmsearch only.
+
+Locked subset: 30134 models, 1000 proteins of GCF_002853805.1.
+
+The model count is every model in `Pfam-A.hmm.gz`. The
+protein count is the first 1000 records of genome 1.
+PROJECTED stock mean, assuming the wall change from the
+sizing point (200 proteins, one run,
+`43.500324881` s) to the 500-protein mean
+(`59.367682854` s) continues at the same rate per
+protein: marginal
+`(59.367682854 - 43.500324881) / 300 = 0.05289119324333333333333333333`
+s/protein, so
+`59.367682854 + 500 * 0.05289119324333333333333333333 = 85.81327947566666666666666666`
+s. If the measured stock mean is still under 60 s, the
+ratios are reported and are not the ≥60 s estimate, and
+this session does not pick a third size.
+
+Four repeats. The same rotation as the 500-protein
+addendum, restricted to hmmsearch. New container of
+`acts-baselines-uniform:local` each run. Capabilities,
+clock, invalid-run rule, and primary statistic are the
+ones in the 500-protein pre-registration. Output:
+`pipeline/results/baseline_overhead_hmmsearch.json`.
+Absolute seconds are this arm64 container. Only ratios
+are used.

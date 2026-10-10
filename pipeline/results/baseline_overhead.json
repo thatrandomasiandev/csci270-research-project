@@ -1,0 +1,713 @@
+{
+  "label": "MEASURED",
+  "decides": "first-run wall ratio versus stock HMMER in this container",
+  "comparable_to_epyc": false,
+  "use": "ratios_only",
+  "primary": "mean of within-repeat wall ratios, tool / stock",
+  "secondary_projected_factor": {
+    "riker": {
+      "label": "PROJECTED",
+      "factor": "1.088",
+      "source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. A build overhead, not a measured HMMER overhead."
+    },
+    "incr_default": {
+      "label": "PROJECTED",
+      "factor": "2.0105",
+      "source": "Xie, Lamprou, Xia, and Vasilakis, USENIX OSDI 2026, introduction and section 8.5: first execution slower by 101.05% with no annotations (Figure 5 mean first-run ratio 2.01x on benchmarks over five seconds). A shell-suite overhead, not a measured HMMER overhead."
+    },
+    "incr_annotations": {
+      "label": "PROJECTED",
+      "factor": "1.4355",
+      "source": "Xie et al., USENIX OSDI 2026, section 8.5: with crowdsourced annotations, first-run overhead falls from 101.05% to 43.55%. That figure is their Unix suite. It is applied here only as the annotated first-run overhead, and it does not mean FASTA records were split."
+    }
+  },
+  "workload": {
+    "n_models": 30134,
+    "n_proteins": 500,
+    "accession": "GCF_002853805.1",
+    "first_model": "03009_C",
+    "last_model": "ZZ_ADA2",
+    "subset_hmm_sha256": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+    "subset_hmm_bytes": 2246909846,
+    "fasta_sha256": "6ab83e19bdfc79bb46d63b69d495a3b41b5dd42c6ba8abf53a0faea17256a3a6",
+    "pfam_gz_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab"
+  },
+  "modes": {
+    "hmmscan": {
+      "stock": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "111.534176746",
+          "99.886975922",
+          "99.304908754",
+          "98.167208670"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "102.223317523",
+        "stdev_wall_s": "6.248192280370605397448597589",
+        "paired_ratio_vs_stock": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "mean_paired_ratio": "1",
+        "stdev_paired_ratio": "0",
+        "ratio_of_means": "1"
+      },
+      "riker": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "172.477220719",
+          "160.382967589",
+          "164.842308159",
+          "163.462641326"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "165.29128444825",
+        "stdev_wall_s": "5.140517803196455218839952339",
+        "paired_ratio_vs_stock": [
+          "1.546406901911217340003765880",
+          "1.605644440715076471789234713",
+          "1.659961327464188971324574568",
+          "1.665145047319190521300578812"
+        ],
+        "mean_paired_ratio": "1.619289429352418326104538493",
+        "stdev_paired_ratio": "0.05554274484952832733856946947",
+        "ratio_of_means": "1.616962630967830402175510502"
+      },
+      "incr_default": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "231.337987412",
+          "228.108798634",
+          "228.351159176",
+          "227.970567411"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "228.94212815825",
+        "stdev_wall_s": "1.604966695744267609043043847",
+        "paired_ratio_vs_stock": [
+          "2.074144393774768033826896670",
+          "2.283669082264800852682280286",
+          "2.299495181468579913217287764",
+          "2.322268000685936178814648168"
+        ],
+        "mean_paired_ratio": "2.244894164548521244635278222",
+        "stdev_paired_ratio": "0.1149303557674785798276810727",
+        "ratio_of_means": "2.239627256342356264304627033"
+      },
+      "incr_annotations": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "230.720685496",
+          "229.725498301",
+          "228.744239301",
+          "230.047244760"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "229.8094169645",
+        "stdev_wall_s": "0.8223174962096456526624735914",
+        "paired_ratio_vs_stock": [
+          "2.068609750188293195078908159",
+          "2.299854372209532512350194043",
+          "2.303453496620691331268327002",
+          "2.343422491856006849624116953"
+        ],
+        "mean_paired_ratio": "2.253835027718630972080386539",
+        "stdev_paired_ratio": "0.1250521087258071289717660267",
+        "ratio_of_means": "2.248111512452072739799335186"
+      }
+    },
+    "hmmsearch": {
+      "stock": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "65.576975211",
+          "57.120671957",
+          "57.491674082",
+          "57.281410166"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "59.367682854",
+        "stdev_wall_s": "4.142314658386502204952801059",
+        "paired_ratio_vs_stock": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "mean_paired_ratio": "1",
+        "stdev_paired_ratio": "0",
+        "ratio_of_means": "1"
+      },
+      "riker": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "67.457795504",
+          "67.908287837",
+          "70.578333130",
+          "68.406041615"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "68.5876145215",
+        "stdev_wall_s": "1.382498349026315216235859501",
+        "paired_ratio_vs_stock": [
+          "1.028681107766076222048332012",
+          "1.188856599728393142649318011",
+          "1.227627030469396029440880876",
+          "1.194210153289891337414320597"
+        ],
+        "mean_paired_ratio": "1.159843722813439182888212874",
+        "stdev_paired_ratio": "0.08910856104292095551938816474",
+        "ratio_of_means": "1.155302198507125854684953340"
+      },
+      "incr_default": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "130.171183616",
+          "128.721650296",
+          "129.918540630",
+          "131.741299631"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "130.13816854325",
+        "stdev_wall_s": "1.241756772293450879135029693",
+        "paired_ratio_vs_stock": [
+          "1.985013538626356939304362328",
+          "2.253503782184156773119173760",
+          "2.259780093456628734389547324",
+          "2.299896235955386308252640304"
+        ],
+        "mean_paired_ratio": "2.199548412555632188766430929",
+        "stdev_paired_ratio": "0.1444921394503618556793833449",
+        "ratio_of_means": "2.192070875720252512720714852"
+      },
+      "incr_annotations": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "129.463657880",
+          "130.177981505",
+          "130.515360714",
+          "130.696305088"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "130.21332629675",
+        "stdev_wall_s": "0.5439807874601089630992485850",
+        "paired_ratio_vs_stock": [
+          "1.974224298443755190421144843",
+          "2.278999476809323558077203871",
+          "2.270161076329883727875962253",
+          "2.281653065265774553487447745"
+        ],
+        "mean_paired_ratio": "2.201259479212184257465439678",
+        "stdev_paired_ratio": "0.1514364985694028871355406129",
+        "ratio_of_means": "2.193336846529401856449285229"
+      }
+    }
+  },
+  "runs": [
+    {
+      "t0": "1791668414.990894052",
+      "t1": "1791668526.525070798",
+      "exit_code": 0,
+      "wall_s": "111.534176746",
+      "tool": "stock",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185291,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791668554.589883297",
+      "t1": "1791668620.166858508",
+      "exit_code": 0,
+      "wall_s": "65.576975211",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533666,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791668638.886552295",
+      "t1": "1791668811.363773014",
+      "exit_code": 0,
+      "wall_s": "172.477220719",
+      "tool": "riker",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791668829.446530508",
+      "t1": "1791668896.904326012",
+      "exit_code": 0,
+      "wall_s": "67.457795504",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791668914.915885631",
+      "t1": "1791669146.253873043",
+      "exit_code": 0,
+      "wall_s": "231.337987412",
+      "tool": "incr_default",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669165.173400469",
+      "t1": "1791669295.344584085",
+      "exit_code": 0,
+      "wall_s": "130.171183616",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669318.380178929",
+      "t1": "1791669549.100864425",
+      "exit_code": 0,
+      "wall_s": "230.720685496",
+      "tool": "incr_annotations",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669568.148272211",
+      "t1": "1791669697.611930091",
+      "exit_code": 0,
+      "wall_s": "129.463657880",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669719.737886753",
+      "t1": "1791669880.120854342",
+      "exit_code": 0,
+      "wall_s": "160.382967589",
+      "tool": "riker",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669899.345733337",
+      "t1": "1791669967.254021174",
+      "exit_code": 0,
+      "wall_s": "67.908287837",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791669986.378563668",
+      "t1": "1791670214.487362302",
+      "exit_code": 0,
+      "wall_s": "228.108798634",
+      "tool": "incr_default",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670233.336645297",
+      "t1": "1791670362.058295593",
+      "exit_code": 0,
+      "wall_s": "128.721650296",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670380.555252420",
+      "t1": "1791670610.280750721",
+      "exit_code": 0,
+      "wall_s": "229.725498301",
+      "tool": "incr_annotations",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670628.842840174",
+      "t1": "1791670759.020821679",
+      "exit_code": 0,
+      "wall_s": "130.177981505",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670777.642255215",
+      "t1": "1791670877.529231137",
+      "exit_code": 0,
+      "wall_s": "99.886975922",
+      "tool": "stock",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185291,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670895.876920173",
+      "t1": "1791670952.997592130",
+      "exit_code": 0,
+      "wall_s": "57.120671957",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533666,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791670971.868275916",
+      "t1": "1791671200.219435092",
+      "exit_code": 0,
+      "wall_s": "228.351159176",
+      "tool": "incr_default",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671218.505810169",
+      "t1": "1791671348.424350799",
+      "exit_code": 0,
+      "wall_s": "129.918540630",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671368.176977169",
+      "t1": "1791671596.921216470",
+      "exit_code": 0,
+      "wall_s": "228.744239301",
+      "tool": "incr_annotations",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671616.071975006",
+      "t1": "1791671746.587335720",
+      "exit_code": 0,
+      "wall_s": "130.515360714",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671766.013424215",
+      "t1": "1791671865.318332969",
+      "exit_code": 0,
+      "wall_s": "99.304908754",
+      "tool": "stock",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185291,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671884.687212797",
+      "t1": "1791671942.178886879",
+      "exit_code": 0,
+      "wall_s": "57.491674082",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533666,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791671961.325175389",
+      "t1": "1791672126.167483548",
+      "exit_code": 0,
+      "wall_s": "164.842308159",
+      "tool": "riker",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672145.486651210",
+      "t1": "1791672216.064984340",
+      "exit_code": 0,
+      "wall_s": "70.578333130",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672235.118234959",
+      "t1": "1791672465.165479719",
+      "exit_code": 0,
+      "wall_s": "230.047244760",
+      "tool": "incr_annotations",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672484.350573422",
+      "t1": "1791672615.046878510",
+      "exit_code": 0,
+      "wall_s": "130.696305088",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672634.216088089",
+      "t1": "1791672732.383296759",
+      "exit_code": 0,
+      "wall_s": "98.167208670",
+      "tool": "stock",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185291,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672751.179945462",
+      "t1": "1791672808.461355628",
+      "exit_code": 0,
+      "wall_s": "57.281410166",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533666,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791672827.234979053",
+      "t1": "1791672990.697620379",
+      "exit_code": 0,
+      "wall_s": "163.462641326",
+      "tool": "riker",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791673010.222103846",
+      "t1": "1791673078.628145461",
+      "exit_code": 0,
+      "wall_s": "68.406041615",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791673097.581974345",
+      "t1": "1791673325.552541756",
+      "exit_code": 0,
+      "wall_s": "227.970567411",
+      "tool": "incr_default",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 185295,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791673345.197883001",
+      "t1": "1791673476.939182632",
+      "exit_code": 0,
+      "wall_s": "131.741299631",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 533670,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    }
+  ],
+  "provenance": {
+    "git": "1f496edfabefb4d7f7bc19f25c58e182934fab64",
+    "git_dirty": false,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  },
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-10 measured first-run overhead",
+  "repeats": 4,
+  "order": [
+    [
+      "stock",
+      "riker",
+      "incr_default",
+      "incr_annotations"
+    ],
+    [
+      "riker",
+      "incr_default",
+      "incr_annotations",
+      "stock"
+    ],
+    [
+      "incr_default",
+      "incr_annotations",
+      "stock",
+      "riker"
+    ],
+    [
+      "incr_annotations",
+      "stock",
+      "riker",
+      "incr_default"
+    ]
+  ],
+  "assumption": "Each run is a new container, so the tool cache is empty. hmmpress finishes before ACTS_T0 and is not in the wall. The kernel page cache is not flushed. Absolute seconds are this arm64 container; only ratios are used. The ratio is the first-run cost that applies to genome 2, because every tool re-executes a new FASTA."
+}
