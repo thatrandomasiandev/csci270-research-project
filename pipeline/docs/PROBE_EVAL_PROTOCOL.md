@@ -358,3 +358,132 @@ that 8-class run.
 `scripts/run_f6_trace_linux.py` was **not** run. No
 `results/f6_trace_linux.json`.
 
+---
+
+## Addendum 2026-10-10 — `probe_n = 8` (pre-registered, before the run)
+
+Locked text above is unchanged. Written **before**
+`results/probe_eval_n8.json`. No CARC. Mac only. Do not overwrite
+`results/probe_eval.json`, `results/probe_eval_audit.json`, the subset
+JSONs, or figures 17 / 18.
+
+The timed savings jobs infer with `PROBE_N = 8` and
+`SUBSET_MODE = "singleton"` (`scripts/run_hmmer_savings.py`). The priced
+schedule for that pair is 12 calls,
+
+```
+[8, 8, 8, 8, 1, 1, 1, 1, 1, 1, 1, 1]
+```
+
+(`acts.predict.inference_call_sizes`, either `vcf` or `fasta`, `n ≥ 8`).
+The locked suite’s sizes are 50, 200, 500, 2000. There is no cell at 8
+(`docs/RED_TEAM.md`, Rank 5). This addendum adds that cell. It does not
+re-run the locked sizes and it does not pool them into a new denominator.
+
+### What is held fixed
+
+| Piece | Value |
+|-------|--------|
+| Classes | F1, F2, F3, F4, F5, F6-env, F6-file, F7, F8 (the F6 split). Controls C1–C5 |
+| Formats | vcf, fasta |
+| *p* | 1, 0.1, 0.01, 0.001. F6-env and F6-file ignore *p* and stay rectangular |
+| Seed | **20260927** (probe sample and audit) |
+| `N_rec` | 2500 |
+| Probe sample | `probe_n` records drawn **without replacement** (`random.Random(20260927)`), not the prefix sampler of `96f786b` |
+| Input-3 twists | unchanged from the locked table |
+| Canonical in-scope | all unsafe classes **except F6-env and F6-file** |
+
+The canonical denominator **224** = 7 × 4 × 2 × 4 is the four locked
+sizes (56 per size). It stays 224. This run’s in-scope denominator is
+the same per-size slice at the new size only: 7 × 4 × 2 = **56**.
+Overall unsafe cells at this size: 9 × 4 × 2 = **72**. False-refuse
+denominator: **5** (one size × five controls), not 20.
+
+### Two columns, one subset mode
+
+Both columns use `probe_n = 8` and `subset_mode = singleton`.
+
+| Column | Switch | What counts as a catch |
+|--------|--------|------------------------|
+| Full verification | `--verify full` | input-1 refuse, or input-1/input-2 `REFUSE_MATCH`. No hit audit (`audit_p` stays 0) |
+| Deployed audit | `--verify audit` | input-1 refuse, or input-2 `REFUSE_AUDIT`. *q* = 0.02, seed 20260927, floor 20 (`acts/audit.py` `AUDIT_P`, `AUDIT_SEED`, `AUDIT_FLOOR`) |
+
+Unsafe-ship for both columns is the locked definition: SHIP on input 1,
+SHIP on input 2, and input-3 replay ≠ fresh stock.
+
+`python -m acts run` does not pass `subset_mode`, so the library default
+on that path is batched. The default
+`python3 scripts/run_probe_eval.py` (no flags) stays that path: sizes
+50, 200, 500, 2000, `--verify audit`, output
+`results/probe_eval_audit.json`. Singleton is opt-in
+(`--subset-mode singleton`) and writes only the `--out` path. A flagged
+run that would overwrite the audit JSON or figure 18 is refused.
+
+The contract’s measured `tool_calls` is recorded. It is not rewritten to
+12. A VCF control that SHIPs without widening meters 2 determinism + 1
+shuffle + 8 singletons + 1 perturbation = 12, the same count as the
+priced list. FASTA can add a layout probe, so its meter may exceed 12.
+A SHIP contract must have `subset_mode = singleton` and `probe_n = 8`.
+A REFUSE contract must have `subset_mode = singleton`. `refuse_result`
+leaves `probe_n` at its default 0; that measured 0 is recorded and is
+not a second probe size.
+
+### PROJECTED, before any cell
+
+Assumptions: a frequency-*p* fault is present independently on each
+record; the probe is 8 records; the population correction is ignored.
+This is the paper’s formula \(\Pr[\text{probe misses}] = (1-p)^n\), at
+\(n = 8\). The seed realizes one draw. These probabilities are not a
+target numerator.
+
+| *p* | \((1-p)^8\) |
+|-----|-------------|
+| 1 | 0 |
+| 0.1 | 0.43046721 |
+| 0.01 | 0.92274469 |
+| 0.001 | 0.99202794 |
+
+At *p* = 0.01 the probe is empty of the fault with probability
+**0.9227**. At *p* = 1 it cannot be empty.
+
+What an empty probe implies, from the locked expected-catch table:
+
+| Class | Full column | Audit column |
+|-------|-------------|--------------|
+| F1, F7 | **Not** unsafe-ship. MATCH fails on input 1 if the file has any live record. \((1-p)^{2500}\) is ~0 at *p* ≥ 0.01 and 0.082 at *p* = 0.001; a file with no live record is also clean on input 3, so replay equals stock | Unsafe-ship if the checked hits include no live record. Illustration, not a second metric: a floor-20 check misses an independent rate-*p* fault with probability about \((1-p)^{20}\) (0.8179 at *p* = 0.01). The locked audit escape for a fault that touches *h* hits remains \((1-q)^h\), *q* = 0.02 |
+| F3 | Unsafe-ship when input 3 (first 100 records) is live. \(1-(1-p)^{100}\) is 0.6340 at *p* = 0.01 and 0.0952 at *p* = 0.001. Input 2 MATCH passes (same *N*) | The audit file has a different *N*, so a live checked hit is `REFUSE_AUDIT`. Otherwise unsafe-ship |
+| F4 | **Unsafe-ship.** Input 2 keeps IDs/descriptions, so MATCH passes; input 3 changes them | **Unsafe-ship.** The audit sees the same IDs/descriptions |
+| F2, F5, F8 | Same probe-miss probability. Unsafe-ship is neighbor- or rare-field-dependent. **Not** predicted as a determined miss | same |
+| F6-env, F6-file | 8/8 unsafe-ship on this Mac (always on; no `strace`). Outside the 56. This is the locked limitation, not \((1-p)^8\) | same |
+
+Predicted in-scope unsafe-ship at *p* = 1: **0/14** on both columns
+(the probe cannot miss). Predicted false-refuse: **0/5**.
+
+The classes this formula predicts will be missed, when the 8-record
+probe contains no live record, are **F4 on both columns** and **F3 on
+the full column** (F3 on the audit column only when the checked set is
+also empty of live hits). **F1 and F7 are predicted missed by the probe
+and caught by full MATCH.** Under the audit they are predicted missed
+when the floor-20 check also misses. F2, F5, and F8 are not given a
+determined miss.
+
+### Already MEASURED, not re-run (the rows this cell sits beside)
+
+| `probe_n` | Full in-scope (`probe_eval.md`, `96f786b`) | Audit in-scope (`probe_eval_audit.md`, canonical addendum) |
+|-----------|--------------------------------------------|------------------------------------------------------------|
+| 50 | 1/56 (vcf F4, *p* = 0.01) | 3/56 |
+| 200 | 0/56 | 1/56 |
+| 500 | 0/56 | 0/56 |
+| 2000 | 0/56 | 0/56 |
+| **total** | **1/224** | **4/224** |
+
+False-refuse on those files is 0/20. The full file predates the F6
+split; 1/224 excludes undivided F6. The audit 4/224 excludes F6-env and
+F6-file.
+
+### Outputs
+
+`results/probe_eval_n8.json`, `results/probe_eval_n8.md`. Provenance
+(git, host, Python) is stored on the JSON. The outcome addendum is
+written after the run and is labelled as such.
+
