@@ -1416,3 +1416,81 @@ content hashing) is not applied. Genome 2 did not
 execute, because the binary was not produced. The
 four-job figure 121.2575 h stays a formula in the
 harness and is not a result of this run.
+
+---
+
+## Addendum 2026-10-10 — INCR replay dependency diagnosis (POST-HOC procedure)
+
+Written before the diagnostic container. Locked sections
+and the uniform classification rule are unchanged. The
+uniform smoke already recorded the decision: both INCR
+columns log `Cache invalid:` on the genome-2 replay, the
+tblout mtime moves during that step, and MATCH stays
+true. This addendum asks which recorded dependency
+`check_cache_valid` rejected. It is not a new prediction
+about skipping.
+
+The run uses the same image
+`acts-baselines-uniform:local`, the same 73-model by
+300-protein subset, the same argv, and the same one
+container per column. `DEBUG` stays false. The image's
+`DEBUG_LOGS = true` edit is not widened. `rules.rs` is
+not edited.
+
+Observer, compiled inside the container and not linked
+into INCR: `pipeline/scripts/baseline_incr_cache_dump`.
+It decodes `batch_*/data.incr` with bincode 2.0.1,
+little-endian, fixed-width integers, the layout of
+`CacheData` and `DependencyKey` in INCR `4b8e5dd`
+`src/cache/mod.rs`. It then applies the predicate in
+`src/execution/dependency.rs`: stdout and stderr files
+exist, every read dependency matches (mtime in
+microseconds for a read-only file, xxh3 for a file that
+was both read and written, absence for `DoesNotExist`),
+and an `outputs/` directory exists when the write set is
+non-empty. The decode runs immediately after the
+harness's tblout sha256 and `stat -c %y`, and immediately
+before `incr.sh` on the replay only.
+
+A dependency whose live value already differs at that
+moment changed between genome 2's save and the replay.
+That is a harness or environment change if the path is
+one the harness rewrites. A dependency that still matches
+at that moment, followed by another `Cache invalid:`
+line, changed inside the replay. The batch directory
+name is recorded before and after the replay. That name
+is the cache key, which includes the environment, so a
+new directory means the key changed and the old entry
+was not the one consulted.
+
+The driver is `pipeline/scripts/baseline_incr_diagnosis.py`.
+No source file under `/opt/incr` is edited.
+
+---
+
+## Addendum 2026-10-10 — ProcessCache linux/amd64 emulation probe (pre-registered)
+
+Written before the probe. The arm64 image did not
+compile ProcessCache `a89d132`: `src/regs.rs` names
+x86_64 `user_regs_struct` fields. This probe does not
+patch that file.
+
+One route. Docker runs `ubuntu:22.04` platform
+`linux/amd64`, image digest
+`sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde`,
+on this arm64 host, so the container is emulated.
+Capabilities are the uniform ProcessCache pair:
+`--cap-add SYS_PTRACE`, not `--privileged`, default
+seccomp. The probe program is the uniform smoke's
+`abi.c` (`PTRACE_GET_SYSCALL_INFO`, request `0x420e`).
+Success is that program's existing reading: the printed
+`rc` is an integer other than -1, and the container
+exits 0.
+
+If the probe fails, the error is the result and the
+behavioral sequence is not run. If the probe succeeds,
+ProcessCache is built at `a89d132` with `DONT_HASH_FILES`
+left false, and the uniform behavioral sequence (73
+models, first 300 proteins, both modes, genome 1, genome
+2, replay) runs in that container. Driver:
+`pipeline/scripts/baseline_processcache_amd64.py`.

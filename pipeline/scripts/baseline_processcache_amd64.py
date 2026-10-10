@@ -1,0 +1,126 @@
+#!/usr/bin/env python3
+"""One ProcessCache route: linux/amd64 under Docker emulation.
+
+Pre-registered in pipeline/docs/BASELINES_PROTOCOL.md, addendum
+"ProcessCache linux/amd64 emulation probe". Does not patch
+regs.rs. The ptrace probe is the uniform smoke's abi.c. A failed
+probe stops the run; the behavioral sequence runs only if the
+probe succeeds.
+"""
+
+from __future__ import annotations
+
+import json
+import platform
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import baseline_docker_uniform as uniform  # noqa: E402
+
+AMD64_DIGEST = "sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde"
+IMAGE = f"ubuntu:22.04@{AMD64_DIGEST}"
+PC_COMMIT = "a89d13214d8a0a9527ad4400a0a7284158d952a1"
+
+
+def probe_script() -> str:
+    source = uniform.ABI_C
+    return f"""set -eu
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install -y --no-install-recommends gcc libc6-dev ca-certificates
+cat > /tmp/abi.c << 'END_ABI'
+{source}END_ABI
+gcc -O2 -Wall -o /tmp/abi /tmp/abi.c
+echo "ACTS_UNAME $(uname -a)"
+/tmp/abi
+echo "ACTS_PROBE_EXIT $?"
+"""
+
+
+def docker_probe_argv(script: str) -> list[str]:
+    return [
+        "docker", "run", "--rm",
+        "--platform", "linux/amd64",
+        "--cap-add", "SYS_PTRACE",
+        IMAGE,
+        "bash", "-lc", script,
+    ]
+
+
+def run_probe() -> dict:
+    script = probe_script()
+    proc = subprocess.run(
+        docker_probe_argv(script),
+        check=False,
+        text=True,
+        capture_output=True,
+    )
+    text = (proc.stdout or "") + "\n" + (proc.stderr or "")
+    probe = uniform._parse_probe(text)
+    return {
+        "docker_exit": proc.returncode,
+        "probe": probe,
+        "log": text[-8000:],
+        "succeeded": bool(probe.get("succeeded")) and proc.returncode == 0,
+    }
+
+
+def result_payload(probe: dict) -> dict:
+    uname = platform.uname()
+    return {
+        "label": "MEASURED",
+        "decides": "whether ProcessCache's ptrace request works in a linux/amd64 container under emulation",
+        "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+        "addendum": "2026-10-10 ProcessCache linux/amd64 emulation probe",
+        "image": IMAGE,
+        "platform": "linux/amd64",
+        "emulation": "Docker --platform linux/amd64 on this arm64 host",
+        "capabilities": {
+            "privileged": False,
+            "cap_add": "SYS_PTRACE",
+            "seccomp": "default Docker profile; not seccomp=unconfined",
+        },
+        "processcache_commit": PC_COMMIT,
+        "regs_rs_patched": False,
+        "behavioral_sequence": "not run" if not probe["succeeded"] else "pending",
+        "probe": probe["probe"],
+        "docker_exit": probe["docker_exit"],
+        "probe_succeeded": probe["succeeded"],
+        "log_tail": probe["log"][-4000:],
+        "provenance": {
+            "host": platform.node(),
+            "platform": platform.platform(),
+            "uname": f"{uname.system} {uname.release} {uname.machine}",
+            "python": platform.python_version(),
+        },
+    }
+
+
+def main() -> None:
+    parser = __import__("argparse").ArgumentParser()
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=ROOT / "results" / "baseline_processcache_amd64.json",
+    )
+    args = parser.parse_args()
+    probe = run_probe()
+    payload = result_payload(probe)
+    if probe["succeeded"]:
+        payload["behavioral_sequence"] = (
+            "probe succeeded; the behavioral sequence is a separate step "
+            "and is not implied by this function"
+        )
+    args.out.parent.mkdir(parents=True, exist_ok=True)
+    args.out.write_text(json.dumps(payload, indent=2) + "\n")
+    print(f"wrote {args.out}")
+    print("probe_succeeded", payload["probe_succeeded"], "probe", payload["probe"])
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,15 @@
+[package]
+name = "baseline_incr_cache_dump"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Observer only. Decodes INCR's bincode CacheData at commit 4b8e5dd
+# (DEBUG = false, file name data.incr) and re-checks the predicate in
+# src/execution/dependency.rs. It does not link INCR and does not
+# change DEBUG or the cache format.
+
+[dependencies]
+bincode = { version = "=2.0.1", features = ["derive"] }
+serde_json = "=1.0.145"
+xxhash-rust = { version = "=0.8.15", features = ["std", "xxh3"] }
