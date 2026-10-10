@@ -1,0 +1,787 @@
+{
+  "label": "MEASURED",
+  "decides": "executed/replayed/invalid and MATCH; not wall time",
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-10 uniform Docker behavioral smoke",
+  "provenance": {
+    "git": "cd5fa72ec9e7f90010242b4a2ce737fc0f920f86",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  },
+  "prediction": {
+    "genome1": "executed",
+    "genome2": "executed",
+    "replay": "replayed",
+    "annotations_do_not_split_fasta_records": true,
+    "source": "BASELINES_PROTOCOL.md locked sections, applied to genome 2's exact argv"
+  },
+  "workload": {
+    "n_models": 73,
+    "proteins_kept": 300,
+    "genomes": {
+      "genome1": {
+        "position": 1,
+        "accession": "GCF_002853805.1",
+        "proteins_in_file": 5117
+      },
+      "genome2": {
+        "position": 2,
+        "accession": "GCF_002090355.1",
+        "proteins_in_file": 4091
+      }
+    },
+    "subset_hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+    "subset_hmm_bytes": 5363019,
+    "pfam_gz_bytes": 418160514,
+    "pfam_gz_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+    "genome_sha256": {
+      "genome1": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+      "genome2": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167"
+    },
+    "cpu_flag": 32
+  },
+  "image": "acts-baselines-uniform:local",
+  "columns": {
+    "riker": {
+      "capabilities": {
+        "privileged": false,
+        "cap_add": "SYS_PTRACE",
+        "seccomp": "default Docker profile; not seccomp=unconfined",
+        "source": "Riker and ProcessCache document ptrace. The 2026-10-09 Riker run used this pair."
+      },
+      "docker_exit": 0,
+      "binary_missing": false,
+      "environment": {
+        "ACTS_UNAME": "Linux 8a9917343f8b 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+        "ACTS_UNSHARE": "unshare from util-linux 2.37.2",
+        "ACTS_PYTHON": "Python 3.10.12",
+        "ACTS_HMMER": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+        "ACTS_UNSHARE_ROOT": "yes",
+        "ACTS_LIBBASH": "0",
+        "ACTS_CPU_BYTES": "0-13",
+        "ACTS_PRESSED": "0"
+      },
+      "probe": {
+        "rc": 24,
+        "errno": 0,
+        "succeeded": true
+      },
+      "modes": {
+        "hmmscan": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": true,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "8e82ca1d56f1025bb28b7702abfd01158862bf2833aaf8e50bbb8cadc2fc5930",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "87b9a4ddabeace98431864ddae288cb8c1e59a302874a6bfbcf8d33ac9db3969",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:31.716178007 +0000",
+              "tblout_bytes": 5904,
+              "log_tail": "(score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (408 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 2171.98\n//\nQuery:       WP_000074237.1  [L=460]\nDescription: MULTISPECIES: Cu(+)/Ag(+) efflux RND transporter outer membrane channel CusC [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (460 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         4  (0.0547945); expected 1.5 (0.02)\nPassed bias filter:                        4  (0.0547945); expected 1.5 (0.02)\nPassed Vit filter:                         1  (0.0136986); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 2261.63\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": true,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "d2cb1edeb374ef5305e84fd4a08a5dbcae1bc66f22ffba2416b821a547ecf750",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "0e263bf4f59e3724e8f6ca8a5b3f634d2f2c6a1d5aa4bd4fd387ddc456bd2102",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:32.434178008 +0000",
+              "tblout_bytes": 5904,
+              "log_tail": "mplete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (161 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.01u 0.01s 00:00:00.02 Elapsed: 00:00:00.00\n# Mc/sec: 803.49\n//\nQuery:       WP_000080947.1  [L=136]\nDescription: MULTISPECIES: class Ib ribonucleoside-diphosphate reductase assembly flavoprotein NrdI [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (136 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         0  (0); expected 1.5 (0.02)\nPassed bias filter:                        0  (0); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 709.12\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "replayed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": false,
+              "replay_marker": false,
+              "riker_must_run": false,
+              "proof": [],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "d2cb1edeb374ef5305e84fd4a08a5dbcae1bc66f22ffba2416b821a547ecf750",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "0e263bf4f59e3724e8f6ca8a5b3f634d2f2c6a1d5aa4bd4fd387ddc456bd2102",
+              "tblout_sha256_after": "0e263bf4f59e3724e8f6ca8a5b3f634d2f2c6a1d5aa4bd4fd387ddc456bd2102",
+              "tblout_mtime_before": "2026-10-10 20:56:32.434178008 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:32.434178008 +0000",
+              "tblout_bytes": 5904,
+              "log_tail": ""
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": true,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "5.10",
+            "factor": "1.088",
+            "overhead_source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. A build overhead, not a measured HMMER overhead.",
+            "hours_per_genome": "0.9248",
+            "hours_A30": "27.744",
+            "hours_B40": "36.992",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        },
+        "hmmsearch": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": true,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "6a2c69cfefeaa98bda8bc5df541cbfe52d8d517c2c2078a97d124204a60fdfeb",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "a1a853e6a4fe19d87d0430be2dcd666b743bdd57fa7c4ffa23936ef1be74d5b3",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:32.671178008 +0000",
+              "tblout_bytes": 11476,
+              "log_tail": "5  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        3  (0.01); expected 6.0 (0.02)\nPassed Vit filter:                         1  (0.00333333); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 16143.11\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                       10  (0.0333333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 18050.85\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": true,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "c31f25e7866c3eab69cb6b25fef506a079c8aa3bde92beecfa5cd89e3b175bae",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "1c9551d8283b1bccb42249ebfd7f5e0edcb9953af4363ac0e2a8b8c217fbae76",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:32.878178008 +0000",
+              "tblout_bytes": 12125,
+              "log_tail": "R55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 18049.38\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.01u 0.00s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 18289.86\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "replayed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": false,
+              "replay_marker": false,
+              "riker_must_run": false,
+              "proof": [],
+              "cpu_mtime": "1791665789",
+              "command_sha256": "c31f25e7866c3eab69cb6b25fef506a079c8aa3bde92beecfa5cd89e3b175bae",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "1c9551d8283b1bccb42249ebfd7f5e0edcb9953af4363ac0e2a8b8c217fbae76",
+              "tblout_sha256_after": "1c9551d8283b1bccb42249ebfd7f5e0edcb9953af4363ac0e2a8b8c217fbae76",
+              "tblout_mtime_before": "2026-10-10 20:56:32.878178008 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:32.878178008 +0000",
+              "tblout_bytes": 12125,
+              "log_tail": ""
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": true,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "1.05",
+            "factor": "1.088",
+            "overhead_source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. A build overhead, not a measured HMMER overhead.",
+            "hours_per_genome": "0.1904",
+            "hours_A30": "5.712",
+            "hours_B40": "7.616",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        }
+      },
+      "wrapper_head": "atistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 18910.55\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 18696.80\n//\n[ok]\nACTS_STOCK_END"
+    },
+    "processcache": {
+      "capabilities": {
+        "privileged": false,
+        "cap_add": "SYS_PTRACE",
+        "seccomp": "default Docker profile; not seccomp=unconfined",
+        "source": "Riker and ProcessCache document ptrace. The 2026-10-09 Riker run used this pair."
+      },
+      "docker_exit": 0,
+      "binary_missing": true,
+      "environment": {
+        "ACTS_UNAME": "Linux 75f035e498d1 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+        "ACTS_UNSHARE": "unshare from util-linux 2.37.2",
+        "ACTS_PYTHON": "Python 3.10.12",
+        "ACTS_HMMER": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+        "ACTS_UNSHARE_ROOT": "yes",
+        "ACTS_LIBBASH": "0",
+        "ACTS_CPU_BYTES": "0-13",
+        "ACTS_PRESSED": "0",
+        "ACTS_BINARY_MISSING": "processcache"
+      },
+      "probe": {
+        "rc": 24,
+        "errno": 0,
+        "succeeded": true
+      },
+      "modes": {
+        "hmmscan": {
+          "steps": [],
+          "agrees_genome2_executes": false,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "applies": false,
+            "reason": "genome 2 did not execute; stock-plus-overhead is not the paper cost"
+          }
+        },
+        "hmmsearch": {
+          "steps": [],
+          "agrees_genome2_executes": false,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "applies": false,
+            "reason": "genome 2 did not execute; stock-plus-overhead is not the paper cost"
+          }
+        }
+      },
+      "wrapper_head": "fields are: `regs`, `sp`, `pc`, `pstate`\n\nerror[E0560]: struct `user_regs_struct` has no field named `gs_base`\n   --> src/regs.rs:159:9\n    |\n159 |         gs_base: 0,\n    |         ^^^^^^^ `user_regs_struct` does not have this field\n    |\n    = note: available fields are: `regs`, `sp`, `pc`, `pstate`\n\nerror[E0560]: struct `user_regs_struct` has no field named `ds`\n   --> src/regs.rs:160:9\n    |\n160 |         ds: 0,\n    |         ^^ `user_regs_struct` does not have this field\n    |\n    = note: available fields are: `regs`, `sp`, `pc`, `pstate`\n\nerror[E0560]: struct `user_regs_struct` has no field named `es`\n   --> src/regs.rs:161:9\n    |\n161 |         es: 0,\n    |         ^^ `user_regs_struct` does not have this field\n    |\n    = note: available fields are: `regs`, `sp`, `pc`, `pstate`\n\nerror[E0560]: struct `user_regs_struct` has no field named `fs`\n   --> src/regs.rs:162:9\n    |\n162 |         fs: 0,\n    |         ^^ `user_regs_struct` does not have this field\n    |\n    = note: available fields are: `regs`, `sp`, `pc`, `pstate`\n\nerror[E0560]: struct `user_regs_struct` has no field named `gs`\n   --> src/regs.rs:163:9\n    |\n163 |         gs: 0,\n    |         ^^ `user_regs_struct` does not have this field\n    |\n    = note: available fields are: `regs`, `sp`, `pc`, `pstate`\n\nwarning: irrefutable `if let` pattern\n   --> src/main.rs:168:8\n    |\n168 |     if let Err(e) = execvp(&exe, args_cstr.as_slice()) {\n    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |\n    = note: this pattern will always match, so the `if let` is useless\n    = help: consider replacing the `if let` with a `let`\n    = note: `#[warn(irrefutable_let_patterns)]` on by default\n\nSome errors have detailed explanations: E0308, E0425, E0560, E0599, E0609.\nFor more information about an error, try `rustc --explain E0308`.\nwarning: `process_cache` (bin \"process_cache\") generated 2 warnings\nerror: could not compile `process_cache` (bin \"process_cache\") due to 76 previous errors; 2 warnings emitted\n"
+    },
+    "incr_default": {
+      "capabilities": {
+        "privileged": true,
+        "cap_add": "included in --privileged",
+        "seccomp": "unconfined, because --privileged is INCR's documented Docker invocation",
+        "source": "README at 4b8e5dd: docker run --privileged"
+      },
+      "docker_exit": 0,
+      "binary_missing": false,
+      "environment": {
+        "ACTS_UNAME": "Linux b54d3181b029 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+        "ACTS_UNSHARE": "unshare from util-linux 2.37.2",
+        "ACTS_PYTHON": "Python 3.10.12",
+        "ACTS_HMMER": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+        "ACTS_UNSHARE_ROOT": "yes",
+        "ACTS_LIBBASH": "0",
+        "ACTS_CPU_BYTES": "0-13",
+        "ACTS_PRESSED": "0"
+      },
+      "probe": {
+        "rc": 24,
+        "errno": 0,
+        "succeeded": true
+      },
+      "modes": {
+        "hmmscan": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "8fb357228212d79320838378b88579ae16691fece31328bd38fb1b998049d3a4",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "40b7aba6d771e6e8969d7ee5197a63571292a3d161b54be3adc341e505ec74ad",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:37.591178010 +0000",
+              "tblout_bytes": 5901,
+              "log_tail": " (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (408 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 911.44\n//\nQuery:       WP_000074237.1  [L=460]\nDescription: MULTISPECIES: Cu(+)/Ag(+) efflux RND transporter outer membrane channel CusC [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (460 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         4  (0.0547945); expected 1.5 (0.02)\nPassed bias filter:                        4  (0.0547945); expected 1.5 (0.02)\nPassed Vit filter:                         1  (0.0136986); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.01u 0.00s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 1051.39\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "fb967f92198f90e060c8a2872c04ca289eb2aa23e56bc8e9355110c5e43a8ccf",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "dcb59778541a93d4c2d0010733507ceef94e26499812f3df2128876001cb3ee7",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:39.312178011 +0000",
+              "tblout_bytes": 5901,
+              "log_tail": "mplete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (161 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 345.64\n//\nQuery:       WP_000080947.1  [L=136]\nDescription: MULTISPECIES: class Ib ribonucleoside-diphosphate reductase assembly flavoprotein NrdI [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (136 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         0  (0); expected 1.5 (0.02)\nPassed bias filter:                        0  (0); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 314.52\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "fb967f92198f90e060c8a2872c04ca289eb2aa23e56bc8e9355110c5e43a8ccf",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "dcb59778541a93d4c2d0010733507ceef94e26499812f3df2128876001cb3ee7",
+              "tblout_sha256_after": "234be3cfc0d1ca7ea8f050f9f001bf5f02c9aea2bdb950eac8bc4a95e826874e",
+              "tblout_mtime_before": "2026-10-10 20:56:39.312178011 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:41.049178012 +0000",
+              "tblout_bytes": 5901,
+              "log_tail": "mplete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (161 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 374.63\n//\nQuery:       WP_000080947.1  [L=136]\nDescription: MULTISPECIES: class Ib ribonucleoside-diphosphate reductase assembly flavoprotein NrdI [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (136 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         0  (0); expected 1.5 (0.02)\nPassed bias filter:                        0  (0); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 282.22\n//\n[ok]\n"
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "5.10",
+            "factor": "2.0105",
+            "overhead_source": "Xie, Lamprou, Xia, and Vasilakis, USENIX OSDI 2026, introduction and section 8.5: first execution slower by 101.05% with no annotations (Figure 5 mean first-run ratio 2.01x on benchmarks over five seconds). A shell-suite overhead, not a measured HMMER overhead.",
+            "hours_per_genome": "1.708925",
+            "hours_A30": "51.26775",
+            "hours_B40": "68.357",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        },
+        "hmmsearch": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "3ff5ffcf8fc39b94cad6d5fd9e1a37259616a63f1b3ffd85d77e93cbb7f3f389",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "806a37e318808367163cf787c7b5fc021c565e2c7066dfc818b17de1b2214beb",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:41.490178012 +0000",
+              "tblout_bytes": 11471,
+              "log_tail": "R55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        3  (0.01); expected 6.0 (0.02)\nPassed Vit filter:                         1  (0.00333333); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.01u 0.01s 00:00:00.02 Elapsed: 00:00:00.00\n# Mc/sec: 7127.73\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                       10  (0.0333333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 9205.01\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "023ab11b8b37e14d465b2636babe3567fa6ba372a506fd045620f17c8ab8db16",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "982c3ea6bf8070775ebe93584942501a55ac0d420cdcb53ff7b0799164e575cc",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:41.916178012 +0000",
+              "tblout_bytes": 12120,
+              "log_tail": "WDR55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.01u 0.00s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 8230.86\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 9827.56\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665794",
+              "command_sha256": "023ab11b8b37e14d465b2636babe3567fa6ba372a506fd045620f17c8ab8db16",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "982c3ea6bf8070775ebe93584942501a55ac0d420cdcb53ff7b0799164e575cc",
+              "tblout_sha256_after": "f183674ad5b03a9c9fa334e10e8435f77e10c795f8ba217e340e14160e4c8b77",
+              "tblout_mtime_before": "2026-10-10 20:56:41.916178012 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:42.336178013 +0000",
+              "tblout_bytes": 12120,
+              "log_tail": "WDR55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 8319.01\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 8949.21\n//\n[ok]\n"
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "1.05",
+            "factor": "2.0105",
+            "overhead_source": "Xie, Lamprou, Xia, and Vasilakis, USENIX OSDI 2026, introduction and section 8.5: first execution slower by 101.05% with no annotations (Figure 5 mean first-run ratio 2.01x on benchmarks over five seconds). A shell-suite overhead, not a measured HMMER overhead.",
+            "hours_per_genome": "0.3518375",
+            "hours_A30": "10.555125",
+            "hours_B40": "14.0735",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        }
+      },
+      "wrapper_head": "atistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.01u 0.00s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 20770.30\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 22045.29\n//\n[ok]\nACTS_STOCK_END"
+    },
+    "incr_annotations": {
+      "capabilities": {
+        "privileged": true,
+        "cap_add": "included in --privileged",
+        "seccomp": "unconfined, because --privileged is INCR's documented Docker invocation",
+        "source": "README at 4b8e5dd: docker run --privileged"
+      },
+      "docker_exit": 0,
+      "binary_missing": false,
+      "environment": {
+        "ACTS_UNAME": "Linux 0da15f02b05b 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+        "ACTS_UNSHARE": "unshare from util-linux 2.37.2",
+        "ACTS_PYTHON": "Python 3.10.12",
+        "ACTS_HMMER": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+        "ACTS_UNSHARE_ROOT": "yes",
+        "ACTS_LIBBASH": "0",
+        "ACTS_CPU_BYTES": "0-13",
+        "ACTS_PRESSED": "0"
+      },
+      "probe": {
+        "rc": 24,
+        "errno": 0,
+        "succeeded": true
+      },
+      "modes": {
+        "hmmscan": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "86aaa04e8d8a136196ac3ac40a97d123243029270e0530f2be2b8ddcbd261db8",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "34499e515a4c49d0f9da3d072cea6daabf022c25833f6c3906f4854a6146dd8b",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:45.525905000 +0000",
+              "tblout_bytes": 5905,
+              "log_tail": " (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (408 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 881.45\n//\nQuery:       WP_000074237.1  [L=460]\nDescription: MULTISPECIES: Cu(+)/Ag(+) efflux RND transporter outer membrane channel CusC [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (460 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         4  (0.0547945); expected 1.5 (0.02)\nPassed bias filter:                        4  (0.0547945); expected 1.5 (0.02)\nPassed Vit filter:                         1  (0.0136986); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 1005.82\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "603cf5b271ad082852c705941df0072bb9fcf664dbbc1baee1c5e2c08c7661bd",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "81d06cb27e4cc018072b50f281be9a7b3eefbfc2ce706f5b47a7986f300cc452",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:47.301905001 +0000",
+              "tblout_bytes": 5905,
+              "log_tail": "mplete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (161 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 339.31\n//\nQuery:       WP_000080947.1  [L=136]\nDescription: MULTISPECIES: class Ib ribonucleoside-diphosphate reductase assembly flavoprotein NrdI [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (136 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         0  (0); expected 1.5 (0.02)\nPassed bias filter:                        0  (0); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 296.83\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "603cf5b271ad082852c705941df0072bb9fcf664dbbc1baee1c5e2c08c7661bd",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "81d06cb27e4cc018072b50f281be9a7b3eefbfc2ce706f5b47a7986f300cc452",
+              "tblout_sha256_after": "97d62fc9dffc8e3c298a8afc296293fa100132028e920761f5f80cc042912bd7",
+              "tblout_mtime_before": "2026-10-10 20:56:47.301905001 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:49.039905001 +0000",
+              "tblout_bytes": 5905,
+              "log_tail": "mplete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (161 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         3  (0.0410959); expected 1.5 (0.02)\nPassed bias filter:                        2  (0.0273973); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.01u 0.00s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 341.33\n//\nQuery:       WP_000080947.1  [L=136]\nDescription: MULTISPECIES: class Ib ribonucleoside-diphosphate reductase assembly flavoprotein NrdI [Enterobacteriaceae]\nScores for complete sequence (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Model    Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each model:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery sequence(s):                         1  (136 residues searched)\nTarget model(s):                          73  (11345 nodes)\nPassed MSV filter:                         0  (0); expected 1.5 (0.02)\nPassed bias filter:                        0  (0); expected 1.5 (0.02)\nPassed Vit filter:                         0  (0); expected 0.1 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):                 73  [actual number of targets]\nDomain search space  (domZ):               0  [number of targets reported over threshold]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 323.17\n//\n[ok]\n"
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "5.10",
+            "factor": "1.4355",
+            "overhead_source": "Xie et al., USENIX OSDI 2026, section 8.5: with crowdsourced annotations, first-run overhead falls from 101.05% to 43.55%. That figure is their Unix suite. It is applied here only as the annotated first-run overhead, and it does not mean FASTA records were split.",
+            "hours_per_genome": "1.220175",
+            "hours_A30": "36.60525",
+            "hours_B40": "48.807",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        },
+        "hmmsearch": {
+          "steps": [
+            {
+              "name": "genome1",
+              "accession": "GCF_002853805.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "88911d0bed11269f0cfc1cc5a3252f4f3e027ba2a55c52c2a6a1398c4cc9797f",
+              "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "b492c336ef680bb67a80c8dd95ebd7052cba4e9df8391d6b2bf82924f4da6837",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:49.455905002 +0000",
+              "tblout_bytes": 11475,
+              "log_tail": "R55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        3  (0.01); expected 6.0 (0.02)\nPassed Vit filter:                         1  (0.00333333); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 7259.03\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (97629 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                       10  (0.0333333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 8084.41\n//\n[ok]\n"
+            },
+            {
+              "name": "genome2",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "ccc4b82e567d014423c2af24620d8ff975d9350eb3bc36ce419df08c61437715",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "absent",
+              "tblout_sha256_after": "1c857dd09465b6d5ddae69ddef06296dd80f1697c207acc51e1f0fa4f519e1fe",
+              "tblout_mtime_before": "absent",
+              "tblout_mtime_after": "2026-10-10 20:56:49.864905002 +0000",
+              "tblout_bytes": 12124,
+              "log_tail": "WDR55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 8101.48\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 9620.47\n//\n[ok]\n"
+            },
+            {
+              "name": "replay",
+              "accession": "GCF_002090355.1",
+              "n_proteins": 300,
+              "exit_code": 0,
+              "action": "executed",
+              "match": true,
+              "output_nonempty": true,
+              "tblout_header": true,
+              "newly_written": true,
+              "replay_marker": false,
+              "riker_must_run": null,
+              "proof": [
+                "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----"
+              ],
+              "cpu_mtime": "1791665802",
+              "command_sha256": "ccc4b82e567d014423c2af24620d8ff975d9350eb3bc36ce419df08c61437715",
+              "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+              "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+              "tblout_sha256_before": "1c857dd09465b6d5ddae69ddef06296dd80f1697c207acc51e1f0fa4f519e1fe",
+              "tblout_sha256_after": "b8923d8cf7629b08f8558f45f8593a403acb208249440ce85cb83f66567b7a56",
+              "tblout_mtime_before": "2026-10-10 20:56:49.864905002 +0000",
+              "tblout_mtime_after": "2026-10-10 20:56:50.281905002 +0000",
+              "tblout_bytes": 12124,
+              "log_tail": "WDR55  [M=296]\nAccession:   PF24796.2\nDescription: WDR55\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 7618.99\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 8594.58\n//\n[ok]\n"
+            }
+          ],
+          "agrees_genome2_executes": true,
+          "falsifier_whole_command_fired": false,
+          "agrees_replay_skips": false,
+          "annotations_split_records": false,
+          "projection": {
+            "label": "PROJECTED",
+            "formula": "T = (T_sample / 6) * factor hours per genome",
+            "T_sample_h": "1.05",
+            "factor": "1.4355",
+            "overhead_source": "Xie et al., USENIX OSDI 2026, section 8.5: with crowdsourced annotations, first-run overhead falls from 101.05% to 43.55%. That figure is their Unix suite. It is applied here only as the annotated first-run overhead, and it does not mean FASTA records were split.",
+            "hours_per_genome": "0.2512125",
+            "hours_A30": "7.536375",
+            "hours_B40": "10.0485",
+            "assumption": "Every later genome is a new FASTA, so the replay skip does not apply across the collection. Proteome size stays the locked stand-in and is not scaled to 300 proteins. The factor is the tool paper's own overhead, not a time measured in this container.",
+            "applies": true
+          }
+        }
+      },
+      "wrapper_head": "atistics summary:\n-------------------------------------\nQuery model(s):                            1  (296 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                         4  (0.0133333); expected 6.0 (0.02)\nPassed bias filter:                        4  (0.0133333); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.01s 00:00:00.01 Elapsed: 00:00:00.00\n# Mc/sec: 20380.10\n//\nQuery:       YNCE  [M=339]\nAccession:   PF21783.3\nDescription: YNCE-like beta-propeller\nScores for complete sequences (score includes all domains):\n   --- full sequence ---   --- best 1 domain ---    -#dom-\n    E-value  score  bias    E-value  score  bias    exp  N  Sequence Description\n    ------- ------ -----    ------- ------ -----   ---- --  -------- -----------\n\n   [No hits detected that satisfy reporting thresholds]\n\n\nDomain annotation for each sequence:\n\n   [No targets detected that satisfy reporting thresholds]\n\n\nInternal pipeline statistics summary:\n-------------------------------------\nQuery model(s):                            1  (339 nodes)\nTarget sequences:                        300  (106284 residues searched)\nPassed MSV filter:                        11  (0.0366667); expected 6.0 (0.02)\nPassed bias filter:                        8  (0.0266667); expected 6.0 (0.02)\nPassed Vit filter:                         0  (0); expected 0.3 (0.001)\nPassed Fwd filter:                         0  (0); expected 0.0 (1e-05)\nInitial search space (Z):            1000000  [as set by --Z on cmdline]\nDomain search space  (domZ):         1000000  [as set by --domZ on cmdline]\n# CPU time: 0.00u 0.00s 00:00:00.00 Elapsed: 00:00:00.00\n# Mc/sec: 22695.64\n//\n[ok]\nACTS_STOCK_END"
+    }
+  },
+  "image_files": {
+    "riker.commit": "bae684b455a4d8fa010fc04b471f5ca9b408f6a8\n",
+    "ProcessCache.commit": "a89d13214d8a0a9527ad4400a0a7284158d952a1\n",
+    "ProcessCache.build": "FAILED\n",
+    "incr.commit": "4b8e5ddf8e275d947518c7cc0f5d2713fe992307\n",
+    "incr.diff": "diff --git a/src/config.rs b/src/config.rs\nindex ef0e0e9..986e8b1 100644\n--- a/src/config.rs\n+++ b/src/config.rs\n@@ -30,7 +30,7 @@ pub(crate) const PARALLEL_SIZE: usize = 1000;\n \n pub(crate) const SUDO_SANDBOX: bool = true;\n pub(crate) const DEBUG: bool = false;\n-pub(crate) const DEBUG_LOGS: bool = DEBUG && true;\n+pub(crate) const DEBUG_LOGS: bool = true;\n pub(crate) const DEBUG_LOG_PATH: &str = \"incr/debug_log.txt\";\n \n pub(crate) const EXCLUDED_VARIABLES: &[&str] = &[\n",
+    "incr.debug_lines": "13:pub(crate) const DEBUG_FILE: &str = \"debug_info.json\";\n32:pub(crate) const DEBUG: bool = false;\n33:pub(crate) const DEBUG_LOGS: bool = true;\n34:pub(crate) const DEBUG_LOG_PATH: &str = \"incr/debug_log.txt\";\n",
+    "unshare.version": "unshare from util-linux 2.37.2\n",
+    "hmmer.version": "# HMMER 3.4 (Aug 2023); http://hmmer.org/\n",
+    "hmmer.tar.sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3  /tmp/hmmer-3.4.tar.gz\n",
+    "compiler.txt": "Ubuntu clang version 15.0.7\n",
+    "rkr.file": "/opt/riker/release/bin/rkr: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[xxHash]=b5d7e7ba4fa30bd6, not stripped\n",
+    "rustc-stable.txt": "rustc 1.99.0 (b940084d7 2026-09-28)\n",
+    "rustc-nightly.txt": "rustc 1.101.0-nightly (32dba69d6 2026-10-09)\n",
+    "python.version": "Python 3.10.12\n",
+    "mergerfs.version": "mergerfs version: 2.33.3\n"
+  }
+}

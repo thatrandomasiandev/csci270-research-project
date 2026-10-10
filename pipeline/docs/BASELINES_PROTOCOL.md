@@ -1268,3 +1268,151 @@ file. This is not a finished smoke and not a reuse result.
 No whole-command falsifier is revised from these jobs.
 The Docker smoke pre-registered above is the one that
 decides behavior.
+
+A later read-only `sacct` through `discovery`, after the
+Docker measurement below, still showed 12898907 RUNNING,
+elapsed 11:52:07. The job was not cancelled and the
+partial JSON was not copied again.
+
+---
+
+## Addendum 2026-10-10 — uniform Docker behavioral outcome
+
+Written after the run. Locked sections and the
+pre-registration above are unchanged. The classification
+rule was not edited after the result.
+
+The recorded measurement is
+`pipeline/results/baseline_docker_uniform.json`, produced
+by `pipeline/scripts/baseline_docker_uniform.py` at git
+`cd5fa72ec9e7f90010242b4a2ce737fc0f920f86`. `git_dirty` is
+true in that file because an untracked copy of the same
+JSON, from a superseded pass, was already on disk. That
+pass used `stat -c %Y.%N`. GNU stat's `%N` is the quoted
+file name, so a rewrite in the same second with identical
+bytes was invisible. Commit `cd5fa72` switches the probe
+to `stat -c %y` (seconds and nanoseconds) and gives each
+INCR column its own debug-log copy. The rule
+"content or mtime changed" is the pre-registered one.
+The JSON below is the run after that fix.
+
+Host: `Joshuas-MacBook-Pro-3.local`, Darwin 27.0.0 arm64,
+Python 3.11.9. Inside every container: Linux
+`6.12.76-linuxkit`, aarch64, Ubuntu util-linux 2.37.2
+(`unshare --root` present), Python 3.10.12, HMMER 3.4
+(Aug 2023). ptrace request `0x420e` returned `rc=24`,
+`errno=0` in every column. `/sys/devices/system/cpu/online`
+bytes stayed `0-13`. Its mtime is one value per container
+(Riker `1791665789`, INCR default `1791665794`, INCR
+annotations `1791665802`), constant across the six steps
+of that container. Image `acts-baselines-uniform:local`.
+Pins: Riker `bae684b455a4d8fa010fc04b471f5ca9b408f6a8`,
+ProcessCache `a89d13214d8a0a9527ad4400a0a7284158d952a1`,
+INCR `4b8e5ddf8e275d947518c7cc0f5d2713fe992307`. The only
+INCR source change is `/opt/incr.diff`: `DEBUG_LOGS`
+from `DEBUG && true` to `true`. `DEBUG` stays false.
+`rules.rs` was not edited.
+
+Workload in the JSON: 73 models, SHA-256
+`dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738`,
+first 300 proteins of `GCF_002853805.1` and
+`GCF_002090355.1`. `hmmpress` exited 0 before the steps
+(`ACTS_PRESSED` 0). MATCH is true on every row that has
+a table.
+
+Container elapsed time is not a cost. The subset is 73
+models by 300 proteins, and a stock hmmsearch on it
+prints `Elapsed: 00:00:00.00`.
+
+### Behavior
+
+| Column | Mode | genome 1 | genome 2 | replay | MATCH | falsifier |
+|--------|------|----------|----------|--------|-------|-----------|
+| Riker | hmmscan | executed | executed | replayed | true | did not fire |
+| Riker | hmmsearch | executed | executed | replayed | true | did not fire |
+| ProcessCache SHA-256 | both | — | — | — | — | not run |
+| INCR default | hmmscan | executed | executed | executed | true | did not fire |
+| INCR default | hmmsearch | executed | executed | executed | true | did not fire |
+| INCR annotations | hmmscan | executed | executed | executed | true | did not fire |
+| INCR annotations | hmmsearch | executed | executed | executed | true | did not fire |
+
+Riker proof. Genome 1 and genome 2 tblouts were newly
+written and contain the HMMER header. The replay's
+`rkr --show` output is empty (0 bytes) and exit 0, and
+the genome 2 tblout mtime is unchanged at nanosecond
+resolution (`2026-10-10 20:56:32.434178008 +0000` for
+hmmscan, `2026-10-10 20:56:32.878178008 +0000` for
+hmmsearch). That is a skip. Genome 2 executed, so the
+whole-command falsifier did not fire.
+
+ProcessCache did not run. `cargo build --release` of
+`a89d132` failed: `could not compile process_cache due
+to 76 previous errors`. `src/regs.rs` names x86_64
+`user_regs_struct` fields (`gs_base`, `ds`, and the
+rest of that struct). The aarch64 struct's fields are
+`regs`, `sp`, `pc`, `pstate`. `/opt/ProcessCache.build`
+is `FAILED`. The column's `binary_missing` is true and
+both modes have zero steps. This is an environment
+block on this arm64 image. It is not a cache hit, a
+miss, or a skip. `regs.rs` was not patched.
+
+INCR proof, both columns. Genome 2's tblout was newly
+written and MATCHes stock, so genome 2 executed and the
+falsifier did not fire. The replay's tblout mtime also
+changed (default hmmscan
+`20:56:39.312178011` to `20:56:41.049178012`; the other
+three replays move the same way) and the body still
+MATCHes, so the replay executed. The tool's own log has
+no `Cache valid:` line. Each of the six steps is
+`Cache invalid:` on the full `hmmscan` or `hmmsearch`
+argv, including the replay, which repeats genome 2's
+argv and the same stdin hash `3244421341483603138`.
+The logs are
+`pipeline/results/baseline_docker_uniform_incr_default_debug.txt`
+and
+`pipeline/results/baseline_docker_uniform_incr_annotations_debug.txt`.
+One line per step, the whole command, so annotations
+did not split FASTA records. `STATELESS_COMMANDS` was
+not edited. Why INCR's dependency check rejects the
+identical command is not established here; the log
+states the decision and the new mtime shows HMMER wrote
+the table again.
+
+### Projected cost
+
+PROJECTED, not timed. Applied only where genome 2's
+action is executed. Formula, from the pre-registration:
+`T = (T_sample / 6) * factor` hours per genome, then
+`n * T` with `n = 30` (A) and `n = 40` (B). `T_sample`
+is 5.10 h / 6 genomes (hmmscan) and 1.05 h / 6
+(hmmsearch). The four-job sum is hmmscan A + hmmscan B
++ hmmsearch A + hmmsearch B. The stock stand-in for
+that sum is 71.75 h. Each factor is the tool paper's
+overhead on its own suite, transferred to HMMER as an
+assumption. Proteome size is not scaled to 300
+proteins. These are not container timings and not the
+locked 1.2× job pad.
+
+| Column | factor | hmmscan h/genome | hmmsearch h/genome | A scan | B scan | A search | B search | four-job h |
+|--------|--------|------------------|--------------------|--------|--------|----------|----------|------------|
+| Riker | 1.088 | 0.9248 | 0.1904 | 27.744 | 36.992 | 5.712 | 7.616 | 78.064 |
+| INCR default | 2.0105 | 1.708925 | 0.3518375 | 51.26775 | 68.357 | 10.555125 | 14.0735 | 144.253375 |
+| INCR annotations | 1.4355 | 1.220175 | 0.2512125 | 36.60525 | 48.807 | 7.536375 | 10.0485 | 102.997125 |
+
+Sources, already named in the pre-registration: Riker,
+Curtsinger and Barowy, USENIX ATC 2022, abstract and
+Figure 3, median full-build overhead 8.8%. INCR default,
+Xie, Lamprou, Xia, and Vasilakis, USENIX OSDI 2026,
+introduction and §8.5, first-run overhead 101.05%
+(Figure 5 mean first-run ratio 2.01×). INCR
+annotations, the same section, annotated first-run
+overhead 43.55%. The annotations factor is that
+overhead. It is not evidence that records were split;
+the behavior table says they were not.
+
+ProcessCache's factor 1.69 (Shiptoski, University of
+Pennsylvania, 2023, mean empty-cache overhead under
+content hashing) is not applied. Genome 2 did not
+execute, because the binary was not produced. The
+four-job figure 121.2575 h stays a formula in the
+harness and is not a result of this run.

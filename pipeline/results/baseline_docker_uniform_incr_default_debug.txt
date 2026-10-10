@@ -1,0 +1,6 @@
+[20:56:37.599] Cache invalid: /opt/hmmer/bin/hmmscan ["--cpu", "32", "--cut_ga", "--noali", "--tblout", "/data/incr_default/hmmscan/genome1.tbl", "/data/subset.hmm", "/data/genome1.faa"] 3244421341483603138
+[20:56:39.320] Cache invalid: /opt/hmmer/bin/hmmscan ["--cpu", "32", "--cut_ga", "--noali", "--tblout", "/data/incr_default/hmmscan/genome2.tbl", "/data/subset.hmm", "/data/genome2.faa"] 3244421341483603138
+[20:56:41.056] Cache invalid: /opt/hmmer/bin/hmmscan ["--cpu", "32", "--cut_ga", "--noali", "--tblout", "/data/incr_default/hmmscan/genome2.tbl", "/data/subset.hmm", "/data/genome2.faa"] 3244421341483603138
+[20:56:41.498] Cache invalid: /opt/hmmer/bin/hmmsearch ["--cpu", "32", "--noali", "--tblout", "/data/incr_default/hmmsearch/genome1.tbl", "-Z", "1000000", "--domZ", "1000000", "/data/subset.hmm", "/data/genome1.faa"] 3244421341483603138
+[20:56:41.924] Cache invalid: /opt/hmmer/bin/hmmsearch ["--cpu", "32", "--noali", "--tblout", "/data/incr_default/hmmsearch/genome2.tbl", "-Z", "1000000", "--domZ", "1000000", "/data/subset.hmm", "/data/genome2.faa"] 3244421341483603138
+[20:56:42.344] Cache invalid: /opt/hmmer/bin/hmmsearch ["--cpu", "32", "--noali", "--tblout", "/data/incr_default/hmmsearch/genome2.tbl", "-Z", "1000000", "--domZ", "1000000", "/data/subset.hmm", "/data/genome2.faa"] 3244421341483603138
