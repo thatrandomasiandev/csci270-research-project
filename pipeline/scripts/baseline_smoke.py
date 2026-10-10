@@ -11,6 +11,13 @@ Skip rule, written before any smoke result in this session:
   SKIP       wall_s <= max(180s, 0.08 * genome1_wall_s)
   AMBIGUOUS  otherwise
 
+The wall-clock rule is applied only after the step proves HMMER
+executed, or proves the wrapper replayed a cached tblout. A fast
+exit 0 with no HMMER output is INVALID. That gate was added
+2026-10-09 after jobs 12866391 and 12866392: incr.sh swallowed a
+failed insert.py and exited 0 in ~0.15 s. The September predictions
+are unchanged.
+
 Reuse fraction is the fraction of the HMMER process the wrapper did
 not re-execute. These tools are whole-command caches, so the fraction
 is 0 (COLD or RERUN) or 1 (SKIP). There is no record-level partial hit.
@@ -19,9 +26,11 @@ is 0 (COLD or RERUN) or 1 (SKIP). There is no record-level partial hit.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -77,6 +86,188 @@ def reuse_fraction(action: str) -> float | None:
     if action == "SKIP":
         return 1.0
     return None
+
+
+# ProcessCache prints this only at tracing debug level
+# (execution.rs, the execve skip). INCR prints "Cache valid:"
+# only when DEBUG_LOGS is compiled on. The release binaries
+# used here leave both off. judge_step still honors the lines
+# when a log contains them.
+REPLAY_LOG_MARKERS = (
+    "Skip the execution!",
+    "Cache valid:",
+)
+
+# HMMER's own stdout banner, or the tblout header it writes.
+# "--- full sequence ----" is the tblout column rule, not a
+# generic phrase.
+HMMER_RUN_MARKERS = (
+    "HMMER 3.",
+    "# hmmscan ::",
+    "# hmmsearch ::",
+    "--- full sequence ----",
+)
+
+
+def log_shows_hmmer(log: str) -> bool:
+    return any(marker in log for marker in HMMER_RUN_MARKERS)
+
+
+def log_says_replay(log: str) -> bool:
+    return any(marker in log for marker in REPLAY_LOG_MARKERS)
+
+
+def judge_step(
+    *,
+    wall_s: float,
+    cold_wall_s: float,
+    cold: bool,
+    exit_code: int,
+    output_nonempty: bool,
+    newly_written: bool,
+    log: str,
+    match: bool,
+    cache_unchanged: bool,
+    argv_matches_prior: bool,
+) -> tuple[str, str]:
+    """Return (action, status).
+
+    status is executed, replayed, invalid, or failed.
+
+    The wall-clock rule is not consulted until the step has
+    proof that HMMER ran, or proof that the wrapper replayed
+    a cached result. A fast exit 0 with an empty output is
+    INVALID. A replay that does not MATCH stock is FAILED,
+    not SKIP.
+    """
+    replay_marker = log_says_replay(log)
+    ran = bool(output_nonempty and newly_written and log_shows_hmmer(log))
+    silent_replay = bool(
+        cache_unchanged
+        and argv_matches_prior
+        and output_nonempty
+        and newly_written
+        and match
+    )
+    if replay_marker or silent_replay:
+        proved = match and output_nonempty and (newly_written or replay_marker)
+        if not proved:
+            return "FAILED", "failed"
+        # A long step whose output contains a fresh HMMER table
+        # re-executed, even if the cache index was not rewritten.
+        if (
+            ran
+            and not cold
+            and cold_wall_s > 0
+            and wall_s >= 0.50 * cold_wall_s
+            and not replay_marker
+        ):
+            return "RERUN", "executed"
+        return "SKIP", "replayed"
+    if not ran:
+        return "INVALID", "invalid"
+    action = classify(wall_s, cold_wall_s, cold=cold)
+    if action == "SKIP" and (not match or exit_code != 0):
+        return "FAILED", "failed"
+    if action == "SKIP":
+        return action, "replayed"
+    return action, "executed"
+
+
+def cache_fingerprint(root: Path) -> tuple:
+    """Persistent files under a wrapper cache directory.
+
+    INCR's per-invocation stdout/stderr/trace temps are excluded.
+    ProcessCache's stdout_<pid> copies are persistent outputs and
+    stay in the fingerprint.
+    """
+    if not root.is_dir():
+        return ()
+    rows = []
+    for path in sorted(root.rglob("*")):
+        if not path.is_file():
+            continue
+        name = path.name
+        if name.endswith(".incr") and name.startswith(("stdout_", "stderr_")):
+            continue
+        if name.startswith("trace_") and name.endswith(".txt"):
+            continue
+        st = path.stat()
+        rows.append((str(path.relative_to(root)), st.st_size, st.st_mtime_ns))
+    return tuple(rows)
+
+
+def tblout_path(argv: list[str]) -> Path:
+    idx = argv.index("--tblout")
+    return Path(argv[idx + 1])
+
+
+HMM_AUX_SUFFIXES = (".h3m", ".h3i", ".h3f", ".h3p")
+
+
+def hmm_aux_paths(hmm: Path) -> list[Path]:
+    return [Path(str(hmm) + suffix) for suffix in HMM_AUX_SUFFIXES]
+
+
+def database_pressed(hmm: Path) -> bool:
+    if not hmm.is_file() or hmm.stat().st_size <= 0:
+        return False
+    for path in hmm_aux_paths(hmm):
+        if not path.is_file() or path.stat().st_size <= 0:
+            return False
+    return True
+
+
+def refuse_unpressed_hmmscan(mode: str, hmm: Path) -> None:
+    """Do not launch hmmscan until hmmpress has written its auxfiles.
+
+    hmmscan's own error is ``use hmmpress first``. The harness stops
+    before the timed step instead of recording that failure as a run.
+    """
+    if mode != "hmmscan":
+        return
+    if database_pressed(hmm):
+        return
+    missing = [
+        path.name
+        for path in hmm_aux_paths(hmm)
+        if not path.is_file() or path.stat().st_size <= 0
+    ]
+    raise SystemExit(
+        f"refusing to start hmmscan: {hmm} is not hmmpressed "
+        f"(missing {', '.join(missing)}). use hmmpress first"
+    )
+
+
+def documented_incr_argv(script: str, cache: str) -> list[str]:
+    """INCR's documented native entry, plus the cache directory.
+
+    README (Manual Installation, commit 4b8e5dd):
+    ``bash ./src/incr.sh myscript.sh``, with cwd at the checkout.
+    ``incr.sh`` assigns ``$2`` to ``cache_dir`` when ``INCR_CACHE_DIR``
+    is unset. The script's default ``/tmp/incr_cache`` is on a path
+    INCR drops, so the persistent cache is that second argument.
+    """
+    return ["bash", "./src/incr.sh", script, cache]
+
+
+def _evidence(log: str, cwd: Path, tbl_text: str) -> str:
+    """Wrapper log, plus any child stdout ProcessCache left behind, plus the tblout header."""
+    parts = [log]
+    if cwd.is_dir():
+        captures = [path for path in cwd.glob("stdout_*") if path.is_file()]
+        captures.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+        chunks = []
+        for path in captures[:2]:
+            data = path.read_bytes()[:2000]
+            if data:
+                chunks.append(data.decode("utf-8", errors="replace"))
+        if chunks:
+            parts.append("-- child stdout --\n" + "\n".join(chunks))
+    head = "\n".join(tbl_text.splitlines()[:4])
+    if head:
+        parts.append("-- tblout head --\n" + head)
+    return "\n".join(parts)
 
 
 def sha256_file(path: Path) -> str | None:
@@ -187,10 +378,13 @@ class Runner:
         self.args = args
         self.build = build
         self.root = Path(args.root)
+        # A fresh directory. The 2026-10-09 ProcessCache cache stored a
+        # 0-byte hmmscan tblout, and its hmmsearch post-run copy panicked.
+        # Reusing that directory could restore the empty file.
         if getattr(args, "work", None):
             self.work = Path(args.work)
         else:
-            self.work = self.root / "smoke" / f"{args.tool}_{args.column}"
+            self.work = self.root / "smoke" / f"{args.tool}_{args.column}_rerun"
         self.work.mkdir(parents=True, exist_ok=True)
         self.log_dir = Path(os.environ.get("SLURM_TMPDIR") or os.environ.get("TMPDIR") or "/tmp") / f"baseline_smoke_{os.environ.get('SLURM_JOB_ID', 'local')}"
         self.log_dir.mkdir(parents=True, exist_ok=True)
@@ -215,11 +409,31 @@ class Runner:
             "genomes": {"genome1": GENOME1, "genome2": GENOME2},
             "predictions": PREDICTIONS,
             "skip_rule": {
-                "COLD": "genome 1, first invocation",
-                "RERUN": "wall_s >= 0.50 * genome1_wall_s",
-                "SKIP": "wall_s <= max(180s, 0.08 * genome1_wall_s)",
-                "AMBIGUOUS": "otherwise",
-                "reuse_fraction": "0 on COLD or RERUN, 1 on SKIP, null on AMBIGUOUS",
+                "INVALID": (
+                    "no proof the wrapped command executed HMMER and no proof "
+                    "it replayed from cache. Wall time is not consulted. "
+                    "A fast exit 0 is INVALID, not SKIP."
+                ),
+                "FAILED": "replay or wall-SKIP whose tblout does not MATCH stock",
+                "COLD": "genome 1 executed",
+                "RERUN": "executed and wall_s >= 0.50 * genome1_wall_s",
+                "SKIP": (
+                    "replayed from cache and MATCH, or executed and "
+                    "wall_s <= max(180s, 0.08 * genome1_wall_s) and MATCH"
+                ),
+                "AMBIGUOUS": "executed, otherwise",
+                "reuse_fraction": "0 on COLD or RERUN, 1 on SKIP, null otherwise",
+                "execution_proof": (
+                    "tblout exists, is non-empty, was newly written, and "
+                    "the captured output contains an HMMER banner or the "
+                    "tblout header '--- full sequence ----'"
+                ),
+                "replay_proof": (
+                    "log contains 'Skip the execution!' or 'Cache valid:', "
+                    "or the wrapper cache fingerprint is unchanged on an "
+                    "argv identical to a prior step and the restored tblout "
+                    "is non-empty, newly written, and MATCH"
+                ),
             },
             "node_class_deviation": (
                 "Shared xeon-4116, 8 cpus, not exclusive, not epyc-7542. "
@@ -268,14 +482,22 @@ class Runner:
     def launch(self, mode: str, step: str, argv: list[str], cwd: Path) -> tuple[int, float, Path]:
         log_path = self.log_dir / f"{mode}_{step}.log"
         env = os.environ.copy()
-        env["PATH"] = str(self.root / "bin") + os.pathsep + env.get("PATH", "")
+        path_parts = [str(self.root / "bin")]
         if self.args.tool == "incr":
             incr = (self.build.get("tools") or {}).get("incr") or {}
             env["INCR_TOP"] = incr.get("top") or str(self.root / "src" / "incr")
+            # incr.sh calls python3, not the venv path recorded at build.
+            # libbash lives in that venv. The system python3 does not have
+            # it, and incr.sh has no set -e, so a failed insert.py is
+            # copied over the script and bash exits 0 without HMMER.
+            py = incr.get("python") or ""
+            if py:
+                path_parts.insert(0, str(Path(py).parent))
             if self.args.column == "annotations":
                 env["INCR_SYS_PATH"] = f"{incr.get('binary')} --enable_annotations"
             else:
                 env.pop("INCR_SYS_PATH", None)
+        env["PATH"] = os.pathsep.join(path_parts + [env.get("PATH", "")])
         code, wall = run_timed(argv, cwd, env, log_path)
         kept = self.work / "logs" / f"{mode}_{step}.tail"
         kept.parent.mkdir(parents=True, exist_ok=True)
@@ -302,6 +524,8 @@ class Runner:
         if self.args.tool == "processcache":
             home = self.work / "pc" / mode
             home.mkdir(parents=True, exist_ok=True)
+            # README: the cache is ./cache in the working directory.
+            (home / "cache").mkdir(parents=True, exist_ok=True)
             binary = (self.build.get("tools") or {})["processcache_sha256"]["binary"]
             return [binary, "--", *hmm_argv], home, extra
         if self.args.tool == "incr":
@@ -310,7 +534,7 @@ class Runner:
             cache = home / "cache"
             cache.mkdir(parents=True, exist_ok=True)
             script = home / "run.sh"
-            body = "#!/bin/bash\n" + " ".join(hmm_argv) + "\n"
+            body = "#!/bin/bash\n" + " ".join(shlex.quote(part) for part in hmm_argv) + "\n"
             if step == "replay":
                 body = (home / "run.sh.genome1").read_text()
             script.write_text(body)
@@ -329,8 +553,145 @@ class Runner:
                 extra["inserted_head"] = f"insert.py failed: {exc}"
             extra["script_sha256"] = hashlib.sha256(body.encode()).hexdigest()
             extra["annotations_flag"] = self.args.column == "annotations"
-            return ["bash", incr["incr_sh"], str(script), str(cache)], home, extra
+            extra["incr_cwd"] = incr["top"]
+            extra["incr_python"] = incr.get("python")
+            extra["documented_invocation"] = "bash ./src/incr.sh myscript.sh"
+            return documented_incr_argv(str(script), str(cache)), Path(incr["top"]), extra
         raise ValueError(self.args.tool)
+
+    def _cache_dir(self, mode: str) -> Path:
+        if self.args.tool == "processcache":
+            return self.work / "pc" / mode / "cache"
+        if self.args.tool == "incr":
+            return self.work / "incr" / mode / "cache"
+        return self.work / "riker" / mode / ".rkr"
+
+    def _modes(self) -> list[str]:
+        return [part.strip() for part in self.args.modes.split(",") if part.strip()]
+
+    def _prepare_incr(self) -> dict:
+        """Make incr.sh's own preamble succeed. Untimed.
+
+        The installed tree was copied without ``.git``, so
+        ``git rev-parse --show-toplevel`` from that directory failed.
+        ``python3`` on the compute node does not have ``libbash``.
+        """
+        incr = (self.build.get("tools") or {}).get("incr") or {}
+        top = Path(incr.get("top") or self.root / "src" / "incr")
+        py = incr.get("python") or ""
+        rec: dict = {
+            "timed": False,
+            "top": str(top),
+            "documented_invocation": "bash ./src/incr.sh myscript.sh",
+            "documented_source": (
+                "https://github.com/atlas-brown/incr README, "
+                "Manual Installation, commit 4b8e5dd"
+            ),
+        }
+        git_dir = top / ".git"
+        rec["git_dir_existed"] = git_dir.exists()
+        if not git_dir.exists():
+            proc = subprocess.run(["git", "init", str(top)], capture_output=True, text=True)
+            rec["git_init_exit"] = proc.returncode
+            rec["git_init_stderr"] = (proc.stderr or "")[-500:]
+            if proc.returncode != 0:
+                raise SystemExit(f"git init failed in {top}: {rec['git_init_stderr']}")
+        rev = subprocess.run(
+            ["git", "-C", str(top), "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+        )
+        rec["git_rev_parse_exit"] = rev.returncode
+        rec["git_toplevel"] = (rev.stdout or "").strip()
+        if rev.returncode != 0:
+            raise SystemExit(f"git rev-parse failed in {top}: {(rev.stderr or '')[-500:]}")
+        if Path(rec["git_toplevel"]).resolve() != top.resolve():
+            raise SystemExit(
+                f"incr toplevel {rec['git_toplevel']} is not {top}"
+            )
+        if not py or not Path(py).is_file():
+            raise SystemExit("INCR venv python missing from the build report")
+        check = subprocess.run(
+            [py, "-c", "import libbash, libdash"],
+            capture_output=True,
+            text=True,
+        )
+        rec["python"] = py
+        rec["import_libbash_exit"] = check.returncode
+        if check.returncode != 0:
+            raise SystemExit(
+                "incr python cannot import libbash\n" + (check.stderr or "")[-800:]
+            )
+        return rec
+
+    def _press_pfam(self) -> dict:
+        """hmmpress the smoke HMM. Untimed, and not part of any step wall.
+
+        Job 12866390's hmmscan exited in ~15 s with ``use hmmpress first``
+        because ``data/Pfam-A.hmm`` had no ``.h3m/.h3i/.h3f/.h3p``.
+        """
+        hmm = Path(self.pfam)
+        dest = self.root / "bin" / "hmmpress"
+        src = (os.environ.get("ACTS_HMMPRESS_SRC") or "").strip()
+        rec: dict = {
+            "timed": False,
+            "hmm": str(hmm),
+            "hmmpress": str(dest),
+            "binary_copied": False,
+        }
+        if not dest.is_file():
+            source = Path(src) if src else None
+            if source is None or not source.is_file():
+                raise SystemExit(
+                    f"hmmpress is not at {dest}; set ACTS_HMMPRESS_SRC to the "
+                    "HMMER 3.4 hmmpress binary"
+                )
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, dest)
+            dest.chmod(dest.stat().st_mode | 0o111)
+            rec["binary_copied"] = True
+            rec["binary_source"] = str(source)
+        before = sha256_file(hmm)
+        before_ns = hmm.stat().st_mtime_ns
+        lock_path = Path(str(hmm) + ".press.lock")
+        with lock_path.open("a") as lock:
+            fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
+            try:
+                if database_pressed(hmm):
+                    rec.update({
+                        "ran": False,
+                        "reason": "auxfiles already present",
+                        "hmm_sha256": before,
+                        "hmm_mtime_ns": before_ns,
+                        "aux_present": {path.name: True for path in hmm_aux_paths(hmm)},
+                    })
+                    return rec
+                started = time.perf_counter()
+                proc = subprocess.run(
+                    [str(dest), "-f", str(hmm)],
+                    capture_output=True,
+                    text=True,
+                )
+                rec["ran"] = True
+                rec["command"] = [str(dest), "-f", str(hmm)]
+                rec["exit_code"] = proc.returncode
+                rec["wall_s"] = time.perf_counter() - started
+                rec["stderr_tail"] = (proc.stderr or proc.stdout or "")[-1500:]
+            finally:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_UN)
+        rec["hmm_sha256_before"] = before
+        rec["hmm_sha256_after"] = sha256_file(hmm)
+        rec["hmm_bytes_unchanged"] = rec["hmm_sha256_before"] == rec["hmm_sha256_after"]
+        rec["hmm_mtime_unchanged"] = hmm.stat().st_mtime_ns == before_ns
+        rec["aux_present"] = {
+            path.name: path.is_file() and path.stat().st_size > 0
+            for path in hmm_aux_paths(hmm)
+        }
+        if rec["exit_code"] != 0 or not database_pressed(hmm):
+            raise SystemExit(
+                f"hmmpress failed for {hmm}: {rec['stderr_tail'][-800:]}"
+            )
+        return rec
 
     def one_mode(self, mode: str) -> None:
         stock_dir = Path(self.args.stock_dir)
@@ -358,15 +719,38 @@ class Runner:
         dump(Path(self.args.out), self.payload)
         if blocked:
             return
+        refuse_unpressed_hmmscan(mode, Path(self.pfam))
+        saved_hmm_argv: list[str] | None = None
+        saved_script_sha: str | None = None
         for name in ("genome1", "genome2", "replay"):
-            tblout = self.work / mode / f"{step_output_name(name)}.tbl"
+            if name == "replay":
+                if saved_hmm_argv is None:
+                    raise SystemExit("replay without genome 1 argv")
+                argv = list(saved_hmm_argv)
+            else:
+                tbl_for_step = self.work / mode / f"{name}.tbl"
+                tbl_for_step.parent.mkdir(parents=True, exist_ok=True)
+                argv = hmmer_argv(
+                    self.hmm_by_mode[mode], mode, str(tbl_for_step), str(fastas[name]), self.pfam,
+                )
+            tblout = tblout_path(argv)
             tblout.parent.mkdir(parents=True, exist_ok=True)
             before = sha256_file(tblout)
-            before_mtime = tblout.stat().st_mtime if tblout.exists() else None
-            argv = hmmer_argv(self.hmm_by_mode[mode], mode, str(tblout), str(fastas[name]), self.pfam)
+            before_mtime = tblout.stat().st_mtime_ns if tblout.exists() else None
+            removed_before = False
+            if name == "replay" and tblout.is_file():
+                # A leftover cold tblout is not evidence of a restore.
+                held = self.work / "comparisons" / mode / "genome1_before_replay.tbl"
+                held.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(tblout, held)
+                tblout.unlink()
+                removed_before = True
+            cache_root = self._cache_dir(mode)
+            before_cache = cache_fingerprint(cache_root)
             wrapped, cwd, extra = self.wrap(mode, name, argv)
             code, wall, log_kept = self.launch(mode, name, wrapped, cwd)
             after = sha256_file(tblout)
+            after_mtime = tblout.stat().st_mtime_ns if tblout.exists() else None
             text = tblout.read_text(errors="replace") if tblout.is_file() else ""
             snapshot = None
             if tblout.is_file():
@@ -376,17 +760,42 @@ class Runner:
             stock_path = stocks[name]
             stock_text = stock_path.read_text(errors="replace") if stock_path.is_file() else ""
             matched = bool(text) and bool(stock_text) and tables_match(text, stock_text, mode)
-            action = classify(wall, cold_wall or 0.0, cold=(name == "genome1"))
-            if action == "SKIP" and code != 0:
-                action = "FAILED"
-            if name == "genome1":
+            newly = after is not None and (after != before or after_mtime != before_mtime)
+            after_cache = cache_fingerprint(cache_root)
+            cache_unchanged = before_cache == after_cache
+            script_sha = extra.get("script_sha256")
+            argv_matches_prior = bool(saved_hmm_argv is not None and argv == saved_hmm_argv)
+            if script_sha and saved_script_sha and script_sha != saved_script_sha:
+                argv_matches_prior = False
+            log_text = log_kept.read_text(errors="replace")
+            evidence = _evidence(log_text, cwd, text)
+            action, status = judge_step(
+                wall_s=wall,
+                cold_wall_s=cold_wall or 0.0,
+                cold=(name == "genome1"),
+                exit_code=code,
+                output_nonempty=nonempty_body(text),
+                newly_written=newly,
+                log=evidence,
+                match=matched,
+                cache_unchanged=cache_unchanged,
+                argv_matches_prior=argv_matches_prior,
+            )
+            if name == "genome1" and status == "executed":
                 cold_wall = wall
+                saved_hmm_argv = list(argv)
+                saved_script_sha = script_sha
+            elif name == "genome1":
+                saved_hmm_argv = list(argv)
+                saved_script_sha = script_sha
             step = {
                 "name": name,
+                "status": status,
                 "accession": GENOME1["accession"] if name != "genome2" else GENOME2["accession"],
                 "fasta": str(fastas[name]),
                 "n_records": n_records(fastas[name]),
                 "argv": argv,
+                "argv_sha256": hashlib.sha256("\0".join(argv).encode()).hexdigest(),
                 "wrapped_argv": wrapped,
                 "cwd": str(cwd),
                 "exit_code": code,
@@ -397,15 +806,21 @@ class Runner:
                 "tblout_bytes": tblout.stat().st_size if tblout.is_file() else 0,
                 "tblout_sha256": after,
                 "tblout_sha256_before": before,
-                "tblout_mtime_changed": (tblout.stat().st_mtime if tblout.exists() else None) != before_mtime,
+                "tblout_mtime_changed": after_mtime != before_mtime,
+                "newly_written": newly,
                 "output_snapshot": snapshot,
-                "replay_reuses_genome1_tblout": name != "replay" or step_output_name(name) == "genome1",
+                "replay_reuses_genome1_tblout": name != "replay" or argv_matches_prior,
                 "output_nonempty": nonempty_body(text),
                 "stock_tblout": str(stock_path),
                 "stock_present": stock_path.is_file(),
                 "match": matched,
+                "cache_unchanged": cache_unchanged,
+                "argv_matches_prior": argv_matches_prior,
+                "log_shows_hmmer": log_shows_hmmer(evidence),
+                "log_says_replay": log_says_replay(evidence),
+                "replay_output_removed_before_launch": removed_before,
                 "log_tail_path": str(log_kept),
-                "log_tail": log_kept.read_text(errors="replace"),
+                "log_tail": log_text,
                 **extra,
             }
             if name == "genome2":
@@ -435,7 +850,7 @@ class Runner:
         g2 = steps.get("genome2")
         if not g2:
             return
-        applies = g2["action"] == "RERUN"
+        applies = g2["action"] == "RERUN" and g2.get("status") == "executed"
         t = g2["wall_s"]
         # PROJECTED from this smoke's genome-2 wall. Assumes every later
         # genome costs the same wall on this same node class.
@@ -462,8 +877,14 @@ class Runner:
                 raise SystemExit(f"missing fasta {fasta}")
         if not Path(self.pfam).is_file():
             raise SystemExit(f"missing pfam {self.pfam}")
-        for mode in self.args.modes.split(","):
-            self.one_mode(mode.strip())
+        if self.args.tool == "incr":
+            self.payload["setup_incr"] = self._prepare_incr()
+            dump(Path(self.args.out), self.payload)
+        if "hmmscan" in self._modes():
+            self.payload["setup_hmmpress"] = self._press_pfam()
+            dump(Path(self.args.out), self.payload)
+        for mode in self._modes():
+            self.one_mode(mode)
         self.payload["provenance"] = provenance(self._versions())
         dump(Path(self.args.out), self.payload)
 
@@ -487,6 +908,69 @@ def _selfcheck() -> None:
     replay = hmmer_argv("hmmscan", "hmmscan", "/tmp/genome1.tbl", "/tmp/g1.faa", "/tmp/pfam")
     if g1 != replay:
         raise SystemExit("replay argv")
+    fake_action, fake_status = judge_step(
+        wall_s=0.13,
+        cold_wall_s=1200.0,
+        cold=False,
+        exit_code=0,
+        output_nonempty=False,
+        newly_written=False,
+        log="",
+        match=False,
+        cache_unchanged=True,
+        argv_matches_prior=True,
+    )
+    if fake_action != "INVALID" or fake_status != "invalid":
+        raise SystemExit(f"fake wrapper scored {fake_action}")
+    if classify(0.13, 1200.0, cold=False) != "SKIP":
+        raise SystemExit("wall rule should still call 0.13s a SKIP")
+    replay_action, replay_status = judge_step(
+        wall_s=1.0,
+        cold_wall_s=1200.0,
+        cold=False,
+        exit_code=0,
+        output_nonempty=True,
+        newly_written=True,
+        log="Skip the execution!\n#                                                               --- full sequence ----\n",
+        match=True,
+        cache_unchanged=True,
+        argv_matches_prior=True,
+    )
+    if replay_action != "SKIP" or replay_status != "replayed":
+        raise SystemExit(f"replay scored {replay_action} {replay_status}")
+    bad_replay, bad_status = judge_step(
+        wall_s=1.0,
+        cold_wall_s=1200.0,
+        cold=False,
+        exit_code=0,
+        output_nonempty=True,
+        newly_written=True,
+        log="Cache valid: hmmsearch",
+        match=False,
+        cache_unchanged=True,
+        argv_matches_prior=True,
+    )
+    if bad_replay != "FAILED" or bad_status != "failed":
+        raise SystemExit(f"bad replay scored {bad_replay}")
+    if documented_incr_argv("/tmp/run.sh", "/tmp/cache") != [
+        "bash", "./src/incr.sh", "/tmp/run.sh", "/tmp/cache",
+    ]:
+        raise SystemExit("incr argv")
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:
+        hmm = Path(tmp) / "mini.hmm"
+        hmm.write_text("HMMER3/f\n")
+        try:
+            refuse_unpressed_hmmscan("hmmscan", hmm)
+        except SystemExit as exc:
+            if "use hmmpress first" not in str(exc):
+                raise
+        else:
+            raise SystemExit("unpressed hmmscan was allowed to start")
+        refuse_unpressed_hmmscan("hmmsearch", hmm)
+        for suffix in HMM_AUX_SUFFIXES:
+            Path(str(hmm) + suffix).write_bytes(b"x")
+        refuse_unpressed_hmmscan("hmmscan", hmm)
     print("baseline_smoke selfcheck ok")
 
 

@@ -1,7 +1,9 @@
 #!/bin/bash
 # ProcessCache SHA-256 replay of genome 1's exact argv, including --tblout.
 # Pre-registered in BASELINES_PROTOCOL.md, addendum 2026-10-09
-# "replay path and one container". hmmsearch only.
+# "replay path and one container". The script is a copy of
+# pipeline/scripts/baseline_smoke.py. hmmsearch only.
+# Ordinary shared xeon-4116. No exclusive. No epyc-7542.
 #SBATCH --job-name=pc_replayfix
 #SBATCH --account=biyik_1165
 #SBATCH --partition=main
@@ -17,6 +19,7 @@
 set -euo pipefail
 
 ROOT=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009
+export ACTS_GIT_HASH_FILE="${ACTS_GIT_HASH_FILE:-${ROOT}/ACTS_GIT_HASH}"
 export PYTHONPATH="${ROOT}/scripts"
 
 case "${SLURM_JOB_CONSTRAINT:-}" in

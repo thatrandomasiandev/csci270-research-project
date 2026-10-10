@@ -36,13 +36,30 @@ nproc
 lscpu | grep -E 'Model name|CPU\(s\)' || true
 echo "CONSTRAINT=${SLURM_JOB_CONSTRAINT:-}"
 
+MODES="${ACTS_BASELINE_MODES:-hmmsearch,hmmscan}"
+OUT="${ACTS_BASELINE_OUT:-${ROOT}/results/baseline_smoke_${TOOL}_${COLUMN}.json}"
+WORK_ARGS=()
+if [[ -n "${ACTS_BASELINE_WORK:-}" ]]; then
+  WORK_ARGS=(--work "${ACTS_BASELINE_WORK}")
+fi
+if [[ "${MODES}" == *hmmscan* ]]; then
+  # Same HMMER 3.4 (Aug 2023) build as the smoke binaries. The build job
+  # copied hmmscan and hmmsearch only. Copying hmmpress is untimed setup;
+  # the harness records the press itself and does not put it in a step wall.
+  export ACTS_HMMPRESS_SRC="${ACTS_HMMPRESS_SRC:-/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/hmmer-3.4/bin/hmmpress}"
+  echo "hmmpress source ${ACTS_HMMPRESS_SRC}"
+fi
+echo "MODES=${MODES}"
+echo "OUT=${OUT}"
+
 python3 "${ROOT}/scripts/baseline_smoke.py" \
   --root "${ROOT}" \
   --tool "${TOOL}" \
   --column "${COLUMN}" \
-  --modes hmmsearch,hmmscan \
+  --modes "${MODES}" \
   --build-json "${ROOT}/results/baseline_build.json" \
   --stock-dir /project2/biyik_1165/jjt_373/csci270-star/pipeline/results/savings/tblout \
-  --out "${ROOT}/results/baseline_smoke_${TOOL}_${COLUMN}.json"
+  --out "${OUT}" \
+  "${WORK_ARGS[@]}"
 
 echo SMOKE_DONE
