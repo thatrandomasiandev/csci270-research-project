@@ -18,7 +18,7 @@
 
 \date{}
 
-\title{Reference-Side Contract Inference for Unmodified Scientific CLIs}
+\title{Reference-Side Contract Inference\\ for Score-Thresholded HMMER}
 
 \author{%
 {\rm Anonymous Authors}\\
@@ -28,34 +28,35 @@ Paper under double-blind review
 \maketitle
 
 \begin{abstract}
-A whole-command cache misses when a reference database is replaced, because the reference bytes changed.
-Hand-built incremental search repairs one tool's scores in that tool's code.
-This paper centres on one generic fitter.
-With no per-tool code, it infers for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$ that the output decomposes over reference entries, and which numeric columns carry a global normalizer drawn from a closed family: identity, entry count, total entry length, or per-key row count.
-Ties are broken by an entry-length partition.
-If no member fits, or a tie survives, the fitter refuses and the caller runs the tool once on the whole reference.
-A later release then reruns only changed entries, merges, and rescales.
-The prior-art verdict on that pair of inferences is narrow.
-iBLAST, iSeqSearch, and GeStore are hand-built per tool.
-KumQuat infers input-stream combiners and does not fit a normalizer.
-Record-side reuse with a copy-aware minimal key is secondary.
-Safety is infer-or-refuse.
-The probes are credited mechanisms, not a novelty claim.
-On \texttt{hmmscan --cut\_ga} the fitter ships the measured contract, and it refuses the same argv without that flag.
-Locked record-side cumulative wall speedups on hmmsearch are
-$2.740\times$ and $6.847\times$;
-% source: pipeline/results/savings_summary.json cumulative.cum_speedup_wall A=2.740193934015858 B=6.846592216443059
-a post-hoc correction for a stock-time fit that misses every sampled genome lowers them to
-$1.856\times$ and $4.404\times$.
+One generic fitter, with no per-tool code, infers or refuses a reference-side contract for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$: the output decomposes over reference entries, and each numeric column carries one global normalizer from a closed family (identity, entry count, total entry length, or per-key row count), with a length tie-break.
+The evaluated ship is score-thresholded HMMER, \texttt{hmmscan --cut\_ga}.
+The same binary without that flag refuses.
+NCBI BLAST+ \texttt{blastp} refuses under the pre-registered B1 setting.
+That refusal is one argv, not a law of BLAST, and not a result about scientific CLIs in general.
+A DIAMOND comparison with iSeqSearch is
+\pending{RQ5}.
+The reference-side wall-clock speedup is
+\pending{RQ4}.
+Record-side reuse is secondary.
+On hmmsearch, a post-hoc correction for a stock-time fit that over-predicted every sampled genome gives cumulative wall speedups of
+$1.856\times$ and $4.404\times$
 % source: pipeline/results/savings_sensitivity.json cum_speedup_wall A=1.8561541144638773 B=4.4038095881881
+without probe cost, and
+$1.513\times$ and $3.152\times$
+% source: pipeline/results/savings_sensitivity.json cum_speedup_wall_with_P A=1.5126488173514772 B=3.1519938702250814
+with the probe.
+The pre-registered imputation that inflates those totals is reported only in the evaluation.
 Deployed in-scope unsafe-ship is
-$4/224$.
-% source: pipeline/results/probe_eval_audit.md canonical in-scope
-A timed Pfam 38.1 to 38.2 re-annotation, a DIAMOND comparison, and whole-command baselines are
-\pending{not yet measured}.
+$4/224$;
+% source: pipeline/results/probe_eval_audit.md canonical in-scope 4/224
+with full verification it is
+$1/224$.
+% source: pipeline/results/probe_eval.md in-scope 1/224
+Whole-command baselines are
+\pending{RQ6}.
 \end{abstract}
 
-\noindent\textbf{Keywords:} incremental computation, black-box inference, scientific CLIs, HMMER, reference databases
+\noindent\textbf{Keywords:} incremental computation, black-box inference, score-thresholded HMMER, reference databases
 
 \section{Introduction}
 \label{sec:intro}
@@ -88,14 +89,21 @@ The contribution is the following, and nothing further.
 
 \begin{enumerate}
   \item \textbf{Primary: reference-side contract inference.}
-  One generic fitter, with no per-tool code, infers for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$
+  One generic fitter, with no per-tool code, infers or refuses for an unmodified CLI $F(\mathrm{records},\mathrm{reference})$
   (a)~that the output decomposes over reference entries and
   (b)~which numeric columns carry a global normalizer, and its form, from a closed family (identity, entry count, total entry length, per-key row count), with a tie-break partition and refusal.
-  This enables re-annotation across reference releases by rerunning only changed entries.
+  Evaluated SHIP: \texttt{hmmscan --cut\_ga}, score-thresholded HMMER.
+  Evaluated REFUSE: the same binary without that flag; the synthetic rank and pair fixtures, which are not a measured CLI and have no results JSON; and NCBI BLAST+ \texttt{blastp} under setting B1 (\S\ref{sec:rq7}).
+  DIAMOND is
+  \pending{RQ5}.
+  The evaluation is that scope.
+  It is not a result about scientific CLIs in general.
   The prior-art verdict is \textbf{narrow}.
   The surviving claim is the sentence in the prior-art pass: no prior system infers, for an unmodified CLI and with no per-tool plugin, both that the output decomposes over reference entries and which numeric columns are global normalizers of a form fitted from a small fixed family, so that a later reference release can rerun only new or changed entries and rescale those columns.
   iBLAST, iSeqSearch, and GeStore are hand-built per tool.
   KumQuat is input-side only.
+  T1 and the synthetic fixtures discriminate a HMMER plugin from the fitter.
+  They do not measure DIAMOND.
   \item \textbf{Secondary: record-side reuse with a copy-aware minimal key.}
   Fields the output depends on split into transport fields, which are copied, and the rest.
   The cache key is the rest.
@@ -119,14 +127,22 @@ The contribution is the following, and nothing further.
 \end{enumerate}
 
 What is measured, and what is not, is separated in the evaluation.
-The fitter recovers the hmmscan \texttt{--cut\_ga} contract and refuses the E-value-thresholded argv (\S\ref{sec:rq3}).
-Record-side hmmsearch savings are reported as the locked imputation and, beside it, a post-hoc correction (\S\ref{sec:rq2}).
+The fitter recovers the hmmscan \texttt{--cut\_ga} contract and refuses the E-value-thresholded argv (\S\ref{sec:rq3}) and BLAST+ \texttt{blastp} (\S\ref{sec:rq7}).
+Record-side hmmsearch speedups in the abstract are the post-hoc correction.
+The locked imputation stays in \S\ref{sec:rq2} as the pre-registered column, next to the fit-error explanation.
 The deployed probe suite's in-scope unsafe-ship rate is
-$4/224$
-% source: pipeline/results/probe_eval_audit.md
+$4/224$,
+% source: pipeline/results/probe_eval_audit.md canonical 4/224
+and full verification is
+$1/224$
+% source: pipeline/results/probe_eval.md in-scope 1/224
 (\S\ref{sec:rq1}).
-A timed 38.1$\to$38.2 re-annotation, DIAMOND against iSeqSearch, head-to-head baselines, and a boundary refusal on a further unmodified CLI are
-\pending{RQ4--RQ7}.
+A timed 38.1$\to$38.2 re-annotation is
+\pending{RQ4}.
+DIAMOND against iSeqSearch is
+\pending{RQ5}.
+Head-to-head baselines are
+\pending{RQ6}.
 
 \section{Background and cost model}
 \label{sec:model}
@@ -219,7 +235,8 @@ Safety probes are the gate.
 Teal is reference-side inference.
 Orange is the rescaling merge.
 A refusal runs the tool once on the full inputs and does not reuse probe rows.
-Later output matches stock under ref-merge (\S\ref{sec:formal}), which is equality of hit sets and unnormalized columns, and printed-precision agreement on normalized columns.}
+The acceptance test is ref-merge (\S\ref{sec:formal}): equality of hit sets and unnormalized columns, and the printed-precision bound on normalized columns.
+A timed release merge is unmeasured.}
 \label{fig:arch}
 \end{figure*}
 
@@ -264,7 +281,8 @@ The rules in the teal box are the T1 assignment for \texttt{hmmscan --cut\_ga}, 
 (B)~On a later release the entry-count member rescales cached rows by $N'/N$ and rows from the changed sub-reference by $N'/|\mathrm{changed}|$.
 Per-key counts are recounted on the merged row set.
 Total entry length uses sums of parser lengths in place of $N$.
-Equality to stock is ref-merge.}
+The acceptance test against stock is ref-merge.
+A timed release merge is unmeasured.}
 \label{fig:refmech}
 \end{figure*}
 
@@ -442,9 +460,23 @@ The triangle inequality then gives
 \label{eq:bound}
 \end{equation}
 Each half-ULP term is the quantity defined above, evaluated on that printed token.
-This is the same bound as $\tfrac{1}{2}\mathrm{ulp}$ of each token.
-The bound is a relation between printed numbers.
-It is not a claim about the tool's real-valued score before printing, and it is not byte identity.
+Equation~\eqref{eq:bound} is
+$|\mathrm{emitted}-\mathrm{stock}| \le \tfrac{1}{2}\mathrm{ulp}(\mathrm{stock}) + \tfrac{1}{2}\mathrm{ulp}(\mathrm{emitted}) + |\phi|\cdot\tfrac{1}{2}\mathrm{ulp}(\mathrm{source})$.
+The bound is weaker than byte identity because the tool prints rounded values.
+A rescaled real score, reprinted at the source token's precision, need not be the character string the full run printed, even when both strings denote numbers inside half an ulp of each other.
+Ref-merge therefore accepts a normalized column that a byte-for-byte diff of the printed table would reject.
+iSeqSearch's published bar is Pearson correlation of E-values on overlapping hits~\cite{yoo2025iseqsearch}.
+Correlation does not bound the printed difference.
+The half-ULP predicate does.
+Neither bar is byte identity of a release merge, and T1 is partition consistency on historical halves, not that merge.
+The factors at which~\eqref{eq:bound} has to be read on Pfam 38.2, projected from measured counts, are
+$\phi_{\mathrm{cached}} = 30134/27481 = 1.09654$
+% source: PROJECTED pipeline/results/reference_kill_r1.json z_new/z_old = 30134/27481
+and
+$\phi_{\mathrm{changed}} = 30134/4052 = 7.43682$.
+% source: PROJECTED pipeline/results/reference_kill_r1.json z_new/(z_new-unchanged_strict) = 30134/4052
+The changed-entry rows carry the larger source-rounding term.
+No timed 38.1$\to$38.2 arm has passed ref-merge (\S\ref{sec:rq3}, \S\ref{sec:rq4}).
 Ref-merge uses byte identity for hit sets, unnormalized columns, and identity columns, and~\eqref{eq:bound} for columns assigned a linear member.
 If the re-print assumption fails for a format, \texttt{--verify full} is the check that compares the emitted table to stock.
 
@@ -521,6 +553,7 @@ Both & 810.368 & 0.7326 & 2622.749 & 3.236 \\
 $c_{\mathrm{R1}}$ lies below both thresholds, so on these assumptions one re-annotation's projected savings cover the probe, including the tie-break.
 The attack that the probe costs more than the savings lands if a release has $c > c^{\ast}$, or if $b$ does not scale with the fraction of entries searched.
 Neither is answered by Table~\ref{tab:breakeven}.
+This is not a measured saving.
 
 \subsection{Copy-aware key}
 
@@ -634,8 +667,23 @@ If a fault hits each record independently with probability $p$, a probe of $n$ r
 At $p = 0.01$ and $n = 50$ that probability is
 $0.6050$.
 % source: PROJECTED closed form (1-0.01)^50 = 0.6050060671375364
-The measured miss at that cell is consistent with the formula.
+At the probe size used by the timed savings jobs, $n = 8$ (\S\ref{sec:rq2}), the same formula gives
+$0.9227$.
+% source: PROJECTED closed form (1-0.01)^8 = 0.9227446944279201
+The measured miss at the $n = 50$ cell is consistent with the formula.
 It is not a guarantee of zero unsafe-ship.
+Table~\ref{tab:safety} starts at probe size $50$.
+There is no cell at $8$.
+At probe sizes $500$ and $2000$ the in-scope fault slice (classes F1--F5, F7, and F8; two formats; four frequencies) is
+$0/56$.
+% source: computed from pipeline/results/probe_eval_audit.json rows; also pipeline/docs/SAVINGS_PROTOCOL.md addendum 2026-09-27, probe_n=500 reaches 0/56
+Full verification's in-scope unsafe-ship is the
+$1/224$
+% source: pipeline/results/probe_eval.md
+column.
+The deployed audit number beside it is
+$4/224$.
+% source: pipeline/results/probe_eval_audit.md
 F6-env is undetectable by these probes and is a limitation.
 
 \subsection{RQ2: Record-side savings}
@@ -664,6 +712,36 @@ Probe cost in the queued jobs is the singleton schedule, twelve calls at \texttt
 P = 1595.447\,\mathrm{s}.
 \]
 % source: pipeline/results/savings_summary.json probe.P_s = 1595.4474956459528; sizes [8,8,8,8,1,1,1,1,1,1,1,1]
+An eight-record probe misses a fault of rate $p = 0.01$ with probability
+$0.9227$
+% source: PROJECTED (1-0.01)^8 = 0.9227446944279201; see \S\ref{sec:rq1}
+(\S\ref{sec:rq1}).
+The
+$4/224$
+and
+$1/224$
+safety cells start at probe size $50$.
+The same eight-record probe missed a per-query layout rule on the sibling mode.
+An hmmscan contract inferred at \texttt{probe\_n}${}=8$ pinned the target-name width to \texttt{fixed\_min} $20$.
+Re-rendering five archived collection-A stock tables under that pin mismatched
+$22$, $22$, $20$, $21$, and $37$
+% source: pipeline/results/hmmscan_layout_preflight.json old_hmmscan_layout.files n_mismatch
+rows.
+HMMER sets that width to the maximum of $20$ and the longest target name in the query, and the probe never saw a model name longer than $20$ (\texttt{SAVINGS\_PROTOCOL.md}, addendum 2026-10-06).
+The repair pins a width rule only when it is the unique rule the probe does not refute.
+Otherwise the layout stays unpinned and MATCH is whitespace-normalized.
+Preflight under that unpinned contract,
+\texttt{preflight\_stock\_outputs},
+is
+$0$
+% source: pipeline/results/hmmscan_layout_preflight.json reinferred_hmmscan.files n_mismatch all 0
+mismatches on each of those five files.
+The hmmsearch contract used for the timed runs had
+$0$
+% source: pipeline/results/hmmscan_layout_preflight.json hmmsearch_cached_contract n_mismatch=0 n_rows=62262
+mismatches on the three archived files in the same JSON
+($62{,}262$ rows).
+The hit audit at $q = 0.02$ does not repair a layout rule a contract has already frozen.
 
 Stock wall was measured at six positions per collection.
 Every other genome's stock wall in the locked total is the screen fit $a + b N_i$, with
@@ -754,6 +832,8 @@ B & Corrected & 4.404 & 3.152 \\
 \end{table}
 
 Table~\ref{tab:savings} is the paper pair.
+The abstract reports only the corrected column.
+The locked column is the pre-registered imputation $a + b N_i$, which over-predicted stock time at all $12$ sampled genomes.
 The pre-registered prediction at a stand-in $N = 4192$, before these walls, was
 $2.111\times$
 % source: pipeline/results/savings_summary.json A predicted_part2_cum_speedup=2.111277644648017
@@ -786,30 +866,39 @@ The same correction, computed after seeing the fit error, lowers them to
 $2.95\times$
 % source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall=2.948637587003392
 and
-$16.18\times$.
+$16.18\times$
 % source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall=16.181558210274485
-Table~\ref{tab:hmmscan} is that pair.
+without probe cost, and to
+$2.905\times$
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall_with_P=2.9054086230922684
+and
+$15.319\times$
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall_with_P=15.318572090685732
+with the probe.
+Table~\ref{tab:hmmscan} is that comparison.
 The correction uses the formula in \texttt{savings\_sensitivity\_hmmscan.json}: unsampled stock is the fitted wall times the sampled measured-over-fitted ratio, sampled stock stays measured, and cached wall is unchanged.
 The assumption, stated there and not measured on the unsampled genomes, is that the sampled ratio represents those genomes.
+These speedups stay out of the abstract.
 
 \begin{table}[t]
-\caption{POST-HOC cumulative hmmscan wall speedup, no probe cost.
+\caption{POST-HOC cumulative hmmscan wall speedup.
 hmmscan was secondary before the runs.
-Locked and corrected follow Table~\ref{tab:savings}.}
+Locked and corrected follow Table~\ref{tab:savings}.
+``With $P$'' adds the singleton probe once.}
 \label{tab:hmmscan}
 \small
-\begin{tabular}{@{}llr@{}}
+\begin{tabular}{@{}llrr@{}}
 \toprule
-& & No $P$ \\
+& & No $P$ & With $P$ \\
 \midrule
-A & Locked & $3.568\times$ \\
-% source: pipeline/results/savings_summary.json jobs A mode=hmmscan cumulative.cum_speedup_wall=3.5679320031742154
-A & Corrected & $2.95\times$ \\
-% source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall=2.948637587003392
-B & Locked & $19.468\times$ \\
-% source: pipeline/results/savings_summary.json jobs B mode=hmmscan cumulative.cum_speedup_wall=19.46751515526194
-B & Corrected & $16.18\times$ \\
-% source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall=16.181558210274485
+A & Locked & 3.568 & 3.516 \\
+% source: pipeline/results/savings_summary.json jobs A mode=hmmscan cumulative.cum_speedup_wall=3.5679320031742154 cum_speedup_wall_with_P=3.515623776323147
+A & Corrected & 2.95 & 2.905 \\
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall=2.948637587003392 cum_speedup_wall_with_P=2.9054086230922684
+B & Locked & 19.468 & 18.429 \\
+% source: pipeline/results/savings_summary.json jobs B mode=hmmscan cumulative.cum_speedup_wall=19.46751515526194 cum_speedup_wall_with_P=18.42928415528275
+B & Corrected & 16.18 & 15.319 \\
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall=16.181558210274485 cum_speedup_wall_with_P=15.318572090685732
 \bottomrule
 \end{tabular}
 \end{table}
@@ -949,13 +1038,23 @@ The kill-test files that predate the fitter already showed the property the fitt
 R2p:
 $1{,}156/1{,}156$
 % source: pipeline/results/reference_kill_r2p.json evalue_consistent_within_print=1156 evalue_tokens=1156; check2_unnormalized_mismatches=0; check1_hitset_equal true
-E-values consistent with entry count and
+E-values consistent with entry count, of which
+$724/1{,}156$
+% source: pipeline/results/reference_kill_r2p.json evalue_byte_reproducible=724
+tokens are byte-identical after rescale, and
 $0$
 % source: pipeline/results/reference_kill_r2p.json check2_unnormalized_mismatches=0
 unnormalized mismatches, hit sets equal at
 $578$
 % source: pipeline/results/reference_kill_r2p.json hits_full=578 hits_union=578
 hits.
+The other
+$432$
+% source: computed 1156-724 from pipeline/results/reference_kill_r2p.json evalue_tokens and evalue_byte_reproducible
+E-value tokens pass~\eqref{eq:consistent} and fail a byte comparison, which is what printed rounding allows and what~\eqref{eq:bound} states.
+T1 is that partition check on historical halves.
+It is not a 38.1$\to$38.2 release.
+The changed-entry factor a release merge would apply is the $\phi_{\mathrm{changed}} = 7.43682$ in \S\ref{sec:formal}.
 R3c:
 $511/511$
 % source: pipeline/results/reference_kill_r3c.json consistent.full_seq_E, i_Evalue, and c_Evalue all 511; check2_unnormalized_mismatches=0
@@ -1026,6 +1125,9 @@ E & one row per entry pair & REFUSE, key sets differ \\
 
 The pre-registered timing runs five proteomes, three repeats, stock against reference-incremental, on one exclusive node, with ref-merge as the match relation and the count-churn prediction as the gate.
 The churn file records model-file accounting only and sets timed to false.
+Jobs that ran a checker omitting the source-rounding term are superseded, and a later smoke stopped at \texttt{STOP\_MATCH}.
+Neither is a measurement.
+% source: pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md addendum 2026-10-09; jobs 12760029 and 12864042 superseded; smoke 12865788 is STOP_MATCH and not a measurement
 The speedup is
 \pending{measured 38.1$\to$38.2 re-annotation}.
 Table~\ref{tab:breakeven} stays a projection.
@@ -1037,7 +1139,12 @@ The second tool, pre-registered before any DIAMOND run, is DIAMOND blastp at a p
 MMseqs2 is excluded in that protocol because its prefilter couples the hit set to the rest of the database.
 The comparison is
 \pending{DIAMOND versus iSeqSearch}.
-Smoke artifacts under \texttt{results/reference\_diamond\_smoke/} are not that comparison and are not reported as a speedup or as a fitter decision.
+A smoke SHIP
+% source: pipeline/results/reference_diamond_smoke/reference_diamond_d2.json decision=SHIP smoke=true
+and a smoke REFUSE
+% source: pipeline/results/reference_diamond_smoke/reference_diamond_d2n.json decision=REFUSE smoke=true
+exist under \texttt{results/reference\_diamond\_smoke/}.
+They are not D2 or D3, and they are not a speedup.
 
 \subsection{RQ6: Baselines}
 \label{sec:rq6}
@@ -1052,8 +1159,45 @@ A timed comparison on the Pfam release pair, and a head-to-head with INCR on the
 \label{sec:rq7}
 
 T2 is the pre-registered refusal on hmmscan without \texttt{--cut\_ga}, and the synthetic rank and pairwise fixtures refuse.
-A boundary on an unmodified CLI outside that argv pair, where decomposition fails or no closed-family member fits and the result is still a refusal rather than a silent rescale, is
-\pending{boundary refusal beyond T2 and the synthetic fixtures}.
+The first unmodified CLI outside that argv pair is NCBI BLAST+ \texttt{blastp} 2.14.1, setting B1, $20$ queries against Swiss-Prot 2026\_03
+($575{,}748$ entries, total length $209{,}017{,}843$).
+% source: pipeline/results/reference_boundary_blast.json provenance.versions.blastp 2.14.1; queries.n=20; reference.n_entries=575748; reference.total_entry_length=209017843; setting=B1
+The fitter refuses, as the protocol predicted on row keys.
+The recorded reason is that output column $2$ matches no normalizer.
+% source: pipeline/results/reference_boundary_blast.json decision=REFUSE reason="out: column 2 matches no normalizer"
+Column $2$ is \texttt{pident}.
+Identity is consistent on
+$15{,}124/15{,}125$
+% source: pipeline/results/reference_boundary_blast.json primary_residuals columns field=pident members.identity n=15125 n_consistent=15124
+aligned rows and fails one row by
+$11.458$
+% source: pipeline/results/reference_boundary_blast.json pident identity max_abs_residual=11.457999999999998; part_printed=21.875 whole_printed=33.333 record_key=WP_000153074.1
+(\texttt{21.875} against \texttt{33.333} on \texttt{WP\_000153074.1}).
+\texttt{evalue} (column $10$) fits \texttt{total\_entry\_length} on
+$15{,}124/15{,}125$
+% source: pipeline/results/reference_boundary_blast.json field=evalue members.total_entry_length n_consistent=15124 n=15125
+and misses one row by
+$155.376$.
+% source: pipeline/results/reference_boundary_blast.json evalue total_entry_length max_abs_residual=155.37611261295984 record_key=WP_000153074.1
+\texttt{bitscore} identity fails one row by
+$0.7$
+% source: pipeline/results/reference_boundary_blast.json field=bitscore members.identity max_abs_residual=0.6999999999999993; part_printed=24.3 whole_printed=25.0 record_key=WP_000153074.1
+(\texttt{24.3} against \texttt{25.0}, the same query).
+One aligned row is enough to leave every member, which is the refusal rule.
+Key sets are unequal: aligned
+$15{,}125$,
+% source: pipeline/results/reference_boundary_blast.json primary_residuals.key_sets.aligned=15125
+only-union
+$13{,}812$,
+% source: pipeline/results/reference_boundary_blast.json primary_residuals.key_sets.only_union=13812
+only-whole
+$0$.
+% source: pipeline/results/reference_boundary_blast.json primary_residuals.key_sets.only_whole=0
+The protocol predicted REFUSE from those key sets and allowed a column failure to surface first.
+B1-fit did not hold: \texttt{pident} is not identity on every aligned row, and \texttt{evalue} does not fit \texttt{total\_entry\_length} on all of them.
+The family was not shown to be BLAST's law.
+The fitter refused because one aligned row left every member.
+A diagnosis of that row is pending: \texttt{REFERENCE\_BOUNDARY\_PROTOCOL.md} has no committed diagnosis addendum, and this draft does not add a family member.
 
 \section{Related work}
 \label{sec:rw}
@@ -1062,7 +1206,11 @@ A boundary on an unmodified CLI outside that argv pair, where decomposition fail
 \caption{Prior-art placement against the two inferences.
 (a) is decomposition over reference entries.
 (b) is a fitted numeric normalizer.
-``Hand-built'' means the partition or the formula is written for that tool.}
+``Hand-built'' means the partition or the formula is written for that tool.
+The last row describes the program.
+SHIP is measured for \texttt{hmmscan --cut\_ga}.
+REFUSE is measured for BLAST+ \texttt{blastp} under B1 and for hmmscan without \texttt{--cut\_ga}.
+DIAMOND is pending.}
 \label{tab:prior}
 \small
 \begin{tabular}{@{}llll@{}}
@@ -1144,9 +1292,13 @@ The narrow branch did.
 \begin{enumerate}
   \item \textit{GeStore and iBLAST already did this, including HMMER.}
   GeStore's HMMER plugin does not rescale, and iBLAST's formula is BLAST-specific code.
-  The defeat on disk is that pair of designs together with a fitter that has no per-tool branch.
-  T1 passes on hmmscan and the length fixture ships total entry length on a column named \texttt{evalue}.
+  T1 and the synthetic length fixture discriminate a HMMER plugin from the fitter: T1 passes on hmmscan, and the length fixture ships total entry length on a column named \texttt{evalue}.
   A hand-coded HMMER plugin can be adjusted until T1 passes and still fail the length fixture.
+  That pair does not measure DIAMOND.
+  iSeqSearch's hand-built rescale has not been run against this fitter.
+  The comparison is
+  \pending{RQ5}.
+  The length fixture has no results JSON (\S\ref{sec:rq3}).
   \item \textit{KumQuat already infers decomposition for black boxes.}
   Its equation splits the input stream, and the combiner language has no reference scale factor.
   A merge that demands byte equality is what the no-\texttt{--cut\_ga} run rejects: the union is a strict superset of the full run
@@ -1182,10 +1334,19 @@ A speedup for the 38.1$\to$38.2 release is not among those numbers.
 
 \section{Conclusion}
 
-One fitter, with no per-tool code, accepts or refuses a reference-side contract for an unmodified CLI: decomposition over entries, and a normalizer from a four-member family, with a length tie-break.
-On \texttt{hmmscan --cut\_ga} it ships entry count and per-key row count; without that flag it refuses.
-Record-side reuse with a copy-aware key is the secondary result, and its locked speedups are reported next to the post-hoc correction the fit error requires.
-The release-level speedup, the second search tool, and the whole-command baselines remain to be measured.
+One fitter, with no per-tool code, accepts \texttt{hmmscan --cut\_ga} and refuses BLAST+ \texttt{blastp} under B1 and hmmscan without \texttt{--cut\_ga}.
+The contract is decomposition over entries and a normalizer from a four-member family, with a length tie-break.
+No release-scale ref-merge has passed.
+Record-side hmmsearch, after the post-hoc stock correction, is
+$1.856\times$ and $4.404\times$
+% source: pipeline/results/savings_sensitivity.json cum_speedup_wall A=1.8561541144638773 B=4.4038095881881
+before probe cost
+($1.513\times$ and $3.152\times$ with the probe).
+% source: pipeline/results/savings_sensitivity.json cum_speedup_wall_with_P A=1.5126488173514772 B=3.1519938702250814
+The locked imputation stays in \S\ref{sec:rq2}.
+DIAMOND against iSeqSearch, and the whole-command baselines, remain to be measured.
+The reference-side wall-clock speedup is
+\pending{RQ4}.
 
 \section*{Availability}
 
