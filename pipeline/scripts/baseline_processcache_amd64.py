@@ -24,6 +24,8 @@ import baseline_docker_uniform as uniform  # noqa: E402
 
 AMD64_DIGEST = "sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde"
 IMAGE = f"ubuntu:22.04@{AMD64_DIGEST}"
+SEQUENCE_IMAGE = "acts-processcache-amd64:local"
+DOCKERFILE = ROOT / "docker" / "Dockerfile.baselines_processcache_amd64"
 PC_COMMIT = "a89d13214d8a0a9527ad4400a0a7284158d952a1"
 
 
@@ -99,6 +101,44 @@ def result_payload(probe: dict) -> dict:
             "python": platform.python_version(),
         },
     }
+
+
+def build_sequence_image() -> int:
+    proc = subprocess.run(
+        [
+            "docker", "build",
+            "--platform", "linux/amd64",
+            "-f", str(DOCKERFILE),
+            "-t", SEQUENCE_IMAGE,
+            str(DOCKERFILE.parent),
+        ],
+        check=False,
+    )
+    return proc.returncode
+
+
+def run_sequence(data_root: Path, work: Path) -> dict:
+    """Uniform ProcessCache sequence inside the amd64 image.
+
+    Same argv and subset as baseline_docker_uniform.sequence_script.
+    Called only after the ptrace probe succeeded.
+    """
+    uniform.prepare_work(work, data_root)
+    script = uniform.sequence_script("processcache")
+    argv = [
+        "docker", "run", "--rm",
+        "--platform", "linux/amd64",
+        "--cap-add", "SYS_PTRACE",
+        "-v", f"{work}:/work",
+        "-w", "/data",
+        SEQUENCE_IMAGE,
+        "bash", "-lc", script,
+    ]
+    proc = subprocess.run(argv, check=False, text=True, capture_output=True)
+    text = (proc.stdout or "") + (proc.stderr or "")
+    (work / "out" / "docker.log").write_text(text)
+    scored = uniform.score_column("processcache", work, proc.stdout or "", proc.returncode)
+    return {"docker_exit": proc.returncode, "log_tail": text[-4000:], **scored}
 
 
 def main() -> None:

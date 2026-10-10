@@ -40,6 +40,14 @@ class ProcessCacheAmd64GuardTests(unittest.TestCase):
         self.assertFalse(payload["regs_rs_patched"])
         self.assertEqual(payload["processcache_commit"], amd.PC_COMMIT)
 
+    def test_amd64_dockerfile_does_not_patch_regs(self) -> None:
+        text = (PIPE / "docker" / "Dockerfile.baselines_processcache_amd64").read_text()
+        self.assertIn(amd.AMD64_DIGEST, text)
+        self.assertIn(amd.PC_COMMIT, text)
+        self.assertNotIn("sed -i", text)
+        self.assertNotIn("gs_base", text)
+        self.assertIn("DONT_HASH_FILES stays false", text)
+
 
 if __name__ == "__main__":
     unittest.main()

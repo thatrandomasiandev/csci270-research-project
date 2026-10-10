@@ -1497,6 +1497,70 @@ models, first 300 proteins, both modes, genome 1, genome
 
 ---
 
+## Addendum 2026-10-10 — measured first-run overhead (pre-registered)
+
+Written before the timed repeats. Locked sections are
+unchanged. A one-run stock probe, labelled SIZING and
+not an overhead ratio, is
+`pipeline/results/baseline_overhead_sizing.json`. Full
+Pfam-A 38.2, 30134 models in file order (`03009_C`
+through `ZZ_ADA2`), 200 proteins of `GCF_002853805.1`.
+Stock wall was 46.244437368 s for hmmscan and
+43.500324881 s for hmmsearch. Both are under 60 s, so
+that point is not the measurement.
+
+Locked subset: 30134 models, 500 proteins of GCF_002853805.1.
+
+The model count is every model in `Pfam-A.hmm.gz`. The
+protein count is the first 500 records of genome 1.
+PROJECTED stock wall, assuming the sizing wall scales
+with protein count and the model count stays 30134:
+hmmscan `46.244437368 * 500/200 = 115.61109342` s,
+hmmsearch `43.500324881 * 500/200 = 108.7508122025` s.
+If a measured stock mean is under 60 s, that mode does
+not meet the gate. Its ratio is still reported and is
+not described as the ≥60 s estimate.
+
+Both modes are timed. Four repeats. Tool order rotates
+so each tool is first once:
+
+| Repeat | Order |
+|--------|-------|
+| 0 | stock, Riker, INCR default, INCR annotations |
+| 1 | Riker, INCR default, INCR annotations, stock |
+| 2 | INCR default, INCR annotations, stock, Riker |
+| 3 | INCR annotations, stock, Riker, INCR default |
+
+Each run is a new container of
+`acts-baselines-uniform:local`. Stock has no added
+capability. Riker has `--cap-add SYS_PTRACE`. Both INCR
+columns have `--privileged`. `hmmpress` finishes before
+`ACTS_T0` and is not part of the wall. The command file
+is written before `ACTS_T0`. The kernel page cache is
+not flushed. The tool's own cache is empty because the
+container is new.
+
+The wall is `ACTS_T1 - ACTS_T0` around one invocation:
+stock is the HMMER binary, Riker is `rkr --show`, INCR
+is `bash ./src/incr.sh`. A run is invalid if the exit
+code is not 0 or the tblout has no HMMER header. Invalid
+runs are not averaged.
+
+Primary, per tool and mode: the mean of the
+within-repeat ratios, tool wall divided by the stock
+wall of that repeat. Also the sample standard deviation.
+The ratio of means is reported beside it. Paper factors
+1.088, 2.0105, and 1.4355 stay a secondary PROJECTED
+column. They are not the primary cost.
+
+Absolute seconds are this arm64 container. They are not
+comparable to the EPYC timings. Only the ratios are
+used. The ratio is the first-run cost that applies to
+genome 2, because every tool re-executes a new FASTA.
+Driver: `pipeline/scripts/baseline_overhead.py`.
+
+---
+
 ## Addendum 2026-10-10 — INCR replay dependency outcome (POST-HOC)
 
 Written after the diagnostic run. The procedure above and

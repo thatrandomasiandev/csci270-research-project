@@ -1,0 +1,31 @@
+{
+  "label": "MEASURED",
+  "decides": "whether ProcessCache's ptrace request works in a linux/amd64 container under emulation",
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-10 ProcessCache linux/amd64 emulation probe",
+  "image": "ubuntu:22.04@sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde",
+  "platform": "linux/amd64",
+  "emulation": "Docker --platform linux/amd64 on this arm64 host",
+  "capabilities": {
+    "privileged": false,
+    "cap_add": "SYS_PTRACE",
+    "seccomp": "default Docker profile; not seccomp=unconfined"
+  },
+  "processcache_commit": "a89d13214d8a0a9527ad4400a0a7284158d952a1",
+  "regs_rs_patched": false,
+  "behavioral_sequence": "probe succeeded; the behavioral sequence is a separate step and is not implied by this function",
+  "probe": {
+    "rc": 24,
+    "errno": 0,
+    "succeeded": true
+  },
+  "docker_exit": 0,
+  "probe_succeeded": true,
+  "log_tail": "o unpack .../25-gcc_4%3a11.2.0-1ubuntu1_amd64.deb ...\nUnpacking gcc (4:11.2.0-1ubuntu1) ...\nSelecting previously unselected package libc-dev-bin.\nPreparing to unpack .../26-libc-dev-bin_2.35-0ubuntu3.15_amd64.deb ...\nUnpacking libc-dev-bin (2.35-0ubuntu3.15) ...\nSelecting previously unselected package linux-libc-dev:amd64.\nPreparing to unpack .../27-linux-libc-dev_5.15.0-198.208_amd64.deb ...\nUnpacking linux-libc-dev:amd64 (5.15.0-198.208) ...\nSelecting previously unselected package libcrypt-dev:amd64.\nPreparing to unpack .../28-libcrypt-dev_1%3a4.4.27-1_amd64.deb ...\nUnpacking libcrypt-dev:amd64 (1:4.4.27-1) ...\nSelecting previously unselected package rpcsvc-proto.\nPreparing to unpack .../29-rpcsvc-proto_1.4.2-0ubuntu6_amd64.deb ...\nUnpacking rpcsvc-proto (1.4.2-0ubuntu6) ...\nSelecting previously unselected package libtirpc-dev:amd64.\nPreparing to unpack .../30-libtirpc-dev_1.3.2-2ubuntu0.1_amd64.deb ...\nUnpacking libtirpc-dev:amd64 (1.3.2-2ubuntu0.1) ...\nSelecting previously unselected package libnsl-dev:amd64.\nPreparing to unpack .../31-libnsl-dev_1.3.0-2build2_amd64.deb ...\nUnpacking libnsl-dev:amd64 (1.3.0-2build2) ...\nSelecting previously unselected package libc6-dev:amd64.\nPreparing to unpack .../32-libc6-dev_2.35-0ubuntu3.15_amd64.deb ...\nUnpacking libc6-dev:amd64 (2.35-0ubuntu3.15) ...\nSetting up gcc-11-base:amd64 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up binutils-common:amd64 (2.38-4ubuntu2.12) ...\nSetting up linux-libc-dev:amd64 (5.15.0-198.208) ...\nSetting up libctf-nobfd0:amd64 (2.38-4ubuntu2.12) ...\nSetting up libgomp1:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libasan6:amd64 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up libtirpc-dev:amd64 (1.3.2-2ubuntu0.1) ...\nSetting up rpcsvc-proto (1.4.2-0ubuntu6) ...\nSetting up libmpfr6:amd64 (4.1.0-3build3) ...\nSetting up libquadmath0:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libmpc3:amd64 (1.2.1-2build1) ...\nSetting up libatomic1:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libubsan1:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libnsl-dev:amd64 (1.3.0-2build2) ...\nSetting up libcrypt-dev:amd64 (1:4.4.27-1) ...\nSetting up libbinutils:amd64 (2.38-4ubuntu2.12) ...\nSetting up libisl23:amd64 (0.24-2build1) ...\nSetting up libc-dev-bin (2.35-0ubuntu3.15) ...\nSetting up openssl (3.0.2-0ubuntu1.30) ...\nSetting up libcc1-0:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up liblsan0:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libitm1:amd64 (12.3.0-1ubuntu1~22.04.3) ...\nSetting up libtsan0:amd64 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up libctf0:amd64 (2.38-4ubuntu2.12) ...\nSetting up cpp-11 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up ca-certificates (20260601~22.04.1) ...\nUpdating certificates in /etc/ssl/certs...\n121 added, 0 removed; done.\nSetting up libgcc-11-dev:amd64 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up cpp (4:11.2.0-1ubuntu1) ...\nSetting up libc6-dev:amd64 (2.35-0ubuntu3.15) ...\nSetting up binutils-x86-64-linux-gnu (2.38-4ubuntu2.12) ...\nSetting up binutils (2.38-4ubuntu2.12) ...\nSetting up gcc-11 (11.4.0-1ubuntu1~22.04.3) ...\nSetting up gcc (4:11.2.0-1ubuntu1) ...\nProcessing triggers for libc-bin (2.35-0ubuntu3.15) ...\nProcessing triggers for ca-certificates (20260601~22.04.1) ...\nUpdating certificates in /etc/ssl/certs...\n0 added, 0 removed; done.\nRunning hooks in /etc/ca-certificates/update.d...\ndone.\nACTS_UNAME Linux 5afcf9099fe7 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux\nrequest=0x420e rc=24 errno=0 Success\nACTS_PROBE_EXIT 0\n\nUnable to find image 'ubuntu:22.04@sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde' locally\ndocker.io/library/ubuntu@sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde: Pulling from library/ubuntu\nDigest: sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde\nStatus: Downloaded newer image for ubuntu@sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde\ndebconf: delaying package configuration, since apt-utils is not installed\n",
+  "provenance": {
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  }
+}

@@ -1,0 +1,44 @@
+# ProcessCache SHA-256 on linux/amd64, for the emulation probe.
+# Pre-registered in pipeline/docs/BASELINES_PROTOCOL.md
+# (addendum 2026-10-10). The arm64 image cannot compile
+# src/regs.rs. This file does not patch it.
+# Build with: docker build --platform linux/amd64
+
+FROM ubuntu:22.04@sha256:08ea48a03a3e78ebc7cd526e6a275053223aadd88bfc09cc49b06d5281525fde
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PATH="/root/.cargo/bin:/opt/hmmer/bin:${PATH}"
+ENV CARGO_BUILD_JOBS=2
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential ca-certificates curl wget git pkg-config libssl-dev \
+        libseccomp-dev python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+        | sh -s -- -y --default-toolchain stable --profile minimal \
+    && rustc --version > /opt/rustc-stable.txt
+
+ARG HMMER_URL=http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz
+RUN wget -O /tmp/hmmer-3.4.tar.gz "${HMMER_URL}" \
+    && sha256sum /tmp/hmmer-3.4.tar.gz > /opt/hmmer.tar.sha256 \
+    && tar -xzf /tmp/hmmer-3.4.tar.gz -C /tmp \
+    && cd /tmp/hmmer-3.4 \
+    && ./configure --prefix=/opt/hmmer \
+    && make -j2 \
+    && make install \
+    && rm -rf /tmp/hmmer-3.4 /tmp/hmmer-3.4.tar.gz \
+    && hmmscan -h | sed -n '2p' > /opt/hmmer.version
+
+# DONT_HASH_FILES stays false. A compile failure is recorded.
+ARG PC_COMMIT=a89d13214d8a0a9527ad4400a0a7284158d952a1
+RUN git clone --filter=blob:none --no-checkout https://github.com/upenn-acg/ProcessCache.git /opt/ProcessCache \
+    && git -C /opt/ProcessCache fetch --depth 1 origin "${PC_COMMIT}" \
+    && git -C /opt/ProcessCache checkout "${PC_COMMIT}" \
+    && git -C /opt/ProcessCache rev-parse HEAD > /opt/ProcessCache.commit \
+    && { cargo build --release --manifest-path /opt/ProcessCache/Cargo.toml > /opt/ProcessCache.build.log 2>&1 \
+         && install -m 0755 /opt/ProcessCache/target/release/process_cache /usr/local/bin/process_cache \
+         && echo OK > /opt/ProcessCache.build; } \
+    || echo FAILED > /opt/ProcessCache.build
+
+WORKDIR /data

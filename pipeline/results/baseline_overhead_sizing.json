@@ -1,0 +1,52 @@
+{
+  "label": "SIZING",
+  "not_an_overhead_ratio": true,
+  "n": 1,
+  "workload": {
+    "n_models": 30134,
+    "n_proteins": 200,
+    "accession": "GCF_002853805.1",
+    "first_model": "03009_C",
+    "last_model": "ZZ_ADA2",
+    "subset_hmm_sha256": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+    "subset_hmm_bytes": 2246909846,
+    "fasta_sha256": "1d4d456b602cd097cf22123b74b9eccca67d79c2fc6e92af3edad1a4c885e845",
+    "pfam_gz_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab"
+  },
+  "runs": [
+    {
+      "t0": "1791668145.509426261",
+      "t1": "1791668191.753863629",
+      "exit_code": 0,
+      "wall_s": "46.244437368",
+      "tool": "stock",
+      "mode": "hmmscan",
+      "docker_exit": 0,
+      "tblout_bytes": 75902,
+      "valid": true,
+      "repeat": 0,
+      "role": "sizing"
+    },
+    {
+      "t0": "1791668211.605933083",
+      "t1": "1791668255.106257964",
+      "exit_code": 0,
+      "wall_s": "43.500324881",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 201336,
+      "valid": true,
+      "repeat": 0,
+      "role": "sizing"
+    }
+  ],
+  "provenance": {
+    "git": "76a1c4f8ee0a2d21734933c55e86ddad3bfcca68",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  }
+}
