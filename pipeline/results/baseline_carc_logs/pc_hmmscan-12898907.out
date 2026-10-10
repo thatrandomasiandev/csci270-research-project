@@ -1,0 +1,13 @@
+=== smoke processcache sha256 job 12898907 ===
+d06-27.hpc.usc.edu
+2026-10-10T02:07:15-07:00
+8
+CPU(s):              24
+On-line CPU(s) list: 0-23
+Model name:          Intel(R) Xeon(R) Silver 4116 CPU @ 2.10GHz
+NUMA node0 CPU(s):   0-11
+NUMA node1 CPU(s):   12-23
+CONSTRAINT=
+hmmpress source /project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/hmmer-3.4/bin/hmmpress
+MODES=hmmscan
+OUT=/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/results/baseline_smoke_processcache_sha256_hmmscan.json
