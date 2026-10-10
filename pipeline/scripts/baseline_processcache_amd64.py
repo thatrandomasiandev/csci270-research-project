@@ -117,15 +117,8 @@ def build_sequence_image() -> int:
     return proc.returncode
 
 
-def run_sequence(data_root: Path, work: Path) -> dict:
-    """Uniform ProcessCache sequence inside the amd64 image.
-
-    Same argv and subset as baseline_docker_uniform.sequence_script.
-    Called only after the ptrace probe succeeded.
-    """
-    uniform.prepare_work(work, data_root)
-    script = uniform.sequence_script("processcache")
-    argv = [
+def sequence_docker_argv(work: Path, script: str) -> list[str]:
+    return [
         "docker", "run", "--rm",
         "--platform", "linux/amd64",
         "--cap-add", "SYS_PTRACE",
@@ -134,8 +127,20 @@ def run_sequence(data_root: Path, work: Path) -> dict:
         SEQUENCE_IMAGE,
         "bash", "-lc", script,
     ]
+
+
+def run_sequence(data_root: Path, work: Path) -> dict:
+    """Uniform ProcessCache sequence inside the amd64 image.
+
+    Same argv and subset as baseline_docker_uniform.sequence_script.
+    Called only after the ptrace probe succeeded.
+    """
+    uniform.prepare_work(work, data_root)
+    script = uniform.sequence_script("processcache")
+    argv = sequence_docker_argv(work, script)
     proc = subprocess.run(argv, check=False, text=True, capture_output=True)
     text = (proc.stdout or "") + (proc.stderr or "")
+    (work / "out").mkdir(parents=True, exist_ok=True)
     (work / "out" / "docker.log").write_text(text)
     scored = uniform.score_column("processcache", work, proc.stdout or "", proc.returncode)
     return {"docker_exit": proc.returncode, "log_tail": text[-4000:], **scored}
@@ -148,14 +153,36 @@ def main() -> None:
         type=Path,
         default=ROOT / "results" / "baseline_processcache_amd64.json",
     )
+    parser.add_argument(
+        "--sequence",
+        action="store_true",
+        help="run the uniform behavioral sequence; requires a recorded successful probe",
+    )
+    parser.add_argument("--data-root", type=Path)
+    parser.add_argument("--work", type=Path, default=Path("/tmp/acts-processcache-amd64"))
     args = parser.parse_args()
+    if args.sequence:
+        if not args.out.is_file():
+            raise SystemExit("probe result is missing; run the probe first")
+        payload = json.loads(args.out.read_text())
+        if not payload.get("probe_succeeded"):
+            raise SystemExit("probe did not succeed; sequence is not run")
+        if args.data_root is None:
+            raise SystemExit("--data-root is required for the sequence")
+        sequence = run_sequence(args.data_root, args.work)
+        payload["sequence_image"] = SEQUENCE_IMAGE
+        payload["sequence_platform"] = "linux/amd64"
+        payload["regs_rs_patched"] = False
+        payload["behavioral_sequence"] = sequence
+        payload["sequence_provenance"] = uniform.host_provenance()
+        args.out.write_text(json.dumps(payload, indent=2) + "\n")
+        print(f"wrote {args.out}")
+        print("docker_exit", sequence["docker_exit"], "binary_missing", sequence["binary_missing"])
+        return
     probe = run_probe()
     payload = result_payload(probe)
     if probe["succeeded"]:
-        payload["behavioral_sequence"] = (
-            "probe succeeded; the behavioral sequence is a separate step "
-            "and is not implied by this function"
-        )
+        payload["behavioral_sequence"] = "pending"
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(payload, indent=2) + "\n")
     print(f"wrote {args.out}")

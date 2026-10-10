@@ -40,6 +40,16 @@ class ProcessCacheAmd64GuardTests(unittest.TestCase):
         self.assertFalse(payload["regs_rs_patched"])
         self.assertEqual(payload["processcache_commit"], amd.PC_COMMIT)
 
+    def test_sequence_uses_emulated_amd64_without_privilege(self) -> None:
+        argv = amd.sequence_docker_argv(Path("/tmp/pc"), "true")
+        self.assertIn("--platform", argv)
+        self.assertIn("linux/amd64", argv)
+        self.assertIn("--cap-add", argv)
+        self.assertIn("SYS_PTRACE", argv)
+        self.assertNotIn("--privileged", argv)
+        self.assertEqual(argv[argv.index(amd.SEQUENCE_IMAGE) + 1], "bash")
+        self.assertIn("libseccomp-dev", (PIPE / "docker" / "Dockerfile.baselines_processcache_amd64").read_text())
+
     def test_amd64_dockerfile_does_not_patch_regs(self) -> None:
         text = (PIPE / "docker" / "Dockerfile.baselines_processcache_amd64").read_text()
         self.assertIn(amd.AMD64_DIGEST, text)
