@@ -1,0 +1,330 @@
+{
+  "cache_dir": "/data/incr_default/hmmscan/cache",
+  "decode_errors": [],
+  "entries": [
+    {
+      "batch_dir": "/data/incr_default/hmmscan/cache/batch_7184886871008246601",
+      "compressed_output": false,
+      "data_file": "/data/incr_default/hmmscan/cache/batch_7184886871008246601/data.incr",
+      "dependencies": [
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667721558614",
+          "match": true,
+          "path": "/data/genome1.faa",
+          "recorded": "1791667721558614"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "present",
+          "match": false,
+          "path": "/data/incr_default/hmmscan/genome1.tbl",
+          "recorded": "absent"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667721556229",
+          "match": true,
+          "path": "/data/subset.hmm",
+          "recorded": "1791667721556229"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3f",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3i",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3m",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3p",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791665276000000",
+          "match": true,
+          "path": "/etc/ld.so.cache",
+          "recorded": "1791665276000000"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "absent",
+          "match": true,
+          "path": "/etc/ld.so.preload",
+          "recorded": "absent"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "absent",
+          "match": true,
+          "path": "/etc/localtime",
+          "recorded": "absent"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/lib/aarch64-linux-gnu/libc.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/lib/aarch64-linux-gnu/libm.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791665324000000",
+          "match": true,
+          "path": "/opt/hmmer/bin/hmmscan",
+          "recorded": "1791665324000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726789414",
+          "match": true,
+          "path": "/sys/devices/system/cpu/online",
+          "recorded": "1791667726789414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/usr/lib/aarch64-linux-gnu/libc.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/usr/lib/aarch64-linux-gnu/libm.so.6",
+          "recorded": "1788445204000000"
+        }
+      ],
+      "exit_code": 0,
+      "fail_reasons": {
+        "dependency_mismatch": true,
+        "missing_outputs_dir": false,
+        "missing_stdout_or_stderr": false
+      },
+      "mismatches": [
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "present",
+          "match": false,
+          "path": "/data/incr_default/hmmscan/genome1.tbl",
+          "recorded": "absent"
+        }
+      ],
+      "n_dependencies": 16,
+      "n_mismatches": 1,
+      "n_write_outputs": 1,
+      "outputs_dir": true,
+      "stderr_incr": true,
+      "stdout_incr": true,
+      "would_pass": false,
+      "write_outputs": [
+        "/data/incr_default/hmmscan/genome1.tbl"
+      ]
+    },
+    {
+      "batch_dir": "/data/incr_default/hmmscan/cache/batch_9124323770962443139",
+      "compressed_output": false,
+      "data_file": "/data/incr_default/hmmscan/cache/batch_9124323770962443139/data.incr",
+      "dependencies": [
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667721559868",
+          "match": true,
+          "path": "/data/genome2.faa",
+          "recorded": "1791667721559868"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "present",
+          "match": false,
+          "path": "/data/incr_default/hmmscan/genome2.tbl",
+          "recorded": "absent"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667721556229",
+          "match": true,
+          "path": "/data/subset.hmm",
+          "recorded": "1791667721556229"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3f",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3i",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3m",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726825414",
+          "match": true,
+          "path": "/data/subset.hmm.h3p",
+          "recorded": "1791667726825414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791665276000000",
+          "match": true,
+          "path": "/etc/ld.so.cache",
+          "recorded": "1791665276000000"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "absent",
+          "match": true,
+          "path": "/etc/ld.so.preload",
+          "recorded": "absent"
+        },
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "absent",
+          "match": true,
+          "path": "/etc/localtime",
+          "recorded": "absent"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/lib/aarch64-linux-gnu/libc.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/lib/aarch64-linux-gnu/libm.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791665324000000",
+          "match": true,
+          "path": "/opt/hmmer/bin/hmmscan",
+          "recorded": "1791665324000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1791667726789414",
+          "match": true,
+          "path": "/sys/devices/system/cpu/online",
+          "recorded": "1791667726789414"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/usr/lib/aarch64-linux-gnu/libc.so.6",
+          "recorded": "1788445204000000"
+        },
+        {
+          "detail": "mtime_micros",
+          "kind": "timestamp",
+          "live": "1788445204000000",
+          "match": true,
+          "path": "/usr/lib/aarch64-linux-gnu/libm.so.6",
+          "recorded": "1788445204000000"
+        }
+      ],
+      "exit_code": 0,
+      "fail_reasons": {
+        "dependency_mismatch": true,
+        "missing_outputs_dir": false,
+        "missing_stdout_or_stderr": false
+      },
+      "mismatches": [
+        {
+          "detail": "path.exists()",
+          "kind": "does_not_exist",
+          "live": "present",
+          "match": false,
+          "path": "/data/incr_default/hmmscan/genome2.tbl",
+          "recorded": "absent"
+        }
+      ],
+      "n_dependencies": 16,
+      "n_mismatches": 1,
+      "n_write_outputs": 1,
+      "outputs_dir": true,
+      "stderr_incr": true,
+      "stdout_incr": true,
+      "would_pass": false,
+      "write_outputs": [
+        "/data/incr_default/hmmscan/genome2.tbl"
+      ]
+    }
+  ],
+  "n_data_files": 2,
+  "would_pass": false
+}

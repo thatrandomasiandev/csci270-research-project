@@ -1,0 +1,280 @@
+{
+  "label": "POST-HOC",
+  "decides": "which recorded INCR dependency failed check_cache_valid before the replay incr.sh",
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-10 INCR replay dependency diagnosis",
+  "image": "acts-baselines-uniform:local",
+  "observer": "pipeline/scripts/baseline_incr_cache_dump",
+  "incr_source": "4b8e5ddf8e275d947518c7cc0f5d2713fe992307",
+  "debug_stays_false": true,
+  "build_ok": true,
+  "selfcheck_ok": true,
+  "provenance": {
+    "git": "e3cf4f7ae61ff04bc6bf05dd8c854e205540f53e",
+    "git_dirty": false,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  },
+  "columns": {
+    "incr_default": {
+      "hmmscan": {
+        "before_replay": {
+          "present": true,
+          "would_pass": false,
+          "n_data_files": 2,
+          "decode_errors": [],
+          "entries": [
+            {
+              "batch_dir": "/data/incr_default/hmmscan/cache/batch_7184886871008246601",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            },
+            {
+              "batch_dir": "/data/incr_default/hmmscan/cache/batch_9124323770962443139",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            }
+          ],
+          "mismatches": [
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_default/hmmscan/genome1.tbl",
+              "recorded": "absent"
+            },
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_default/hmmscan/genome2.tbl",
+              "recorded": "absent"
+            }
+          ]
+        },
+        "cache_files_before": "/data/incr_default/hmmscan/cache/batch_7184886871008246601/data.incr 854 1791667729.8814140130\n/data/incr_default/hmmscan/cache/batch_9124323770962443139/data.incr 854 1791667731.6363340000\n",
+        "cache_files_after": "/data/incr_default/hmmscan/cache/batch_7184886871008246601/data.incr 854 1791667729.8814140130\n/data/incr_default/hmmscan/cache/batch_9124323770962443139/data.incr 862 1791667733.4493340010\n",
+        "deps_path": "deps_incr_default_hmmscan.json"
+      },
+      "hmmsearch": {
+        "before_replay": {
+          "present": true,
+          "would_pass": false,
+          "n_data_files": 2,
+          "decode_errors": [],
+          "entries": [
+            {
+              "batch_dir": "/data/incr_default/hmmsearch/cache/batch_10564635888247056781",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            },
+            {
+              "batch_dir": "/data/incr_default/hmmsearch/cache/batch_10580779479867906968",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            }
+          ],
+          "mismatches": [
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_default/hmmsearch/genome1.tbl",
+              "recorded": "absent"
+            },
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_default/hmmsearch/genome2.tbl",
+              "recorded": "absent"
+            }
+          ]
+        },
+        "cache_files_before": "/data/incr_default/hmmsearch/cache/batch_10564635888247056781/data.incr 860 1791667733.9253340010\n/data/incr_default/hmmsearch/cache/batch_10580779479867906968/data.incr 860 1791667734.3713340010\n",
+        "cache_files_after": "/data/incr_default/hmmsearch/cache/batch_10564635888247056781/data.incr 860 1791667733.9253340010\n/data/incr_default/hmmsearch/cache/batch_10580779479867906968/data.incr 868 1791667734.8313340010\n",
+        "deps_path": "deps_incr_default_hmmsearch.json"
+      },
+      "docker_exit": 0
+    },
+    "incr_annotations": {
+      "hmmscan": {
+        "before_replay": {
+          "present": true,
+          "would_pass": false,
+          "n_data_files": 2,
+          "decode_errors": [],
+          "entries": [
+            {
+              "batch_dir": "/data/incr_annotations/hmmscan/cache/batch_15368799181456306159",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            },
+            {
+              "batch_dir": "/data/incr_annotations/hmmscan/cache/batch_4381673127832996033",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            }
+          ],
+          "mismatches": [
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_annotations/hmmscan/genome1.tbl",
+              "recorded": "absent"
+            },
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_annotations/hmmscan/genome2.tbl",
+              "recorded": "absent"
+            }
+          ]
+        },
+        "cache_files_before": "/data/incr_annotations/hmmscan/cache/batch_15368799181456306159/data.incr 862 1791667741.5073340040\n/data/incr_annotations/hmmscan/cache/batch_4381673127832996033/data.incr 862 1791667744.1433340060\n",
+        "cache_files_after": "/data/incr_annotations/hmmscan/cache/batch_15368799181456306159/data.incr 862 1791667741.5073340040\n/data/incr_annotations/hmmscan/cache/batch_4381673127832996033/data.incr 870 1791667746.8423340070\n",
+        "deps_path": "deps_incr_annotations_hmmscan.json"
+      },
+      "hmmsearch": {
+        "before_replay": {
+          "present": true,
+          "would_pass": false,
+          "n_data_files": 2,
+          "decode_errors": [],
+          "entries": [
+            {
+              "batch_dir": "/data/incr_annotations/hmmsearch/cache/batch_5599378044705891721",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            },
+            {
+              "batch_dir": "/data/incr_annotations/hmmsearch/cache/batch_9436753748669052191",
+              "exit_code": 0,
+              "would_pass": false,
+              "fail_reasons": {
+                "dependency_mismatch": true,
+                "missing_outputs_dir": false,
+                "missing_stdout_or_stderr": false
+              },
+              "n_dependencies": 16,
+              "n_mismatches": 1,
+              "n_write_outputs": 1,
+              "stdout_incr": true,
+              "stderr_incr": true,
+              "outputs_dir": true
+            }
+          ],
+          "mismatches": [
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_annotations/hmmsearch/genome1.tbl",
+              "recorded": "absent"
+            },
+            {
+              "detail": "path.exists()",
+              "kind": "does_not_exist",
+              "live": "present",
+              "match": false,
+              "path": "/data/incr_annotations/hmmsearch/genome2.tbl",
+              "recorded": "absent"
+            }
+          ]
+        },
+        "cache_files_before": "/data/incr_annotations/hmmsearch/cache/batch_5599378044705891721/data.incr 868 1791667747.3583340070\n/data/incr_annotations/hmmsearch/cache/batch_9436753748669052191/data.incr 868 1791667747.9073340070\n",
+        "cache_files_after": "/data/incr_annotations/hmmsearch/cache/batch_5599378044705891721/data.incr 868 1791667747.3583340070\n/data/incr_annotations/hmmsearch/cache/batch_9436753748669052191/data.incr 876 1791667748.3993340080\n",
+        "deps_path": "deps_incr_annotations_hmmsearch.json"
+      },
+      "docker_exit": 0
+    }
+  }
+}

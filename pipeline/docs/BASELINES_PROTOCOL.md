@@ -1494,3 +1494,79 @@ left false, and the uniform behavioral sequence (73
 models, first 300 proteins, both modes, genome 1, genome
 2, replay) runs in that container. Driver:
 `pipeline/scripts/baseline_processcache_amd64.py`.
+
+---
+
+## Addendum 2026-10-10 — INCR replay dependency outcome (POST-HOC)
+
+Written after the diagnostic run. The procedure above and
+the uniform classification rule are unchanged. The harness
+was not edited: the mismatch is already true before
+`incr.sh` starts, so it is not a file the harness rewrites
+between steps.
+
+Record: `pipeline/results/baseline_incr_replay_diagnosis.json`,
+git `e3cf4f7ae61ff04bc6bf05dd8c854e205540f53e`, `git_dirty`
+false. Observer self-check passed. Image
+`acts-baselines-uniform:local`. DEBUG stayed false.
+Decoded tables:
+`pipeline/results/baseline_incr_deps_incr_default_hmmscan.json`,
+`baseline_incr_deps_incr_default_hmmsearch.json`,
+`baseline_incr_deps_incr_annotations_hmmscan.json`,
+`baseline_incr_deps_incr_annotations_hmmsearch.json`.
+Debug logs, still one `Cache invalid:` line per step and
+no `Cache valid:` line:
+`pipeline/results/baseline_incr_replay_diagnosis_default_debug.txt`,
+`baseline_incr_replay_diagnosis_annotations_debug.txt`.
+
+Each column and mode has two batch directories. The
+genome-2 directory is the one whose sole write output is
+`genome2.tbl`. The replay rewrites that directory's
+`data.incr` and leaves the genome-1 directory's bytes and
+mtime unchanged. Example, INCR default hmmscan: genome 1
+`batch_7184886871008246601/data.incr` stays 854 bytes at
+`1791667729.8814140130`; genome 2
+`batch_9124323770962443139/data.incr` moves from 854 bytes
+at `1791667731.6363340000` to 862 bytes at
+`1791667733.4493340010`. The cache key, which includes
+the environment, did not change. The same directory was
+updated.
+
+That genome-2 entry has 16 read dependencies. Fifteen
+match. The one that does not is the `--tblout` path,
+`/data/incr_default/hmmscan/genome2.tbl`, kind
+`does_not_exist`, recorded `absent`, live `present`.
+The same single mismatch, on that mode's `genome2.tbl`,
+is the genome-2 entry in the other three tables. Paths
+that do match include the FASTA, `subset.hmm` and its
+four pressed files, the `hmmscan` or `hmmsearch` binary,
+libc, libm, `/etc/ld.so.cache`, and
+`/sys/devices/system/cpu/online`. `/etc/ld.so.preload`
+and `/etc/localtime` stay absent, so those
+`DoesNotExist` keys still match. `/proc` is not in the
+map: INCR's `EXCLUDED_PATHS` drops it. No `/tmp` path is
+in the map.
+
+The debug line for that replay is:
+
+`Cache invalid: /opt/hmmer/bin/hmmscan ["--cpu", "32", "--cut_ga", "--noali", "--tblout", "/data/incr_default/hmmscan/genome2.tbl", "/data/subset.hmm", "/data/genome2.faa"] 3244421341483603138`
+
+The log names the command. It does not name the
+dependency. The decoded `data.incr` does.
+
+Why that key is `DoesNotExist` is the source order at
+`4b8e5dd`, not a harness write. `src/scripts/parse_trace.rs`
+inserts every write into the read set. `get_read_dependencies`
+then stores a read-set path that does not exist as
+`DependencyKey::DoesNotExist`. In `save_command_data`
+(`src/execution/stream_executor.rs`) that call runs
+before `commit_output`. The tblout is the command's only
+write. It is recorded while it is not yet at the real
+path, and `commit_output` then creates it.
+`filter_dependencies` drops a `DoesNotExist` key only
+under `DYNAMIC_EXCLUDED_PATHS`, which is `/tmp`, so the
+`/data` tblout stays. On the replay,
+`check_read_dependencies` rejects `DoesNotExist` once
+the path exists. That is INCR's own rule on this HMMER
+argv. It is why the replay executes. It is not a claim
+that INCR never skips a replay of some other command.
