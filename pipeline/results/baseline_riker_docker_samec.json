@@ -1,0 +1,332 @@
+{
+  "label": "MEASURED",
+  "question": "On a kernel that accepts PTRACE_GET_SYSCALL_INFO, does Riker re-execute HMMER on collection A genome 2, and does a replay of that same command skip it?",
+  "decides": "executed/skipped/MATCH only; not wall time",
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-09 replay path and one container",
+  "environment": {
+    "docker_platform": "linux/arm64",
+    "cap_add": "SYS_PTRACE",
+    "seccomp": "default Docker profile; not seccomp=unconfined; not --privileged",
+    "image": "acts-riker-docker:local",
+    "base": "ubuntu:22.04@sha256:5ec03bb3441e8b0bf3b4f9cd4629a1ae763010dc3035bb8da3ae6cf026486401",
+    "uname": "Linux ce33510ceb8b 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux",
+    "riker_commit": "bae684b455a4d8fa010fc04b471f5ca9b408f6a8",
+    "riker_commit_expected": "bae684b455a4d8fa010fc04b471f5ca9b408f6a8",
+    "rkr_file": "/usr/local/bin/rkr: ELF 64-bit LSB pie executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, BuildID[xxHash]=b5d7e7ba4fa30bd6, not stripped",
+    "rkr_invoked": "/opt/riker/release/bin/rkr",
+    "rkr_path_copy": "Copying only the binary to /usr/local/bin segfaults in Build::launch. The falsifier invokes the in-tree release binary, which can see release/share/rkr.",
+    "compiler": "Ubuntu clang version 15.0.7",
+    "compiler_note": "make release CC=clang-15 CXX='clang++-15 -Wno-error=invalid-constexpr -fuse-ld=lld'. Ubuntu 22.04 clang++ lacks std::source_location. g++ 11.4 and g++-12 error on AccessFlags::operator+. -Wno-error=invalid-constexpr restores the warning in the CARC log. Riker source is not edited.",
+    "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3 /tmp/hmmer-3.4.tar.gz",
+    "hmmer_version_line": "# HMMER 3.4 (Aug 2023); http://hmmer.org/"
+  },
+  "workload": {
+    "n_models": 73,
+    "models": [
+      "Aldolase_II",
+      "Bac_transf",
+      "Beta-prop_ACSF4",
+      "Beta-prop_EML_2",
+      "Beta-prop_IFT122_1st",
+      "Beta-prop_THOC3",
+      "Beta-prop_WDR90_POC16_2nd",
+      "C2-set_3",
+      "Channel_Tsx",
+      "choice_anch_I",
+      "CoA_binding_3",
+      "Cytochrom_D1",
+      "DeoRC",
+      "DUF1002",
+      "DUF2534",
+      "DUF4248",
+      "DUF5074",
+      "EAL",
+      "EF-G_D2",
+      "EFG_C",
+      "EFG_III",
+      "EFG_IV",
+      "EMC1_C",
+      "FeoC",
+      "FokI_D3",
+      "GGDEF",
+      "GntR",
+      "GspL_C",
+      "GTP_EFTU",
+      "GTP_EFTU_D2",
+      "HTH_11",
+      "HTH_20",
+      "HTH_24",
+      "HTH_3",
+      "HTH_31",
+      "HTH_5",
+      "HTH_AsnC-type",
+      "HTH_DeoR",
+      "HTH_IclR",
+      "HTH_Mga",
+      "HTH_PafC",
+      "HVO_A0114",
+      "Ivy",
+      "KMS1_N",
+      "Lactonase",
+      "MarR_2",
+      "MASE1",
+      "MMR_HSR1",
+      "MqsA_antitoxin",
+      "PAS",
+      "PAS_11",
+      "PAS_3",
+      "PAS_4",
+      "PAS_6",
+      "PAS_8",
+      "PAS_9",
+      "Phage_terminase",
+      "PQQ_2",
+      "Put_DNA-bind_N",
+      "RF3_C",
+      "Rhodanese",
+      "Rhodanese_C",
+      "Ribosomal_L28",
+      "Ribosomal_L33",
+      "SGL",
+      "TrAA12",
+      "Tricorn_2nd",
+      "UPF0176_N",
+      "VD10_N",
+      "WD40_CDC20-Fz",
+      "WD40_WDHD1_1st",
+      "WDR55",
+      "YNCE"
+    ],
+    "proteins_kept": 300,
+    "genomes": {
+      "genome1": {
+        "position": 1,
+        "accession": "GCF_002853805.1",
+        "proteins_in_file": 5117
+      },
+      "genome2": {
+        "position": 2,
+        "accession": "GCF_002090355.1",
+        "proteins_in_file": 4091
+      }
+    },
+    "subset_hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+    "subset_hmm_bytes": 5363019,
+    "pfam_gz_bytes": 418160514,
+    "pfam_gz_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab",
+    "genome_sha256": {
+      "genome1": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+      "genome2": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167"
+    },
+    "cpu_flag": 32,
+    "note": "--cpu 32 is the locked argv shape. The VM has 14 CPUs. Classification ignores wall time."
+  },
+  "prediction": {
+    "genome1": "executed",
+    "genome2": "executed",
+    "replay": "skipped",
+    "source": "BASELINES_PROTOCOL.md locked Riker section; replay is genome 2's same path"
+  },
+  "probe": {
+    "exit_code": 0,
+    "rc": 24,
+    "errno": 0,
+    "succeeded": true,
+    "stdout": "UNAME Linux f358dcb94dc1 6.12.76-linuxkit #1 SMP Fri Apr 17 14:56:37 UTC 2026 aarch64 aarch64 aarch64 GNU/Linux\nPTRACE_SCOPE absent\nHEADER\n/usr/include/linux/ptrace.h:27:/* 0x4200-0x4300 are reserved for architecture-independent additions.  */\n/usr/include/linux/ptrace.h:28:#define PTRACE_SETOPTIONS\t0x4200\n/usr/include/linux/ptrace.h:29:#define PTRACE_GETEVENTMSG\t0x4201\n/usr/include/linux/ptrace.h:30:#define PTRACE_GETSIGINFO\t0x4202\n/usr/include/linux/ptrace.h:31:#define PTRACE_SETSIGINFO\t0x4203\n/usr/include/linux/ptrace.h:50:#define PTRACE_GETREGSET\t0x4204\n/usr/include/linux/ptrace.h:51:#define PTRACE_SETREGSET\t0x4205\n/usr/include/linux/ptrace.h:53:#define PTRACE_SEIZE\t\t0x4206\n/usr/include/linux/ptrace.h:54:#define PTRACE_INTERRUPT\t0x4207\n/usr/include/linux/ptrace.h:55:#define PTRACE_LISTEN\t\t0x4208\n/usr/include/linux/ptrace.h:57:#define PTRACE_PEEKSIGINFO\t0x4209\n/usr/include/linux/ptrace.h:65:#define PTRACE_GETSIGMASK\t0x420a\n/usr/include/linux/ptrace.h:66:#define PTRACE_SETSIGMASK\t0x420b\n/usr/include/linux/ptrace.h:68:#define PTRACE_SECCOMP_GET_FILTER\t0x420c\n/usr/include/linux/ptrace.h:69:#define PTRACE_SECCOMP_GET_METADATA\t0x420d\n/usr/include/linux/ptrace.h:76:#define PTRACE_GET_SYSCALL_INFO\t\t0x420e\n/usr/include/linux/ptrace.h:105:#define PTRACE_GET_RSEQ_CONFIGURATION\t0x420f\nrequest=0x420e rc=24 errno=0 Success\nABI_DONE\ngrep: /usr/include/sys/ptrace.h: No such file or directory\n"
+  },
+  "same_container": true,
+  "same_container_docker_exit": 0,
+  "modes": {
+    "hmmscan": {
+      "steps": [
+        {
+          "name": "genome1",
+          "accession": "GCF_002853805.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "executed",
+          "show_lines": [
+            "rkr-launch",
+            "Rikerfile",
+            "sh Rikerfile",
+            "hmmscan --cpu 32 --cut_ga --noali --tblout \u2026 /work/subset.hmm /work/genome1.faa"
+          ],
+          "hmmer_lines": [
+            "hmmscan --cpu 32 --cut_ga --noali --tblout \u2026 /work/subset.hmm /work/genome1.faa"
+          ],
+          "stdout_line_count": 8547,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "2e8a24577b0317990896de33c06ab81b4afb527974e5ec5675f5d41fb3d44893",
+          "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "absent",
+          "tblout_sha256_after": "adfc28f1bd653fc77fdbf9a6f85ad1b1fb090af52d1806820293b1a805643ab4",
+          "tblout_unchanged_by_copy": false,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": null
+        },
+        {
+          "name": "genome2",
+          "accession": "GCF_002090355.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "executed",
+          "show_lines": [
+            "sh Rikerfile",
+            "hmmscan --cpu 32 \u2026 --tblout /work/hmmscan/genome2.tbl \u2026 /work/genome2.faa"
+          ],
+          "hmmer_lines": [
+            "hmmscan --cpu 32 \u2026 --tblout /work/hmmscan/genome2.tbl \u2026 /work/genome2.faa"
+          ],
+          "stdout_line_count": 8544,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "41f8ced688a584951f90a69a6516b97a811b6f6e41e845e4e6a4ab2ded5413c9",
+          "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "absent",
+          "tblout_sha256_after": "13b86055ca4c62b46be7ba00ccfe935f84b8672778198afe3311cc3a3b705590",
+          "tblout_unchanged_by_copy": false,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": null
+        },
+        {
+          "name": "replay",
+          "accession": "GCF_002090355.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "skipped",
+          "show_lines": [],
+          "hmmer_lines": [],
+          "stdout_line_count": 0,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "41f8ced688a584951f90a69a6516b97a811b6f6e41e845e4e6a4ab2ded5413c9",
+          "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "13b86055ca4c62b46be7ba00ccfe935f84b8672778198afe3311cc3a3b705590",
+          "tblout_sha256_after": "13b86055ca4c62b46be7ba00ccfe935f84b8672778198afe3311cc3a3b705590",
+          "tblout_unchanged_by_copy": true,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": [
+            "No commands to rerun"
+          ]
+        }
+      ],
+      "agrees_genome2": true,
+      "falsifier_whole_command_fired": false,
+      "agrees_replay": true,
+      "projection": {
+        "label": "PROJECTED",
+        "formula": "T_riker = (T_sample / 6) * (1 + 0.088) hours per genome",
+        "T_sample_h": "5.10",
+        "overhead": "0.088",
+        "overhead_source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. Not a measured HMMER overhead.",
+        "hours_per_genome": "0.9248",
+        "hours_A30": "27.744",
+        "hours_B40": "36.992",
+        "applies": true
+      }
+    },
+    "hmmsearch": {
+      "steps": [
+        {
+          "name": "genome1",
+          "accession": "GCF_002853805.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "executed",
+          "show_lines": [
+            "rkr-launch",
+            "Rikerfile",
+            "sh Rikerfile",
+            "hmmsearch --cpu 32 --noali --tblout \u2026 /work/subset.hmm /work/genome1.faa"
+          ],
+          "hmmer_lines": [
+            "hmmsearch --cpu 32 --noali --tblout \u2026 /work/subset.hmm /work/genome1.faa"
+          ],
+          "stdout_line_count": 2337,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "6ebaffa0d7daf21f33e1ae9da436ea0dad3e7c349310257cc056a7db8477fc37",
+          "fasta_sha256": "fd6f2c446f21a2f1b4a274c99f683e594c48b94beb06cf2150247383b59c2821",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "absent",
+          "tblout_sha256_after": "645bac2bded5944bbc4899fed924bfd9b1798bd9ab29137f6ce1ad0a0c0ca8ac",
+          "tblout_unchanged_by_copy": false,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": null
+        },
+        {
+          "name": "genome2",
+          "accession": "GCF_002090355.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "executed",
+          "show_lines": [
+            "sh Rikerfile",
+            "hmmsearch --cpu 32 --noali \u2026 /work/hmmsearch/genome2.tbl -Z \u2026 /work/genome2.faa"
+          ],
+          "hmmer_lines": [
+            "hmmsearch --cpu 32 --noali \u2026 /work/hmmsearch/genome2.tbl -Z \u2026 /work/genome2.faa"
+          ],
+          "stdout_line_count": 2353,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "3dc829a1292056640446299ee821847d67a3ddd46bc7918ae9fd95c4ba004bf7",
+          "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "absent",
+          "tblout_sha256_after": "6e39f876994fbfe94e901714ba0ef01154b3b1193aa30f2d7470bbb0dc35cb79",
+          "tblout_unchanged_by_copy": false,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": null
+        },
+        {
+          "name": "replay",
+          "accession": "GCF_002090355.1",
+          "n_proteins": 300,
+          "exit_code": 0,
+          "action": "skipped",
+          "show_lines": [],
+          "hmmer_lines": [],
+          "stdout_line_count": 0,
+          "cpu_mtime": "1791596929",
+          "cpu_bytes": "0-13",
+          "rikerfile_sha256": "3dc829a1292056640446299ee821847d67a3ddd46bc7918ae9fd95c4ba004bf7",
+          "fasta_sha256": "d2202e7c19802f9c4bd35a5a6911faa82909ef0c50294e0018d2ad0c76eb1167",
+          "hmm_sha256": "dac6c8da1198e079caf549e1212ced608ea05197e562ee9661327b71e0029738",
+          "tblout_sha256_before": "6e39f876994fbfe94e901714ba0ef01154b3b1193aa30f2d7470bbb0dc35cb79",
+          "tblout_sha256_after": "6e39f876994fbfe94e901714ba0ef01154b3b1193aa30f2d7470bbb0dc35cb79",
+          "tblout_unchanged_by_copy": true,
+          "output_nonempty": true,
+          "match": true,
+          "same_container_check": [
+            "No commands to rerun"
+          ]
+        }
+      ],
+      "agrees_genome2": true,
+      "falsifier_whole_command_fired": false,
+      "agrees_replay": true,
+      "projection": {
+        "label": "PROJECTED",
+        "formula": "T_riker = (T_sample / 6) * (1 + 0.088) hours per genome",
+        "T_sample_h": "1.05",
+        "overhead": "0.088",
+        "overhead_source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. Not a measured HMMER overhead.",
+        "hours_per_genome": "0.1904",
+        "hours_A30": "5.712",
+        "hours_B40": "7.616",
+        "applies": true
+      }
+    }
+  }
+}

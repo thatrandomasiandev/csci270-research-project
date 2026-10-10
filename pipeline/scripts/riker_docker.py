@@ -527,7 +527,10 @@ def run_same_container(work: Path) -> dict:
         check = check_path.read_text(errors="replace") if check_path.is_file() else ""
         mismatches = [
             line for line in check.splitlines()
-            if "Content mismatch" in line or line.startswith("  expected ") or line.startswith("  observed ")
+            if line.startswith("No commands")
+            or "Content mismatch" in line
+            or line.startswith("  expected ")
+            or line.startswith("  observed ")
             or "must run" in line
         ]
         modes[mode].append({

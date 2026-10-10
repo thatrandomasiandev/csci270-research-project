@@ -865,3 +865,38 @@ job 12866390 exited in about 15 s with
 `use hmmpress first`, and MATCH was false. Pressing
 the shared `Pfam-A.hmm` (2,246,909,846 bytes, no
 `.h3m` siblings) would change a file other jobs read.
+
+## Addendum 2026-10-09 — same-container Riker outcome
+
+Written after the run. Result:
+`results/baseline_riker_docker_samec.json`.
+One container. `cpu_mtime` is `1791596929` on all
+six steps. `cpu_bytes` is `0-13`. `rkr check` after
+each mode printed `No commands to rerun`.
+
+| Mode | genome 1 | genome 2 | replay | MATCH |
+|------|----------|----------|--------|-------|
+| hmmscan | executed | executed | **skipped** | true on every step |
+| hmmsearch | executed | executed | **skipped** | true on every step |
+
+Replay `--show` logs are empty (0 bytes). Replay
+Rikerfile, FASTA, and HMM sha256 match genome 2.
+Replay tblout sha256 is unchanged by the comparison
+copy (`tblout_unchanged_by_copy` true). Genome 1 and
+genome 2 show that flag false because the tblout
+was absent before the command and present after it.
+
+The pre-registered prediction holds. The
+per-container replay executed because Riker
+fingerprinted `/sys/devices/system/cpu/online` by
+mtime, and each `docker run` changed that mtime.
+With one container the replay skips. A same-command
+replay is a skip. A new FASTA still executes, so
+the PROJECTED per-genome cost in the Docker outcome
+addendum still applies to a later genome.
+
+ProcessCache was not rerun. After the earlier
+successful SSH, connections to `10.72.0.13` and
+`10.72.0.14` port 22 timed out. The job file is
+`pipeline/jobs/riker_docker_pc_replay.job`. Submit
+it when Discovery accepts SSH.
