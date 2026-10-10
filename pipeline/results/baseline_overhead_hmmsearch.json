@@ -1,0 +1,395 @@
+{
+  "label": "MEASURED",
+  "decides": "first-run wall ratio versus stock HMMER in this container",
+  "comparable_to_epyc": false,
+  "use": "ratios_only",
+  "primary": "mean of within-repeat wall ratios, tool / stock",
+  "secondary_projected_factor": {
+    "riker": {
+      "label": "PROJECTED",
+      "factor": "1.088",
+      "source": "Curtsinger and Barowy, USENIX ATC 2022, abstract and Figure 3: median full-build overhead 8.8% on 14 software packages. A build overhead, not a measured HMMER overhead."
+    },
+    "incr_default": {
+      "label": "PROJECTED",
+      "factor": "2.0105",
+      "source": "Xie, Lamprou, Xia, and Vasilakis, USENIX OSDI 2026, introduction and section 8.5: first execution slower by 101.05% with no annotations (Figure 5 mean first-run ratio 2.01x on benchmarks over five seconds). A shell-suite overhead, not a measured HMMER overhead."
+    },
+    "incr_annotations": {
+      "label": "PROJECTED",
+      "factor": "1.4355",
+      "source": "Xie et al., USENIX OSDI 2026, section 8.5: with crowdsourced annotations, first-run overhead falls from 101.05% to 43.55%. That figure is their Unix suite. It is applied here only as the annotated first-run overhead, and it does not mean FASTA records were split."
+    }
+  },
+  "workload": {
+    "n_models": 30134,
+    "n_proteins": 1000,
+    "accession": "GCF_002853805.1",
+    "first_model": "03009_C",
+    "last_model": "ZZ_ADA2",
+    "subset_hmm_sha256": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+    "subset_hmm_bytes": 2246909846,
+    "fasta_sha256": "35a6ddccd93d120aee44e1f00d23a507dd104773fe6a7faa6ae2acba045099bd",
+    "pfam_gz_sha256": "2d82087b6c5c60d762cc767f98e8260b273134c215ab7efccf7440614a4e5dab"
+  },
+  "modes": {
+    "hmmsearch": {
+      "stock": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "89.013804499",
+          "89.633444667",
+          "85.252131998",
+          "91.771847778"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "88.9178072355",
+        "stdev_wall_s": "2.714410603490057921503504734",
+        "paired_ratio_vs_stock": [
+          "1",
+          "1",
+          "1",
+          "1"
+        ],
+        "mean_paired_ratio": "1",
+        "stdev_paired_ratio": "0",
+        "ratio_of_means": "1"
+      },
+      "riker": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "95.211120252",
+          "96.491652378",
+          "104.536058867",
+          "98.096510129"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "98.5838354065",
+        "stdev_wall_s": "4.140003518032097749576393363",
+        "paired_ratio_vs_stock": [
+          "1.069621962434710022560991762",
+          "1.076513936694937262752916710",
+          "1.226198763796926480707765208",
+          "1.068917238827964181562607831"
+        ],
+        "mean_paired_ratio": "1.110312975438634486896070378",
+        "stdev_paired_ratio": "0.07733316777046859934811605434",
+        "ratio_of_means": "1.108707450976601293090937291"
+      },
+      "incr_default": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "158.483936115",
+          "173.120452914",
+          "168.240315911",
+          "168.337128078"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "167.0454582545",
+        "stdev_wall_s": "6.145494751179907281965200508",
+        "paired_ratio_vs_stock": [
+          "1.780442224742572846942437707",
+          "1.931426975245291339150046235",
+          "1.973444088353671767137827633",
+          "1.834300301822566186142505197"
+        ],
+        "mean_paired_ratio": "1.879903397541025534843204193",
+        "stdev_paired_ratio": "0.08827364108404657434661256354",
+        "ratio_of_means": "1.878650221457642031665550428"
+      },
+      "incr_annotations": {
+        "n_valid": 4,
+        "n_planned": 4,
+        "wall_s": [
+          "159.027013657",
+          "161.935466866",
+          "164.276154007",
+          "163.056936283"
+        ],
+        "valid": [
+          true,
+          true,
+          true,
+          true
+        ],
+        "mean_wall_s": "162.07389270325",
+        "stdev_wall_s": "2.244917456877350869394338981",
+        "paired_ratio_vs_stock": [
+          "1.786543273282814726487539522",
+          "1.806641120037408948997298721",
+          "1.926944818351919804617951837",
+          "1.776764228148066263729054585"
+        ],
+        "mean_paired_ratio": "1.824223359955052435957961166",
+        "stdev_paired_ratio": "0.06960122436471253659768558775",
+        "ratio_of_means": "1.822738298910083675440570576"
+      }
+    }
+  },
+  "runs": [
+    {
+      "t0": "1791673747.795847007",
+      "t1": "1791673836.809651506",
+      "exit_code": 0,
+      "wall_s": "89.013804499",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049657,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791673855.348694793",
+      "t1": "1791673950.559815045",
+      "exit_code": 0,
+      "wall_s": "95.211120252",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791673968.774429637",
+      "t1": "1791674127.258365752",
+      "exit_code": 0,
+      "wall_s": "158.483936115",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674145.607340302",
+      "t1": "1791674304.634353959",
+      "exit_code": 0,
+      "wall_s": "159.027013657",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 0,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674323.014918926",
+      "t1": "1791674419.506571304",
+      "exit_code": 0,
+      "wall_s": "96.491652378",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674437.690045965",
+      "t1": "1791674610.810498879",
+      "exit_code": 0,
+      "wall_s": "173.120452914",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674629.888193638",
+      "t1": "1791674791.823660504",
+      "exit_code": 0,
+      "wall_s": "161.935466866",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674810.752401638",
+      "t1": "1791674900.385846305",
+      "exit_code": 0,
+      "wall_s": "89.633444667",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049657,
+      "valid": true,
+      "repeat": 1,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791674922.736348843",
+      "t1": "1791675090.976664754",
+      "exit_code": 0,
+      "wall_s": "168.240315911",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675114.197205084",
+      "t1": "1791675278.473359091",
+      "exit_code": 0,
+      "wall_s": "164.276154007",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675297.640327127",
+      "t1": "1791675382.892459125",
+      "exit_code": 0,
+      "wall_s": "85.252131998",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049657,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675402.646744551",
+      "t1": "1791675507.182803418",
+      "exit_code": 0,
+      "wall_s": "104.536058867",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 2,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675527.365946095",
+      "t1": "1791675690.422882378",
+      "exit_code": 0,
+      "wall_s": "163.056936283",
+      "tool": "incr_annotations",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675711.441073972",
+      "t1": "1791675803.212921750",
+      "exit_code": 0,
+      "wall_s": "91.771847778",
+      "tool": "stock",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049657,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675823.703378551",
+      "t1": "1791675921.799888680",
+      "exit_code": 0,
+      "wall_s": "98.096510129",
+      "tool": "riker",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    },
+    {
+      "t0": "1791675941.237866217",
+      "t1": "1791676109.574994295",
+      "exit_code": 0,
+      "wall_s": "168.337128078",
+      "tool": "incr_default",
+      "mode": "hmmsearch",
+      "docker_exit": 0,
+      "tblout_bytes": 1049661,
+      "valid": true,
+      "repeat": 3,
+      "role": "measurement"
+    }
+  ],
+  "provenance": {
+    "git": "eab4ef2615fb661f134dfdaf3bc7e517521fcc17",
+    "git_dirty": false,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "uname": "Darwin 27.0.0 arm64",
+    "python": "3.11.9"
+  },
+  "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
+  "addendum": "2026-10-10 measured first-run overhead",
+  "repeats": 4,
+  "order": [
+    [
+      "stock",
+      "riker",
+      "incr_default",
+      "incr_annotations"
+    ],
+    [
+      "riker",
+      "incr_default",
+      "incr_annotations",
+      "stock"
+    ],
+    [
+      "incr_default",
+      "incr_annotations",
+      "stock",
+      "riker"
+    ],
+    [
+      "incr_annotations",
+      "stock",
+      "riker",
+      "incr_default"
+    ]
+  ],
+  "assumption": "Each run is a new container, so the tool cache is empty. hmmpress finishes before ACTS_T0 and is not in the wall. The kernel page cache is not flushed. Absolute seconds are this arm64 container; only ratios are used. The ratio is the first-run cost that applies to genome 2, because every tool re-executes a new FASTA."
+}

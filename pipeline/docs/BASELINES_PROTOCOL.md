@@ -1771,3 +1771,31 @@ stayed true. The hmmscan steps in that file have
 0-byte tblout and match false, so they are not this
 citation. No measured ProcessCache overhead ratio
 exists. The paper factor 1.69 stays PROJECTED.
+
+---
+
+## Addendum 2026-10-10 — hmmsearch overhead follow-up outcome
+
+Written after the follow-up. The lock is unchanged.
+Record: `pipeline/results/baseline_overhead_hmmsearch.json`,
+git `eab4ef2615fb661f134dfdaf3bc7e517521fcc17`,
+`git_dirty` false. Image `acts-baselines-uniform:local`.
+All 16 runs are valid. Subset: 30134 models, 1000
+proteins of `GCF_002853805.1`. Stock mean wall
+`88.9178072355` s, which meets the 60 s gate. These
+ratios are the hmmsearch ≥60 s estimate. The
+500-protein hmmsearch ratios are not.
+
+| Tool | mean paired ratio | stdev | ratio of means |
+|------|-------------------|-------|----------------|
+| Riker | 1.110312975438634486896070378 | 0.07733316777046859934811605434 | 1.108707450976601293090937291 |
+| INCR default | 1.879903397541025534843204193 | 0.08827364108404657434661256354 | 1.878650221457642031665550428 |
+| INCR annotations | 1.824223359955052435957961166 | 0.06960122436471253659768558775 | 1.822738298910083675440570576 |
+
+Primary statistic is `mean_paired_ratio`. Absolute
+seconds in the file are this arm64 container and are
+not comparable to EPYC timings. The ratio is the
+first-run cost that applies to genome 2. Secondary
+PROJECTED factors stay 1.088, 2.0105, and 1.4355.
+The hmmscan ≥60 s estimate remains the 500-protein
+record, where stock mean wall is `102.223317523` s.
