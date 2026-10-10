@@ -1,0 +1,924 @@
+{
+  "argv": [
+    "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/blast-plus-2.14.1-tdum24r/bin/blastp",
+    "-query",
+    "{input}",
+    "-db",
+    "{reference}",
+    "-out",
+    "{output}",
+    "-outfmt",
+    "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore",
+    "-max_target_seqs",
+    "100000",
+    "-evalue",
+    "1000",
+    "-num_threads",
+    "4"
+  ],
+  "decision": "REFUSE",
+  "family": [
+    "identity",
+    "entry_count",
+    "total_entry_length",
+    "per_key_row_count"
+  ],
+  "fit": {
+    "decision": "REFUSE",
+    "primary_key_equal": false,
+    "probe_invocations": 3,
+    "reason": "out: column 2 matches no normalizer",
+    "tables": [
+      {
+        "columns": [
+          {
+            "count_table": null,
+            "index": 0,
+            "member": "byte",
+            "primary_fits": [],
+            "role": "byte",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 1,
+            "member": "byte",
+            "primary_fits": [],
+            "role": "byte",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 2,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 3,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 4,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 5,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 6,
+            "member": "identity",
+            "primary_fits": [
+              "identity"
+            ],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 7,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 8,
+            "member": "identity",
+            "primary_fits": [
+              "identity"
+            ],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 9,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 10,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          },
+          {
+            "count_table": null,
+            "index": 11,
+            "member": null,
+            "primary_fits": [],
+            "role": "numeric",
+            "tie": [],
+            "tie_break": null
+          }
+        ],
+        "entry_col": 1,
+        "index_col": 8,
+        "layout": {},
+        "meta": [],
+        "name": "out",
+        "record_col": 0
+      }
+    ],
+    "used_tie_break": false
+  },
+  "old_fsc": null,
+  "prep": "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/blast-plus-2.14.1-tdum24r/bin/makeblastdb -in {reference} -dbtype prot -out {reference}",
+  "primary_key_equal": false,
+  "primary_residuals": {
+    "columns": [
+      {
+        "entry_col": 1,
+        "field": "qseqid",
+        "index": 0,
+        "index_col": 8,
+        "members": {
+          "byte": {
+            "byte_identical": true,
+            "n": 15125
+          }
+        },
+        "numeric": false,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "sseqid",
+        "index": 1,
+        "index_col": 8,
+        "members": {
+          "byte": {
+            "byte_identical": true,
+            "n": 15125
+          }
+        },
+        "numeric": false,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "pident",
+        "index": 2,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 100.0,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 100.0,
+              "part": 0,
+              "part_printed": "100.000",
+              "phi": 2.0,
+              "record_key": "WP_000020880.1",
+              "whole_printed": "100.000"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 11.457999999999998,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 11.457999999999998,
+              "part": 0,
+              "part_printed": "21.875",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "33.333"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 21.681198871650224,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 21.681198871650224,
+              "part": 1,
+              "part_printed": "99.174",
+              "phi": 1.218617771509168,
+              "record_key": "WP_000149991.1",
+              "whole_printed": "99.174"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 100.20895145164434,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 100.20895145164434,
+              "part": 0,
+              "part_printed": "100.000",
+              "phi": 2.0020895145164435,
+              "record_key": "WP_000020880.1",
+              "whole_printed": "100.000"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "length",
+        "index": 3,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 439.0,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 439.0,
+              "part": 1,
+              "part_printed": "439",
+              "phi": 2.0,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "439"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 92.0,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 92.0,
+              "part": 0,
+              "part_printed": "128",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "36"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 88.92448512585813,
+            "n": 15125,
+            "n_consistent": 3652,
+            "worst": {
+              "abs_residual": 88.92448512585813,
+              "part": 0,
+              "part_printed": "128",
+              "phi": 0.9759725400457666,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "36"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 438.0846158357806,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 438.0846158357806,
+              "part": 1,
+              "part_printed": "439",
+              "phi": 1.9979148424505253,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "439"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "mismatch",
+        "index": 4,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 301.0,
+            "n": 15125,
+            "n_consistent": 27,
+            "worst": {
+              "abs_residual": 301.0,
+              "part": 1,
+              "part_printed": "301",
+              "phi": 2.0,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "301"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 49.0,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 49.0,
+              "part": 0,
+              "part_printed": "72",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "23"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 47.2700228832952,
+            "n": 15125,
+            "n_consistent": 5995,
+            "worst": {
+              "abs_residual": 47.2700228832952,
+              "part": 0,
+              "part_printed": "72",
+              "phi": 0.9759725400457666,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "23"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 300.3723675776081,
+            "n": 15125,
+            "n_consistent": 27,
+            "worst": {
+              "abs_residual": 300.3723675776081,
+              "part": 1,
+              "part_printed": "301",
+              "phi": 1.9979148424505253,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "301"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "gapopen",
+        "index": 5,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 14.0,
+            "n": 15125,
+            "n_consistent": 10830,
+            "worst": {
+              "abs_residual": 14.0,
+              "part": 0,
+              "part_printed": "14",
+              "phi": 2.0,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "14"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 4.0,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 4.0,
+              "part": 0,
+              "part_printed": "5",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "1"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 3.8798627002288333,
+            "n": 15125,
+            "n_consistent": 15033,
+            "worst": {
+              "abs_residual": 3.8798627002288333,
+              "part": 0,
+              "part_printed": "5",
+              "phi": 0.9759725400457666,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "1"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 14.029253203230208,
+            "n": 15125,
+            "n_consistent": 10830,
+            "worst": {
+              "abs_residual": 14.029253203230208,
+              "part": 0,
+              "part_printed": "14",
+              "phi": 2.0020895145164435,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "14"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "qstart",
+        "index": 6,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 401.0,
+            "n": 15125,
+            "n_consistent": 426,
+            "worst": {
+              "abs_residual": 401.0,
+              "part": 0,
+              "part_printed": "401",
+              "phi": 2.0,
+              "record_key": "WP_029396194.1",
+              "whole_printed": "401"
+            }
+          },
+          "identity": {
+            "fits": true,
+            "max_abs_residual": 0.0,
+            "n": 15125,
+            "n_consistent": 15125,
+            "worst": {
+              "abs_residual": 0.0,
+              "part": 0,
+              "part_printed": "1",
+              "phi": 1.0,
+              "record_key": "WP_000020880.1",
+              "whole_printed": "1"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 48.97038081805363,
+            "n": 15125,
+            "n_consistent": 4928,
+            "worst": {
+              "abs_residual": 48.97038081805363,
+              "part": 1,
+              "part_printed": "224",
+              "phi": 1.218617771509168,
+              "record_key": "WP_000149991.1",
+              "whole_printed": "224"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 401.8378953210938,
+            "n": 15125,
+            "n_consistent": 426,
+            "worst": {
+              "abs_residual": 401.8378953210938,
+              "part": 0,
+              "part_printed": "401",
+              "phi": 2.0020895145164435,
+              "record_key": "WP_029396194.1",
+              "whole_printed": "401"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "qend",
+        "index": 7,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 429.0,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 429.0,
+              "part": 0,
+              "part_printed": "429",
+              "phi": 2.0,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "429"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 68.0,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 68.0,
+              "part": 0,
+              "part_printed": "105",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "37"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 65.4771167048055,
+            "n": 15125,
+            "n_consistent": 1503,
+            "worst": {
+              "abs_residual": 65.4771167048055,
+              "part": 0,
+              "part_printed": "105",
+              "phi": 0.9759725400457666,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "37"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 429.89640172755423,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 429.89640172755423,
+              "part": 0,
+              "part_printed": "429",
+              "phi": 2.0020895145164435,
+              "record_key": "WP_001324556.1",
+              "whole_printed": "429"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "sstart",
+        "index": 8,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 27355.0,
+            "n": 15125,
+            "n_consistent": 271,
+            "worst": {
+              "abs_residual": 27355.0,
+              "part": 1,
+              "part_printed": "27355",
+              "phi": 2.0,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27355"
+            }
+          },
+          "identity": {
+            "fits": true,
+            "max_abs_residual": 0.0,
+            "n": 15125,
+            "n_consistent": 15125,
+            "worst": {
+              "abs_residual": 0.0,
+              "part": 0,
+              "part_printed": "1",
+              "phi": 1.0,
+              "record_key": "WP_000020880.1",
+              "whole_printed": "1"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 2798.218694885363,
+            "n": 15125,
+            "n_consistent": 2144,
+            "worst": {
+              "abs_residual": 2798.218694885363,
+              "part": 1,
+              "part_printed": "27355",
+              "phi": 1.1022927689594357,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27355"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 27297.960515234117,
+            "n": 15125,
+            "n_consistent": 271,
+            "worst": {
+              "abs_residual": 27297.960515234117,
+              "part": 1,
+              "part_printed": "27355",
+              "phi": 1.9979148424505253,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27355"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "send",
+        "index": 9,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 27393.0,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 27393.0,
+              "part": 1,
+              "part_printed": "27393",
+              "phi": 2.0,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27393"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 89.0,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 89.0,
+              "part": 0,
+              "part_printed": "125",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "36"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 2802.105820105822,
+            "n": 15125,
+            "n_consistent": 633,
+            "worst": {
+              "abs_residual": 2802.105820105822,
+              "part": 1,
+              "part_printed": "27393",
+              "phi": 1.1022927689594357,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27393"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 27335.881279247238,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 27335.881279247238,
+              "part": 1,
+              "part_printed": "27393",
+              "phi": 1.9979148424505253,
+              "record_key": "WP_000066560.1",
+              "whole_printed": "27393"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "evalue",
+        "index": 10,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 155.0,
+            "n": 15125,
+            "n_consistent": 14183,
+            "worst": {
+              "abs_residual": 155.0,
+              "part": 0,
+              "part_printed": "180",
+              "phi": 2.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "205"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 501.0,
+            "n": 15125,
+            "n_consistent": 77,
+            "worst": {
+              "abs_residual": 501.0,
+              "part": 0,
+              "part_printed": "499",
+              "phi": 1.0,
+              "record_key": "WP_000149991.1",
+              "whole_printed": "1000"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 568.438003220612,
+            "n": 15125,
+            "n_consistent": 88,
+            "worst": {
+              "abs_residual": 568.438003220612,
+              "part": 1,
+              "part_printed": "500",
+              "phi": 0.8631239935587761,
+              "record_key": "WP_001297409.1",
+              "whole_printed": "1000"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 155.37611261295984,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 155.37611261295984,
+              "part": 0,
+              "part_printed": "180",
+              "phi": 2.0020895145164435,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "205"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      },
+      {
+        "entry_col": 1,
+        "field": "bitscore",
+        "index": 11,
+        "index_col": 8,
+        "members": {
+          "entry_count": {
+            "fits": false,
+            "max_abs_residual": 876.0,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 876.0,
+              "part": 1,
+              "part_printed": "876",
+              "phi": 2.0,
+              "record_key": "WP_029396194.1",
+              "whole_printed": "876"
+            }
+          },
+          "identity": {
+            "fits": false,
+            "max_abs_residual": 0.6999999999999993,
+            "n": 15125,
+            "n_consistent": 15124,
+            "worst": {
+              "abs_residual": 0.6999999999999993,
+              "part": 0,
+              "part_printed": "24.3",
+              "phi": 1.0,
+              "record_key": "WP_000153074.1",
+              "whole_printed": "25.0"
+            }
+          },
+          "per_key_row_count:out": {
+            "fits": false,
+            "max_abs_residual": 108.43441466854733,
+            "n": 15125,
+            "n_consistent": 132,
+            "worst": {
+              "abs_residual": 108.43441466854733,
+              "part": 1,
+              "part_printed": "496",
+              "phi": 1.218617771509168,
+              "record_key": "WP_000149991.1",
+              "whole_printed": "496"
+            }
+          },
+          "total_entry_length": {
+            "fits": false,
+            "max_abs_residual": 874.1734019866601,
+            "n": 15125,
+            "n_consistent": 0,
+            "worst": {
+              "abs_residual": 874.1734019866601,
+              "part": 1,
+              "part_printed": "876",
+              "phi": 1.9979148424505253,
+              "record_key": "WP_029396194.1",
+              "whole_printed": "876"
+            }
+          }
+        },
+        "numeric": true,
+        "record_col": 0
+      }
+    ],
+    "key_sets": {
+      "aligned": 15125,
+      "equal": false,
+      "in_two_parts": 0,
+      "only_union": 13812,
+      "only_whole": 0,
+      "union": 28937,
+      "whole": 15125
+    },
+    "n_entries": 575748,
+    "part_counts": [
+      287874,
+      287874
+    ],
+    "part_lengths": [
+      104399849,
+      104617994
+    ],
+    "total_length": 209017843
+  },
+  "primary_residuals_error": null,
+  "probe_invocations": 3,
+  "protocol": "docs/REFERENCE_BOUNDARY_PROTOCOL.md",
+  "provenance": {
+    "finished_utc": "2026-10-09T09:11:22.026285+00:00",
+    "git": "2ea39e2b93df41aea17c6663bafb00b7a40d7c54",
+    "git_dirty": false,
+    "host": "a01-16.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "versions": {
+      "blastp": "blastp: 2.14.1+\n Package: blast 2.14.1, build Jan 15 2025 18:49:12",
+      "makeblastdb": "makeblastdb: 2.14.1+\n Package: blast 2.14.1, build Jan 15 2025 18:49:12"
+    }
+  },
+  "queries": {
+    "ids": [
+      "WP_000020880.1",
+      "WP_000066560.1",
+      "WP_000149991.1",
+      "WP_000153074.1",
+      "WP_000211501.1",
+      "WP_000230277.1",
+      "WP_000551020.1",
+      "WP_000679812.1",
+      "WP_000687768.1",
+      "WP_000763311.1",
+      "WP_000833470.1",
+      "WP_000839596.1",
+      "WP_001287378.1",
+      "WP_001297409.1",
+      "WP_001303782.1",
+      "WP_001324445.1",
+      "WP_001324556.1",
+      "WP_001425728.1",
+      "WP_029396194.1",
+      "WP_071448054.1"
+    ],
+    "md5": "b170d133266427c46d87d99284e1fda3",
+    "n": 20,
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz",
+    "sampler": "sample_record_indices",
+    "seed": 20261006
+  },
+  "reason": "out: column 2 matches no normalizer",
+  "reference": {
+    "md5": "bc9d398533e6df582b563c6c03093bd0",
+    "n_entries": 575748,
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz",
+    "total_entry_length": 209017843
+  },
+  "setting": "B1",
+  "used_tie_break": false
+}
