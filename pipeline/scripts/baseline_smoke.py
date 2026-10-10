@@ -22,6 +22,7 @@ import argparse
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -86,6 +87,39 @@ def sha256_file(path: Path) -> str | None:
         for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def step_output_name(step: str) -> str:
+    """Output basename for a smoke step.
+
+    Replay uses genome 1's exact path, including ``--tblout``.
+    A distinct ``replay.tbl`` is a different command.
+    """
+    if step == "genome2":
+        return "genome2"
+    if step in ("genome1", "replay"):
+        return "genome1"
+    raise ValueError(step)
+
+
+def snapshot_output(src: Path, dest: Path) -> dict:
+    """Copy ``src`` to ``dest`` and leave ``src`` bytes and mtime alone."""
+    if not src.is_file():
+        raise FileNotFoundError(src)
+    before = sha256_file(src)
+    before_ns = src.stat().st_mtime_ns
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, dest)
+    after = sha256_file(src)
+    after_ns = src.stat().st_mtime_ns
+    if before != after or before_ns != after_ns:
+        raise RuntimeError(f"snapshot changed the tool output {src}")
+    return {
+        "source": str(src),
+        "copy": str(dest),
+        "sha256": before,
+        "source_mtime_ns_unchanged": True,
+    }
 
 
 def tail(path: Path, limit: int = 6000) -> str:
@@ -153,7 +187,10 @@ class Runner:
         self.args = args
         self.build = build
         self.root = Path(args.root)
-        self.work = self.root / "smoke" / f"{args.tool}_{args.column}"
+        if getattr(args, "work", None):
+            self.work = Path(args.work)
+        else:
+            self.work = self.root / "smoke" / f"{args.tool}_{args.column}"
         self.work.mkdir(parents=True, exist_ok=True)
         self.log_dir = Path(os.environ.get("SLURM_TMPDIR") or os.environ.get("TMPDIR") or "/tmp") / f"baseline_smoke_{os.environ.get('SLURM_JOB_ID', 'local')}"
         self.log_dir.mkdir(parents=True, exist_ok=True)
@@ -322,7 +359,7 @@ class Runner:
         if blocked:
             return
         for name in ("genome1", "genome2", "replay"):
-            tblout = self.work / mode / f"{name}.tbl"
+            tblout = self.work / mode / f"{step_output_name(name)}.tbl"
             tblout.parent.mkdir(parents=True, exist_ok=True)
             before = sha256_file(tblout)
             before_mtime = tblout.stat().st_mtime if tblout.exists() else None
@@ -331,6 +368,11 @@ class Runner:
             code, wall, log_kept = self.launch(mode, name, wrapped, cwd)
             after = sha256_file(tblout)
             text = tblout.read_text(errors="replace") if tblout.is_file() else ""
+            snapshot = None
+            if tblout.is_file():
+                snapshot = snapshot_output(
+                    tblout, self.work / "comparisons" / mode / f"{name}.tbl"
+                )
             stock_path = stocks[name]
             stock_text = stock_path.read_text(errors="replace") if stock_path.is_file() else ""
             matched = bool(text) and bool(stock_text) and tables_match(text, stock_text, mode)
@@ -356,6 +398,8 @@ class Runner:
                 "tblout_sha256": after,
                 "tblout_sha256_before": before,
                 "tblout_mtime_changed": (tblout.stat().st_mtime if tblout.exists() else None) != before_mtime,
+                "output_snapshot": snapshot,
+                "replay_reuses_genome1_tblout": name != "replay" or step_output_name(name) == "genome1",
                 "output_nonempty": nonempty_body(text),
                 "stock_tblout": str(stock_path),
                 "stock_present": stock_path.is_file(),
@@ -437,6 +481,12 @@ def _selfcheck() -> None:
         raise SystemExit("reuse")
     if reuse_fraction("AMBIGUOUS") is not None:
         raise SystemExit("reuse null")
+    if step_output_name("replay") != "genome1" or step_output_name("genome2") != "genome2":
+        raise SystemExit("replay tblout path")
+    g1 = hmmer_argv("hmmscan", "hmmscan", "/tmp/genome1.tbl", "/tmp/g1.faa", "/tmp/pfam")
+    replay = hmmer_argv("hmmscan", "hmmscan", "/tmp/genome1.tbl", "/tmp/g1.faa", "/tmp/pfam")
+    if g1 != replay:
+        raise SystemExit("replay argv")
     print("baseline_smoke selfcheck ok")
 
 
@@ -452,6 +502,7 @@ def main() -> None:
     parser.add_argument("--build-json", required=True)
     parser.add_argument("--stock-dir", required=True)
     parser.add_argument("--out", required=True)
+    parser.add_argument("--work", default=None)
     parser.add_argument("--selfcheck", action="store_true")
     args = parser.parse_args()
     if args.selfcheck:

@@ -12,6 +12,7 @@ import argparse
 import gzip
 import hashlib
 import json
+import shlex
 import shutil
 import subprocess
 import sys
@@ -225,6 +226,68 @@ def argv_line(mode: str, tblout: str, fasta: str) -> str:
     return " ".join(parts) + "\n"
 
 
+def same_container_script() -> str:
+    """One container for genome 1, genome 2, and the replay.
+
+    Replay does not rewrite the Rikerfile or the tblout. Logs and
+    comparison copies go under /work/logs and /work/comparisons,
+    outside each mode directory.
+    """
+    chunks = [
+        "set -u",
+        "mkdir -p /work/logs /work/comparisons /tmp",
+        "cpu_snap() {",
+        "  echo \"CPU_MTIME $(stat -c %Y /sys/devices/system/cpu/online)\"",
+        "  echo \"CPU_BYTES $(tr -d $'\\n' < /sys/devices/system/cpu/online)\"",
+        "}",
+        "sha() {",
+        "  if [ -f \"$1\" ]; then sha256sum \"$1\" | awk '{print $1}'; else echo absent; fi",
+        "}",
+    ]
+    for mode in ("hmmscan", "hmmsearch"):
+        chunks.append(f"mkdir -p /work/{mode} /work/comparisons/{mode}")
+        for step, fasta_key in (
+            ("genome1", "genome1"),
+            ("genome2", "genome2"),
+            ("replay", "genome2"),
+        ):
+            tbl_name = "genome1.tbl" if step == "genome1" else "genome2.tbl"
+            tbl = f"/work/{mode}/{tbl_name}"
+            fasta = f"/work/{fasta_key}.faa"
+            chunks.append(f"echo STEP {mode} {step}")
+            if step != "replay":
+                line = argv_line(mode, tbl, fasta).strip()
+                chunks.append(
+                    f"printf '%s\\n' {shlex.quote(line)} > /work/{mode}/Rikerfile"
+                )
+            chunks.append("cpu_snap")
+            chunks.append(f"echo RIKERFILE_SHA $(sha /work/{mode}/Rikerfile)")
+            chunks.append(f"echo FASTA_SHA $(sha {fasta})")
+            chunks.append("echo HMM_SHA $(sha /work/subset.hmm)")
+            chunks.append(f"echo TBLOUT_SHA_BEFORE $(sha {tbl})")
+            chunks.append(f"cd /work/{mode}")
+            chunks.append(
+                f"/opt/riker/release/bin/rkr --show > /tmp/{mode}_{step}.log 2>&1"
+            )
+            chunks.append("echo RKR_EXIT:$?")
+            chunks.append(
+                f"cp /tmp/{mode}_{step}.log /work/logs/{mode}_{step}.log"
+            )
+            chunks.append(
+                f"if [ -f {tbl} ]; then cp {tbl} /work/comparisons/{mode}/{step}.tbl; fi"
+            )
+            chunks.append(f"echo TBLOUT_SHA_AFTER $(sha {tbl})")
+            chunks.append(f"echo ENDSTEP {mode} {step}")
+        chunks.append(f"echo CHECK_BEGIN {mode}")
+        chunks.append(f"cd /work/{mode}")
+        chunks.append(
+            f"/opt/riker/release/bin/rkr check --log artifact > /tmp/{mode}_check.log 2>&1 || true"
+        )
+        chunks.append(f"cp /tmp/{mode}_check.log /work/logs/{mode}_check.log")
+        chunks.append(f"echo CHECK_END {mode}")
+    return "\n".join(chunks) + "\n"
+
+
 def prepare_work(work: Path, data_root: Path) -> dict:
     if work.exists():
         shutil.rmtree(work)
@@ -408,6 +471,93 @@ echo UNAME:$(uname -a)
     return out
 
 
+def parse_same_container(text: str) -> dict:
+    steps: list[dict] = []
+    current: dict | None = None
+    for line in text.splitlines():
+        if line.startswith("STEP "):
+            _tag, mode, name = line.split()
+            current = {"mode": mode, "name": name}
+            steps.append(current)
+            continue
+        if line.startswith("ENDSTEP ") or current is None:
+            if line.startswith("ENDSTEP "):
+                current = None
+            continue
+        if line.startswith("CPU_MTIME "):
+            current["cpu_mtime"] = line.split(" ", 1)[1]
+        elif line.startswith("CPU_BYTES "):
+            current["cpu_bytes"] = line.split(" ", 1)[1]
+        elif line.startswith("RKR_EXIT:"):
+            current["exit_code"] = int(line.split(":", 1)[1])
+        elif line.startswith("RIKERFILE_SHA "):
+            current["rikerfile_sha256"] = line.split(" ", 1)[1]
+        elif line.startswith("FASTA_SHA "):
+            current["fasta_sha256"] = line.split(" ", 1)[1]
+        elif line.startswith("HMM_SHA "):
+            current["hmm_sha256"] = line.split(" ", 1)[1]
+        elif line.startswith("TBLOUT_SHA_BEFORE "):
+            current["tblout_sha256_before"] = line.split(" ", 1)[1]
+        elif line.startswith("TBLOUT_SHA_AFTER "):
+            current["tblout_sha256_after"] = line.split(" ", 1)[1]
+    return {"steps": steps}
+
+
+def run_same_container(work: Path) -> dict:
+    script = same_container_script()
+    proc = docker_run(IMAGE, work, script)
+    text = (proc.stdout or "") + (proc.stderr or "")
+    parsed = parse_same_container(text)
+    modes: dict[str, list[dict]] = {"hmmscan": [], "hmmsearch": []}
+    for row in parsed["steps"]:
+        mode = row["mode"]
+        name = row["name"]
+        log = work / "logs" / f"{mode}_{name}.log"
+        show = log.read_text(errors="replace") if log.is_file() else ""
+        exit_code = row.get("exit_code")
+        if exit_code is None:
+            exit_code = proc.returncode
+        fasta_key = "genome1" if name == "genome1" else "genome2"
+        tbl_name = "genome1.tbl" if name == "genome1" else "genome2.tbl"
+        tbl_path = work / mode / tbl_name
+        got = tbl_path.read_text(errors="replace") if tbl_path.is_file() else ""
+        stock_path = work / mode / f"stock_{fasta_key}.tbl"
+        stock = stock_path.read_text(errors="replace") if stock_path.is_file() else ""
+        check_path = work / "logs" / f"{mode}_check.log"
+        check = check_path.read_text(errors="replace") if check_path.is_file() else ""
+        mismatches = [
+            line for line in check.splitlines()
+            if "Content mismatch" in line or line.startswith("  expected ") or line.startswith("  observed ")
+            or "must run" in line
+        ]
+        modes[mode].append({
+            "name": name,
+            "accession": GENOMES[fasta_key]["accession"],
+            "n_proteins": N_PROTEINS,
+            "exit_code": exit_code,
+            "action": classify_trace(show, mode, exit_code),
+            "show_lines": trace_lines(show),
+            "hmmer_lines": hmmer_lines(show, mode),
+            "stdout_line_count": len(show.splitlines()),
+            "cpu_mtime": row.get("cpu_mtime"),
+            "cpu_bytes": row.get("cpu_bytes"),
+            "rikerfile_sha256": row.get("rikerfile_sha256"),
+            "fasta_sha256": row.get("fasta_sha256"),
+            "hmm_sha256": row.get("hmm_sha256"),
+            "tblout_sha256_before": row.get("tblout_sha256_before"),
+            "tblout_sha256_after": row.get("tblout_sha256_after"),
+            "tblout_unchanged_by_copy": row.get("tblout_sha256_before") == row.get("tblout_sha256_after"),
+            "output_nonempty": nonempty_body(got),
+            "match": bool(got) and bool(stock) and tables_match(got, stock, mode),
+            "same_container_check": mismatches if name == "replay" else None,
+        })
+    return {
+        "docker_exit": proc.returncode,
+        "wrapper_tail": text[-2000:],
+        "modes": modes,
+    }
+
+
 def _selfcheck() -> None:
     if classify_trace("hmmscan --cpu 32 --cut_ga …\n", "hmmscan", 0) != "executed":
         raise SystemExit("executed")
@@ -429,6 +579,23 @@ def _selfcheck() -> None:
         raise SystemExit("collection projection")
     if len(repro.MODELS) != 73:
         raise SystemExit(f"model count drifted: {len(repro.MODELS)}")
+    script = same_container_script()
+    if script.count("> /work/hmmscan/Rikerfile") != 2:
+        raise SystemExit("hmmscan Rikerfile writes")
+    if script.count("> /work/hmmsearch/Rikerfile") != 2:
+        raise SystemExit("hmmsearch Rikerfile writes")
+    if "\nrm " in script or script.startswith("rm ") or "truncate " in script:
+        raise SystemExit("sequence script mutates outputs")
+    sample = (
+        "STEP hmmscan replay\n"
+        "CPU_MTIME 10\nCPU_BYTES 0-13\n"
+        "RIKERFILE_SHA abc\nFASTA_SHA def\nHMM_SHA ghi\n"
+        "TBLOUT_SHA_BEFORE aaa\nRKR_EXIT:0\nTBLOUT_SHA_AFTER aaa\n"
+        "ENDSTEP hmmscan replay\n"
+    )
+    parsed = parse_same_container(sample)
+    if parsed["steps"][0]["cpu_bytes"] != "0-13" or parsed["steps"][0]["tblout_sha256_before"] != "aaa":
+        raise SystemExit(f"parse {parsed}")
     print("riker_docker selfcheck ok")
 
 
@@ -439,6 +606,7 @@ def main() -> None:
     parser.add_argument("--work", type=Path, default=Path("/tmp/acts-riker-docker"))
     parser.add_argument("--out", type=Path, default=ROOT / "results" / "baseline_riker_docker.json")
     parser.add_argument("--skip-build", action="store_true")
+    parser.add_argument("--same-container", action="store_true")
     args = parser.parse_args()
     if args.selfcheck:
         _selfcheck()
@@ -452,10 +620,15 @@ def main() -> None:
     provenance = image_provenance(args.work)
     probe = run_probe(args.work)
     modes: dict[str, list[dict]] = {}
+    same = None
     if probe["succeeded"]:
         run_stock(args.work)
-        for mode in ("hmmscan", "hmmsearch"):
-            modes[mode] = run_mode(args.work, mode)
+        if args.same_container:
+            same = run_same_container(args.work)
+            modes = same["modes"]
+        else:
+            for mode in ("hmmscan", "hmmsearch"):
+                modes[mode] = run_mode(args.work, mode)
     payload = {
         "label": "MEASURED",
         "question": (
@@ -465,7 +638,11 @@ def main() -> None:
         ),
         "decides": "executed/skipped/MATCH only; not wall time",
         "protocol": "pipeline/docs/BASELINES_PROTOCOL.md",
-        "addendum": "2026-10-09 Riker behavioral falsifier in Docker",
+        "addendum": (
+            "2026-10-09 replay path and one container"
+            if args.same_container
+            else "2026-10-09 Riker behavioral falsifier in Docker"
+        ),
         "environment": {
             "docker_platform": "linux/arm64",
             "cap_add": "SYS_PTRACE",
@@ -514,6 +691,8 @@ def main() -> None:
             "source": "BASELINES_PROTOCOL.md locked Riker section; replay is genome 2's same path",
         },
         "probe": probe,
+        "same_container": bool(args.same_container),
+        "same_container_docker_exit": None if same is None else same["docker_exit"],
         "modes": {},
     }
     for mode, steps in modes.items():

@@ -775,3 +775,93 @@ The replay did not skip even an unchanged path, so
 this projection is not an overestimate that assumes
 only new FASTAs rerun. It is still not an HMMER
 measurement of the 8.8%.
+
+## Addendum 2026-10-09 — replay path and one container (pre-registered)
+
+Written before the same-container Riker run and before
+the ProcessCache rerun. Locked sections are unchanged.
+The 2026-10-09 outcome addendum above stays as the
+record of the per-container run.
+
+### Harness audit
+
+`scripts/riker_docker.py` `run_mode` reads `genome2.tbl`
+for MATCH. It does not delete, move, truncate, or
+rewrite that file between genome 2 and the replay.
+Stock tables are `stock_genome1.tbl` and
+`stock_genome2.tbl`, written before the Riker steps.
+
+`scripts/baseline_smoke.py`, as run for ProcessCache
+SHA-256 on CARC (job 12866390), set `--tblout` to
+`{step}.tbl`. The replay command wrote
+`hmmsearch/replay.tbl`. Genome 1 wrote
+`hmmsearch/genome1.tbl`. ProcessCache's cache directory
+on that job holds three command hashes:
+`122050252428938832` contains `genome1.tbl`,
+`3926956631370802838` contains `genome2.tbl`,
+`2586913087825036546` contains `replay.tbl`.
+The replay was a different command. Its wall was
+5742.928985479055 s (`baseline_smoke_processcache_sha256.json`
+on the project path, hmmsearch replay). That number
+does not decide an identical-command replay.
+
+The same log's tail is ProcessCache's own panic in
+`background_thread_copying_outputs`
+(`execution_utils.rs`): several threads copy one
+`stdout_<pid>` and the first unlinks it. Cache entries
+for those three commands were still written. This
+rerun does not patch ProcessCache.
+
+### What Riker named
+
+On the saved `/tmp/acts-riker-docker` database from
+the per-container run, `rkr check --log artifact` in a
+new container reported one content mismatch per mode.
+
+hmmscan: `/sys/devices/system/cpu/online`, expected
+`mtime=1791595235.189925008 cached=false`, observed
+`mtime=1791596308.450330009 cached=false`.
+
+hmmsearch: the same path, expected
+`mtime=1791595236.931925009 cached=false`, observed
+`mtime=1791596465.559226013 cached=false`.
+
+`cat` of that file is `0-13\n`. Three `stat` calls
+inside one container, 1.2 s apart, shared mtime
+`1791596366.812182903`. A later container had a
+different mtime. Riker's fingerprint of an uncached
+file is the mtime. The per-step `docker run` is what
+changed it. HMMER's `--cpu` path reads the file; the
+bytes did not change.
+
+### Predictions for the rerun
+
+Riker, one container, same subset as the Docker
+addendum (73 models, first 300 proteins, genome 2's
+Rikerfile left untouched on the replay):
+
+| Step | Prediction |
+|------|------------|
+| genome 1 | executed |
+| genome 2 | executed |
+| replay | skipped |
+
+`/sys/devices/system/cpu/online` bytes stay `0-13`
+and its mtime is the same on all three steps.
+Classification is still `rkr --show`. If the replay
+prints `hmmscan` or `hmmsearch`, the same-container
+`rkr check --log artifact` is the record of whichever
+input changed. That result stays specific to the
+named input.
+
+ProcessCache SHA-256, CARC, hmmsearch only, fresh
+work directory. Replay uses genome 1's argv,
+including genome 1's `--tblout`. A copy for MATCH
+is taken with `snapshot_output`, which refuses to
+return if the source bytes or mtime change.
+Prediction: genome 2 reruns; the replay skips under
+the locked wall-time rule. hmmscan is omitted:
+job 12866390 exited in about 15 s with
+`use hmmpress first`, and MATCH was false. Pressing
+the shared `Pfam-A.hmm` (2,246,909,846 bytes, no
+`.h3m` siblings) would change a file other jobs read.
