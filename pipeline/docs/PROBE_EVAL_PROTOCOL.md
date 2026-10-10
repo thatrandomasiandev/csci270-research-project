@@ -487,3 +487,81 @@ F6-file.
 (git, host, Python) is stored on the JSON. The outcome addendum is
 written after the run and is labelled as such.
 
+---
+
+## Addendum 2026-10-10 — outcome, after the run
+
+Written **after** `results/probe_eval_n8.json` (git `9e978af`,
+`git_dirty` false, host `Joshuas-MacBook-Pro-3.local`, Python 3.11.9,
+finished `2026-10-10T20:42:27Z`). The pre-registration above is
+unchanged. This is the comparison to that projection.
+
+**In-scope unsafe-ship at `probe_n = 8`, singleton, is 2/56 with full
+verification and 4/56 with the deployed audit.** False-refuse is 0/5
+on both columns. The locked 224 is not recomputed.
+
+| Column | Canonical in-scope | Overall | F6-env | F6-file | False-refuse |
+|--------|--------------------|---------|--------|---------|--------------|
+| `--verify full` | **2/56** | 10/72 | 8/8 | 0/8 | 0/5 |
+| `--verify audit`, *q* = 0.02 | **4/56** | 20/72 | 8/8 | 8/8 | 0/5 |
+
+JSON `report.in_scope_*` still drops only F6-env, so it reads 2/64 and
+12/64. Those are not the canonical fractions. The 12/64 counts the
+eight Mac F6-file cells.
+
+Full unsafe-ship cells: vcf F4 at *p* = 0.1 and *p* = 0.01. Audit adds
+vcf F3 at *p* = 0.01 and fasta F4 at *p* = 0.001. Every one of those
+four cells SHIPed with `subset_mode = singleton`, `probe_n = 8`, and
+`tool_calls = 12`.
+
+### Against the projection
+
+The formula was a probability of an empty probe, not a promised
+numerator. This seed’s unsafe ships are inside the classes that
+projection named.
+
+- **F4, both columns.** Predicted when the probe is empty. Measured on
+  both columns for vcf at *p* = 0.1 and *p* = 0.01. Full verification
+  does not unsafe-ship fasta F4 (input 1 `REFUSE_MATCH` at *p* ≤ 0.01,
+  `REFUSE_AMBIGUOUS` at *p* ≥ 0.1). The audit unsafe-ships fasta F4
+  only at *p* = 0.001; at *p* = 0.01 the audit refuses. vcf F4 at
+  *p* = 0.001 SHIPs on both columns and input 3 still matches, so that
+  cell is not an unsafe ship. vcf F4 at *p* = 1 widens (`tool_calls` =
+  18) and is not an unsafe ship.
+- **F3, full column.** Predicted unsafe-ship when the probe is empty
+  and input 3 is live, because the locked sentence says input 2 MATCH
+  passes. Measured **0/8**. vcf at *p* = 0.01 and *p* = 0.001 SHIPed
+  the probe (`tool_calls` = 12, singleton) and then input 2 returned
+  `REFUSE_MATCH`. That is the miss-batch *N* ≠ file *N* pattern already
+  in `probe_eval.md`, not the locked sentence.
+- **F3, audit column.** Measured **1/8**: vcf *p* = 0.01. The other
+  empty-probe F3 cells SHIP and input 3 matches.
+- **F1 and F7.** Full column: 0 unsafe-ship. MATCH caught every cell
+  the probe did not. Audit column: 0 unsafe-ship. Where the probe
+  missed, the audit refused or input 3 matched. The projection allowed
+  an audit miss to become an unsafe ship; this draw did not produce one.
+- **F2, F5, F8.** 0 unsafe-ship on both columns. Not predicted as
+  determined misses.
+- **F6-env.** 8/8 both columns. As predicted.
+- **F6-file.** Audit 8/8 unsafe-ship, as predicted for this Mac (no
+  tracing). Full **0/8**: input 1 `REFUSE_MATCH` (“reassembled body is
+  not MATCH to a full run”). The prediction of 8/8 on the full column
+  is wrong.
+- **False-refuse 0/5, and no in-scope unsafe ship at *p* = 1.** As
+  predicted. Every control SHIPed with `tool_calls` = 12,
+  `subset_mode` = singleton, `probe_n` = 8, which is the priced list.
+
+### Refuse contracts are stamped `batched`
+
+`schedule.subset_mode_mismatches` lists early refuses whose saved
+contract says `subset_mode = batched`. `RecordMemo` calls
+`prepare_contract` without a mode, so the default is batched. The
+runner’s wrapper forces `singleton` inside `infer_contract`. On a
+refuse, `prepare_contract` then writes that default onto the contract.
+SHIP contracts are not rewritten: every unsafe-ship cell and every
+control stores `singleton` and `probe_n = 8`. vcf F3 at *p* = 1 metered
+11 calls, which is two determinism runs, one shuffle, and eight
+singletons. A batched stop on that always-live fault fails the first
+half and meters about four calls. The stamp on refuses is not the
+schedule that ran. `acts/` was not changed.
+
