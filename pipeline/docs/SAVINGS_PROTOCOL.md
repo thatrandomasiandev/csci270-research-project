@@ -925,3 +925,75 @@ with `--nice=10000`.
 `squeue --start -j 12864755,12864756` gave no start time for either
 job. Another pending job on the account, 12850670, was estimated at
 2026-10-11T04:28:41. The node type was not changed.
+
+---
+
+## Addendum 2026-10-10 — hmmsearch stock completion outcome
+
+Locked sections above are unchanged. This records the pre-registered
+stock completion from the 2026-10-08 addendum after all 58 tasks
+finished. `scripts/analyze_savings_measured.py` was not edited.
+
+### Jobs
+
+`sacct` (read-only; no job was submitted or changed):
+
+| Job | Name | State | Exit | Elapsed | Node |
+|-----|------|-------|------|---------|------|
+| 12862906 | `stock_hmm_build` | COMPLETED | 0:0 | 00:01:14 | b22-03 |
+| 12862907, tasks 0–57 | `stock_hmm_measure` | COMPLETED | 0:0 | 00:07:25–00:09:03 | b22-03, b22-06, b22-11, b22-13, b22-24 |
+
+Build 12862906 ran 2026-10-09T16:16:59–16:18:13 on the scheduler clock.
+The build log prints `2026-10-09T16:17:02-07:00`, `CONSTRAINT=epyc-7542`,
+and `Model name: AMD EPYC 7542 32-Core Processor` (2 sockets, 64 cores
+online). Task 12862907_0 ended 2026-10-09T19:37:55 scheduler time.
+Task 12862907_57 ended 2026-10-10T11:22:12 scheduler time. Those ends
+match the JSON `finished_utc` values 2026-10-10T02:37:55Z and
+2026-10-10T18:22:12Z. `sacct` AllocCPUS is 64 and ReqCPUS is 32, the
+same pair as the savings jobs 12739228 and 12739230. Each measurement
+argv is `--cpu 32 --noali -Z 1000000 --domZ 1000000 --tblout`.
+
+### Committed measurements
+
+58 JSON files under `results/hmmsearch_stock/`. Collection A has 24
+and collection B has 34. Each file is `kind = hmmsearch_stock_completion`,
+`returncode` 0, and its accession equals the row in
+`results/hmmsearch_stock_tasks.json`. Each `provenance.git` is
+`465edf548ca68e3e6a72824b8bac056b2c5300c1` with `git_dirty` false,
+Python 3.11.9, and HMMER 3.4. `slurm_array_task_id` is 0 through 57.
+The `.tbl` files stay on the CARC tree: 58 files, 272,346,889 bytes,
+4,242,261–5,120,082 bytes each.
+
+Completed stock wall in those JSONs is 439.980–536.803 s.
+
+### Measured analyzer
+
+Unchanged command:
+
+```bash
+python3 pipeline/scripts/analyze_savings_measured.py \
+  --jobs pipeline/results/savings_20261006/A_hmmsearch.json \
+         pipeline/results/savings_20261006/B_hmmsearch.json \
+  --stock-dir pipeline/results/hmmsearch_stock \
+  --out pipeline/results/savings_measured_hmmsearch.json
+```
+
+It read 58 stock files. A is 6 originally measured genomes plus 24
+completions (30). B is 6 plus 34 (40). Both rows set `stock_model` to
+`fully measured; no fitted stock times`. Singleton_8 `P` is
+1595.4474956459528 s, the same probe term as the locked analyzer.
+
+| Collection | Quantity | Locked imputation | Post-hoc correction | Fully measured |
+|------------|----------|------------------:|--------------------:|---------------:|
+| A | without P | 2.740193934015858× | 1.8561541144638773× | 2.036508804084894× |
+| A | with P | 2.23308564806322× | 1.5126488173514772× | 1.6596265417942682× |
+| B | without P | 6.846592216443059× | 4.4038095881881× | 4.936408335087653× |
+| B | with P | 4.900397318731101× | 3.1519938702250814× | 3.5331974513289715× |
+
+Rounded measured pair: 2.0365× (1.6596× with P) and 4.9364× (3.5332×
+with P). The locked pair is the 2.740× / 6.847× imputation. The
+post-hoc pair is the 1.856× / 4.404× correction.
+
+Per the 2026-10-08 pre-registration, this fully measured pair is the
+paper's RQ2 number. No threshold is applied. The paper source comments
+are not changed in this addendum.

@@ -1,0 +1,56 @@
+{
+  "label": "PRE-REGISTERED fully measured cumulative savings",
+  "mode": "hmmsearch",
+  "post_hoc": false,
+  "inputs": {
+    "jobs": [
+      "pipeline/results/savings_20261006/A_hmmsearch.json",
+      "pipeline/results/savings_20261006/B_hmmsearch.json"
+    ],
+    "stock_dir": "pipeline/results/hmmsearch_stock",
+    "kind": "hmmsearch_stock_completion",
+    "n_stock_files": 58
+  },
+  "collections": {
+    "A": {
+      "collection": "A",
+      "n_genomes": 30,
+      "n_original_stock": 6,
+      "n_completed_stock": 24,
+      "stock_wall_s": 14307.820470458362,
+      "cached_wall_s": 7025.660994815873,
+      "probe_wall_s": 1595.4474956459528,
+      "cum_speedup_wall": 2.036508804084894,
+      "cum_speedup_wall_with_P": 1.6596265417942682,
+      "stock_model": "fully measured; no fitted stock times",
+      "mode": "hmmsearch",
+      "post_hoc": false
+    },
+    "B": {
+      "collection": "B",
+      "n_genomes": 40,
+      "n_original_stock": 6,
+      "n_completed_stock": 34,
+      "stock_wall_s": 19830.723422074458,
+      "cached_wall_s": 4017.2372453710996,
+      "probe_wall_s": 1595.4474956459528,
+      "cum_speedup_wall": 4.936408335087653,
+      "cum_speedup_wall_with_P": 3.5331974513289715,
+      "stock_model": "fully measured; no fitted stock times",
+      "mode": "hmmsearch",
+      "post_hoc": false
+    }
+  },
+  "provenance": {
+    "git": "d1c401dbea5ac7836d30ee693406880bcb413022",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {
+      "A_hmmsearch": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute.",
+      "B_hmmsearch": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute."
+    },
+    "finished_utc": "2026-10-10T21:14:42.836150+00:00"
+  }
+}

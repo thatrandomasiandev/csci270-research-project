@@ -1,0 +1,45 @@
+{
+  "kind": "hmmsearch_stock_completion",
+  "collection": "B",
+  "position": 15,
+  "accession": "GCF_046272065.1",
+  "input_path": "data/recurrence/B/GCF_046272065.1_protein.faa.gz",
+  "argv": [
+    "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/hmmer-3.4/bin/hmmsearch",
+    "--cpu",
+    "32",
+    "--noali",
+    "-Z",
+    "1000000",
+    "--domZ",
+    "1000000",
+    "--tblout",
+    "/tmp/SLURM_12895433/acts_stock_12895433_34/B_15.tbl",
+    "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/pfam/Pfam-A.hmm",
+    "/tmp/SLURM_12895433/acts_stock_12895433_34/B_15.faa"
+  ],
+  "returncode": 0,
+  "stock_wall_s": 513.6638642929029,
+  "stock_cpu_s": 1633.4572640000001,
+  "tblout_bytes": 4600984,
+  "hmmer": "# hmmsearch :: search profile(s) against a sequence database | # HMMER 3.4 (Aug 2023); http://hmmer.org/ | # Copyright (C) 2023 Howard Hughes Medical Institute.",
+  "pfam_sha256": "4b0da6399b97d2b23329de82190b2e5705bde1dea4cb2d028a52712d5966739e",
+  "cpu": 32,
+  "host": "b22-13.hpc.usc.edu",
+  "slurm_job_id": "12895433",
+  "slurm_array_task_id": "34",
+  "stderr_tail": "",
+  "provenance": {
+    "git": "465edf548ca68e3e6a72824b8bac056b2c5300c1",
+    "git_dirty": false,
+    "host": "b22-13.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "versions": {
+      "hmmer": "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/hmmer-3.4/bin/hmmsearch",
+      "pfam": "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/pfam/Pfam-A.hmm"
+    },
+    "finished_utc": "2026-10-10T17:30:12.507699+00:00"
+  },
+  "tblout": "/project2/biyik_1165/jjt_373/csci270-star/acts-hmmsearch-stock-20261008/results/hmmsearch_stock/B_15.tbl"
+}
