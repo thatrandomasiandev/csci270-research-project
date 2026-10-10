@@ -1799,3 +1799,27 @@ first-run cost that applies to genome 2. Secondary
 PROJECTED factors stay 1.088, 2.0105, and 1.4355.
 The hmmscan ≥60 s estimate remains the 500-protein
 record, where stock mean wall is `102.223317523` s.
+
+---
+
+## Addendum 2026-10-10 — rebase map for provenance hashes
+
+Written after `git rebase origin/main`. The result
+files were not edited. Their `provenance.git` fields
+name the commits that were HEAD when each command
+ran. Rebase onto `ca3e876` rewrote those commits, so
+the recorded hashes are not ancestors of this main.
+The files this session wrote are byte-identical in
+each pair. Nothing else in those commits was a
+baseline measurement.
+
+| Ran at | Same session files on this main |
+|--------|----------------------------------|
+| `e3cf4f7ae61ff04bc6bf05dd8c854e205540f53e` | `b70fc0d1d88077ac6a70db8ed2c406b3ecbc7e4f` |
+| `76a1c4f8ee0a2d21734933c55e86ddad3bfcca68` | `ffac8b62172572b9b191a84f54c084d96d4d5be4` |
+| `f014d4b6e74530caf7baa636342044d128d36fea` | `8f057749ebe6865d71ff4a67d6355df46e568f20` |
+| `b20f4143ab3dc1fa0efb821f5dda70a6dee9d14a` | `c3bdfa9445a4d932cc540d0eecdbd6b2be4d1eb7` |
+| `1f496edfabefb4d7f7bc19f25c58e182934fab64` | `682440f78be436c242311770b35cacf801005212` |
+| `4b8a7badb8c47228aed45a19ba1fdaa93d774f19` | `22a7f37b7f0f3e4ac6a6112dd65a37788fe2d9a7` |
+| `eab4ef2615fb661f134dfdaf3bc7e517521fcc17` | `85f21ed345189746753f4eeaee771fafbdf2939d` |
+| `df71542747c0c6aa2c8239901da125f0c629beeb` | `bea4e1d39ed3848e6d3fbfdfd53b2f5b7f322653` |
