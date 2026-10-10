@@ -320,7 +320,7 @@ def sequence_script(column: str) -> str:
             lines.append('echo "ACTS_HMM_SHA $(sha256sum /data/subset.hmm | awk \'{print $1}\')"')
             lines.append(
                 f'if [ -f {plan["tblout"]} ]; then echo "ACTS_TBLOUT_BEFORE $(sha256sum {plan["tblout"]} | awk \'{{print $1}}\')"; '
-                f'echo "ACTS_TBLOUT_MTIME_BEFORE $(stat -c %Y.%N {plan["tblout"]})"; '
+                f'echo "ACTS_TBLOUT_MTIME_BEFORE $(stat -c %y {plan["tblout"]})"; '
                 f'else echo ACTS_TBLOUT_BEFORE absent; echo ACTS_TBLOUT_MTIME_BEFORE absent; fi'
             )
             if column.startswith("incr"):
@@ -350,7 +350,7 @@ def sequence_script(column: str) -> str:
             lines.append('echo "ACTS_EXIT $?"')
             lines.append(
                 f'if [ -f {plan["tblout"]} ]; then echo "ACTS_TBLOUT_AFTER $(sha256sum {plan["tblout"]} | awk \'{{print $1}}\')"; '
-                f'echo "ACTS_TBLOUT_MTIME_AFTER $(stat -c %Y.%N {plan["tblout"]})"; '
+                f'echo "ACTS_TBLOUT_MTIME_AFTER $(stat -c %y {plan["tblout"]})"; '
                 f'cp -a {plan["tblout"]} /work/out/{column}/{mode}_{step}.tbl; '
                 f'else echo ACTS_TBLOUT_AFTER absent; echo ACTS_TBLOUT_MTIME_AFTER absent; fi'
             )
@@ -368,7 +368,9 @@ def sequence_script(column: str) -> str:
                     'tail -c +"$((debug_before + 1))" /root/incr/debug_log.txt > /tmp/incr_delta.txt; '
                     'else : > /tmp/incr_delta.txt; fi'
                 )
-                lines.append("cp -a /root/incr/debug_log.txt /work/out/incr_debug_log.txt 2>/dev/null || true")
+                lines.append(
+                    f"cp -a /root/incr/debug_log.txt /work/out/{column}_debug_log.txt 2>/dev/null || true"
+                )
                 lines.append(
                     f'grep -F -m 1 -e "Cache valid:" -e "Skip the execution!" /tmp/incr_delta.txt > {marker} 2>/dev/null || : > {marker}'
                 )

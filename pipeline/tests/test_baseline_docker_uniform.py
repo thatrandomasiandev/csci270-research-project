@@ -65,6 +65,15 @@ class UniformBehavioralGuardTests(unittest.TestCase):
         self.assertIn("bae684b455a4d8fa010fc04b471f5ca9b408f6a8", text)
         self.assertIn("unshare --help", text)
 
+    def test_mtime_probe_uses_gnu_stat_human_time(self) -> None:
+        script = uniform.sequence_script("incr_default")
+        self.assertIn("stat -c %y ", script)
+        self.assertNotIn("stat -c %Y.%N", script)
+        self.assertIn("/work/out/incr_default_debug_log.txt", script)
+        ann = uniform.sequence_script("incr_annotations")
+        self.assertIn("/work/out/incr_annotations_debug_log.txt", ann)
+        self.assertNotIn("/work/out/incr_debug_log.txt", ann)
+
     def test_projections_match_the_paper_factors(self) -> None:
         self.assertEqual(uniform.project_hours("processcache", "hmmsearch")["hours_per_genome"], "0.29575")
         self.assertEqual(uniform.project_hours("incr_default", "hmmsearch")["hours_per_genome"], "0.3518375")
