@@ -1,0 +1,29 @@
+=== host ===
+b22-24.hpc.usc.edu
+2026-10-10T09:53:09-07:00
+CPU(s):               128
+On-line CPU(s) list:  0-63
+Off-line CPU(s) list: 64-127
+Model name:           AMD EPYC 7542 32-Core Processor
+NUMA node0 CPU(s):    0-31
+NUMA node1 CPU(s):    32-63
+Python 3.11.9
+diamond version 2.2.5
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-diamond-e85f24d4dcfe857d2409a3bb1cb44c07900c808b
+OLD=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz
+NEW=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz
+QUERIES=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz
+DIAMOND=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond
+ISEQ=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search
+Filesystem                         Size  Used Avail Use% Mounted on
+tmpfs                              126G  5.9G  120G   5% /
+pool1.vast.carc.usc.edu:/vastdata   14T   14T  380G  98% /project2
+D0 makedb and letters
+{"old_equal": true, "new_equal": true}
+D1 churn
+{"c": 0.01778382208883056, "c_length": 0.01940682164632232, "n_new": 575748}
+D2 probe
+SHIP decomposition and normalizers fitted
+D2n probe
+D2n REFUSE
+D3 timing
