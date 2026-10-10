@@ -1,56 +1,31 @@
-%% ACTS laboratory draft. Not the CSCI 270 STAR write-up.
+%% Laboratory draft for a USENIX ATC submission.
 %% Every measured or projected number has a % source comment on its line.
 %% Unmeasured results are \pending. No placeholder numbers.
-\documentclass[sigconf]{acmart}
+%% Double-blind: the rendered paper names no author and no institution.
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix2019_v3}
 
 \usepackage{booktabs}
-\usepackage{xcolor}
 \usepackage{amsmath}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
 \usepgfplotslibrary{groupplots}
 \usetikzlibrary{arrows.meta,positioning,calc}
 
-\setcopyright{none}
-\renewcommand{\footnotetextcopyrightpermission}[1]{}
-\settopmatter{printacmref=true}
-
 \newcommand{\pending}[1]{\textcolor{red}{[PENDING: #1]}}
 
-\acmConference[Draft]{Laboratory draft; not submitted}{2026}{}
-\acmYear{2026}
-\copyrightyear{2026}
+\begin{document}
+
+\date{}
 
 \title{Reference-Side Contract Inference for Unmodified Scientific CLIs}
 
-\author{Joshua Terranova}
-\affiliation{%
-  \institution{University of Southern California}
-  \city{Los Angeles}
-  \state{California}
-  \country{USA}}
+\author{%
+{\rm Anonymous Authors}\\
+Paper under double-blind review
+}
 
-\renewcommand{\shortauthors}{Terranova}
-
-\begin{CCSXML}
-<ccs2012>
-   <concept>
-       <concept_id>10011007.10011006.10011072</concept_id>
-       <concept_desc>Software and its engineering~Software performance</concept_desc>
-       <concept_significance>500</concept_significance>
-   </concept>
-   <concept>
-       <concept_id>10010405.10010444.10010449</concept_id>
-       <concept_desc>Applied computing~Bioinformatics</concept_desc>
-       <concept_significance>300</concept_significance>
-   </concept>
-</ccs2012>
-\end{CCSXML}
-
-\ccsdesc[500]{Software and its engineering~Software performance}
-\ccsdesc[300]{Applied computing~Bioinformatics}
-
-\keywords{incremental computation, black-box inference, scientific CLIs, HMMER, reference databases}
+\maketitle
 
 \begin{abstract}
 A whole-command cache misses when a reference database is replaced, because the reference bytes changed.
@@ -80,8 +55,7 @@ A timed Pfam 38.1 to 38.2 re-annotation, a DIAMOND comparison, and whole-command
 \pending{not yet measured}.
 \end{abstract}
 
-\begin{document}
-\maketitle
+\noindent\textbf{Keywords:} incremental computation, black-box inference, scientific CLIs, HMMER, reference databases
 
 \section{Introduction}
 \label{sec:intro}
@@ -166,7 +140,7 @@ Startup $a$ does not shrink with $n$.
 The per-record term is $b$.
 A wrapper that parses, hashes, and splices adds $w$ on a cached run.
 A one-time probe costs $P$.
-The screen that chose the workload fitted~\eqref{eq:linear} on an exclusive \texttt{epyc-7542} node for Pfam 38.2 and
+The screen that chose the workload fitted~\eqref{eq:linear} on an exclusive node of a university cluster (AMD EPYC 7542) for Pfam 38.2 and
 $N = 4192$
 % source: pipeline/results/headline_screen.json:N
 proteins (Table~\ref{tab:amdahl}).
@@ -241,7 +215,6 @@ Safety probes are the gate.
 \begin{figure*}[t]
 \centering
 \input{figures/fig1_architecture.tex}
-\Description{Two rows. The first row is probe and infer: record-side key, reference-side family fit, and safety probes feed a contract, or a refusal that runs the tool once. The second row is every later run: diff entries, run the tool on changed entries, merge and rescale, with a cache and a verify step.}
 \caption{Two phases.
 Teal is reference-side inference.
 Orange is the rescaling merge.
@@ -283,7 +256,6 @@ Figure~\ref{fig:refmech} is the reference-side mechanism.
 \begin{figure*}[t]
 \centering
 \input{figures/fig2_mechanism.tex}
-\Description{Panel A fits a contract by running the tool on the full reference and on two halves, refusing unless the halves merge and each numeric column matches one closed-family member after a length tie-break. Panel B hashes a new release into unchanged, changed, and removed entries, runs the tool on the changed entries, and rescales.}
 \caption{Reference-side inference and reuse.
 (A)~The primary probe runs the same records on $R$, $R_1$, and $R_2$.
 Decomposition fails closed.
@@ -601,7 +573,8 @@ hits on HG00099.
 
 Each research question uses committed results or is marked pending.
 Anything computed after seeing a fit error is labelled post-hoc in the text.
-Hmmscan record-side savings are not the pre-registered primary and are not reported here.
+Hmmscan record-side savings were secondary before the runs.
+They are reported in \S\ref{sec:rq2} as POST-HOC and are not the pre-registered primary.
 
 \subsection{RQ1: Safety}
 \label{sec:rq1}
@@ -674,7 +647,7 @@ $30$
 genomes) and B (O157:H7,
 $40$
 % source: pipeline/results/savings_summary.json jobs B n_genomes=40, n_complete=40
-genomes), on exclusive \texttt{epyc-7542} nodes.
+genomes), on exclusive nodes of a university cluster (AMD EPYC 7542).
 Jobs
 $12739228$
 % source: pipeline/results/savings_20261006/A_hmmsearch.json host.slurm_job_id
@@ -800,10 +773,50 @@ The protocol's locked comparison is the imputed total.
 Both columns are reported because the imputation's error is measured.
 Figure~\ref{fig:savings} plots only measured stock walls, paired with the cached wall at the same genomes, and the four cumulative ratios.
 
+\paragraph{POST-HOC: hmmscan.}
+hmmscan was secondary before the runs.
+It is not the pre-registered primary.
+The locked cumulative wall speedups, with no probe cost, are
+$3.568\times$
+% source: pipeline/results/savings_summary.json jobs A mode=hmmscan cumulative.cum_speedup_wall=3.5679320031742154; paper_uses=false
+and
+$19.468\times$.
+% source: pipeline/results/savings_summary.json jobs B mode=hmmscan cumulative.cum_speedup_wall=19.46751515526194; paper_uses=false
+The same correction, computed after seeing the fit error, lowers them to
+$2.95\times$
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall=2.948637587003392
+and
+$16.18\times$.
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall=16.181558210274485
+Table~\ref{tab:hmmscan} is that pair.
+The correction uses the formula in \texttt{savings\_sensitivity\_hmmscan.json}: unsampled stock is the fitted wall times the sampled measured-over-fitted ratio, sampled stock stays measured, and cached wall is unchanged.
+The assumption, stated there and not measured on the unsampled genomes, is that the sampled ratio represents those genomes.
+
+\begin{table}[t]
+\caption{POST-HOC cumulative hmmscan wall speedup, no probe cost.
+hmmscan was secondary before the runs.
+Locked and corrected follow Table~\ref{tab:savings}.}
+\label{tab:hmmscan}
+\small
+\begin{tabular}{@{}llr@{}}
+\toprule
+& & No $P$ \\
+\midrule
+A & Locked & $3.568\times$ \\
+% source: pipeline/results/savings_summary.json jobs A mode=hmmscan cumulative.cum_speedup_wall=3.5679320031742154
+A & Corrected & $2.95\times$ \\
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.A.cum_speedup_wall=2.948637587003392
+B & Locked & $19.468\times$ \\
+% source: pipeline/results/savings_summary.json jobs B mode=hmmscan cumulative.cum_speedup_wall=19.46751515526194
+B & Corrected & $16.18\times$ \\
+% source: pipeline/results/savings_sensitivity_hmmscan.json collections.B.cum_speedup_wall=16.181558210274485
+\bottomrule
+\end{tabular}
+\end{table}
+
 \begin{figure*}[t]
 \centering
 \input{figures/fig3_savings.tex}
-\Description{Left: measured stock wall and cached wall at the six sampled genomes of collections A and B. Right: cumulative wall speedup, locked and post-hoc corrected, with and without probe cost.}
 \caption{Record-side hmmsearch savings.
 Left: stock wall only where it was measured (six genomes per collection), with the cached wall at those genomes.
 Unsampled stock is omitted because the locked total imputes it.
@@ -865,7 +878,6 @@ $1.402$
 \begin{figure}[t]
 \centering
 \input{figures/fig4_residuals.tex}
-\Description{Log-scale bars of the maximum absolute residual on tblout columns 4 and 7. Entry count is far below total entry length, and only entry count fits every row.}
 \caption{T1 tie-break on R2p tblout.
 Maximum absolute residual after rescaling.
 Entry count fits every row.
@@ -1165,7 +1177,7 @@ The error bound~\eqref{eq:bound} is a printed-precision relation under a re-prin
 It is not bit identity of the tool's internal score, and a column whose law is outside the four members refuses rather than approximating.
 Parsers are per format.
 A reference format with no parser refuses; the fitter does not invent a length.
-All wall-clock numbers in the committed timing files used above were taken on CARC exclusive nodes of class \texttt{epyc-7542}, except the probe-evaluation counts, which are a macOS measurement of decisions rather than of speed.
+All wall-clock numbers in the committed timing files used above were taken on exclusive nodes of a university cluster (AMD EPYC 7542), except the probe-evaluation counts, which are a macOS measurement of decisions rather than of speed.
 A speedup for the 38.1$\to$38.2 release is not among those numbers.
 
 \section{Conclusion}
@@ -1175,7 +1187,13 @@ On \texttt{hmmscan --cut\_ga} it ships entry count and per-key row count; withou
 Record-side reuse with a copy-aware key is the secondary result, and its locked speedups are reported next to the post-hoc correction the fit error requires.
 The release-level speedup, the second search tool, and the whole-command baselines remain to be measured.
 
-\bibliographystyle{ACM-Reference-Format}
+\section*{Availability}
+
+An anonymized artifact accompanies this submission.
+It contains the fitter and the result files that are the sources of the measured numbers.
+The repository URL is omitted for double-blind review.
+
+\bibliographystyle{plain}
 \bibliography{refs}
 
 \end{document}
