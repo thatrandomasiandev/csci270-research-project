@@ -679,3 +679,18 @@ already written in `pipeline/jobs/baseline_build.job`:
 
 Same commit. Same `make release` target. `_GNU_SOURCE` is
 what exposes `struct __ptrace_syscall_info` in glibc.
+
+That g++ is Ubuntu 11.4.0. It rejects
+`AccessFlags::operator+` as a hard error (`call to
+non-'constexpr' function`). `-fpermissive` does not
+downgrade it. `g++-12` 12.3.0 fails the same way. No
+ptrace probe and no HMMER command ran.
+
+Ubuntu clang 15.0.7 accepts `std::source_location`. It
+prints the same `[-Winvalid-constexpr]` diagnostic the
+CARC log shows as a warning, except clang 15 makes that
+diagnostic an error. The release build passes
+`-Wno-error=invalid-constexpr`, which restores the
+warning, and does not edit Riker. Still before the probe:
+
+`make release CC=clang-15 CXX="clang++-15 -Wno-error=invalid-constexpr -fuse-ld=lld"`

@@ -446,7 +446,14 @@ def main() -> None:
             "riker_commit_expected": RIKER_COMMIT,
             "rkr_file": provenance.get("FILE"),
             "compiler": provenance.get("COMPILER"),
-            "compiler_note": "make release CC=gcc CXX='g++ -D_GNU_SOURCE' after Ubuntu 22.04 clang++ rejected std::source_location",
+            "compiler_note": (
+                "make release CC=clang-15 "
+                "CXX='clang++-15 -Wno-error=invalid-constexpr -fuse-ld=lld'. "
+                "Ubuntu 22.04 clang++ lacks std::source_location. "
+                "g++ 11.4 and g++-12 error on AccessFlags::operator+. "
+                "-Wno-error=invalid-constexpr restores the warning in the CARC log. "
+                "Riker source is not edited."
+            ),
             "hmmer_tarball_sha256": provenance.get("HMMER_SHA"),
             "hmmer_version_line": provenance.get("HMMER_VER"),
         },
