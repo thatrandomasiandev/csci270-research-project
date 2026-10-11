@@ -1,0 +1,8 @@
+# Display-only identity map. GitHub applies this to authors and
+# Co-Authored-By trailers when it builds the contributor list.
+# https://git-scm.com/docs/gitmailmap
+
+# Fold Claude co-author trailers into the repository owner.
+Joshua Terranova <terranovajoshua1@gmail.com> Claude Opus 5.5 <noreply@anthropic.com>
+Joshua Terranova <terranovajoshua1@gmail.com> Claude <noreply@anthropic.com>
+Joshua Terranova <terranovajoshua1@gmail.com> <noreply@anthropic.com>
