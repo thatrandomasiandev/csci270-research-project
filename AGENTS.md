@@ -29,6 +29,38 @@ Every ACTS design, critique or proposal is judged as an OSDI/SOSP/PLDI PC chair 
 
 Required output shape when asked for a review: (1) cost decomposition + Amdahl target, (2) core abstraction + ≥3 domains split TESTED / HYPOTHESIZED, (3) formal model + invariants, (4) algorithm with widen-vs-refuse handling, (5) red-team + kill experiments + ship controls.
 
+## Test design standard (2026-10-12; applies to every experiment)
+
+Goal: the smoothest path forward and the most reliable data. A KILL must
+mean the method failed, never that the test was blind. Four of the first
+five knob/DIAMOND runs died on test design (empty sample, comparison rule
+blind to count columns, a gate across independent questions). Do not repeat that.
+
+1. **Semantics review first (no runs).** Read the tool's docs/source for
+   every behavior that could make a check fail for a reason unrelated to
+   the claim (nondeterminism, size-dependent auto settings, heuristics that
+   read the database, tie order, print rounding, count/index columns).
+   Write each one down with how it would show up and how the pilot detects it.
+2. **Pilot before lock.** Run the whole design once on disjoint data (own
+   seed, never reused). The pilot must show: the test can observe the
+   effect (rows exist, power floor met), the parser/criteria pass a
+   known-good case and fail a known-bad case, and the run completes end to
+   end. The pilot may change the design; it is reported as a pilot, not a result.
+3. **Lock, then measure.** Pre-register after the pilot, with the pilot's
+   findings cited. The measured run uses a fresh sample.
+4. **Independent questions run independently.** Gate a step only on a true
+   logical dependency. Exactness is never gated on inference, or vice versa.
+5. **Every acceptance rule has controls.** A positive control that must
+   pass and a negative control that must fail, both checked in the pilot.
+6. **Power and determinism are checked, not assumed.** Stock-vs-stock
+   identity first; a locked minimum count of observable rows; INCONCLUSIVE
+   (not KILL) when power is missing.
+7. **Diagnose every failure.** A failing check reports difference classes
+   (value-only / different row / missing / extra / order) so the next step
+   is obvious from the result file.
+8. **No third redesign of the same question.** After two locked failures,
+   record the limitation and move on.
+
 ## Session protocol
 
 1. Read [`STATUS.md`](STATUS.md) and [`star/docs/SCOPE.md`](star/docs/SCOPE.md) (create SCOPE if missing).

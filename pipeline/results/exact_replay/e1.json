@@ -1,0 +1,44 @@
+{
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "z_new": 30134,
+  "host": "claude",
+  "machine": "aarch64",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "E1": {
+    "queries_replayed": 275,
+    "models_replayed": 452,
+    "wall_R_s": 1.3343422929756343,
+    "wall_Rn_s": 1.3465790430200286,
+    "check1_R_vs_S": {
+      "tbl": {
+        "lines_a": 534,
+        "lines_b": 534,
+        "equal": true,
+        "differing_positions": 0
+      },
+      "dom": {
+        "lines_a": 545,
+        "lines_b": 545,
+        "equal": true,
+        "differing_positions": 0
+      }
+    },
+    "check2_Rn_vs_S": {
+      "tbl": {
+        "lines_a": 534,
+        "lines_b": 534,
+        "equal": false,
+        "differing_positions": 534
+      },
+      "dom": {
+        "lines_a": 545,
+        "lines_b": 545,
+        "equal": false,
+        "differing_positions": 545
+      }
+    },
+    "check1_pass": true,
+    "check2_pass": true,
+    "killed": false
+  }
+}

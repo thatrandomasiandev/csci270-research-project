@@ -1,0 +1,73 @@
+{
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "z_new": 30134,
+  "host": "claude",
+  "machine": "aarch64",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "E1": {
+    "queries_replayed": 275,
+    "models_replayed": 452,
+    "wall_R_s": 1.1937177090148907,
+    "wall_Rn_s": 1.1595657079888042,
+    "check1_R_vs_S": {
+      "tbl": {
+        "lines_a": 534,
+        "lines_b": 534,
+        "equal": true,
+        "differing_positions": 0
+      },
+      "dom": {
+        "lines_a": 545,
+        "lines_b": 545,
+        "equal": true,
+        "differing_positions": 0
+      }
+    },
+    "check2_Rn_vs_S": {
+      "tbl": {
+        "lines_a": 534,
+        "lines_b": 534,
+        "equal": false,
+        "differing_positions": 534
+      },
+      "dom": {
+        "lines_a": 545,
+        "lines_b": 545,
+        "equal": false,
+        "differing_positions": 545
+      }
+    },
+    "check1_pass": true,
+    "check2_pass": true,
+    "killed": false
+  },
+  "E2": {
+    "changed_or_new_models": 4052,
+    "candidate_queries": 275,
+    "replay_models": 452,
+    "candidate_pairs": 534,
+    "wall_s": {
+      "diff": 14.689077132003149,
+      "build_discovery_db": 2.048199626005953,
+      "discovery_scan": 7.217416461993707,
+      "build_replay_db": 0.25525504199322313,
+      "replay_scan": 1.1708553339994978
+    },
+    "check_vs_S": {
+      "tbl": {
+        "lines_a": 534,
+        "lines_b": 534,
+        "equal": true,
+        "differing_positions": 0
+      },
+      "dom": {
+        "lines_a": 545,
+        "lines_b": 545,
+        "equal": true,
+        "differing_positions": 0
+      }
+    },
+    "pass": true,
+    "killed": false
+  }
+}

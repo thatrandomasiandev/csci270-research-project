@@ -1,0 +1,354 @@
+{
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "test": "E3",
+  "run": "optional_Q1000_power",
+  "pre_registration": "4ae39ab66c9283d547e5930bcb99d5022fd9d864",
+  "power_run_commit": "5c0057c85cce69b794b2fae2ad57afb0db074138",
+  "git_head": "5c0057c85cce69b794b2fae2ad57afb0db074138",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "machine": "arm64",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 4,
+  "walls_indicative": true,
+  "stated_Z": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "q300_verdict": "PASS",
+  "sample_of_record": "Q300",
+  "work_dir": "/Users/joshuaterranova/tmp/e3_q1000_work",
+  "measured_Z": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "hash_diff_s": {
+    "38.1": 8.44586783304112,
+    "38.2": 9.29984383401461
+  },
+  "press_s": {
+    "38.1": {
+      "decomp_s": 2.618962832959369,
+      "press_s": 10.180290916992817,
+      "pressed_models": 27481,
+      "free_after": 18544435200
+    },
+    "38.2": {
+      "decomp_s": 2.423155875003431,
+      "press_s": 15.510834957996849,
+      "pressed_models": 30134,
+      "free_after": 15971758080
+    }
+  },
+  "determinism": {
+    "reference": "38.2",
+    "queries": 100,
+    "taken_from": "first 100 records of the Q1000 file",
+    "sample": {
+      "seed": 20261013,
+      "k": 1000,
+      "n_records": 5117,
+      "sample_sha256": "ffaa279d4ceb09c9bc89641996f023b46f83f375c3933a0ce1db651c64f2eb7c",
+      "index_first": 11,
+      "index_last": 5112
+    },
+    "erep": 10,
+    "Z": null,
+    "walls_s": {
+      "run_1": 16.143267792009283,
+      "run_2": 16.107958499982487,
+      "indicative": true
+    },
+    "tables": {
+      "tbl": {
+        "lines": 506,
+        "equal": true,
+        "sha256": "2de968df38d383745ac1988535727d9892581e54a675db9a1356fc622228eeb7"
+      },
+      "dom": {
+        "lines": 925,
+        "equal": true,
+        "sha256": "bc89ac290cba745ddb47f4606b52ecda5f61a9794143a80cfb6cd42f5542eaf6"
+      }
+    },
+    "bodies_identical": true
+  },
+  "Q1000": {
+    "sample": {
+      "seed": 20261013,
+      "k": 1000,
+      "n_records": 5117,
+      "sample_sha256": "ffaa279d4ceb09c9bc89641996f023b46f83f375c3933a0ce1db651c64f2eb7c",
+      "index_first": 11,
+      "index_last": 5112
+    },
+    "stock_walls_s": {
+      "38.1_E10": 150.05008175002877,
+      "38.2_E10": 167.24299258296378,
+      "indicative": true
+    },
+    "E3a": {
+      "slack": 1,
+      "z_target": 30134,
+      "fill_E": 10,
+      "replay_E": 10,
+      "discovery_models": 4052,
+      "candidate_pairs": 4827,
+      "replay_models": 2976,
+      "replay_queries": 961,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 4648,
+          "source_only_lines": 123
+        },
+        "dom": {
+          "cache_lines": 8045,
+          "source_only_lines": 197
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 8,
+        "dom": 22
+      },
+      "crossed_in_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "band_rows": null,
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 167.24299258296378,
+        "cache_fill": 150.05008175002877,
+        "cache_fill_source": "stock_38.1_E10",
+        "hash_diff": 17.74571166705573,
+        "discovery_press": 7.550033040984999,
+        "discovery_scan": 22.742496207996737,
+        "replay_press": 6.971343458979391,
+        "replay_scan": 18.7003989170189
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 4797,
+          "lines_stock": 4797,
+          "equal": false,
+          "differing_positions": 3,
+          "first_replay": "ACR_tran             PF00873.26 WP_001132469.1       -                  0 1466.1  17.9         0 1465.9  17.9   1.0   1   0   0   1   1   1   1 AcrB/AcrD/AcrF family\n",
+          "first_stock": "ACR_tran                      PF00873.26 WP_001132469.1       -                  0 1466.1  17.9         0 1465.9  17.9   1.0   1   0   0   1   1   1   1 AcrB/AcrD/AcrF family\n"
+        },
+        "dom": {
+          "lines_replay": 8390,
+          "lines_stock": 8390,
+          "equal": false,
+          "differing_positions": 5,
+          "first_replay": "ACR_tran             PF00873.26  1021 WP_001132469.1       -           1049         0 1466.1  17.9   1   1         0         0 1465.9  17.9     1  1021     1  1030     1  1030 1.00",
+          "first_stock": "ACR_tran                      PF00873.26  1021 WP_001132469.1       -           1049         0 1466.1  17.9   1   1         0         0 1465.9  17.9     1  1021     1  1030     1  "
+        }
+      },
+      "equal": false,
+      "differs": true,
+      "pass": false,
+      "killed": true
+    },
+    "verdict": "KILL",
+    "stopped_after": "E3a",
+    "E3b": {
+      "slack": 2,
+      "z_target": 27481,
+      "fill_E": 20,
+      "replay_E": 10,
+      "discovery_models": 1399,
+      "candidate_pairs": 4707,
+      "replay_models": 2865,
+      "replay_queries": 961,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 4862,
+          "source_only_lines": 288
+        },
+        "dom": {
+          "cache_lines": 8721,
+          "source_only_lines": 611
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 49,
+        "dom": 130
+      },
+      "crossed_in_rows": {
+        "tbl": 8,
+        "dom": 22
+      },
+      "band_rows": null,
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 150.05008175002877,
+        "cache_fill": 153.66654566698708,
+        "cache_fill_source": "38.2_E20",
+        "hash_diff": 17.74571166705573,
+        "discovery_press": 5.574275791936088,
+        "discovery_scan": 7.543296916992404,
+        "replay_press": 6.291321124939714,
+        "replay_scan": 16.808563792030327
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 4648,
+          "lines_stock": 4648,
+          "equal": false,
+          "differing_positions": 3,
+          "first_replay": "ACR_tran             PF00873.26 WP_001132469.1       -                  0 1466.1  17.9         0 1465.9  17.9   1.0   1   0   0   1   1   1   1 AcrB/AcrD/AcrF family\n",
+          "first_stock": "ACR_tran                      PF00873.26 WP_001132469.1       -                  0 1466.1  17.9         0 1465.9  17.9   1.0   1   0   0   1   1   1   1 AcrB/AcrD/AcrF family\n"
+        },
+        "dom": {
+          "lines_replay": 8045,
+          "lines_stock": 8045,
+          "equal": false,
+          "differing_positions": 5,
+          "first_replay": "ACR_tran             PF00873.26  1021 WP_001132469.1       -           1049         0 1466.1  17.9   1   1         0         0 1465.9  17.9     1  1021     1  1030     1  1030 1.00",
+          "first_stock": "ACR_tran                      PF00873.26  1021 WP_001132469.1       -           1049         0 1466.1  17.9   1   1         0         0 1465.9  17.9     1  1021     1  1030     1  "
+        }
+      },
+      "equal": false,
+      "differs": true,
+      "pass": false,
+      "killed": true
+    },
+    "slack_cache_wall_s": 153.66654566698708,
+    "E3c": {
+      "slack": 1,
+      "z_target": 27481,
+      "fill_E": 10,
+      "replay_E": 10,
+      "discovery_models": 1399,
+      "candidate_pairs": 4650,
+      "replay_models": 2824,
+      "replay_queries": 961,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 4797,
+          "source_only_lines": 280
+        },
+        "dom": {
+          "cache_lines": 8390,
+          "source_only_lines": 580
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "crossed_in_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "band_rows": {
+        "tbl": 8,
+        "dom": 22
+      },
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 150.05008175002877,
+        "cache_fill": 167.24299258296378,
+        "cache_fill_source": "stock_38.2_E10",
+        "hash_diff": 17.74571166705573,
+        "discovery_press": 5.745069625030737,
+        "discovery_scan": 7.2482043339987285,
+        "replay_press": 6.147251749993302,
+        "replay_scan": 15.140741667011753
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 4643,
+          "lines_stock": 4648,
+          "equal": false,
+          "differing_positions": 4253,
+          "first_replay": "GSH_synth_ATP        PF03917.24 WP_000105383.1       -            7.5e-61  206.5   0.0   9.7e-61  206.2   0.0   1.0   1   0   0   1   1   1   1 Eukaryotic glutathione synthase, ATP",
+          "first_stock": "YtzI                 PF28013.1  WP_000104456.1       -                9.3    6.4   0.0       9.3    6.4   0.0   4.3   4   0   0   4   4   4   0 Membrane protein YtzI-like\n"
+        },
+        "dom": {
+          "lines_replay": 8032,
+          "lines_stock": 8045,
+          "equal": false,
+          "differing_positions": 7316,
+          "first_replay": "GntP_permease        PF02447.23   440 WP_000104456.1       -            454  2.5e-154  514.8  50.0   1   1    3e-158  2.8e-154  514.7  50.0     2   439     5   453     4   454 0.98",
+          "first_stock": "GntP_permease        PF02447.23   440 WP_000104456.1       -            454  2.5e-154  514.8  50.0   1   1    4e-158  2.8e-154  514.7  50.0     2   439     5   453     4   454 0.98"
+        }
+      },
+      "equal": false,
+      "differs": true,
+      "pass": true,
+      "killed": false
+    },
+    "driver_verdict": "KILL"
+  },
+  "continued_after_driver_stop": "E3a",
+  "domZ_band": {
+    "definition": "domZ = tblout body lines per query; change = band_tbl under the E3c s=1 candidate set",
+    "band_tbl_sum": 8,
+    "band_dom_sum": 22,
+    "queries_with_domZ_change": 7,
+    "queries_where_delta_equals_band_tbl": 4,
+    "queries_band_dom_only": 0,
+    "per_query": [
+      {
+        "query": "WP_000104456.1",
+        "stock_domZ": 4,
+        "replay_domZ": 3,
+        "band_tbl": 1,
+        "band_dom": 4,
+        "stock_minus_replay_equals_band_tbl": true
+      },
+      {
+        "query": "WP_000196256.1",
+        "stock_domZ": 22,
+        "replay_domZ": 21,
+        "band_tbl": 2,
+        "band_dom": 5,
+        "stock_minus_replay_equals_band_tbl": false
+      },
+      {
+        "query": "WP_000361485.1",
+        "stock_domZ": 20,
+        "replay_domZ": 19,
+        "band_tbl": 1,
+        "band_dom": 1,
+        "stock_minus_replay_equals_band_tbl": true
+      },
+      {
+        "query": "WP_000460707.1",
+        "stock_domZ": 5,
+        "replay_domZ": 4,
+        "band_tbl": 1,
+        "band_dom": 2,
+        "stock_minus_replay_equals_band_tbl": true
+      },
+      {
+        "query": "WP_001297332.1",
+        "stock_domZ": 64,
+        "replay_domZ": 64,
+        "band_tbl": 1,
+        "band_dom": 5,
+        "stock_minus_replay_equals_band_tbl": false
+      },
+      {
+        "query": "WP_101968845.1",
+        "stock_domZ": 18,
+        "replay_domZ": 17,
+        "band_tbl": 1,
+        "band_dom": 3,
+        "stock_minus_replay_equals_band_tbl": true
+      },
+      {
+        "query": "WP_249824084.1",
+        "stock_domZ": 22,
+        "replay_domZ": 22,
+        "band_tbl": 1,
+        "band_dom": 2,
+        "stock_minus_replay_equals_band_tbl": false
+      }
+    ],
+    "matches_driver_band_rows": true
+  },
+  "verdict": "FAIL_LARGER_SAMPLE",
+  "outcome": "failure of exact E-value mode on a larger sample"
+}

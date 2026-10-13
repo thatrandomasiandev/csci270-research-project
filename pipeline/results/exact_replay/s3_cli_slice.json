@@ -1,0 +1,59 @@
+{
+  "test": "S3 shipped CLI, exact mode, 3000-model seeded slice (seed 20261012) of Pfam 38.1/38.2, 300 queries (E1 sample)",
+  "label": "MEASURED, indicative (single run, 4-core aarch64 VM, HMMER 3.4 from source); not the graded timing",
+  "argv": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 4 --tblout {output:tblout} --domtblout {output:domtblout} -o /dev/null {reference} {input}",
+  "slice_models": {
+    "381": 2713,
+    "382": 3000
+  },
+  "wall_s": {
+    "first_release_381_fill": 22.549901053,
+    "release_382_incremental": 2.76352771,
+    "stock_382": 5.249464794
+  },
+  "decision_382": {
+    "strategy": "reference",
+    "decision": "SHIP",
+    "why": "exact replay under pinned normalizer",
+    "verify": "audit",
+    "mode": "exact",
+    "match": "body-bytes",
+    "reused_rows": "125",
+    "n_entries": "3000",
+    "n_stable": "2595",
+    "n_fresh": "405",
+    "n_partial": "0",
+    "length_entries": "479783",
+    "length_fresh": "65113",
+    "length_partial": "0",
+    "replay_records": "47",
+    "replay_entries": "41",
+    "candidate_pairs": "54",
+    "audit_checked": "20",
+    "phases": "{'parse_s': 1.2318833750032354, 'coverage_read_s': 0.016131083975778893, 'diff_s': 0.006268166995141655, 'cache_load_s': 0.0008102910069283098, 'subref_build_s': 0.019446833030087873, 'prep_s': 0.21259829003247432, 'tool_s': 1.2091692500398494, 'read_output_s': 0.00017058299272321165, 'merge_rescale_s': 0.005349374987417832, 'cache_store_s': 0.0011194169928785414, 'replay_plan_s': 0.0005247079825494438, 'render_s': 0.00011454100604169071, 'total_s': 2.707537959999172, 'probe_wall_s': 0.0}",
+    "probe_phases": "{}"
+  },
+  "body_identical_vs_independent_stock": {
+    "tblout": true,
+    "domtblout": true
+  },
+  "rows": {
+    "tblout": 54,
+    "domtblout": 77
+  },
+  "engineering_before_after_s": {
+    "cache_store_s": [
+      12.012,
+      0.0011
+    ],
+    "cache_load_s": [
+      0.53,
+      0.0008
+    ],
+    "release_wall_s": [
+      24.38,
+      2.76
+    ],
+    "note": "before = first shipped exact run with --verify full and per-pair coverage; after = stable-skip + (entry, record-set) coverage + one-scan load, --verify audit"
+  }
+}

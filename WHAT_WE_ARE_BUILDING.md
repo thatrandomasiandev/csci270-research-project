@@ -1,8 +1,48 @@
 # What we are building
 
-**Updated:** 2026-09-26
+**Updated:** 2026-10-12 (pivot)
 
 Plain-language companion: [`WHAT_THIS_IS.md`](WHAT_THIS_IS.md).
+
+## 0. Pivot (2026-10-12) — exact re-annotation when a reference releases
+
+**One sentence:** when Pfam, UniProt or GTDB release, rerun only what
+changed, and return output byte-identical to a full rerun.
+
+**Problem (cited, `pipeline/docs/MOTIVATION_EVIDENCE.md`):** UniProt and
+InterPro release every 8 weeks, Ensembl ~3 months, GTDB yearly; each
+release forces a full re-annotation. Pfam 38.1 → 38.2 left 86.6% of models
+unchanged (12.6% by length changed or new). Users: groups holding thousands
+of genomes or metagenomes, and provenance-tracked pipelines.
+
+**Gap:** iBLAST / iSeqSearch are hand-built per tool and approximate
+(iSeqSearch reports more hits, Kendall τ 0.48–0.57 vs a full run).
+GeStore has no HMMER correction. Our previous `ref-merge` was also
+approximate (rescaled printed values within half-ULP bounds). Nothing
+infers the decomposition of an opaque tool *and* returns exact output.
+
+**Method:** fit the decomposition over reference entries and the
+normalizer (existing fitter, T1–T4); then **pinned-normalizer replay**:
+scan only new/changed entries, collect candidates, rerun the tool once on
+the candidate union with the caller-declared knob set to the new
+release's value (`--pin '-Z {entry_count}'`). The tool prints its own
+numbers, so the body is byte-identical. Refuse when the pin does not set a
+fitted normalizer, when the in-situ pin check fails, or when reporting
+reads reference size.
+
+**Evidence so far:** E1/E2 (`pipeline/docs/EXACT_REPLAY_PROTOCOL.md`):
+full Pfam 38.2, 300 proteins, body byte-identical; control without the pin
+differs on every line. Shipped CLI S3 byte-identical on a slice.
+
+**Next:** (1) CARC timed 38.1 → 38.2 on full genomes with `--pin`;
+(2) DIAMOND pin (`--dbsize {total_entry_length}`) against iDiamond on
+exactness; (3) InterProScan as the wrapper people install; (4) 3–5 user
+conversations (large-collection InterProScan / GTDB-Tk users).
+
+**Demoted:** record memoization across runs (SnpEff capped ~1.3×) is a
+side example. The "any CLI tool" framing is dropped.
+
+## Earlier framing (kept for history)
 
 Two objects share this repo. They are not the same claim.
 
