@@ -496,3 +496,205 @@ missing. P = 26. Fitter `probe_invocations` = 3.
 
 Knob inference is not shippable. The accept rule, `s`, the placeholder
 list, and the seeds were not changed.
+
+## Addendum 2026-10-12 — K1s (pre-registered redesign after the K1r KILL)
+
+Written **before** any K1s run and before the K1s edit to `acts/infer_knobs.py`.
+No number below is a result. K1 stays INCONCLUSIVE. K1r-a stays PASS.
+K1r-b stays KILL. Their seeds, `s = 4`, and their accept rule are not
+retuned and are not the rule for this test. K1s is a redesign after that
+known failure, labelled as such.
+
+K1r-b relaxed each default `d` to `4d`. On a 400-model sub-reference the
+P-value pre-filters already drop every row the E-value cutoff would have
+added, so `-E` was `row set unchanged`. `--domE` did add domain rows, and
+those rows renumbered the domain index, changed the domain-count columns,
+and changed per-target domain counts. The K1r rule required shared rows
+to be byte-identical, so `--domE` was `shared rows changed`. Neither
+failure is evidence about a tighter cutoff. K1s tightens, and it does not
+treat a renumbered index or a row-count column as a change of row identity.
+
+The placeholder list, the cap of 96, and the worker-count guard (a probe
+that sets the worker option to anything but 1 is refused and cannot be
+accepted) are unchanged. Help text is still not a probe call.
+
+### Samples
+
+The held-out sample decides the verdict. The secondary sample is reported
+and is not used for the verdict. It is the K1r sample, which informed
+this redesign.
+
+Held-out queries come from
+`pipeline/data/recurrence/A/GCF_002090355.1_protein.faa.gz`.
+Draw `sorted(random.Random(20261016).sample(range(n), 300))` and scan
+those records, in that order, against full Pfam 38.2
+(`pipeline/data/hmmer/Pfam-A.hmm.gz`) with the K1r construction command:
+default reporting, no `--cut_ga`, no worker flag, no `-Z`. That scan is
+SAMPLE-CONSTRUCTION, not a K1s result. Record its wall and its body-row
+counts. A pressed copy of that same Pfam file may be substituted so the
+scan can read it. Pressing is not a probe call.
+
+Q is the first 50 indices in that sorted list whose query name has at
+least one tblout body row. If fewer than 50 of the 300 have a body row,
+the held-out sample is INCONCLUSIVE. Do not draw a new sample.
+
+W has 400 models. Hit models are the Pfam entries, in 38.2 file order,
+whose NAME or ACC key equals the target name or accession on a tblout
+body row for a query in Q. The same unmatched-target and truncation rules
+as K1r apply. The fill, when there are fewer than 400 hit models, is
+`random.Random(20261016).sample` of the non-hit model indices, size
+`400 - |hits|`. W is hits plus fill, written in 38.2 file order.
+`|W| < 400` is INCONCLUSIVE.
+
+H is the K1r stratified half of W, with a fresh `random.Random(20261016)`
+that does not continue the fill draw: `len(stratum) // 2` from the hit
+stratum, then from the fill stratum, then remainder in file order, fill
+stratum first, until `|H| = 200`. The complement is `W \ H`.
+
+The secondary sample is the K1r sample: the same genome, the same
+`random.Random(20261012)` draw of 300, the same fill and stratified half
+at `random.Random(20261015)`, and the same Q, W, and H rules. Rebuilding
+it from those seeds is the same sample. Its construction scan is labelled
+SECONDARY-SAMPLE and is not a held-out result.
+
+### Power floor
+
+On the held-out sample, before any candidate probe, under the K1s-b argv
+(default reporting, `--cpu 1`, no `--cut_ga`): `run(Q, H)` and `run(Q, W)`.
+A shared tblout row is defined as in K1r. The two runs must share at least
+30 such rows. If they do not, the held-out sample is INCONCLUSIVE. Stop.
+Do not redraw Q, W, or H, and do not probe candidates on either held-out
+arm. The secondary sample is still run and still does not decide the
+verdict.
+
+Record the same count for the K1s-a argv. If K1s-b cleared the floor and
+K1s-a shares fewer than 30 rows, K1s-a alone is INCONCLUSIVE and its
+candidates are not probed. The secondary sample uses the same floor. A
+secondary floor failure is reported and does not change the held-out
+verdict.
+
+### Arms
+
+Both arms of a sample use that sample's Q, W, and H. Sub-references are
+at most these 400 models, prepared with `hmmpress -f` in the work
+directory, not in git.
+
+K1s-a argv is the K1r-a argv (`--cut_ga`). K1s-b argv is the K1r-b argv
+(that command without `--cut_ga`). The fit path is the K1r fit path:
+K1s-a uses `monotone=False`, K1s-b uses `monotone=True`. A fit that
+assigns no `entry_count` column makes that arm INCONCLUSIVE. A REFUSE
+that still assigned `entry_count` does not skip inference. Inference is
+not given `--pin` or `--slack`.
+
+### Structural columns
+
+Computed from the default run `run(Q, W)` only, before any comparison,
+per output table. A column is an integer column when every body row has
+a token of optional sign and digits only. A is the integer columns for
+which one of the following holds for every body row:
+
+1. Count. There is one table T, possibly this one, and one key, either
+   `(record, entry)` or `(record)`, such that the cell equals the number
+   of body rows in T that share that row's key.
+2. Rank. In this table, in file order, the cell equals the row's 1-based
+   position within its `(record, entry)` group.
+
+A column that fails either test on any row is not in A. A table with no
+body row has an empty A. Record A as column indices per table, with
+which of the two tests matched.
+
+`per_key_row_count` columns are the contract columns whose member is
+`per_key_row_count`. Row identity is the body row with the A columns and
+those columns removed. Identity comparison is by multiset.
+
+### Pin
+
+Pin detection is the K1r pin detection, unchanged, including which
+columns `_normalizer_reason` compares. It has to pass on the held-out
+sample on both arms. The secondary sample records its pin and does not
+decide.
+
+### Thresholds
+
+Tighten only. Do not relax. For each help candidate with a numeric
+default `d`, for `f` in `(10, 100, 1000)` in that order, one run
+`run(Q, W)` with that option set to `d/f`. The value is the integer
+decimal when `d/f` is an integer, otherwise the shortest round-trip.
+`t = d/f` is that same number. A throw on a run is `tool failed` for
+that `f`. It is not an acceptance. Later factors are still run.
+
+Accept the option as a reporting threshold on table X at the first `f`
+where all three hold:
+
+1. The identity multiset of X under the tight run is a proper submultiset
+   of the default run. Rows only disappear. At least 3 identities are
+   gone.
+2. X has a printed numeric column `c` such that every removed row has
+   `c > t` and every kept row has `c ≤ t`, with no exception and no
+   tolerance. Removed rows are the default rows in the multiset
+   difference. Kept rows are the rows that remain. Record every such
+   `c`, as `table:index` in index order.
+3. Each kept row's identity equals its default identity. Columns in A
+   and `per_key_row_count` columns may differ. No other column may.
+
+The first accepting `f` for that table is the one recorded. Other tables
+keep walking the ladder. One run of an `f` feeds every table.
+
+If no `f` removes at least 3 identities on any table, and some `f`
+leaves every identity multiset unchanged while a cell in A or in a
+`per_key_row_count` column differs, the option is `non-reporting
+threshold`. That class is never reporting. It is the expected class for
+an inclusion flag whose only change is a count column.
+
+If no `f` removes at least 3 identities and no `f` is that column-only
+change, the option is INCONCLUSIVE. INCONCLUSIVE is not a rejection and
+not an acceptance.
+
+If some `f` removes at least 3 identities and no table accepts, the
+option is rejected. A pure disappearance with no column that cuts at
+exactly `t` is `no exact bound`. New identities, or a kept identity
+whose non-A, non-`per_key_row_count` cells differ, are `shared rows
+changed`. A throw with no later accept is `tool failed`. A candidate
+with no numeric default is not probed; record `no numeric default`.
+
+### Ground truth
+
+Written now. The held-out sample decides. The secondary sample does not.
+
+| Check | K1s-a (`--cut_ga`) | K1s-b (default reporting) |
+|---|---|---|
+| Pin | `-Z {entry_count}` | `-Z {entry_count}` |
+| Not the pin | `--domZ` | `--domZ` |
+| Reporting thresholds | none accepted | exactly `-E` on tblout and `--domE` on domtblout |
+| Bounding column | — | record which column cut at `t`. The full-sequence E-value is the one `-E` must use. The domain E-value `--domE` uses is the one `--domE` must use |
+| `--incE`, `--incdomE` | not reporting | `non-reporting threshold`, rejected, or `no numeric default`. Never reporting |
+| `-T`, `--domT`, `--incT`, `--incdomT` | not reporting | not reporting. No numeric default is allowed; record why |
+| Not reporting thresholds | `--F1`, `--F2`, `--F3`, `--seed`, `--cpu`, `--domZ`, `-Z` | same |
+
+An extra reporting pair, a missing required pair, a wrong pin, or any
+of those decoys accepted as a pin or as a reporting threshold, on the
+held-out sample, is a ground-truth miss.
+
+### Kill rule
+
+Any ground-truth miss on the held-out sample kills that arm. Either arm
+killing means knob inference is not shippable. Write the measured
+outcome and stop. Do not retune the factors, the placeholder list, the
+accept rule, the structural-column tests, or the seeds.
+
+Missing data, a missing binary, fewer than 400 models, fewer than 50
+queries with a hit, or a failed held-out power floor is INCONCLUSIVE,
+not a kill and not a pass.
+
+### Cost and output
+
+`tool_calls` is counted inside `infer_knobs`, per arm, per sample. That
+number is P for that arm. Each factor is its own call. A driver cache
+hit still counts when `infer_knobs` invokes it. `fit_calls` sit beside
+P. Construction scans are not P.
+
+`results/knob_inference/k1s.json`: git hash, host, HMMER version line,
+both samples' construction records, both power floors, A per table, and
+for every candidate every `f` with accept, reject, or inconclusive and
+the reason. Held-out and secondary are separate objects. The verdict
+fields are the held-out arm verdicts only.
