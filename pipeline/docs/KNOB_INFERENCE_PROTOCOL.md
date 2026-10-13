@@ -285,3 +285,171 @@ Defeat: the unit tests feed canned lines in the four shapes above
 `(default: 10)`). A line with no numeric placeholder produces no
 candidate. Widening the placeholder list after K1 is a post-hoc
 addendum.
+
+## Addendum 2026-10-12 — K1r (pre-registered)
+
+Written **before** any K1r run and before any edit to `acts/infer_knobs.py`
+for this test. No number below is a result. K1 stays INCONCLUSIVE. Its
+seeds are not redrawn. `results/knob_inference/k1.json` is not rewritten.
+
+K1's 50-by-400 draw had about one expected hit and wrote empty tables, so
+the accept rule never saw a row. K1r asks the same question on a sample
+built so that hits exist. The accept rule, `s = 4`, the placeholder list,
+the cap of 96, and the worker-count guard (a probe that sets the worker
+option to anything but 1 is refused and cannot be accepted) are unchanged.
+
+### Sample construction
+
+This scan is not a K1r result. Record its wall and its tblout body-row
+count as SAMPLE-CONSTRUCTION.
+
+Queries come from
+`pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz`.
+The E1 index list is `sorted(random.Random(20261012).sample(range(n), 300))`,
+which is the order that sample file was written. One stock scan of those
+300 records, in that order, against full Pfam 38.2
+(`pipeline/data/hmmer/Pfam-A.hmm.gz`):
+
+```
+hmmscan --noali --tblout T --domtblout D <Pfam 38.2> <queries>
+```
+
+No `--cut_ga`, no worker flag, no `-Z`. `--tblout` and `--domtblout` are
+how the row count is recorded. They are not pins and not thresholds.
+The database argument is that Pfam file. A pressed copy already built
+from that same file may be substituted so the scan can read it; pressing
+the full file is not a probe call.
+
+Q is the first 50 indices in that sorted list whose query name has at
+least one tblout body row. If fewer than 50 of the 300 have a body row,
+K1r is INCONCLUSIVE. Do not draw a new sample.
+
+W has 400 models. Hit models are the Pfam entries, in 38.2 file order,
+whose NAME or ACC key equals the target name or accession on a tblout
+body row for a query in Q. A target that matches no entry is counted as
+unmatched and is not a member of W. If there are more than 400 hit
+models, W is the first 400 in file order and that fact is recorded; the
+fill step does not run. Otherwise the fill is
+`random.Random(20261015).sample` of the non-hit model indices, size
+`400 - |hits|`, and W is hits plus fill, written in 38.2 file order.
+
+H is 200 of W, stratified, in W's file order. Hit-in-W and fill-in-W are
+the two strata. One `random.Random(20261015)`, independent of the fill
+draw, samples `len(stratum) // 2` from the hit stratum and then from the
+fill stratum. If those floors sum to less than 200, the remainder is
+the unselected fill models in file order, then the unselected hit models
+in file order, until `|H| = 200`. That remainder is not a new sample.
+The complement is `W \ H`. If `|W| < 400`, K1r is INCONCLUSIVE.
+
+### Power floor
+
+Before any candidate probe, under the K1r-b argv (default E-value
+reporting, `--cpu 1`, no `--cut_ga`): `run(Q, H)` and `run(Q, W)`. A
+shared tblout row is a body line whose target name or accession is a key
+of an H entry and whose `(query name, target name)` pair occurs in both
+outputs. The two runs must share at least 30 such rows. If they do not,
+K1r is INCONCLUSIVE. Stop. Do not redraw Q, W, or H, and do not probe
+candidates on either arm.
+
+The same count is recorded for the K1r-a argv. If K1r-b cleared the
+floor and K1r-a shares fewer than 30 rows, K1r-a alone is INCONCLUSIVE
+and its candidates are not probed. That is the empty-table failure, not
+a kill and not a redraw.
+
+### Arms
+
+Both arms use the same Q, W, and H. Sub-references are at most these 400
+models, prepared with `hmmpress -f` in the work directory, not in git.
+
+K1r-a argv:
+
+```
+hmmscan --cut_ga --noali --cpu 1 --tblout {output:tbl} --domtblout {output:dom}
+  {reference} {input}
+```
+
+K1r-b argv is that command without `--cut_ga`.
+
+Ground truth, written now:
+
+| Check | K1r-a | K1r-b |
+|---|---|---|
+| Pin | `-Z {entry_count}` | `-Z {entry_count}` |
+| Not the pin | `--domZ` | `--domZ` |
+| Thresholds | none accepted | must include `-E` and `--domE` |
+| E-value flags | `-E`, `--domE`, `--incE`, `--incdomE` rejected | `--incE`, `--incdomE` may be accepted only with the column recorded |
+| Bit-score flags | any acceptance is a kill | `-T`, `--domT`, `--incT`, `--incdomT` may be accepted or rejected; the reason is recorded |
+| Must be rejected as pin and as threshold | `--F1`, `--F2`, `--F3`, `--seed`, `--cpu`, `--domZ` | same |
+
+`--cut_ga` overrides E-value reporting, so an E-value option that does
+not change the row set is a rejection. The shipped reason for that
+outcome is `row set unchanged`. K1r-a treats every non-accept as the
+required no-effect rejection. Accepting any threshold on K1r-a is a
+kill. A help token that the parser does not emit is not an acceptance;
+record it as absent.
+
+### Fit path
+
+K1r-a calls `probe_fit` on W with `primary_parts=[H, complement]`,
+`sample=False`, `monotone=False`. Gathering cuts do not move with the
+database size, so the row-key sets are the ones the base fitter already
+accepts.
+
+K1r-b calls the same fit with `monotone=True`. That is the
+monotone-decomposition fit shipped in `fbe39d1`: `rows(full) ⊆ ∪ rows(parts)`
+is allowed, and extra rows on the parts are allowed. `probe_fit` already
+takes `monotone` without `--pin` and without `--slack`. The exact-mode
+gate that sets `monotone` only when both are present is in
+`reference_run.py` and is not on this path. No fit-only switch is added
+to `infer_knobs.py`. Inference is not given `--pin` or `--slack`.
+
+Column members on the returned tables are the contract. If a fit assigns
+no `entry_count` column, that arm is INCONCLUSIVE. A REFUSE that still
+assigned an `entry_count` column does not skip inference; the decision
+and the reason are recorded. A tie is resolved by the fitter's own
+disambiguating probe.
+
+### Pin comparison (locked)
+
+On shared rows the shipped `_normalizer_reason` already compares only
+columns whose member is the one being pinned, plus columns whose member
+is `identity` or `byte`. `per_key_row_count` columns are not compared.
+domtblout conditional E-values depend on the number of reported targets,
+which differs between H and W for a reason that is not the entry-count
+pin. That exclusion is the rule for K1r. It is not a change to the
+function. If an identity or byte column differs, the reason is
+`identity columns differ` and the candidate is not the pin. The
+tie-break, used only when two or more options pass that comparison,
+stays the shipped full-body comparison.
+
+### Kill rule
+
+On either arm: the pin is not `-Z {entry_count}`, `-Z` is not the
+accepted normalizer, or a decoy in the "must be rejected" row is
+accepted as a pin or as a threshold. On K1r-b: `-E` or `--domE` is
+missing from the thresholds. On K1r-a: any threshold is accepted.
+Any one of these means knob inference is not shippable. Write the
+measured outcome and stop. Do not retune `s`, the placeholder list, the
+accept rule, or the seeds.
+
+Missing data, a missing binary, fewer than 400 models, fewer than 50
+queries with a hit, or a failed power floor is INCONCLUSIVE, not a kill
+and not a pass.
+
+### Cost
+
+`tool_calls` is counted inside `infer_knobs`, per arm. That number is P
+for this test. `fit_calls` are the `probe_fit` invocations and are
+recorded beside P, not inside it. The construction scan and a power-floor
+pair that is not re-entered through `infer_knobs` are recorded separately
+and are not P. A driver-level cache hit still counts as a `tool_calls`
+increment when `infer_knobs` invokes it; only `infer_knobs`'s own cache
+suppresses the increment.
+
+### Output
+
+`results/knob_inference/k1r.json`: git hash, host, HMMER version line,
+SAMPLE-CONSTRUCTION (wall, tblout body rows, `|Q|`, hit-model count,
+unmatched targets, `|W|`, `|H|`, whether hits were truncated at 400),
+the power-floor shared-row counts, and for each arm every help candidate
+with accept or reject and the reason, the fit decision, and `tool_calls`.
