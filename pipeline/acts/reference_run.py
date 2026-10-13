@@ -754,6 +754,11 @@ def _body_record_filter(text: str, record_col: int, keep: set[str]) -> list[str]
 # leaves margin for writing the batch. π = 1.563109832990449 / 3719 / s.
 REPLAY_STARTUP_PAIRS = 2000.0
 REPLAY_PRESS_PAIRS = 84.0
+# Random pads cover this many replayed records. The file-order neighbor
+# pad still covers every replayed record. 50 is the pilot size that
+# refused the injected drop and stayed under a tenth of the stock wall.
+IC2_SAMPLE_SIZE = 50
+IC2_SAMPLE_SEED = 20261034
 
 
 def replay_plan(
@@ -781,6 +786,7 @@ def _batched_replay(
     cand: dict[str, set[str]],
     entries: Sequence[Entry],
     tables: Sequence[TableReport],
+    universe: Sequence[Entry] | None = None,
 ) -> tuple[dict[str, str], int]:
     """One pinned search per batch. Bodies are merged in input order.
 
@@ -799,7 +805,8 @@ def _batched_replay(
         union: set[str] = set()
         for key in keys:
             union |= cand[key]
-        chosen = [entry for entry in rep_entries if entry.primary in union]
+        pool = universe if universe is not None else rep_entries
+        chosen = [entry for entry in pool if entry.primary in union]
         part = pinned([by_key[key] for key in keys], chosen, values)
         for table in tables:
             parts[table.name].append(part.get(table.name, ""))
@@ -1251,7 +1258,7 @@ class ReferenceIncremental(Strategy):
                 rec_key, ent = fields[table.record_col], fields[table.entry_col]
                 if ent not in cand.get(rec_key, set()):
                     return done("REFUSE_MATCH", f"{table.name}: replay reported a non-candidate pair ({rec_key}, {ent})", extra)
-        ic2_why = self._ic2(pinned, entries, rep_records, rep_entries, texts, tables)
+        ic2_why = self._ic2(pinned, entries, rep_records, texts, tables, cand)
         if ic2_why:
             return done("REFUSE", ic2_why, extra)
         extra["ic2"] = "pass"
@@ -1288,38 +1295,63 @@ class ReferenceIncremental(Strategy):
                         return done("REFUSE_AUDIT", f"{table.name}: audited records differ from a full run", extra)
         return done("SHIP", "exact replay under pinned normalizer", extra)
 
-    def _ic2(self, pinned, entries, rep_records, rep_entries, texts, tables) -> str | None:
-        """Random pads and the file-order neighbor pad. A failure does not write the replay."""
-        from acts.exact_certificate import judge, pad_indices
+    def _ic2(self, pinned, entries, rep_records, texts, tables, cand: dict[str, set[str]]) -> str | None:
+        """Neighbor pad on every replayed record; random pads on a sample.
 
-        if not tables or not rep_entries:
+        A failure does not write the replay. The neighbor pad is the
+        file-order predecessor and successor of each record's own
+        candidates. The three random pads use the locked seeds and run
+        only on ``IC2_SAMPLE_SIZE`` records.
+        """
+        from acts.exact_certificate import judge, neighbor_ids, pad_indices, sample_keys
+
+        if not tables or not rep_records or not cand:
             return None
-        values = pin_values(entries)
-        u_ids = {entry.primary for entry in rep_entries}
-        u_idx = {i for i, entry in enumerate(entries) if entry.primary in u_ids}
-        for name, indices in pad_indices(entries, u_ids):
-            if not indices:
-                continue
-            pad_ids = {entries[i].primary for i in indices}
-            merged = [entries[i] for i in sorted(u_idx | set(indices))]
+        u_ids = {token for tokens in cand.values() for token in tokens}
+
+        def run_pad(name: str, records: Sequence[RecordItem], pad_cand: dict[str, set[str]], pad_ids: set[str], keep: set[str] | None) -> str | None:
             started_phase = time.perf_counter()
             before_phase = dict(self.clock)
             try:
-                plus = pinned(rep_records, merged, values)
+                plus, _n = _batched_replay(pinned, records, entries, pad_cand, entries, tables, universe=entries)
             except RunError as exc:
                 _phase_from(self.clock, before_phase, f"ic2_{name}", started_phase)
                 return f"IC2 {name} failed to run: {exc.reason}"
             _phase_from(self.clock, before_phase, f"ic2_{name}", started_phase)
             for table in tables:
-                verdict = judge(
-                    texts.get(table.name, ""),
-                    plus.get(table.name, ""),
-                    u_ids,
-                    pad_ids,
-                    table.entry_col,
-                )
+                replay = texts.get(table.name, "")
+                got = plus.get(table.name, "")
+                if keep is not None:
+                    replay = "\n".join(_body_record_filter(replay, table.record_col, keep)) + "\n"
+                    got = "\n".join(_body_record_filter(got, table.record_col, keep)) + "\n"
+                verdict = judge(replay, got, u_ids, pad_ids, table.entry_col)
                 if not verdict["pass"]:
                     return f"IC2 {name} {table.name}: {verdict['fail_mode']}"
+            return None
+
+        expanded: dict[str, set[str]] = {}
+        neighbor_pad: set[str] = set()
+        for key, tokens in cand.items():
+            extra = neighbor_ids(entries, tokens)
+            expanded[key] = set(tokens) | extra
+            neighbor_pad |= extra
+        why = run_pad("neighbor", rep_records, expanded, neighbor_pad, None)
+        if why:
+            return why
+        order = [rec.key for rec in rep_records]
+        sample = sample_keys(order, IC2_SAMPLE_SIZE, IC2_SAMPLE_SEED)
+        if not sample:
+            return None
+        keep = set(sample)
+        sampled = [rec for rec in rep_records if rec.key in keep]
+        for name, indices in pad_indices(entries, u_ids):
+            if not name.startswith("random") or not indices:
+                continue
+            pad_ids = {entries[i].primary for i in indices}
+            pad_cand = {key: set(cand.get(key, set())) | pad_ids for key in sample}
+            why = run_pad(name, sampled, pad_cand, pad_ids, keep)
+            if why:
+                return why
         return None
 
     def _pin_check(self, invoke, pinned, entries, records, tables) -> tuple[bool, str]:

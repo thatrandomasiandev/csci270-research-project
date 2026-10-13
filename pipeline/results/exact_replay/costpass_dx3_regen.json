@@ -1,0 +1,22 @@
+{
+  "note": "DX3 m8 files were absent. This regenerates the locked draw (seed 20261029, 2000 from GCF_001515725.1).",
+  "queries": 2000,
+  "records": 4407,
+  "stock_rows": 227223,
+  "replay_rows": 227205,
+  "bodies_equal": false,
+  "candidate_subjects": 137090,
+  "neighbors": 31611,
+  "stock_wall_s": 10.760703540989198,
+  "replay_wall_s": 5.010024707997218,
+  "neighbor_wall_s": 5.336981667031068,
+  "verdict": {
+    "pass": false,
+    "fail_mode": "pad_hit",
+    "missing_candidate_rows": 2,
+    "extra_candidate_rows": 20,
+    "pad_hit_rows": 4,
+    "other_subject_rows": 0
+  },
+  "refused": true
+}

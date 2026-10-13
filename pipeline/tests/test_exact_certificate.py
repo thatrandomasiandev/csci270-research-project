@@ -12,7 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from acts.exact_certificate import judge
+from acts.exact_certificate import judge, neighbor_ids, sample_keys
 from acts.reference_fit import PROBE_N, PROBE_SEED, sample_record_indices
 from acts.reference_formats import write_entries, parse_entryline
 from acts.reference_run import ReferenceIncremental
@@ -41,6 +41,22 @@ class CertificatePredicateTests(unittest.TestCase):
         self.assertEqual(verdict["fail_mode"], "pass")
         self.assertEqual(verdict["missing_candidate_rows"], 0)
         self.assertEqual(verdict["extra_candidate_rows"], 0)
+
+
+class CertificateSampleTests(unittest.TestCase):
+    def test_sample_keeps_order_and_is_stable(self) -> None:
+        keys = [f"r{i}" for i in range(10)]
+        drawn = sample_keys(keys, 4, 20261031)
+        self.assertEqual(drawn, sample_keys(keys, 4, 20261031))
+        self.assertEqual(drawn, sorted(drawn, key=keys.index))
+        self.assertEqual(len(drawn), 4)
+        self.assertEqual(sample_keys(keys, 10, 1), keys)
+        self.assertEqual(sample_keys(keys, 0, 1), [])
+
+    def test_neighbor_ids_are_the_adjacent_non_candidates(self) -> None:
+        entries = parse_entryline("e0 1\ne1 1\ne2 1\ne3 1\ne4 1\n")
+        self.assertEqual(neighbor_ids(entries, {"e1", "e2"}), {"e0", "e3"})
+        self.assertEqual(neighbor_ids(entries, {"e0"}), {"e1"})
 
 
 class CertificateExactModeTests(unittest.TestCase):
@@ -91,7 +107,10 @@ class CertificateExactModeTests(unittest.TestCase):
             ).run()
             self.assertEqual(result.decision, "REFUSE", result.reason)
             self.assertIn("IC2", result.reason)
-            self.assertIn("extra_candidate", result.reason)
+            self.assertTrue(
+                "extra_candidate" in result.reason or "pad_hit" in result.reason,
+                result.reason,
+            )
             self.assertFalse((tmp / "out" / "tables" / "out").exists())
 
 

@@ -1,0 +1,32 @@
+{
+  "genome": "GCF_013085185.1_protein.faa.gz",
+  "seed": 20261016,
+  "queries": 300,
+  "stock_rows": 33510,
+  "replay_rows": 33509,
+  "bodies_equal": false,
+  "stock_wall_s": 5.669571166974492,
+  "replay_wall_s": 11.613526583998464,
+  "neighbor_wall_s": 12.256045916990843,
+  "neighbor": {
+    "pass": false,
+    "fail_mode": "pad_hit",
+    "missing_candidate_rows": 2,
+    "extra_candidate_rows": 0,
+    "pad_hit_rows": 1,
+    "other_subject_rows": 0
+  },
+  "random_modes": [
+    "pass",
+    "pass",
+    "pass"
+  ],
+  "random_wall_s": 13.384414375002962,
+  "refused": true,
+  "outcome": "SAFE-REFUSE",
+  "load": [
+    5.56,
+    6.43,
+    5.74
+  ]
+}

@@ -1,0 +1,109 @@
+{
+  "hmm": {
+    "neighbor": {
+      "wall_s": 17.524062790966127,
+      "load": [
+        5.69,
+        5.78,
+        5.12
+      ],
+      "tbl": {
+        "pass": true,
+        "fail_mode": "pass",
+        "missing_candidate_rows": 0,
+        "extra_candidate_rows": 0,
+        "pad_hit_rows": 0,
+        "other_subject_rows": 0
+      },
+      "dom": {
+        "pass": true,
+        "fail_mode": "pass",
+        "missing_candidate_rows": 0,
+        "extra_candidate_rows": 0,
+        "pad_hit_rows": 0,
+        "other_subject_rows": 0
+      }
+    },
+    "inject_affected_records": 433,
+    "inject_samples": {
+      "50": {
+        "wall_s": 7.260604457987938,
+        "refused": true,
+        "modes": [
+          "pass",
+          "pass",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit"
+        ],
+        "sample_hits_affected": 3
+      },
+      "100": {
+        "wall_s": 10.663903084001504,
+        "refused": true,
+        "modes": [
+          "pass",
+          "pass",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit"
+        ],
+        "sample_hits_affected": 5
+      },
+      "200": {
+        "wall_s": 17.378892458975315,
+        "refused": true,
+        "modes": [
+          "pad_hit",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit",
+          "pad_hit"
+        ],
+        "sample_hits_affected": 12
+      }
+    },
+    "good_sample_200": {
+      "wall_s": 18.46418429201003,
+      "refused": false
+    },
+    "good_sample_50": {
+      "wall_s": 7.795695167034864,
+      "refused": false,
+      "modes": ["pass", "pass", "pass", "pass", "pass", "pass"],
+      "load": [6.2, 6.28, 5.76],
+      "note": "Shipped sample size. Same seed as the other samples, not a subset of the size-200 draw."
+    },
+    "dx3_random_pad_miss": {
+      "k": 22,
+      "n": 2000,
+      "q": 0.31252137200279034,
+      "one_entry_three_pads": 0.3249208679849812,
+      "p_miss_by_sample": {
+        "20": 0.8654493812488414,
+        "50": 0.7105418322019688,
+        "100": 0.5419981454096119,
+        "200": 0.3905465637451399,
+        "400": 0.3297591603580508,
+        "2000": 0.3249208679849812
+      },
+      "note": "This is the random-pad miss rate for one non-neighbor entry. File-order neighbors are in the neighbor pad, so that class is caught on every record."
+    }
+  },
+  "dx2": {
+    "wall_s": 0.8614811250008643,
+    "neighbors": 7197,
+    "verdict": {
+      "pass": false,
+      "fail_mode": "pad_hit",
+      "missing_candidate_rows": 0,
+      "extra_candidate_rows": 6,
+      "pad_hit_rows": 1,
+      "other_subject_rows": 0
+    },
+    "refused": true
+  }
+}

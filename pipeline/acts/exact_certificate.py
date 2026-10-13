@@ -65,6 +65,30 @@ def judge(
     }
 
 
+def sample_keys(keys: Sequence[str], k: int, seed: int) -> list[str]:
+    """A fixed-seed sample, in the original key order. ``k`` above the length keeps every key."""
+    if k < 0:
+        raise ValueError("sample size must be non-negative")
+    if k >= len(keys):
+        return list(keys)
+    chosen = set(random.Random(seed).sample(range(len(keys)), k))
+    return [key for index, key in enumerate(keys) if index in chosen]
+
+
+def neighbor_ids(entries: Sequence, candidate_ids: set[str]) -> set[str]:
+    """File-order predecessor and successor of each candidate, excluding candidates."""
+    index = {entry.primary: i for i, entry in enumerate(entries)}
+    chosen = {index[key] for key in candidate_ids if key in index}
+    n = len(entries)
+    out: set[str] = set()
+    for i in chosen:
+        if i > 0 and (i - 1) not in chosen:
+            out.add(entries[i - 1].primary)
+        if i + 1 < n and (i + 1) not in chosen:
+            out.add(entries[i + 1].primary)
+    return out
+
+
 def pad_indices(entries: Sequence, candidate_ids: set[str], seeds: tuple[int, ...] = SEEDS) -> list[tuple[str, list[int]]]:
     """Index lists into ``entries``. A short reference uses every non-candidate."""
     n = len(entries)
