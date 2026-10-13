@@ -1,0 +1,4411 @@
+{
+  "protocol": "docs/KNOB_INFERENCE_PROTOCOL.md",
+  "addendum": "2026-10-12 K1s",
+  "redesign_after": "K1r-b KILL",
+  "git": "e2868ec62f7de79dbd0afa71b8afd2b75f48e8f5",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "machine": "arm64",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "banner": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "table_slots": {
+    "tbl": "tblout",
+    "dom": "domtblout"
+  },
+  "bounding_columns": {
+    "tbl_full_sequence_evalue": 4,
+    "dom_domain_evalue": 12
+  },
+  "verdict_sample": "held-out",
+  "samples": {
+    "held-out": {
+      "label": "SAMPLE-CONSTRUCTION",
+      "genome": "GCF_002090355.1_protein.faa.gz",
+      "query_seed": 20261016,
+      "fill_seed": 20261016,
+      "decides_verdict": true,
+      "press": {
+        "decomp_s": 2.6691655419999734,
+        "press_s": 12.273183415993117,
+        "pressed_models": 30134
+      },
+      "model_total": 30134,
+      "wall_s": 55.373070875008125,
+      "tblout_body_rows": 1751,
+      "domtblout_body_rows": 2869,
+      "tblout_header": [
+        "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+        "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+        "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+      ],
+      "domtblout_header": [
+        "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+        "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+        "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+      ],
+      "queries_with_hits_in_draw": 294,
+      "q": 50,
+      "q_tblout_rows": 332,
+      "hit_models": 293,
+      "hits_truncated_at_400": false,
+      "unmatched_targets": [],
+      "fill_models": 107,
+      "W": 400,
+      "H": 200,
+      "H_hit_models": 146,
+      "H_fill_models": 54,
+      "query_names": [
+        "WP_000003377.1",
+        "WP_000004616.1",
+        "WP_000017354.1",
+        "WP_000024745.1",
+        "WP_000027205.1",
+        "WP_000028114.1",
+        "WP_000031783.1",
+        "WP_000046637.1",
+        "WP_000046749.1",
+        "WP_000056745.1",
+        "WP_000060493.1",
+        "WP_000061178.1",
+        "WP_000067822.1",
+        "WP_000068701.1",
+        "WP_000068928.1",
+        "WP_000070131.1",
+        "WP_000070679.1",
+        "WP_000072850.1",
+        "WP_000073223.1",
+        "WP_000084387.1",
+        "WP_000088605.1",
+        "WP_000091016.1",
+        "WP_000097082.1",
+        "WP_000098818.1",
+        "WP_000104211.1",
+        "WP_000108172.1",
+        "WP_000108330.1",
+        "WP_000114585.1",
+        "WP_000116090.1",
+        "WP_000122426.1",
+        "WP_000127107.1",
+        "WP_000128847.1",
+        "WP_000131702.1",
+        "WP_000134014.1",
+        "WP_000135616.1",
+        "WP_000139655.1",
+        "WP_000145410.1",
+        "WP_000146343.1",
+        "WP_000147429.1",
+        "WP_000158547.1",
+        "WP_000161786.1",
+        "WP_000176278.1",
+        "WP_000179469.1",
+        "WP_000184540.1",
+        "WP_000190577.1",
+        "WP_000191237.1",
+        "WP_000193841.1",
+        "WP_000203025.1",
+        "WP_000203741.1",
+        "WP_000204139.1"
+      ]
+    },
+    "secondary": {
+      "label": "SECONDARY-SAMPLE",
+      "genome": "GCF_002853805.1_protein.faa.gz",
+      "query_seed": 20261012,
+      "fill_seed": 20261015,
+      "decides_verdict": false,
+      "press": {
+        "decomp_s": 2.6691655419999734,
+        "press_s": 12.273183415993117,
+        "pressed_models": 30134
+      },
+      "model_total": 30134,
+      "wall_s": 59.924125999968965,
+      "tblout_body_rows": 1361,
+      "domtblout_body_rows": 2729,
+      "tblout_header": [
+        "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+        "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+        "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+      ],
+      "domtblout_header": [
+        "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+        "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+        "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+      ],
+      "queries_with_hits_in_draw": 288,
+      "q": 50,
+      "q_tblout_rows": 289,
+      "hit_models": 277,
+      "hits_truncated_at_400": false,
+      "unmatched_targets": [],
+      "fill_models": 123,
+      "W": 400,
+      "H": 200,
+      "H_hit_models": 138,
+      "H_fill_models": 62,
+      "query_names": [
+        "WP_000003656.1",
+        "WP_000003820.1",
+        "WP_000009567.1",
+        "WP_000011658.1",
+        "WP_000013149.1",
+        "WP_000014719.1",
+        "WP_000015998.1",
+        "WP_000024560.1",
+        "WP_000028953.1",
+        "WP_000031783.1",
+        "WP_000032922.1",
+        "WP_000034372.1",
+        "WP_000042632.1",
+        "WP_000044770.1",
+        "WP_000049213.1",
+        "WP_000057871.1",
+        "WP_000068837.1",
+        "WP_000069231.1",
+        "WP_000074527.1",
+        "WP_000079938.1",
+        "WP_000080885.1",
+        "WP_000083834.1",
+        "WP_000094741.1",
+        "WP_000095048.1",
+        "WP_000104323.1",
+        "WP_000107816.1",
+        "WP_000111290.1",
+        "WP_000115301.1",
+        "WP_000116288.1",
+        "WP_000124722.1",
+        "WP_000126294.1",
+        "WP_000126500.1",
+        "WP_000131782.1",
+        "WP_000135625.1",
+        "WP_000136192.1",
+        "WP_000137118.1",
+        "WP_000145975.1",
+        "WP_000149132.1",
+        "WP_000152518.1",
+        "WP_000153100.1",
+        "WP_000157095.1",
+        "WP_000157586.1",
+        "WP_000165880.1",
+        "WP_000168480.1",
+        "WP_000168710.1",
+        "WP_000170998.1",
+        "WP_000174677.1",
+        "WP_000177208.1",
+        "WP_000183130.1",
+        "WP_000187358.1"
+      ]
+    }
+  },
+  "samples_ran": {
+    "held-out": {
+      "arms": {
+        "K1s-b": {
+          "verdict": "KILL",
+          "failures": [
+            "reporting pairs [] are not exactly -E on tblout and --domE on domtblout"
+          ],
+          "pin": "-Z {entry_count}",
+          "thresholds": [],
+          "reporting_pairs": [],
+          "watched": {
+            "-Z": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domZ": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-E": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--domE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound"
+            },
+            "--incE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-T": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "no shared rows"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--F1": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--F2": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--F3": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--seed": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--cpu": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused"
+            }
+          },
+          "power_floor": {
+            "shared_tblout_rows_on_H": 165,
+            "tblout_rows_H": 165,
+            "tblout_rows_W": 332,
+            "domtblout_rows_H": 248,
+            "domtblout_rows_W": 523,
+            "tblout_header": [
+              "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+              "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+              "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+            ],
+            "domtblout_header": [
+              "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+              "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+              "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+            ]
+          },
+          "fit": {
+            "decision": "REFUSE",
+            "reason": "tbl: column 16 matches no normalizer",
+            "probe_invocations": 3,
+            "columns": [
+              {
+                "table": "tbl",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 2,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 4,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 7,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 11,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 12,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 16,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "tbl",
+                "index": 17,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "tbl",
+                "index": 18,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 4,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 6,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 10,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 11,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 12,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 13,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 14,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 15,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 16,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 17,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 18,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 19,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 20,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 21,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 22,
+                "role": "byte",
+                "member": "byte"
+              }
+            ],
+            "has_entry_count": true
+          },
+          "fit_calls": 1,
+          "structural": {
+            "tbl": [
+              {
+                "index": 16,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ],
+            "dom": [
+              {
+                "index": 9,
+                "kind": "rank"
+              },
+              {
+                "index": 10,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ]
+          },
+          "reason_pin": "",
+          "rejected": [
+            {
+              "option": "--textw",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--textw",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "-E",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "-T",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "no shared rows"
+            },
+            {
+              "option": "--domE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--domE",
+              "role": "threshold",
+              "reason": "no exact bound"
+            },
+            {
+              "option": "--domT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incdomE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incdomT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F1",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F1",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--F2",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F2",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--F3",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F3",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--domZ",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--cpu",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: worker-count probe refused"
+            },
+            {
+              "option": "--cpu",
+              "role": "threshold",
+              "reason": "tool failed: worker-count probe refused"
+            }
+          ],
+          "candidates": [
+            {
+              "option": "--textw",
+              "default": 120.0,
+              "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 12.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 1.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.12,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-E",
+              "default": 10.0,
+              "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 16,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 155,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-T",
+              "default": null,
+              "help_line": "-T <x>     : report models >= this score threshold in output",
+              "normalizer": {
+                "entry_count": "no shared rows"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domE",
+              "default": 10.0,
+              "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 58,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 124,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 165,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--domT",
+              "default": null,
+              "help_line": "--domT <x> : report domains >= this score cutoff in output",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incE",
+              "default": null,
+              "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incT",
+              "default": null,
+              "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomE",
+              "default": null,
+              "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomT",
+              "default": null,
+              "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--F1",
+              "default": 0.02,
+              "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.002,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 16,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 268,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0002,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 50,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 411,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 2e-05,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 106,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 480,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F2",
+              "default": 0.001,
+              "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0001,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 19,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 280,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1e-05,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 95,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 454,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-06,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 172,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 508,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F3",
+              "default": 1e-05,
+              "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0000000000000002e-06,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 136,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 493,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1.0000000000000001e-07,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 192,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 508,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-08,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 209,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 513,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-Z",
+              "default": null,
+              "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domZ",
+              "default": null,
+              "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--seed",
+              "default": 42.0,
+              "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 4.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.42,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.042,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--cpu",
+              "default": 0.0,
+              "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                }
+              ]
+            }
+          ],
+          "members": {
+            "entry_count": {
+              "status": "pinned",
+              "option": "-Z",
+              "template": "-Z {entry_count}"
+            }
+          },
+          "tool_calls": 42,
+          "P": 42
+        },
+        "K1s-a": {
+          "verdict": "PASS",
+          "failures": [],
+          "pin": "-Z {entry_count}",
+          "thresholds": [],
+          "reporting_pairs": [],
+          "watched": {
+            "-Z": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domZ": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-E": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--domE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--incE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "-T": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--F1": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive"
+            },
+            "--F2": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive"
+            },
+            "--F3": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive"
+            },
+            "--seed": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--cpu": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused"
+            }
+          },
+          "power_floor": {
+            "shared_tblout_rows_on_H": 48,
+            "tblout_rows_H": 48,
+            "tblout_rows_W": 101,
+            "domtblout_rows_H": 44,
+            "domtblout_rows_W": 96,
+            "tblout_header": [
+              "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+              "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+              "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+            ],
+            "domtblout_header": [
+              "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+              "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+              "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+            ]
+          },
+          "fit": {
+            "decision": "SHIP",
+            "reason": "decomposition and normalizers fitted",
+            "probe_invocations": 3,
+            "columns": [
+              {
+                "table": "tbl",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 2,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 4,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 7,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 11,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 12,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 16,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 17,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 18,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 4,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 6,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 11,
+                "role": "numeric",
+                "member": "per_key_row_count"
+              },
+              {
+                "table": "dom",
+                "index": 12,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 16,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 17,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 18,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 19,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 20,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 21,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 22,
+                "role": "byte",
+                "member": "byte"
+              }
+            ],
+            "has_entry_count": true
+          },
+          "fit_calls": 1,
+          "structural": {
+            "tbl": [
+              {
+                "index": 16,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              },
+              {
+                "index": 17,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ],
+            "dom": [
+              {
+                "index": 9,
+                "kind": "rank"
+              },
+              {
+                "index": 10,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ]
+          },
+          "reason_pin": "",
+          "rejected": [
+            {
+              "option": "--textw",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--textw",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-T",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domE",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incdomE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incdomT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--F1",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F2",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F3",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--domZ",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--cpu",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: worker-count probe refused"
+            },
+            {
+              "option": "--cpu",
+              "role": "threshold",
+              "reason": "tool failed: worker-count probe refused"
+            }
+          ],
+          "candidates": [
+            {
+              "option": "--textw",
+              "default": 120.0,
+              "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 12.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 1.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.12,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-E",
+              "default": 10.0,
+              "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-T",
+              "default": null,
+              "help_line": "-T <x>     : report models >= this score threshold in output",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domE",
+              "default": 10.0,
+              "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--domT",
+              "default": null,
+              "help_line": "--domT <x> : report domains >= this score cutoff in output",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incE",
+              "default": null,
+              "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incT",
+              "default": null,
+              "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomE",
+              "default": null,
+              "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomT",
+              "default": null,
+              "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--F1",
+              "default": 0.02,
+              "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.002,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0002,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 2e-05,
+                  "outcome": "non-reporting threshold",
+                  "reason": "non-reporting threshold",
+                  "tables": {
+                    "tbl": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F2",
+              "default": 0.001,
+              "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0001,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1e-05,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-06,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F3",
+              "default": 1e-05,
+              "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0000000000000002e-06,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1.0000000000000001e-07,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-08,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-Z",
+              "default": null,
+              "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domZ",
+              "default": null,
+              "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--seed",
+              "default": 42.0,
+              "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 4.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.42,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.042,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--cpu",
+              "default": 0.0,
+              "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                }
+              ]
+            }
+          ],
+          "members": {
+            "entry_count": {
+              "status": "pinned",
+              "option": "-Z",
+              "template": "-Z {entry_count}"
+            }
+          },
+          "tool_calls": 42,
+          "P": 42
+        }
+      },
+      "subprocess_calls": 78
+    },
+    "secondary": {
+      "arms": {
+        "K1s-b": {
+          "verdict": "KILL",
+          "failures": [
+            "reporting pairs [] are not exactly -E on tblout and --domE on domtblout"
+          ],
+          "pin": "-Z {entry_count}",
+          "thresholds": [],
+          "reporting_pairs": [],
+          "watched": {
+            "-Z": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domZ": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-E": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--domE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound"
+            },
+            "--incE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-T": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "--F1": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--F2": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--F3": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed"
+            },
+            "--seed": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--cpu": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused"
+            }
+          },
+          "power_floor": {
+            "shared_tblout_rows_on_H": 143,
+            "tblout_rows_H": 143,
+            "tblout_rows_W": 290,
+            "domtblout_rows_H": 277,
+            "domtblout_rows_W": 506,
+            "tblout_header": [
+              "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+              "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+              "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+            ],
+            "domtblout_header": [
+              "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+              "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+              "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+            ]
+          },
+          "fit": {
+            "decision": "REFUSE",
+            "reason": "tbl: column 16 matches no normalizer",
+            "probe_invocations": 3,
+            "columns": [
+              {
+                "table": "tbl",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 2,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 4,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 7,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 11,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 12,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 16,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "tbl",
+                "index": 17,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "tbl",
+                "index": 18,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 4,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 6,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 10,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 11,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 12,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 13,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 14,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 15,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 16,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 17,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 18,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 19,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 20,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 21,
+                "role": "numeric",
+                "member": null
+              },
+              {
+                "table": "dom",
+                "index": 22,
+                "role": "byte",
+                "member": "byte"
+              }
+            ],
+            "has_entry_count": true
+          },
+          "fit_calls": 1,
+          "structural": {
+            "tbl": [
+              {
+                "index": 16,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ],
+            "dom": [
+              {
+                "index": 9,
+                "kind": "rank"
+              },
+              {
+                "index": 10,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ]
+          },
+          "reason_pin": "",
+          "rejected": [
+            {
+              "option": "--textw",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--textw",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "-E",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "-T",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--domE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--domE",
+              "role": "threshold",
+              "reason": "no exact bound"
+            },
+            {
+              "option": "--domT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incdomE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--incdomT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F1",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F1",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--F2",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F2",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--F3",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F3",
+              "role": "threshold",
+              "reason": "shared rows changed"
+            },
+            {
+              "option": "--domZ",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--cpu",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: worker-count probe refused"
+            },
+            {
+              "option": "--cpu",
+              "role": "threshold",
+              "reason": "tool failed: worker-count probe refused"
+            }
+          ],
+          "candidates": [
+            {
+              "option": "--textw",
+              "default": 120.0,
+              "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 12.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 1.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.12,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-E",
+              "default": 10.0,
+              "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 54,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 8,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 138,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 29,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 217,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-T",
+              "default": null,
+              "help_line": "-T <x>     : report models >= this score threshold in output",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domE",
+              "default": 10.0,
+              "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 56,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 109,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 170,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--domT",
+              "default": null,
+              "help_line": "--domT <x> : report domains >= this score cutoff in output",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incE",
+              "default": null,
+              "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incT",
+              "default": null,
+              "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomE",
+              "default": null,
+              "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomT",
+              "default": null,
+              "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--F1",
+              "default": 0.02,
+              "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.002,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 23,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 248,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0002,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 66,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 338,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 2e-05,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 119,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 397,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F2",
+              "default": 0.001,
+              "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0001,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 38,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 265,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1e-05,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 95,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 383,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-06,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 150,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 442,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F3",
+              "default": 1e-05,
+              "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "shared rows changed",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0000000000000002e-06,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 112,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 437,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1.0000000000000001e-07,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 159,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 452,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-08,
+                  "outcome": "shared rows changed",
+                  "reason": "shared rows changed",
+                  "tables": {
+                    "tbl": {
+                      "removed": 177,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 458,
+                      "outcome": "shared rows changed",
+                      "reason": "shared rows changed",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-Z",
+              "default": null,
+              "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domZ",
+              "default": null,
+              "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--seed",
+              "default": 42.0,
+              "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 4.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.42,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.042,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--cpu",
+              "default": 0.0,
+              "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                }
+              ]
+            }
+          ],
+          "members": {
+            "entry_count": {
+              "status": "pinned",
+              "option": "-Z",
+              "template": "-Z {entry_count}"
+            }
+          },
+          "tool_calls": 42,
+          "P": 42
+        },
+        "K1s-a": {
+          "verdict": "PASS",
+          "failures": [],
+          "pin": "-Z {entry_count}",
+          "thresholds": [],
+          "reporting_pairs": [],
+          "watched": {
+            "-Z": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domZ": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default"
+            },
+            "-E": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--domE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--incE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomE": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "-T": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--domT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--incdomT": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default"
+            },
+            "--F1": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound"
+            },
+            "--F2": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive"
+            },
+            "--F3": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive"
+            },
+            "--seed": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            "--cpu": {
+              "present": true,
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused"
+            }
+          },
+          "power_floor": {
+            "shared_tblout_rows_on_H": 53,
+            "tblout_rows_H": 53,
+            "tblout_rows_W": 105,
+            "domtblout_rows_H": 60,
+            "domtblout_rows_W": 115,
+            "tblout_header": [
+              "#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----",
+              "# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target",
+              "#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------"
+            ],
+            "domtblout_header": [
+              "#                                                                            --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord",
+              "# target name        accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target",
+              "#------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------"
+            ]
+          },
+          "fit": {
+            "decision": "SHIP",
+            "reason": "decomposition and normalizers fitted",
+            "probe_invocations": 3,
+            "columns": [
+              {
+                "table": "tbl",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 2,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "tbl",
+                "index": 4,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 7,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "tbl",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 11,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 12,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 16,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 17,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "tbl",
+                "index": 18,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 1,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 4,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "table": "dom",
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 6,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 8,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 9,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 10,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 11,
+                "role": "numeric",
+                "member": "per_key_row_count"
+              },
+              {
+                "table": "dom",
+                "index": 12,
+                "role": "numeric",
+                "member": "entry_count"
+              },
+              {
+                "table": "dom",
+                "index": 13,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 14,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 15,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 16,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 17,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 18,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 19,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 20,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 21,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "table": "dom",
+                "index": 22,
+                "role": "byte",
+                "member": "byte"
+              }
+            ],
+            "has_entry_count": true
+          },
+          "fit_calls": 1,
+          "structural": {
+            "tbl": [
+              {
+                "index": 16,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              },
+              {
+                "index": 17,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ],
+            "dom": [
+              {
+                "index": 9,
+                "kind": "rank"
+              },
+              {
+                "index": 10,
+                "kind": "count",
+                "key": "record,entry",
+                "count_table": "dom"
+              }
+            ]
+          },
+          "reason_pin": "",
+          "rejected": [
+            {
+              "option": "--textw",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--textw",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-E",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "-T",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domE",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--domT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incdomE",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--incdomT",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--F1",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F1",
+              "role": "threshold",
+              "reason": "no exact bound"
+            },
+            {
+              "option": "--F2",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--F3",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--domZ",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "m-columns differ"
+            },
+            {
+              "option": "--seed",
+              "role": "threshold",
+              "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+            },
+            {
+              "option": "--cpu",
+              "role": "normalizer",
+              "member": "entry_count",
+              "reason": "tool failed: worker-count probe refused"
+            },
+            {
+              "option": "--cpu",
+              "role": "threshold",
+              "reason": "tool failed: worker-count probe refused"
+            }
+          ],
+          "candidates": [
+            {
+              "option": "--textw",
+              "default": 120.0,
+              "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 12.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: option --textw takes integer arg in range n>=120; got 12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 1.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 1.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.12,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --textw takes integer arg; got 0.12 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-E",
+              "default": 10.0,
+              "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "-T",
+              "default": null,
+              "help_line": "-T <x>     : report models >= this score threshold in output",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domE",
+              "default": 10.0,
+              "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.1,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.01,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--domT",
+              "default": null,
+              "help_line": "--domT <x> : report domains >= this score cutoff in output",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incE",
+              "default": null,
+              "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incT",
+              "default": null,
+              "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomE",
+              "default": null,
+              "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--incdomT",
+              "default": null,
+              "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+              "normalizer": {
+                "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--F1",
+              "default": 0.02,
+              "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no exact bound",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.002,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0002,
+                  "outcome": "non-reporting threshold",
+                  "reason": "non-reporting threshold",
+                  "tables": {
+                    "tbl": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 2e-05,
+                  "outcome": "no exact bound",
+                  "reason": "no exact bound",
+                  "tables": {
+                    "tbl": {
+                      "removed": 3,
+                      "outcome": "no exact bound",
+                      "reason": "no exact bound",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F2",
+              "default": 0.001,
+              "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0001,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1e-05,
+                  "outcome": "non-reporting threshold",
+                  "reason": "non-reporting threshold",
+                  "tables": {
+                    "tbl": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-06,
+                  "outcome": "non-reporting threshold",
+                  "reason": "non-reporting threshold",
+                  "tables": {
+                    "tbl": {
+                      "removed": 1,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "--F3",
+              "default": 1e-05,
+              "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "inconclusive",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 1.0000000000000002e-06,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 100,
+                  "t": 1.0000000000000001e-07,
+                  "outcome": "unchanged",
+                  "reason": "unchanged",
+                  "tables": {
+                    "tbl": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "unchanged",
+                      "reason": "unchanged",
+                      "columns": []
+                    }
+                  }
+                },
+                {
+                  "factor": 1000,
+                  "t": 1e-08,
+                  "outcome": "non-reporting threshold",
+                  "reason": "non-reporting threshold",
+                  "tables": {
+                    "tbl": {
+                      "removed": 2,
+                      "outcome": "inconclusive",
+                      "reason": "inconclusive",
+                      "columns": []
+                    },
+                    "dom": {
+                      "removed": 0,
+                      "outcome": "non-reporting threshold",
+                      "reason": "non-reporting threshold",
+                      "columns": []
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "option": "-Z",
+              "default": null,
+              "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+              "normalizer": {
+                "entry_count": "accept"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--domZ",
+              "default": null,
+              "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "no numeric default",
+              "probes": []
+            },
+            {
+              "option": "--seed",
+              "default": 42.0,
+              "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+              "normalizer": {
+                "entry_count": "m-columns differ"
+              },
+              "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 4.2,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 4.2 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.42,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.42 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.042,
+                  "outcome": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "reason": "tool failed: tool failed (1): Failed to parse command line: Option --seed takes integer arg; got 0.042 on cmdline\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n",
+                  "tables": {}
+                }
+              ]
+            },
+            {
+              "option": "--cpu",
+              "default": 0.0,
+              "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+              "normalizer": {
+                "entry_count": "tool failed: worker-count probe refused"
+              },
+              "threshold": "tool failed: worker-count probe refused",
+              "probes": [
+                {
+                  "factor": 10,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 100,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                },
+                {
+                  "factor": 1000,
+                  "t": 0.0,
+                  "outcome": "tool failed: worker-count probe refused",
+                  "reason": "tool failed: worker-count probe refused",
+                  "tables": {}
+                }
+              ]
+            }
+          ],
+          "members": {
+            "entry_count": {
+              "status": "pinned",
+              "option": "-Z",
+              "template": "-Z {entry_count}"
+            }
+          },
+          "tool_calls": 42,
+          "P": 42
+        }
+      },
+      "subprocess_calls": 78
+    }
+  },
+  "verdict": "KILL",
+  "held_out_verdicts": {
+    "K1s-a": "PASS",
+    "K1s-b": "KILL"
+  }
+}

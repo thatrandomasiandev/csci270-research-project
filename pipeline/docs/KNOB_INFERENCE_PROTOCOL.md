@@ -698,3 +698,63 @@ both samples' construction records, both power floors, A per table, and
 for every candidate every `f` with accept, reject, or inconclusive and
 the reason. Held-out and secondary are separate objects. The verdict
 fields are the held-out arm verdicts only.
+
+## Addendum 2026-10-12 — K1s outcome
+
+Rules above are unchanged. Result file `results/knob_inference/k1s.json`.
+Git `e2868ec`. Host `Joshuas-MacBook-Pro-3.local`, arm64, HMMER 3.4
+(Aug 2023). No retune. The held-out sample decides. The secondary sample
+does not. No bounding column was recorded: neither required reporting
+threshold was accepted, so no printed column was established as the cut.
+
+**SAMPLE-CONSTRUCTION, held-out** (not a K1s result). One stock scan of
+`GCF_002090355.1` against pressed Pfam 38.2, query seed 20261016: wall
+55.373 s, 1,751 tblout body rows, 2,869 domtblout body rows. 294 queries
+in the draw had a tblout row. Q is the first 50 (332 tblout rows on Q).
+Hit models 293, none unmatched, not truncated. Fill 107. `|W| = 400`.
+H is 146 of the hit stratum and 54 of the fill. The reference has
+30,134 models.
+
+**Power floor, held-out, passed.** K1s-b shared 165 tblout rows on H
+(H 165, W 332). K1s-a shared 48 (H 48, W 101). Both are at least 30.
+
+**K1s-a — PASS.** Fit SHIP. Pin `-Z {entry_count}`. `--domZ` rejected
+(`m-columns differ` as a normalizer, `no numeric default` as a
+threshold). No reporting threshold accepted. A on the default run:
+tblout columns 16 and 17 are `(record, entry)` counts in domtblout;
+domtblout column 9 is the 1-based rank and column 10 is that same
+count. `-E` and `--domE` were `tool failed` (incompatible with
+`--cut_ga`). `-T`, `--domT`, `--incE`, `--incdomE`, `--incT`, and
+`--incdomT` are `no numeric default`. `--F1`, `--F2`, and `--F3` were
+inconclusive. `--seed` and `--textw` were `tool failed`. `--cpu` was
+the worker-count refusal. None of those is an accept. P = `tool_calls`
+= 42. Fitter `probe_invocations` = 3.
+
+**K1s-b — KILL.** Fit REFUSE (`tbl: column 16 matches no normalizer`)
+with `entry_count` still assigned, so inference ran. Pin
+`-Z {entry_count}`. No reporting threshold accepted. A on the default
+run: tblout column 16 is the `(record, entry)` count in domtblout;
+domtblout column 9 is the rank and column 10 is that count. `-E` was
+`unchanged` at `t = 1` and `t = 0.1` (0 rows removed) and `shared rows
+changed` at `t = 0.01` (tblout 16 identities gone, domtblout 155).
+`--domE` removed domtblout rows (58, 124, 165) with no printed column
+cutting at exactly `t`, so the option is `no exact bound`; tblout
+identities stayed and a structural count changed (`non-reporting
+threshold` on that table). `--F1`, `--F2`, and `--F3` were `shared rows
+changed`. `--incE` and `--incdomE` are `no numeric default`, as are
+`-T`, `--domT`, `--incT`, and `--incdomT`. `--seed` and `--textw` were
+`tool failed`. `--cpu` was the worker-count refusal. `--domZ` is not
+the pin. The required reporting pairs are missing. P = 42. Fitter
+`probe_invocations` = 3.
+
+**Secondary** (not the verdict). Construction wall 59.924 s, 1,361
+tblout body rows, hit models 277, fill 123, `|W| = 400`, H 138/62.
+Power floor 143 (K1s-b) and 53 (K1s-a). K1s-a PASS, same pin, no
+threshold accepted, P = 42. K1s-b KILL, same pin, `-E` `shared rows
+changed`, `--domE` `no exact bound`, P = 42.
+
+Knob inference is not shippable for reporting thresholds. `--slack`
+stays required. The held-out pin check passed on K1s-a, and K1r-a
+already passed, so a score-thresholded pin may be inferred. The
+factors, the accept rule, the structural-column tests, and the seeds
+were not changed.
