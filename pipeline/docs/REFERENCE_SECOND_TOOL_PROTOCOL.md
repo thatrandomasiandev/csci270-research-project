@@ -484,3 +484,173 @@ Scratch for the rerun is `/scratch1/$USER` (Lustre). On 2026-10-10 that director
 
 The rerun asks for `--mem=0` on the exclusive node, which is the node's memory. The locked paragraph above still says `--mem=64G`. That is the request the cgroup enforced. This addendum changes the request. It does not change the prediction rule.
 
+## Addendum 2026-10-12 — Test D-X (pre-registered)
+
+Written before any D-X search and before any measured D-X wall. The locked
+D0–D3 text, S1, and the D3 resume rule are unchanged. No number below is
+a result. This test does not read or write the CARC D3 resume files.
+
+### Why
+
+The prior-art verdict says the narrow exact claim survives on a second
+tool only with no compiled per-tool formula, the pin found by inference,
+and a body compare. The hand-built approximate competitor on this tool
+is iSeqSearch's iDiamond at `7e862bf3afa52b65b3cca4255de66ab4cb764fe3`.
+Search here is heuristic, and some internals read the database. The
+BLAST boundary run found one `different_hsp` row. Pinned replay may not
+be exact. A clean KILL is a result.
+
+### Host and inputs
+
+One Mac run. Walls are indicative. Scratch is a normal disk directory
+under `pipeline/data/` (APFS, not tmpfs, not a RAM disk). The driver
+refuses to start when that directory's mount is tmpfs.
+
+S1 argv and prep are the locked commands, including `--threads 32`,
+`-k 0`, `--min-score 40`, `-b 2.0`, and the locked outfmt. Sensitivity
+mode and columns are not changed. This host has fewer than 32 cores;
+the thread count stays 32.
+
+The binary is the v2.2.5 macOS release asset, because this host is
+Darwin arm64. `diamond version` must contain `2.2.5`. Any other version
+string stops the run. The linux64 MD5 in the input table is the CARC
+binary. The Mac binary's own MD5 is recorded in the result and is not
+required to equal that row. Source commit of the tag remains
+`6dc57174369ba131d35a21db9735a48ac01e6610`; this run does not build a
+different commit.
+
+Inputs are the two Swiss-Prot FASTA rows in the 2026-10-09 checksum
+table. A size or MD5 mismatch is `STOP_INPUTS`. The 2026_01 tar, if
+fetched, must match `6042adf20dad1ab62112c9053bdebd20` before
+extraction. The extracted FASTA must match
+`5245b19456d9a063b13c46602269bc5f`. Data stays outside git.
+
+The D2 contract is the committed fit
+(`results/reference_diamond/reference_diamond_d2.json`). It is not
+refit. Column 10 is `total_entry_length`. No column is `entry_count`.
+
+### Queries
+
+DX-E1, DX-E2, and DX-I use the same 300 queries: record indices
+`sorted(random.Random(20261017).sample(range(n), 300))` from
+`GCF_002853805.1_protein.faa.gz`, written in that file order.
+
+DX-K queries are held out, from `GCF_002090355.1_protein.faa.gz`,
+K1r-style, seed `20261018`. Three independent `random.Random(20261018)`
+instances, so the query draw does not consume the fill stream:
+
+1. Draw `sorted(sample(range(n), 300))`. One S1 scan of those records
+   against full 2026_03 is SAMPLE-CONSTRUCTION, not a DX-K result.
+2. Q is the first 50 indices in that sorted draw with at least one
+   body row. Fewer than 50 is INCONCLUSIVE, not a kill and not a pass.
+3. Hit entries are 2026_03 entries, in file order, whose key equals a
+   subject id on a Q row. Unmatched subject ids are counted and are
+   not members of W. More than 400 hit entries: W is the first 400 in
+   file order and the fill does not run. Otherwise the fill is
+   `sample` of the non-hit indices, size `400 - |hits|`. W is hits
+   plus fill, in file order. `|W| < 400` is INCONCLUSIVE.
+4. H is the K1r stratified half. The third `Random(20261018)` samples
+   `len(stratum) // 2` from the hit stratum, then from the fill
+   stratum. If those floors sum to less than 200, the remainder is
+   unselected fill entries in file order, then unselected hit entries,
+   until `|H| = 200`. H is written in W's file order.
+
+### DX-K
+
+`acts/infer_knobs.py` accept, reject, placeholder, and threshold rules
+are unchanged. The contract is the committed D2 tables. The help probe
+is generic and does not name a program:
+
+- Let `k` be the index of the first option token in the argv.
+- For `j = 1 .. k` inclusive, try `argv[:j] + ['--help']`, then
+  `argv[:j] + ['-h']`.
+- Use the first text that yields a numeric-argument option under the
+  locked parser.
+- If none do, try the bare prefixes `argv[:j]` in the same order and
+  use the first that yields a numeric-argument option. This covers a
+  program that prints usage when required arguments are missing and
+  rejects a help flag.
+- If none do, inference receives the last bare prefix's text.
+
+Help text is not a probe call. A line with no locked numeric
+placeholder is not a candidate, including a line that only prints
+`default=`.
+
+Ground truth, written now: the pin is `--dbsize {total_entry_length}`.
+Decoys must not be accepted as the pin or as a reporting threshold:
+`--threads`, `-p`, `--block-size`, `-b`, `--index-chunks`, `-c`, and
+any option whose token or help line contains `seed` or `shape`.
+
+Driver safety, the worker-count analogue, fixed now. A refused probe
+is `tool failed` and cannot be accepted. It is not executed:
+
+- `--threads` set to anything but `32`;
+- `-b` or `--block-size` set to anything but `2.0` (the unit is
+  billions of letters, and the probe value is a letter count);
+- `-c` or `--index-chunks` set to an integer above 64.
+
+Every inference invocation also has a 10-minute wall and an 8 GiB
+resident cap. A kill is `tool failed`. Stock searches are not under
+that cap; they have a 60-minute wall and a 18 GiB resident cap so a
+runaway stops without using the RAM disk.
+
+KILL: the pin is not `--dbsize {total_entry_length}`, there is no pin,
+or a decoy is accepted. Do not retune the placeholder list, `s`, or
+the accept rule.
+
+### DX-E1
+
+Only if DX-K passes. Stock S is S1 on 2026_03 for the 300 queries.
+Replay R is S1 on the queries with at least one S row, against the
+union of S's subject entries in 2026_03 file order, with the inferred
+pin set to `{total_entry_length}` of the full 2026_03 release.
+Rn is R without the pin. Body lines are every line that does not start
+with `#`. R must be byte-identical to S. Rn must differ. Any body
+difference kills exact mode for this tool. Classify every differing
+row: `same_hsp_different_value` (same query, subject, and
+`qstart qend sstart send`, some other cell differs), `different_hsp`,
+`row_missing` (in S only), `row_extra` (in R only). Report counts.
+
+### DX-E2
+
+Only if DX-E1 passes. Cache is stock S1 on 2026_01 for the same 300
+queries. Changed or new entries are 2026_03 entries whose strict hash
+(sequence plus header, as the FASTA parser defines it) is absent from
+2026_01. Discovery is S1 on that sub-reference, unpinned, with the
+declared slack. Candidates are cached rows whose subject entry is
+unchanged, plus discovery rows. Replay is S1 on the queries that have
+a candidate, against the union of those entries in 2026_03 file order,
+with the inferred pin and without the slack flags. Compare body bytes
+to stock S1 on 2026_03.
+
+Declared slack, caller data, not inferred: `s = 2` on the e-value
+cutoff. The help default of that cutoff is 0.001, so discovery and
+only discovery adds the e-value option set to `0.002`. S1's
+`--min-score 40` stays on every invocation. Replay does not add the
+e-value option. Thresholds are not inferred. This is the K1s rule that
+thresholds stay caller data.
+
+Any body difference: exact mode is not claimed for this tool. Record
+the difference classes. No per-tool branch is added.
+
+### DX-I
+
+Runs even if DX-K, DX-E1, or DX-E2 is a kill. Same 300 queries and the
+same 2026_01 → 2026_03 update. OLD is stock S1 on 2026_01. DELTA is
+stock S1, not the slack command, on the FASTA of 2026_03 entries whose
+strict hash is not in 2026_01. `L_old` and `L_delta` are `diamond
+dbinfo` letter counts. Their sum is what the merger uses. The call is
+`source/main.py --default OLD DELTA OUT L_old L_delta` at the pinned
+commit. Do not reimplement the merger.
+
+Against stock S1 on 2026_03, for iDiamond and, if DX-E2 produced a
+body, for ACTS: rows only-stock, only-other, shared; fraction of
+shared rows whose body line is byte-identical; Pearson and Kendall τ
+of the e-value column on shared rows. DX-I has no kill.
+
+### Output
+
+`pipeline/results/reference_diamond/dx.json`: git hash, host, version
+strings, MD5s, and every count. MEASURED numbers come from that file.
+Walls are single-run and indicative.
+
