@@ -489,3 +489,40 @@ Walls are one run and indicative. Result file:
 input md5s, per-proteome line counts, difference classes, candidate
 counts, walls). Work directory `~/tmp/e1scale_work`, outside the repo.
 Uncompressed scratch is deleted after the run.
+
+## Addendum 2026-10-13 — E1-scale outcome (results; rules unchanged)
+
+Pre-registration on this branch is `44f1766`. The run recorded
+`git_head` `d5360fd`; rebase onto `origin/main` replayed that patch
+unchanged as `44f1766`. Driver `scripts/exact_replay_hmmscan.py`,
+unchanged. File `results/exact_replay/e1scale.json`.
+
+Host: Joshuas-MBP-3.lan, arm64, `--cpu 4`, HMMER 3.4 on `PATH`
+(`# HMMER 3.4 (Aug 2023)`). Pressed model counts 30,134 and 27,481.
+Proteomes are the locked draw, whole files. Stock-vs-stock on proteome
+1 was byte-identical (738.4 s and 720.6 s, indicative). Walls below are
+one run and indicative.
+
+**Overall EXACT.** Stock 38.2 tblout body lines sum to 26,127, above
+the floor of 5,000. E1 and E2 are byte-identical to stock on both
+tables for every proteome. No width remedy. The token check agreed
+with the byte check on every E1 and E2 table: there was no
+whitespace-only difference.
+
+| Proteome | Records | tblout | domtblout | E1 models | Outcome |
+|---|---:|---:|---:|---:|---|
+| GCF_013315695.1 | 4,927 | 9,094 | 8,812 | 3,719 | EXACT |
+| GCF_049201905.1 | 4,290 | 8,488 | 8,202 | 3,574 | EXACT |
+| GCF_059719525.1 | 4,374 | 8,545 | 8,265 | 3,615 | EXACT |
+
+E2 replayed the same model counts as E1. Changed or new models: 4,052
+on each proteome. Candidate pairs equal the tblout line counts.
+
+Rn, the unpinned replay, was value-only and not byte-identical. On
+each proteome, 11 tblout lines and 11 domtblout lines stayed equal to
+stock. Every one of those lines prints E-value `0`. The rest differ.
+The pin control holds. It does not differ on every line, for the same
+reason the pilot recorded.
+
+Uncompressed Pfam text was deleted after the run. Pressed sidecars in
+the work directory were deleted with it.
