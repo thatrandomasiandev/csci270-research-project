@@ -699,3 +699,124 @@ Walls, one Mac run, indicative: stock 2026_01 4.06 s, stock 2026_03
 3.61 s, delta search 0.42 s. The whole driver was 37 s. Not a speedup
 claim.
 
+## Addendum 2026-10-12 — DX2 (pre-registered after pilot)
+
+Written after the pilot commit `97683b6` and before any measured DX2
+search. The locked D-X text, the DX-K kill, and `acts/infer_knobs.py`
+are unchanged. Pin inference stays closed. No number below this
+paragraph is a measured DX2 result. The pilot file is
+`results/reference_diamond/dx2_pilot.json`. It is a pilot, not a result.
+The semantics note is `results/reference_diamond/dx2_semantics.md`.
+
+### Pilot findings
+
+Host `Joshuas-MacBook-Pro-3.local`, DIAMOND 2.2.5, macOS binary MD5
+`711d4c7b29e24c3fd6ec6a288ec1d326`. Inputs matched the committed FASTA
+table. `dbinfo` letters matched D0. Queries: 50 with a hit, drawn from
+`GCF_002090355.1` by `random.Random(20261019)` (pool of 80, 78 had a
+hit). Threads 8 on every search. These queries are not the measured set.
+
+- **B0.** Stock twice, bodies identical, 6,451 rows. `--threads 1` and
+  `--threads 8` bodies identical. Both logs: `Algorithm: Double-indexed`,
+  `Block size = 2000000000`.
+- **B1.** Oracle replay with `--dbsize 209017843` is not the stock body.
+  6,448 shared rows are byte-identical, including the E-value cell.
+  `row_missing` 3, `row_extra` 0, `different_hsp` 0,
+  `same_hsp_different_value` 0. All three missing rows are one query,
+  `WP_000273290.1`, against `sp|O67359|GPH_AQUAE` (bitscore 49.3),
+  `sp|Q48A85|GPH_COLP3` (47.4), and `sp|B7GL49|PPAX_ANOFW` (40.0). The
+  unpinned control differs: 6,335 `same_hsp_different_value`, the same
+  3 missing rows, 113 shared lines byte-identical. The pin is
+  load-bearing for the printed E-value. It does not cause the three
+  misses.
+- **B2.** HMMER positive control passes. E1 argv, Pfam 38.2, `--cut_ga`,
+  `--cpu 4`, `-Z 30134`, first 50 indices of the E1 draw
+  (`random.Random(20261012).sample` of 300 from `GCF_002853805.1`).
+  47 queries with a hit, 102 candidate models, pad 200. tblout 104/104
+  and domtblout 114/114, ordered bodies equal, no pad hit. DIAMOND on
+  the true B1 candidates: the stated certificate passes (6,448 R rows
+  all present in R+, 0 pad hits) while R+ has one extra row on a
+  candidate subject (`PPAX_ANOFW`, one of the three stock rows R
+  missed). Negative control: drop 645 of 6,451 hit subjects (10%,
+  `random.Random(20261022)`). The certificate fails, 9 pad-hit rows.
+  Nine of the dropped subjects fell in the pad. It can see that
+  incomplete set.
+- **B3.** No declared extra. Stock and replay both double-indexed, both
+  one block of 2e9 letters. `--no-ranking` on the replay only still
+  misses the same 3 rows. `--algo` and `-b` were not retuned.
+- **B4.** On entries unchanged between 2026_01 and 2026_03 (565,509),
+  the 50 queries have 6,256 hit pairs in each release and 0 pairs hit
+  in one release only.
+- **B5.** Indicative walls: stock 2.82 s, R 0.161 s, R+ 0.190 s.
+  R+/R = 1.18. R+/stock = 0.067.
+
+The stated certificate does not fail when R+ adds a row whose subject
+is already in U. That is how it passed over a replay that missed three
+stock rows. The measured arms keep that predicate. A pass on a replay
+that differs from stock is UNSAFE, which is the kill this test exists
+to allow.
+
+### Locked argv
+
+S1 with `--threads 8` on every invocation, including `makedb`. Eight is
+the cap while another job may share this machine. B0 showed 1 and 8
+threads print the same body, so the count is not a second scientific
+knob. No B3 extra. Declared pin, replay only:
+`--dbsize {total_entry_length}` with the full 2026_03 letter count
+209,017,843.
+
+E2 slack carrier, required because `slack_rewrite` only scales a flag
+the argv already sets and rejects `--evalue 0.002` on bare S1. The E2
+tool argv is S1 plus `--evalue 0.001`. `--slack '--evalue 0.002'` then
+has factor 2. Cache fill and discovery use 0.002. Replay uses 0.001
+plus the pin. `--min-score 40` stays on every invocation. Stock, the
+comparison target, is S1 without `--evalue`. Under `--min-score`,
+`report_cutoff` uses the bit score and does not read the E-value
+cutoff (`score_matrix.cpp:238-243` at the pinned tag). This flag is
+the slack carrier, not a size-dependent knob.
+
+### Queries, references, pad
+
+DX2-E1 and DX2-E2 use the same 300 queries:
+`sorted(random.Random(20261017).sample(range(n), 300))` from
+`GCF_002853805.1_protein.faa.gz`, written in file order. Releases
+2026_01 → 2026_03. Pad seed `20261020`. Pad is a sample of
+non-candidate entries, size `max(200, |U|)`, merged with U in release
+order. The same pin is used on R and on R+.
+
+The certificate passes if and only if every R body line occurs in R+
+with the same multiplicity, and R+ has no row on a Pad entry for a
+replayed query. An extra R+ row on a candidate subject does not fail
+it. That limitation is the one the pilot exhibited.
+
+### Arms
+
+Judged independently. Neither gates the other.
+
+- **DX2-E1.** Stock S is S1 on 2026_03. U is S's subject entries in
+  file order. R is S1 plus the declared pin on the queries with a hit,
+  against U. Rn, the unpinned control, is recorded and is not an
+  outcome. IC is R versus R+ on U ∪ Pad.
+- **DX2-E2.** Shipped CLI, `python3 -m acts run --strategy reference`,
+  `--pin '--dbsize {total_entry_length}'`, `--slack '--evalue 0.002'`,
+  tool argv as above, `--prep` the locked `makedb` line with 8 threads.
+  Cache filled by that command on 2026_01, then the same command on
+  2026_03. The emitted replay body is compared to stock S1 on 2026_03
+  without `--evalue`. IC uses the candidate union that replay searched.
+
+### Outcome
+
+Per arm:
+
+- **EXACT.** Replay body equals the stock body, and IC passed.
+- **SAFE-REFUSE.** IC failed. Record whether the replay body differed
+  from stock (true refusal) or matched (needless refusal).
+- **UNSAFE.** Replay body differs from stock, and IC passed. Report
+  the difference classes. This is the kill.
+
+Also record candidate pairs, rescanned entries, replay subjects, IC
+overhead, and walls. Walls are one Mac run and are indicative. If E2
+is EXACT, add the ACTS row beside iDiamond in the D-X comparison:
+shared-row exact fraction, Kendall τ, Pearson, extra and missing rows
+versus stock.
+
