@@ -1335,6 +1335,11 @@ class ReferenceIncremental(Strategy):
             extra = neighbor_ids(entries, tokens)
             expanded[key] = set(tokens) | extra
             neighbor_pad |= extra
+        # A model that is a candidate for one record can be the file-order
+        # neighbor of another record's candidate. It is still searched for
+        # that second record. It is not a pad subject: the candidate-row
+        # multiset covers it. The pilot subtracted the candidate union.
+        neighbor_pad -= u_ids
         why = run_pad("neighbor", rep_records, expanded, neighbor_pad, None)
         if why:
             return why

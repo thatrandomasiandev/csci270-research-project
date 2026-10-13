@@ -113,6 +113,45 @@ class CertificateExactModeTests(unittest.TestCase):
             )
             self.assertFalse((tmp / "out" / "tables" / "out").exists())
 
+    def test_candidate_that_is_another_records_neighbor_still_ships(self) -> None:
+        # e0 is r1's hit and the file-order predecessor of r0's hit e1.
+        # The neighbor search must include e0 for r0, and the judge must
+        # not call r1's own e0 row a pad hit.
+        hits = {"r0": {"e1"}, "r1": {"e0"}}
+
+        def render(records, entries, scale: float) -> dict[str, str]:
+            present = {entry.primary for entry in entries}
+            lines = ["# record entry evalue"]
+            for rec in records:
+                for entry in entries:
+                    if entry.primary in hits[rec.key] and entry.primary in present:
+                        lines.append(f"{rec.key} {entry.primary} {scale * float(rec.description):.6f}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        def runner(records, entries):
+            return render(records, entries, len(entries))
+
+        def pinned(records, entries, values):
+            return render(records, entries, values["entry_count"])
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            (tmp / "q.faa").write_text(">r0 1.0\nM\n>r1 1.0\nM\n")
+            reference = tmp / "ref.entryline"
+            write_entries(parse_entryline("e0 1\ne1 2\ne2 3\n"), reference)
+            result = ReferenceIncremental(
+                argv=["law", "{reference}", "{input}", "{output}"],
+                input_path=tmp / "q.faa",
+                out_dir=tmp / "out",
+                reference=reference,
+                cache_path=tmp / "cache.sqlite",
+                verify="audit",
+                runner=runner,
+                pin="-Z {entry_count}",
+                pin_runner=pinned,
+            ).run()
+            self.assertEqual(result.decision, "SHIP", result.reason)
+
 
 if __name__ == "__main__":
     unittest.main()
