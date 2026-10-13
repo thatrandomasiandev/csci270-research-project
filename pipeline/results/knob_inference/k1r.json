@@ -1,0 +1,1518 @@
+{
+  "protocol": "docs/KNOB_INFERENCE_PROTOCOL.md",
+  "addendum": "2026-10-12 K1r",
+  "git": "7c64e275554711c7df9f629a80753385ca193646",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "machine": "arm64",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "banner": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "seeds": {
+    "e1": 20261012,
+    "fill_and_h": 20261015
+  },
+  "sample_construction": {
+    "label": "SAMPLE-CONSTRUCTION",
+    "wall_s": 60.009650750027504,
+    "tblout_body_rows": 1361,
+    "domtblout_body_rows": 2729,
+    "e1_queries": 300,
+    "queries_with_hits_in_e1": 288,
+    "q": 50,
+    "q_tblout_rows": 289,
+    "hit_models": 277,
+    "hits_truncated_at_400": false,
+    "unmatched_targets": [],
+    "fill_models": 123,
+    "W": 400,
+    "H": 200,
+    "H_hit_models": 138,
+    "H_fill_models": 62,
+    "model_total": 30134,
+    "press": {
+      "decomp_s": 2.1506028750445694,
+      "press_s": 9.708182125003077,
+      "pressed_models": 30134
+    },
+    "query_names": [
+      "WP_000003656.1",
+      "WP_000003820.1",
+      "WP_000009567.1",
+      "WP_000011658.1",
+      "WP_000013149.1",
+      "WP_000014719.1",
+      "WP_000015998.1",
+      "WP_000024560.1",
+      "WP_000028953.1",
+      "WP_000031783.1",
+      "WP_000032922.1",
+      "WP_000034372.1",
+      "WP_000042632.1",
+      "WP_000044770.1",
+      "WP_000049213.1",
+      "WP_000057871.1",
+      "WP_000068837.1",
+      "WP_000069231.1",
+      "WP_000074527.1",
+      "WP_000079938.1",
+      "WP_000080885.1",
+      "WP_000083834.1",
+      "WP_000094741.1",
+      "WP_000095048.1",
+      "WP_000104323.1",
+      "WP_000107816.1",
+      "WP_000111290.1",
+      "WP_000115301.1",
+      "WP_000116288.1",
+      "WP_000124722.1",
+      "WP_000126294.1",
+      "WP_000126500.1",
+      "WP_000131782.1",
+      "WP_000135625.1",
+      "WP_000136192.1",
+      "WP_000137118.1",
+      "WP_000145975.1",
+      "WP_000149132.1",
+      "WP_000152518.1",
+      "WP_000153100.1",
+      "WP_000157095.1",
+      "WP_000157586.1",
+      "WP_000165880.1",
+      "WP_000168480.1",
+      "WP_000168710.1",
+      "WP_000170998.1",
+      "WP_000174677.1",
+      "WP_000177208.1",
+      "WP_000183130.1",
+      "WP_000187358.1"
+    ]
+  },
+  "arms": {
+    "K1r-b": {
+      "verdict": "KILL",
+      "failures": [
+        "missing threshold -E",
+        "missing threshold --domE"
+      ],
+      "pin": "-Z {entry_count}",
+      "thresholds": [],
+      "watched": {
+        "-Z": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "accept"
+          },
+          "threshold": "no numeric default"
+        },
+        "--domZ": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "-E": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        "--domE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        "--incE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incdomE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "-T": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "--domT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incdomT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "--F1": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        "--F2": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        "--F3": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        "--seed": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        "--cpu": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: worker-count probe refused"
+          },
+          "threshold": "tool failed: worker-count probe refused"
+        }
+      },
+      "power_floor": {
+        "shared_tblout_rows_on_H": 143,
+        "tblout_rows_H": 143,
+        "tblout_rows_W": 290,
+        "domtblout_rows_H": 277,
+        "domtblout_rows_W": 506
+      },
+      "fit": {
+        "decision": "REFUSE",
+        "reason": "tbl: column 16 matches no normalizer",
+        "probe_invocations": 3,
+        "columns": [
+          {
+            "table": "tbl",
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 1,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 2,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 4,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "tbl",
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 6,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 7,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "tbl",
+            "index": 8,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 9,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 10,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 11,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 12,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 13,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 14,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 15,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 16,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "tbl",
+            "index": 17,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "tbl",
+            "index": 18,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 1,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 2,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 4,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 6,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "dom",
+            "index": 7,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 8,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 9,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 10,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 11,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 12,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 13,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 14,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 15,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 16,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 17,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 18,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 19,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 20,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 21,
+            "role": "numeric",
+            "member": null
+          },
+          {
+            "table": "dom",
+            "index": 22,
+            "role": "byte",
+            "member": "byte"
+          }
+        ],
+        "has_entry_count": true
+      },
+      "fit_calls": 1,
+      "reason_pin": "",
+      "rejected": [
+        {
+          "option": "--textw",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--textw",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "-E",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "-E",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "-T",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "-T",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--domE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--domE",
+          "role": "threshold",
+          "reason": "shared rows changed"
+        },
+        {
+          "option": "--domT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--domT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--incE",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--incT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incdomE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--incdomE",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incdomT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--incdomT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--F1",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F1",
+          "role": "threshold",
+          "reason": "shared rows changed"
+        },
+        {
+          "option": "--F2",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F2",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "--F3",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F3",
+          "role": "threshold",
+          "reason": "shared rows changed"
+        },
+        {
+          "option": "-Z",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--domZ",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--domZ",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--seed",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--seed",
+          "role": "threshold",
+          "reason": "shared rows changed"
+        },
+        {
+          "option": "--cpu",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: worker-count probe refused"
+        },
+        {
+          "option": "--cpu",
+          "role": "threshold",
+          "reason": "tool failed: worker-count probe refused"
+        }
+      ],
+      "candidates": [
+        {
+          "option": "--textw",
+          "default": 120.0,
+          "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "-E",
+          "default": 10.0,
+          "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "-T",
+          "default": null,
+          "help_line": "-T <x>     : report models >= this score threshold in output",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--domE",
+          "default": 10.0,
+          "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        {
+          "option": "--domT",
+          "default": null,
+          "help_line": "--domT <x> : report domains >= this score cutoff in output",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incE",
+          "default": null,
+          "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incT",
+          "default": null,
+          "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incdomE",
+          "default": null,
+          "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incdomT",
+          "default": null,
+          "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--F1",
+          "default": 0.02,
+          "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        {
+          "option": "--F2",
+          "default": 0.001,
+          "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "--F3",
+          "default": 1e-05,
+          "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        {
+          "option": "-Z",
+          "default": null,
+          "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+          "normalizer": {
+            "entry_count": "accept"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--domZ",
+          "default": null,
+          "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--seed",
+          "default": 42.0,
+          "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        {
+          "option": "--cpu",
+          "default": 0.0,
+          "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+          "normalizer": {
+            "entry_count": "tool failed: worker-count probe refused"
+          },
+          "threshold": "tool failed: worker-count probe refused"
+        }
+      ],
+      "members": {
+        "entry_count": {
+          "status": "pinned",
+          "option": "-Z",
+          "template": "-Z {entry_count}"
+        }
+      },
+      "tool_calls": 26,
+      "P": 26
+    },
+    "K1r-a": {
+      "verdict": "PASS",
+      "failures": [],
+      "pin": "-Z {entry_count}",
+      "thresholds": [],
+      "watched": {
+        "-Z": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "accept"
+          },
+          "threshold": "no numeric default"
+        },
+        "--domZ": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        "-E": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        "--domE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        "--incE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incdomE": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "-T": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "--domT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "--incdomT": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        "--F1": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        "--F2": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        "--F3": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        "--seed": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        "--cpu": {
+          "present": true,
+          "normalizer": {
+            "entry_count": "tool failed: worker-count probe refused"
+          },
+          "threshold": "tool failed: worker-count probe refused"
+        }
+      },
+      "power_floor": {
+        "shared_tblout_rows_on_H": 53,
+        "tblout_rows_H": 53,
+        "tblout_rows_W": 105,
+        "domtblout_rows_H": 60,
+        "domtblout_rows_W": 115
+      },
+      "fit": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "probe_invocations": 3,
+        "columns": [
+          {
+            "table": "tbl",
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 1,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 2,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "tbl",
+            "index": 4,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "tbl",
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 6,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 7,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "tbl",
+            "index": 8,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 9,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 10,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 11,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 12,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 13,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 14,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 15,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 16,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 17,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "tbl",
+            "index": 18,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 1,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 2,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 4,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "table": "dom",
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 6,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "dom",
+            "index": 7,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 8,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 9,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 10,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 11,
+            "role": "numeric",
+            "member": "per_key_row_count"
+          },
+          {
+            "table": "dom",
+            "index": 12,
+            "role": "numeric",
+            "member": "entry_count"
+          },
+          {
+            "table": "dom",
+            "index": 13,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 14,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 15,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 16,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 17,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 18,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 19,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 20,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 21,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "table": "dom",
+            "index": 22,
+            "role": "byte",
+            "member": "byte"
+          }
+        ],
+        "has_entry_count": true
+      },
+      "fit_calls": 1,
+      "reason_pin": "",
+      "rejected": [
+        {
+          "option": "--textw",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--textw",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "-E",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "-E",
+          "role": "threshold",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "-T",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "-T",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--domE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--domE",
+          "role": "threshold",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--domT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--domT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--incE",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--incT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incdomE",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--incdomE",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--incdomT",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--incdomT",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--F1",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F1",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "--F2",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F2",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "--F3",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--F3",
+          "role": "threshold",
+          "reason": "row set unchanged"
+        },
+        {
+          "option": "-Z",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--domZ",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--domZ",
+          "role": "threshold",
+          "reason": "no numeric default"
+        },
+        {
+          "option": "--seed",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "m-columns differ"
+        },
+        {
+          "option": "--seed",
+          "role": "threshold",
+          "reason": "shared rows changed"
+        },
+        {
+          "option": "--cpu",
+          "role": "normalizer",
+          "member": "entry_count",
+          "reason": "tool failed: worker-count probe refused"
+        },
+        {
+          "option": "--cpu",
+          "role": "threshold",
+          "reason": "tool failed: worker-count probe refused"
+        }
+      ],
+      "candidates": [
+        {
+          "option": "--textw",
+          "default": 120.0,
+          "help_line": "--textw <n>      : set max width of ASCII text output lines  [120]  (n>=120)",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "-E",
+          "default": 10.0,
+          "help_line": "-E <x>     : report models <= this E-value threshold in output  [10.0]  (x>0)",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "tool failed: tool failed (1): Failed to parse command line: Option -E is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "-T",
+          "default": null,
+          "help_line": "-T <x>     : report models >= this score threshold in output",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option -T is incompatible with option(s) -E,-T,--cut_ga,--cut_nc,\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--domE",
+          "default": 10.0,
+          "help_line": "--domE <x> : report domains <= this E-value threshold in output  [10.0]  (x>0)",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "tool failed: tool failed (1): Failed to parse command line: Option --domE is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+        },
+        {
+          "option": "--domT",
+          "default": null,
+          "help_line": "--domT <x> : report domains >= this score cutoff in output",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --domT is incompatible with option(s) --domE,--domT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incE",
+          "default": null,
+          "help_line": "--incE <x>    : consider models <= this E-value threshold as significant",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incE is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incT",
+          "default": null,
+          "help_line": "--incT <x>    : consider models >= this score threshold as significant",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incT is incompatible with option(s) --incE,--incT,--cut_ga,-\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incdomE",
+          "default": null,
+          "help_line": "--incdomE <x> : consider domains <= this E-value threshold as significant",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomE is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--incdomT",
+          "default": null,
+          "help_line": "--incdomT <x> : consider domains >= this score threshold as significant",
+          "normalizer": {
+            "entry_count": "tool failed: tool failed (1): Failed to parse command line: Option --incdomT is incompatible with option(s) --incdomE,--incdomT,--cu\nUsage: hmmscan [-options] <hmmdb> <seqfile>\n\nwhere most common options are:\n  -h : show brief help on version and usage\n\nTo see more help on available options, do /opt/homebrew/bin/hmmscan -h\n\n"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--F1",
+          "default": 0.02,
+          "help_line": "--F1 <x> : MSV threshold: promote hits w/ P <= F1  [0.02]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "--F2",
+          "default": 0.001,
+          "help_line": "--F2 <x> : Vit threshold: promote hits w/ P <= F2  [1e-3]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "--F3",
+          "default": 1e-05,
+          "help_line": "--F3 <x> : Fwd threshold: promote hits w/ P <= F3  [1e-5]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "row set unchanged"
+        },
+        {
+          "option": "-Z",
+          "default": null,
+          "help_line": "-Z <x>        : set # of comparisons done, for E-value calculation",
+          "normalizer": {
+            "entry_count": "accept"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--domZ",
+          "default": null,
+          "help_line": "--domZ <x>    : set # of significant seqs, for domain E-value calculation",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "no numeric default"
+        },
+        {
+          "option": "--seed",
+          "default": 42.0,
+          "help_line": "--seed <n>    : set RNG seed to <n> (if 0: one-time arbitrary seed)  [42]",
+          "normalizer": {
+            "entry_count": "m-columns differ"
+          },
+          "threshold": "shared rows changed"
+        },
+        {
+          "option": "--cpu",
+          "default": 0.0,
+          "help_line": "--cpu <n>     : number of parallel CPU workers to use for multithreads  [0]",
+          "normalizer": {
+            "entry_count": "tool failed: worker-count probe refused"
+          },
+          "threshold": "tool failed: worker-count probe refused"
+        }
+      ],
+      "members": {
+        "entry_count": {
+          "status": "pinned",
+          "option": "-Z",
+          "template": "-Z {entry_count}"
+        }
+      },
+      "tool_calls": 26,
+      "P": 26
+    }
+  },
+  "verdict": "KILL",
+  "subprocess_calls": 50
+}

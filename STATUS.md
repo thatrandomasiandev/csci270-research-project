@@ -58,6 +58,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] E3 PASS — E-value reporting. Growth s=1 and shrink s=2 byte-identical to stock; s=1 shrink control misses 1 tblout / 4 domtblout band rows (`pipeline/results/exact_replay/e3.json`). Q1000 not run.
 - [x] Shipped `--pin` exact mode in `acts/reference_run.py` + `tests/test_exact_replay.py` (6 tests)
 - [x] Ship `--slack` for E-value exact mode. Cache fill and discovery use the relaxed flags; replay uses the original argv plus `--pin`. A row-key superset is accepted only when both are set. `Z_old/Z_new` above the stored factor is a full run (`tests/test_exact_replay.py`).
+- [ ] Knob inference — K1 inconclusive (empty tables). K1r-a PASS: pin `-Z {entry_count}`, no threshold accepted. K1r-b KILL: same pin, but `-E` was `row set unchanged` and `--domE` was `shared rows changed`. Not shippable (`pipeline/results/knob_inference/k1r.json`). `--pin` and `--slack` stay required.
 - [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
 - [ ] DIAMOND `--dbsize` pin vs iDiamond (exactness)

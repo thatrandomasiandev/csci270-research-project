@@ -453,3 +453,46 @@ SAMPLE-CONSTRUCTION (wall, tblout body rows, `|Q|`, hit-model count,
 unmatched targets, `|W|`, `|H|`, whether hits were truncated at 400),
 the power-floor shared-row counts, and for each arm every help candidate
 with accept or reject and the reason, the fit decision, and `tool_calls`.
+
+## Addendum 2026-10-12 — K1r outcome
+
+Rules above are unchanged. Result file `results/knob_inference/k1r.json`.
+Git `7c64e27`. Host `Joshuas-MacBook-Pro-3.local`, arm64, HMMER 3.4
+(Aug 2023). No retune. `--pin` and `--slack` stay required.
+
+**SAMPLE-CONSTRUCTION** (not a K1r result). One `hmmscan --noali` of the
+E1 300 against pressed Pfam 38.2: wall 60.01 s, 1,361 tblout body rows,
+2,729 domtblout body rows. 288 of the 300 queries had a tblout row. Q is
+the first 50 of those in sample order (289 tblout rows on Q). Hit models
+277, none unmatched, not truncated. Fill 123. `|W| = 400`. H is 138 of
+the hit stratum and 62 of the fill (floors 138 and 61, one remainder
+from the fill in file order). The reference has 30,134 models.
+
+**Power floor, passed.** K1r-b shared 143 tblout rows on H (H 143 rows,
+W 290). K1r-a shared 53 (H 53, W 105). Both are at least 30.
+
+**K1r-a — PASS.** Fit SHIP. Pin `-Z {entry_count}`. `--domZ` rejected
+(`m-columns differ` as a normalizer, `no numeric default` as a
+threshold). No threshold accepted. `-E`, `--domE`, `-T`, and `--domT`
+were rejected because the binary refuses them together with `--cut_ga`
+(`tool failed`). `--incE`, `--incdomE`, `--incT`, and `--incdomT` have
+no printed default, so they were not threshold probes (`no numeric
+default`); as normalizers they also failed the same incompatibility.
+`--F1`, `--F2`, and `--F3` were `row set unchanged`. `--seed` was
+`shared rows changed`. `--cpu` was the worker-count refusal. None of
+those is an accept. P = `tool_calls` = 26. Fitter `probe_invocations`
+= 3.
+
+**K1r-b — KILL.** Fit REFUSE (`tbl: column 16 matches no normalizer`)
+with three `entry_count` columns assigned, so inference ran. Pin
+`-Z {entry_count}`. `--domZ` rejected as on K1r-a. Decoys rejected:
+`--F1` and `--F3` `shared rows changed`, `--F2` `row set unchanged`,
+`--seed` `shared rows changed`, `--cpu` worker-count refusal, `--domZ`
+not a threshold. `-E` at 40 left both tables unchanged (290 tblout and
+506 domtblout body lines; reason `row set unchanged`). `--domE` at 40
+wrote 515 domtblout body lines against 506 and was `shared rows
+changed`. Neither is an accepted threshold, so `-E` and `--domE` are
+missing. P = 26. Fitter `probe_invocations` = 3.
+
+Knob inference is not shippable. The accept rule, `s`, the placeholder
+list, and the seeds were not changed.
