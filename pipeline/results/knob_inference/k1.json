@@ -1,0 +1,35 @@
+{
+  "protocol": "docs/KNOB_INFERENCE_PROTOCOL.md",
+  "git": "48f3371afc9a6f520ef7447eb9881453488395a8",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "machine": "arm64",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "seed": 20261014,
+  "n_records": 50,
+  "n_models": 400,
+  "verdict": "inconclusive",
+  "reason": "fit assigned no entry_count column",
+  "banner": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "model_total": 30134,
+  "fit": {
+    "decision": "SHIP",
+    "reason": "decomposition and normalizers fitted",
+    "probe_invocations": 3,
+    "columns": []
+  },
+  "fit_calls": 3,
+  "subprocess_calls": 3,
+  "bodies": {
+    "whole_tbl": 0,
+    "whole_dom": 0,
+    "half_tbl": 0,
+    "half_dom": 0,
+    "complement_tbl": 0,
+    "complement_dom": 0
+  },
+  "note": "Body counts read from the three scan files after the run. No data rows, so inference was not started."
+}

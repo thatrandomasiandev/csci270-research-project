@@ -245,6 +245,28 @@ anything but 1, and inference records the refusal. A refused probe
 cannot be accepted. The accept rule, `s`, the seeds, and the ground
 truth are unchanged.
 
+## Addendum 2026-10-12 — K1 outcome
+
+Rules above are unchanged. Result file `results/knob_inference/k1.json`.
+Git `48f3371`. Host `Joshuas-MacBook-Pro-3.local`, arm64, HMMER 3.4
+(Aug 2023). The reference file has 30,134 model blocks, which matches
+the stated Z. W is 400 models and H is 200. Diamond is not on `PATH`;
+K2 was not run.
+
+**K1 — INCONCLUSIVE.** Not a pass and not a kill. The whole reference
+and both halves wrote header-only tblout and domtblout: 0 body lines
+in every table (MEASURED, three scans, about 0.1 s each, `--cpu 1`).
+`probe_fit` returned SHIP with an empty column list, because there
+were no aligned rows and therefore no `entry_count` column. Knob
+inference did not start. No pin, no thresholds, no decoy judgment.
+`fit_calls` = 3. Inference `tool_calls` were not taken. Probe cost
+P = 3.
+
+A zero row set is a property of this seeded draw. E1 recorded 534
+tblout body lines on 300 queries against all 30,134 models. Scaling
+that rate to 50 queries and 400 models is about one expected hit.
+The locked sample can miss. The seeds are not redrawn here.
+
 ## Red-team
 
 **Attack 1. "The pin is a HMMER plugin."**
