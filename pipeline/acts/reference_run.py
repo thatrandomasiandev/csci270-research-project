@@ -17,8 +17,10 @@ tool name is compiled into this module.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import random
+import re
 import shlex
 import subprocess
 import time
@@ -64,6 +66,12 @@ from acts.strategies.base import Strategy, StrategyResult
 from acts.table import TableLayout, detect_delim, infer_table_layout, render_table
 
 Invoke = Callable[[Sequence[RecordItem], Sequence[Entry]], dict[str, str]]
+PinnedInvoke = Callable[[Sequence[RecordItem], Sequence[Entry], dict[str, int]], dict[str, str]]
+
+# Normalizer members the caller's --pin template can set. per_key_row_count is
+# not here: the tool derives it from its own reported set, which replay
+# reproduces. See docs/EXACT_REPLAY_PROTOCOL.md.
+PIN_PLACEHOLDERS = {"entry_count": "{entry_count}", "total_entry_length": "{total_entry_length}"}
 
 
 class RunError(RuntimeError):
@@ -176,20 +184,24 @@ def subprocess_invoke(
     prep: str | None,
     scratch: Path,
     clock: dict[str, float] | None = None,
+    full_entries: int | None = None,
 ) -> Invoke:
+    """`full_entries`: a call on that many entries first tries the caller's own
+    reference as is (it is prepared for the stock command), with no rewrite and
+    no prep. If the tool fails on it, that call and later ones fall back to a
+    written and prepared copy, as for every sub-reference."""
     counter = {"n": 0}
+    state = {"original_ok": True}
     phase = clock if clock is not None else {}
 
-    def invoke(records: Sequence[RecordItem], entries: Sequence[Entry]) -> dict[str, str]:
-        counter["n"] += 1
-        work = scratch / f"call{counter['n']}"
-        work.mkdir(parents=True, exist_ok=True)
+    def attempt(records, entries, work: Path, use_original: bool) -> dict[str, str]:
         started = time.perf_counter()
         rec_path = write_record_file(records, work / "records")
-        ref_path = write_entries(list(entries), work / "reference")
+        ref_path = reference_slot if use_original else write_entries(list(entries), work / "reference")
         _clock_add(phase, "subref_build_s", time.perf_counter() - started)
         started = time.perf_counter()
-        run_prep(prep, ref_path)
+        if not use_original:
+            run_prep(prep, ref_path)
         _clock_add(phase, "prep_s", time.perf_counter() - started)
         cmd, outputs = materialize_argv(
             argv,
@@ -216,6 +228,18 @@ def subprocess_invoke(
             tables["stdout"] = proc.stdout
         _clock_add(phase, "read_output_s", time.perf_counter() - started)
         return tables
+
+    def invoke(records: Sequence[RecordItem], entries: Sequence[Entry]) -> dict[str, str]:
+        counter["n"] += 1
+        work = scratch / f"call{counter['n']}"
+        work.mkdir(parents=True, exist_ok=True)
+        whole = full_entries is not None and len(entries) == full_entries
+        if whole and state["original_ok"]:
+            try:
+                return attempt(records, entries, work, True)
+            except RunError:
+                state["original_ok"] = False
+        return attempt(records, entries, work, False)
 
     return invoke
 
@@ -276,6 +300,7 @@ def probe_fit(
     primary_parts: list[list[int]] | None = None,
     baseline: str | None = None,
     sample: bool = True,
+    monotone: bool = False,
 ) -> FitResult:
     """Run the pre-registered probe and fit or refuse. Does not splice probe rows."""
     if len(entries) < 2:
@@ -307,6 +332,7 @@ def probe_fit(
         whole_tables=whole,
         part_tables=part_tables,
         baseline=baseline,
+        monotone=monotone,
     )
     if result.decision == "TIE":
         if baseline == "gestore":
@@ -337,6 +363,7 @@ def probe_fit(
             alias_to_index=aliases,
             whole_tables=whole,
             tie_tables=tie_tables,
+            monotone=monotone,
         )
     if result.decision == "SHIP":
         for table in result.tables:
@@ -526,6 +553,200 @@ def _index_held(held: list[dict], table: TableReport) -> dict[tuple[str, str, st
     return out
 
 
+def pin_tokens(pin: str, values: dict[str, int]) -> list[str]:
+    """Expand a caller-declared pin template, e.g. '-Z {entry_count}'. Data, not tool code."""
+    out: list[str] = []
+    for token in shlex.split(pin):
+        for name, placeholder in PIN_PLACEHOLDERS.items():
+            token = token.replace(placeholder, str(int(values[name])))
+        if "{" in token and "}" in token:
+            raise RunError(f"pin token {token!r} has an unknown placeholder")
+        out.append(token)
+    return out
+
+
+def pin_values(entries: Sequence[Entry]) -> dict[str, int]:
+    return {
+        "entry_count": len(entries),
+        "total_entry_length": sum(entry.length for entry in entries),
+    }
+
+
+_SLACK_FACTOR = re.compile(r"^\{[A-Za-z0-9]*\*([0-9]+(?:\.[0-9]+)?)\}$")
+
+
+def _fmt_number(value: float) -> str:
+    if value == int(value):
+        return str(int(value))
+    return format(value, ".12g")
+
+
+def _flag_value(argv: Sequence[str], flag: str) -> str | None:
+    for index, token in enumerate(argv):
+        if token.startswith("-") and "=" in token:
+            name, raw = token.split("=", 1)
+            if name == flag:
+                return raw
+        elif token == flag and index + 1 < len(argv):
+            return argv[index + 1]
+    return None
+
+
+def _replace_flags(argv: Sequence[str], values: dict[str, str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    index = 0
+    while index < len(argv):
+        token = argv[index]
+        flag = None
+        inline = False
+        if token.startswith("-") and "=" in token:
+            flag, _raw = token.split("=", 1)
+            inline = True
+        elif token in values:
+            flag = token
+        if flag is not None and flag in values:
+            seen.add(flag)
+            if inline:
+                out.append(f"{flag}={values[flag]}")
+                index += 1
+                continue
+            if index + 1 >= len(argv):
+                raise RunError(f"argv flag {flag} needs a value")
+            out.extend((flag, values[flag]))
+            index += 2
+            continue
+        out.append(token)
+        index += 1
+    missing = [flag for flag in values if flag not in seen]
+    if missing:
+        raise RunError("slack flag not in argv: " + ", ".join(missing))
+    return out
+
+
+def slack_rewrite(argv: Sequence[str], slack: str) -> tuple[list[str], float]:
+    """Relaxed reporting flags for cache fill and discovery, plus the one factor.
+
+    `{name*2}` multiplies the argv value of that flag by 2. A literal value
+    is allowed when argv already sets the flag; the factor is the ratio.
+    Every flag in one template must share that factor, and it must be ≥ 1.
+    """
+    tokens = shlex.split(slack)
+    if not tokens:
+        raise RunError("slack is empty")
+    pairs: list[tuple[str, str]] = []
+    index = 0
+    while index < len(tokens):
+        token = tokens[index]
+        if not token.startswith("-"):
+            raise RunError(f"slack token {token!r} is not a flag")
+        if "=" in token:
+            flag, raw = token.split("=", 1)
+            pairs.append((flag, raw))
+            index += 1
+            continue
+        if index + 1 >= len(tokens) or tokens[index + 1].startswith("-"):
+            raise RunError(f"slack flag {token} needs a value")
+        pairs.append((token, tokens[index + 1]))
+        index += 2
+    factors: list[float] = []
+    replacements: dict[str, str] = {}
+    for flag, raw in pairs:
+        current = _flag_value(argv, flag)
+        match = _SLACK_FACTOR.match(raw)
+        if match:
+            factor = float(match.group(1))
+            if current is None:
+                raise RunError(f"slack scales {flag}, which argv does not set")
+            try:
+                number = float(current)
+            except ValueError as exc:
+                raise RunError(f"argv value for {flag} is not a number") from exc
+            factors.append(factor)
+            replacements[flag] = _fmt_number(number * factor)
+            continue
+        if current is None:
+            raise RunError(
+                f"slack sets {flag} to a literal and argv does not set it; "
+                "use {name*factor} to declare the factor"
+            )
+        try:
+            base = float(current)
+            literal = float(raw)
+        except ValueError as exc:
+            raise RunError(f"slack value for {flag} is not a number") from exc
+        if base == 0:
+            raise RunError(f"argv value for {flag} is zero")
+        factors.append(literal / base)
+        replacements[flag] = raw
+    if any(factor < 1 for factor in factors):
+        raise RunError("slack factor is below 1")
+    if any(abs(factor - factors[0]) > 1e-9 for factor in factors):
+        raise RunError("slack flags do not share one factor")
+    return _replace_flags(argv, replacements), factors[0]
+
+
+def namespace_for(
+    argv: list[str],
+    reference: Path | None,
+    baseline: str | None,
+    pin: str | None,
+    slack: str | None,
+) -> str:
+    ns = argv_namespace(argv, reference, baseline)
+    if not pin and not slack:
+        return ns
+    extra = ns + "\0pin:" + (pin or "") + "\0slack:" + (slack or "")
+    return hashlib.sha256(extra.encode()).hexdigest()[:16]
+
+
+def uncovered_members(tables: Sequence[TableReport], pin: str) -> list[str]:
+    """Fitted normalizer members the pin template does not set."""
+    missing: list[str] = []
+    for table in tables:
+        for col in table.columns:
+            if col.role != "numeric" or col.member in (None, IDENTITY, BYTE):
+                continue
+            placeholder = PIN_PLACEHOLDERS.get(col.member or "")
+            if placeholder is None:
+                continue  # per-key counts: derived by the tool from its reported set
+            if placeholder not in pin:
+                missing.append(f"{table.name} column {col.index} ({col.member})")
+    return missing
+
+
+def body_lines(text: str) -> list[str]:
+    """MATCH unit for exact mode: every non-empty line not starting with '#'."""
+    return [line for line in text.splitlines() if line.strip() and not line.startswith("#")]
+
+
+def _body_record_filter(text: str, record_col: int, keep: set[str]) -> list[str]:
+    out: list[str] = []
+    for line in body_lines(text):
+        fields = line.split()
+        if record_col < len(fields) and fields[record_col] in keep:
+            out.append(line)
+    return out
+
+
+def replay_plan(
+    held: Sequence[dict],
+    entries: Sequence[Entry],
+    records: Sequence[RecordItem],
+) -> tuple[list[RecordItem], list[Entry], dict[str, set[str]]]:
+    """Records with any candidate, and the union of candidate entries in release order."""
+    aliases = alias_map(list(entries))
+    cand: dict[str, set[str]] = {}
+    for row in held:
+        token = row["entry_token"]
+        if token not in aliases:
+            raise RunError(f"candidate entry {token!r} is not in this reference")
+        cand.setdefault(row["record_key"], set()).add(token)
+    chosen_idx = sorted({aliases[token] for tokens in cand.values() for token in tokens})
+    replay_records = [rec for rec in records if rec.key in cand]
+    return replay_records, [entries[i] for i in chosen_idx], cand
+
+
 class ReferenceIncremental(Strategy):
     """F(records, reference). Fit once per argv; reuse unchanged entries afterwards."""
 
@@ -547,6 +768,10 @@ class ReferenceIncremental(Strategy):
         primary_parts: list[list[int]] | None = None,
         sample: bool = True,
         runner: Invoke | None = None,
+        pin: str | None = None,
+        pin_runner: PinnedInvoke | None = None,
+        slack: str | None = None,
+        slack_runner: Invoke | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -561,7 +786,15 @@ class ReferenceIncremental(Strategy):
         self.primary_parts = primary_parts
         self.sample = sample
         self.runner = runner
+        self.pin = pin
+        self.pin_runner = pin_runner
+        self.slack = slack
+        self.slack_runner = slack_runner
+        self._slack_factor: float | None = None
+        if slack:
+            _argv, self._slack_factor = slack_rewrite(self.argv, slack)
         self.clock: dict[str, float] = {}
+        self._n_entries: int | None = None
         self._t_all = 0.0
 
     def run(self) -> StrategyResult:
@@ -572,13 +805,14 @@ class ReferenceIncremental(Strategy):
             reference = detect_reference(self.argv, self.input_path, self.reference)
             entries = parse_reference(reference)
             records = read_records(self.input_path)
+            self._n_entries = len(entries)
             _clock_add(self.clock, "parse_s", time.perf_counter() - started)
         except (RunError, FormatError, OSError, UnicodeError) as exc:
             reason = getattr(exc, "reason", None) or str(exc)
             return self._finish("REFUSE", reason, self._phase_extra({}))
 
         cache = connect_cache(self.cache_path or (self.out_dir / "reference.sqlite"))
-        ns = argv_namespace(self.argv, reference, self.baseline)
+        ns = namespace_for(self.argv, reference, self.baseline, self.pin, self.slack)
         try:
             return self._run_cached(cache, ns, reference, entries, records)
         finally:
@@ -594,6 +828,45 @@ class ReferenceIncremental(Strategy):
             prep=self.prep,
             scratch=self.out_dir / "calls",
             clock=self.clock,
+            full_entries=self._n_entries,
+        )
+
+    def _pinned(self, reference: Path) -> PinnedInvoke:
+        if self.pin_runner is not None:
+            return self.pin_runner
+        assert self.pin is not None
+        counter = {"n": 0}
+
+        def call(records: Sequence[RecordItem], entries: Sequence[Entry], values: dict[str, int]) -> dict[str, str]:
+            counter["n"] += 1
+            argv = self.argv[:1] + pin_tokens(self.pin or "", values) + self.argv[1:]
+            inner = subprocess_invoke(
+                argv,
+                input_slot=self.input_path,
+                reference_slot=reference,
+                prep=self.prep,
+                scratch=self.out_dir / "calls_pinned" / f"r{counter['n']}",
+                clock=self.clock,
+                full_entries=self._n_entries,
+            )
+            return inner(records, entries)
+
+        return call
+
+    def _slack_call(self, reference: Path) -> Invoke:
+        """Cache fill and discovery. Unpinned, with the caller's relaxed flags."""
+        if self.slack_runner is not None:
+            return self.slack_runner
+        assert self.slack is not None
+        argv, _factor = slack_rewrite(self.argv, self.slack)
+        return subprocess_invoke(
+            argv,
+            input_slot=self.input_path,
+            reference_slot=reference,
+            prep=self.prep,
+            scratch=self.out_dir / "calls_slack",
+            clock=self.clock,
+            full_entries=self._n_entries,
         )
 
     def _phase_extra(self, extra: dict, *, probe_wall: float = 0.0, probe_phases: dict | None = None) -> dict:
@@ -630,6 +903,7 @@ class ReferenceIncremental(Strategy):
                 k=PROBE_K,
                 n_p=PROBE_N,
                 seed=PROBE_SEED,
+                monotone=bool(self.pin and self.slack),
             )
             probe_wall = time.perf_counter() - started
             probe_phases = dict(self.clock)
@@ -639,8 +913,13 @@ class ReferenceIncremental(Strategy):
             if "parse_s" in probe_phases:
                 self.clock["parse_s"] = probe_phases.pop("parse_s")
             if not fitted.reason.startswith(("tool failed", "prep failed")):
-                cache.save_contract(ns, fitted.as_dict())
+                payload = fitted.as_dict()
+                if self.pin and self._slack_factor is not None:
+                    payload["slack_factor"] = self._slack_factor
+                cache.save_contract(ns, payload)
             stored = fitted.as_dict()
+            if self.pin and self._slack_factor is not None:
+                stored["slack_factor"] = self._slack_factor
         decision = stored.get("decision")
         tables = tables_from_dict(stored.get("tables") or [])
         if decision != "SHIP":
@@ -682,12 +961,18 @@ class ReferenceIncremental(Strategy):
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
             )
         try:
-            held, reused, stats = self._incremental(cache, ns, invoke, entries, records, tables)
+            fill = self._slack_call(reference) if (self.pin and self.slack) else invoke
+            held, reused, stats = self._incremental(cache, ns, fill, entries, records, tables)
         except RunError as exc:
             return self._finish(
                 "REFUSE",
                 exc.reason,
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
+            )
+        if self.pin:
+            return self._run_exact(
+                cache, ns, stored, reference, invoke, entries, records, tables, held, reused, stats,
+                probe_wall=probe_wall, probe_phases=probe_phases,
             )
         started = time.perf_counter()
         self._write_tables(tables, held, entries, records)
@@ -716,6 +1001,112 @@ class ReferenceIncremental(Strategy):
             self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases),
         )
 
+    # ----- exact mode: pinned-normalizer replay (docs/EXACT_REPLAY_PROTOCOL.md) -----
+
+    def _run_exact(
+        self, cache, ns, stored, reference, invoke, entries, records, tables, held, reused, stats,
+        *, probe_wall: float, probe_phases: dict,
+    ) -> StrategyResult:
+        base = {"verify": self.verify, "mode": "exact", "match": "body-bytes", "reused_rows": reused, **stats}
+
+        def done(decision: str, why: str, extra: dict) -> StrategyResult:
+            return self._finish(decision, why, self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases))
+
+        missing = uncovered_members(tables, self.pin or "")
+        if missing:
+            return done("REFUSE_PIN", "pin does not set fitted normalizer: " + "; ".join(missing), base)
+        pinned = self._pinned(reference)
+        checks = dict(stored.get("pin_checks") or {})
+        if self.pin not in checks:
+            started = time.perf_counter()
+            ok, why = self._pin_check(invoke, pinned, entries, records, tables)
+            _clock_add(self.clock, "pin_check_s", time.perf_counter() - started)
+            checks[self.pin] = {"ok": ok, "reason": why}
+            stored = dict(stored)
+            stored["pin_checks"] = checks
+            cache.save_contract(ns, stored)
+        if not checks[self.pin]["ok"]:
+            return done("REFUSE_PIN", f"pin check failed: {checks[self.pin]['reason']}", base)
+        if self.slack and stats.get("basis_entry_count_max") is not None:
+            factor = stored.get("slack_factor")
+            if factor is None:
+                factor = self._slack_factor
+            factor = float(factor if factor is not None else 0)
+            z_old = int(stats["basis_entry_count_max"])
+            z_new = len(entries)
+            base["slack_factor"] = factor
+            if z_new and z_old > factor * z_new + 1e-9:
+                try:
+                    self._dump_raw(invoke(records, entries))
+                except RunError as exc:
+                    return done("REFUSE", f"slack exceeded and full run failed: {exc.reason}", base)
+                return done(
+                    "REFUSE",
+                    f"entry-count ratio {z_old}/{z_new} exceeds slack factor {factor:g}",
+                    {**base, "fallback_full_scan": True},
+                )
+        try:
+            started = time.perf_counter()
+            rep_records, rep_entries, cand = replay_plan(held, entries, records)
+            _clock_add(self.clock, "replay_plan_s", time.perf_counter() - started)
+            texts = pinned(rep_records, rep_entries, pin_values(entries)) if rep_records else {}
+        except RunError as exc:
+            return done("REFUSE", exc.reason, base)
+        extra = {**base, "replay_records": len(rep_records), "replay_entries": len(rep_entries),
+                 "candidate_pairs": sum(len(v) for v in cand.values())}
+        # Soundness tripwire: a replay row outside the candidate set means a
+        # full run could also report pairs the cache never saw.
+        for table in tables:
+            for line in body_lines(texts.get(table.name, "")):
+                fields = line.split()
+                rec_key, ent = fields[table.record_col], fields[table.entry_col]
+                if ent not in cand.get(rec_key, set()):
+                    return done("REFUSE_MATCH", f"{table.name}: replay reported a non-candidate pair ({rec_key}, {ent})", extra)
+        started = time.perf_counter()
+        dest = self.out_dir / "tables"
+        dest.mkdir(parents=True, exist_ok=True)
+        for table in tables:
+            text = texts.get(table.name)
+            if text is None:
+                text = "\n".join(table.meta) + ("\n" if table.meta else "")
+            (dest / table.name).write_text(text)
+        _clock_add(self.clock, "render_s", time.perf_counter() - started)
+        if self.verify == "full":
+            stock = invoke(records, entries)
+            for table in tables:
+                if body_lines(stock.get(table.name, "")) != body_lines(texts.get(table.name, "")):
+                    return done("REFUSE_MATCH", f"{table.name}: body differs from a full run", extra)
+        elif self.verify == "audit" and reused:
+            keys = [rec.key for rec in rep_records]
+            chosen = set(pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed)))
+            extra["audit_checked"] = len(chosen)
+            if chosen:
+                stock = invoke([rec for rec in records if rec.key in chosen], entries)
+                for table in tables:
+                    a = _body_record_filter(stock.get(table.name, ""), table.record_col, chosen)
+                    b = _body_record_filter(texts.get(table.name, ""), table.record_col, chosen)
+                    if a != b:
+                        return done("REFUSE_AUDIT", f"{table.name}: audited records differ from a full run", extra)
+        return done("SHIP", "exact replay under pinned normalizer", extra)
+
+    def _pin_check(self, invoke, pinned, entries, records, tables) -> tuple[bool, str]:
+        """In-situ E1 on the probe sample: oracle candidates, pinned replay, body bytes."""
+        chosen = sample_record_indices(len(records), min(PROBE_N, len(records)), PROBE_SEED)
+        sample = [records[i] for i in chosen]
+        try:
+            whole = invoke(sample, entries)
+            held = _rows_from_run(whole, tables, entries)
+            if not held:
+                return False, "no rows on the probe sample; pin cannot be checked"
+            rep_records, rep_entries, _ = replay_plan(held, entries, sample)
+            texts = pinned(rep_records, rep_entries, pin_values(entries))
+        except RunError as exc:
+            return False, exc.reason
+        for table in tables:
+            if body_lines(whole.get(table.name, "")) != body_lines(texts.get(table.name, "")):
+                return False, f"{table.name}: pinned replay body differs from the whole run"
+        return True, ""
+
     def _full(self, invoke, records, entries, tables) -> list[dict]:
         if not tables:
             try:
@@ -730,15 +1121,18 @@ class ReferenceIncremental(Strategy):
     def _incremental(self, cache, ns, invoke, entries, records, tables) -> tuple[list[dict], int, dict]:
         record_keys = {rec.key for rec in records}
         present = {entry.content_hash for entry in entries}
-        removed = cache.covered_hashes(ns) - present
+        started = time.perf_counter()
+        coverage = cache.coverage_map(ns)
+        removed = set(coverage) - present
         cache.drop_hashes(ns, removed)
+        _clock_add(self.clock, "coverage_read_s", time.perf_counter() - started)
         stable: list[Entry] = []
         fresh: list[Entry] = []
         partial: list[Entry] = []
         missing_keys: set[str] = set()
         started = time.perf_counter()
         for entry in entries:
-            covered = cache.covered_records(ns, entry.content_hash)
+            covered = coverage.get(entry.content_hash, set())
             if not covered:
                 fresh.append(entry)
             elif record_keys <= covered:
@@ -758,13 +1152,13 @@ class ReferenceIncremental(Strategy):
         }
         held: list[dict] = []
         started = time.perf_counter()
-        for entry in stable:
-            for table in tables:
-                held.extend(cache.load_rows(ns, entry.content_hash, record_keys, table.name))
         kept_partial = record_keys - missing_keys
-        for entry in partial:
-            for table in tables:
-                held.extend(cache.load_rows(ns, entry.content_hash, kept_partial, table.name))
+        stable_hashes = {entry.content_hash for entry in stable}
+        partial_hashes = {entry.content_hash for entry in partial}
+        for table in tables:
+            held.extend(cache.load_table_rows(ns, table.name, stable_hashes, record_keys))
+            if partial_hashes and kept_partial:
+                held.extend(cache.load_table_rows(ns, table.name, partial_hashes, kept_partial))
         _clock_add(self.clock, "cache_load_s", time.perf_counter() - started)
         reused = len(held)
         ran_rows: list[dict] = []
@@ -774,6 +1168,14 @@ class ReferenceIncremental(Strategy):
             subset = [rec for rec in records if rec.key in missing_keys]
             ran_rows.extend(_rows_from_run(invoke(subset, partial), tables, partial))
         held.extend(ran_rows)
+        if reused:
+            bases = [
+                int(row["basis"]["entry_count"])
+                for row in held[:reused]
+                if row.get("basis") and "entry_count" in row["basis"]
+            ]
+            if bases:
+                stats["basis_entry_count_max"] = max(bases)
         new_length = sum(entry.length for entry in entries)
         started = time.perf_counter()
         scaled = _rescale_held(held, tables, len(entries), new_length)
@@ -787,31 +1189,21 @@ class ReferenceIncremental(Strategy):
         return scaled, reused, stats
 
     def _store(self, cache, ns, tables, records, entries, stable, fresh, partial, missing_keys, source_rows) -> None:
+        # Newly answerable: fresh entries x all records, partial entries x all
+        # records (the missing ones were just run). Stable entries are already
+        # covered and their rows did not change, so they are not rewritten.
+        # The stored basis stays the one the cells were produced under.
+        hashes = [entry.content_hash for entry in fresh] + [entry.content_hash for entry in partial]
+        if not hashes:
+            return
+        wanted = set(hashes)
         by_table: dict[str, list[dict]] = {table.name: [] for table in tables}
         for row in source_rows:
-            by_table.setdefault(row["table"], []).append(row)
-        # Coverage for pairs we can now answer: stable (already), fresh (all records),
-        # partial × missing records. The stored basis stays the one the cells
-        # were produced under, so a later render can rescale from the source.
-        groups = {
-            "stable": (stable, list(records)),
-            "fresh": (fresh, list(records)),
-            "partial": (partial, list(records)),
-        }
-        for table in tables:
-            pairs: list[tuple[str, str]] = []
-            for group_entries, group_records in groups.values():
-                pairs.extend(
-                    (rec.key, entry.content_hash) for rec in group_records for entry in group_entries
-                )
-            wanted = {(rec, ent) for rec, ent in pairs}
-            rows = [
-                _row_for_cache(row)
-                for row in by_table.get(table.name, [])
-                if (row["record_key"], row["entry_hash"]) in wanted
-            ]
-            if pairs:
-                cache.replace_pairs(ns, table.name, pairs, rows)
+            if row["entry_hash"] in wanted and row["table"] in by_table:
+                by_table[row["table"]].append(_row_for_cache(row))
+        cache.cover_and_replace(
+            ns, [table.name for table in tables], hashes, [rec.key for rec in records], by_table
+        )
 
     def _verify_full(self, invoke, records, entries, tables, held) -> tuple[bool, str]:
         stock = invoke(records, entries)

@@ -57,7 +57,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] E2 PASS — 38.1 cache → 4,052 changed/new models → 452-model replay; byte-identical to stock 38.2
 - [x] E3 PASS — E-value reporting. Growth s=1 and shrink s=2 byte-identical to stock; s=1 shrink control misses 1 tblout / 4 domtblout band rows (`pipeline/results/exact_replay/e3.json`). Q1000 not run.
 - [x] Shipped `--pin` exact mode in `acts/reference_run.py` + `tests/test_exact_replay.py` (6 tests)
-- [ ] Ship `--slack` for E-value exact mode (E3a and E3b passed; not in the tree yet)
+- [x] Ship `--slack` for E-value exact mode. Cache fill and discovery use the relaxed flags; replay uses the original argv plus `--pin`. A row-key superset is accepted only when both are set. `Z_old/Z_new` above the stored factor is a full run (`tests/test_exact_replay.py`).
 - [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
 - [ ] DIAMOND `--dbsize` pin vs iDiamond (exactness)

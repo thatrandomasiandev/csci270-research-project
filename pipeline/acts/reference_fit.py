@@ -331,6 +331,8 @@ def _bundle_table(
     entry_ids: set[str],
     alias_to_index: dict[str, int],
     part_of_entry: dict[int, int],
+    *,
+    monotone: bool = False,
 ) -> TableBundle:
     whole = parse_table_text(name, whole_text)
     parts = [parse_table_text(name, text) for text in part_texts]
@@ -357,16 +359,21 @@ def _bundle_table(
     for indexed in part_idx:
         overlap |= union & set(indexed)
         union |= set(indexed)
-    key_equal = union == set(whole_idx) and not overlap
+    only_whole = set(whole_idx) - union
+    only_union = union - set(whole_idx)
+    # Monotone: rows(full) ⊆ ∪ rows(parts). Extra part rows are allowed.
+    # Shared rows are still aligned below; a non-normalizer column that is
+    # not identical fails the column fit and the result stays a refusal.
+    key_equal = not overlap and not only_whole and (not only_union or monotone)
     key_reason = ""
     if overlap:
         key_reason = f"{name}: row key appears in two parts"
-    elif union != set(whole_idx):
+    elif not key_equal:
         key_reason = (
             f"{name}: row-key sets differ "
             f"(whole {len(whole_idx)}, union {len(union)}, "
-            f"only-union {len(union - set(whole_idx))}, "
-            f"only-whole {len(set(whole_idx) - union)})"
+            f"only-union {len(only_union)}, "
+            f"only-whole {len(only_whole)})"
         )
     aligned: list[Aligned] = []
     for key, cells in whole_idx.items():
@@ -781,6 +788,7 @@ def fit_observations(
     whole_tables: dict[str, str],
     part_tables: list[dict[str, str]],
     baseline: str | None = None,
+    monotone: bool = False,
 ) -> FitResult:
     """Fit the closed family on one partition. Ties are reported, not guessed."""
     if entries_n < 2:
@@ -809,6 +817,7 @@ def fit_observations(
                 entry_ids,
                 alias_to_index,
                 part_of,
+                monotone=monotone,
             )
             for name in names
         ]
@@ -960,6 +969,7 @@ def resolve_ties(
     alias_to_index: dict[str, int],
     whole_tables: dict[str, str],
     tie_tables: list[dict[str, str]],
+    monotone: bool = False,
 ) -> FitResult:
     """Keep a tied candidate only if it still fits the disambiguating partition."""
     if primary.decision != "TIE":
@@ -972,6 +982,7 @@ def resolve_ties(
         alias_to_index=alias_to_index,
         whole_tables=whole_tables,
         part_tables=tie_tables,
+        monotone=monotone,
     )
     check.used_tie_break = True
     check.probe_invocations = primary.probe_invocations + len(tie_parts)
@@ -982,6 +993,14 @@ def resolve_ties(
         primary.probe_invocations = primary.probe_invocations + len(tie_parts)
         return primary
     bundles = {bundle.name: bundle for bundle in check._bundles}  # type: ignore[attr-defined]
+    if monotone:
+        bad = next((bundle for bundle in bundles.values() if not bundle.key_equal), None)
+        if bad is not None:
+            primary.decision = "REFUSE"
+            primary.reason = bad.key_reason or "primary row-key sets differ"
+            primary.used_tie_break = True
+            primary.probe_invocations = check.probe_invocations
+            return primary
     phi_for = check._phi_for  # type: ignore[attr-defined]
     names = check._names  # type: ignore[attr-defined]
     refusals: list[str] = []

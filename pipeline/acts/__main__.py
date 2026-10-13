@@ -191,6 +191,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                 verify=args.verify,
                 audit_p=args.audit_p,
                 audit_seed=args.audit_seed,
+                pin=args.pin,
+                slack=args.slack,
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -253,6 +255,22 @@ def main(argv: list[str] | None = None) -> int:
         choices=("fastq_pe", "lines", "vcf", "fasta", "files", "linetable"),
     )
     rn.add_argument("--input")
+    rn.add_argument(
+        "--pin",
+        help="exact mode (reference strategy): options that set the tool's normalizer, inserted after the tool name, "
+        "e.g. '-Z {entry_count}'. Placeholders: {entry_count}, {total_entry_length}. Output body is byte-identical to a full run or refused.",
+    )
+    rn.add_argument(
+        "--slack",
+        help=(
+            "exact mode, with --pin: reporting flags used only to fill the cache and to scan "
+            "new or changed entries. Replay uses the original argv plus the pin. "
+            "'-E {E*2} --domE {domE*2}' multiplies those argv values by 2. "
+            "A literal is allowed when argv already sets that flag; the factor is the ratio. "
+            "The factor is stored on the contract. A later reference whose old/new entry-count "
+            "ratio exceeds it is a full run. Without both --pin and --slack, a row-key superset still refuses."
+        ),
+    )
     rn.add_argument("--reference", help="reference file. Default: the argv file that parses as entries and is not --input")
     rn.add_argument(
         "--prep",
