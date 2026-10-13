@@ -354,7 +354,7 @@ def run_arm(
         found, kept, drop, n_lines = mapped_pairs(
             Path(f"{cache_tag}.{ext}"), qcol, src_nh, tgt_hn,
         )
-        d_pairs, _d_lines = pairs(Path(f"{tag}_D.{ext}"), qcol)
+        d_pairs, _d_lines = pairs(work / f"{tag}_D.{ext}", qcol)
         cache_pairs[ext] = found
         cand |= found | d_pairs
         stock_pairs, _stock_lines = pairs(Path(f"{stock_tag}.{ext}"), qcol)
