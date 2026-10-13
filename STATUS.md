@@ -63,6 +63,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
 - [x] DIAMOND Test D-X KILL — help grammar extracted 0 options, pin `no knob` (`total_entry_length` was visible). Exact mode not claimed; E1/E2 not run. iDiamond vs stock 2026_03: shared-row byte fraction 0.0130 (407/31377), Kendall τ 0.999994, Pearson 0.999999, only-iDiamond 133 (all absent from 2026_03), only-stock 0 (`pipeline/results/reference_diamond/dx.json`)
+- [x] DIAMOND DX2 UNSAFE — declared `--dbsize` replay misses 6 of 31,377 stock rows (shared rows byte-identical) and the Independence Certificate passes (`pipeline/results/reference_diamond/dx2.json`). E2 fit refuses (`only-whole` 5) before a replay. IC not shipped.
 - [ ] InterProScan wrapper
 - [ ] User conversations (3–5)
 - [ ] Commit (session could not run git: no delete permission in the folder)

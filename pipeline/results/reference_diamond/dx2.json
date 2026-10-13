@@ -1,0 +1,126 @@
+{
+  "diamond_version": "diamond version 2.2.5",
+  "dx2_e1": {
+    "algorithm_replay": "Algorithm: Double-indexed",
+    "algorithm_stock": "Algorithm: Double-indexed",
+    "bodies_equal": false,
+    "candidate_entries": 26797,
+    "candidate_pairs": 31377,
+    "classification": {
+      "bodies_equal": false,
+      "different_hsp": 0,
+      "line_order_only": false,
+      "other_rows": 31371,
+      "row_extra": 0,
+      "row_missing": 6,
+      "same_hsp_different_value": 0,
+      "shared_byte_identical": 31371,
+      "shared_rows": 31371,
+      "stock_rows": 31377
+    },
+    "ic": {
+      "algorithm_R": "Algorithm: Double-indexed",
+      "algorithm_Rplus": "Algorithm: Double-indexed",
+      "block_R": "Block size = 2000000000",
+      "block_Rplus": "Block size = 2000000000",
+      "candidate_entries": 26797,
+      "extra_candidate_row_excess": 2,
+      "missing_example": [],
+      "missing_r_rows": 0,
+      "ordered_bodies_equal": false,
+      "pad_entries": 26797,
+      "pad_hit_example": [],
+      "pad_hit_rows": 0,
+      "pad_seed": 20261020,
+      "pass": true,
+      "r_plus_rows": 31373,
+      "r_rows": 31371,
+      "unmatched_subjects": [],
+      "wall_R_s": 0.6023286659619771,
+      "wall_Rplus_s": 0.7344602920347825
+    },
+    "ic_overhead_Rplus_over_R": 1.2237231721035349,
+    "ic_overhead_Rplus_over_stock": 0.23296729412957118,
+    "ic_pass": true,
+    "needless_refusal": null,
+    "outcome": "UNSAFE",
+    "queries_with_hit": 267,
+    "replay_rows": 31371,
+    "replay_subjects": 26797,
+    "stock_rows": 31377,
+    "true_refusal": null,
+    "unmatched_subjects": [],
+    "unpinned_differs": true,
+    "wall_R_s": 0.6001849999884143,
+    "wall_Rn_s": 0.5964987920015119,
+    "wall_stock_s": 3.1526326250168495
+  },
+  "dx2_e2": {
+    "bodies_equal": null,
+    "ic_pass": null,
+    "new_cli": {
+      "returncode": 1,
+      "stderr_tail": "",
+      "stdout_tail": "strategy: reference\ndecision: REFUSE\nwhy:      out: row-key sets differ (whole 31352, union 31350, only-union 3, only-whole 5)\nwrote /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e2_new/decision.txt\n",
+      "wall_s": 11.730657624953892
+    },
+    "new_decision": "strategy: reference\ndecision: REFUSE\nwhy:      out: row-key sets differ (whole 31352, union 31350, only-union 3, only-whole 5)\nverify: full\nreused_rows: 0\nn_entries: 575748\nfallback_full_scan: True\nphases: {'parse_s': 8.31477316597011, 'subref_build_s': 0.0004369579837657511, 'prep_s': 1.6600824892520905e-07, 'tool_s': 3.2124269590131007, 'read_output_s': 0.0006224159733392298, 'total_s': 11.531837124959566, 'probe_wall_s': 0.0}\nprobe_phases: {}\n",
+    "old_cli": {
+      "returncode": 1,
+      "stderr_tail": "",
+      "stdout_tail": "strategy: reference\ndecision: REFUSE\nwhy:      out: row-key sets differ (whole 31352, union 31350, only-union 3, only-whole 5)\nwrote /Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e2_old/decision.txt\n",
+      "wall_s": 20.188934208010323
+    },
+    "old_decision": "strategy: reference\ndecision: REFUSE\nwhy:      out: row-key sets differ (whole 31352, union 31350, only-union 3, only-whole 5)\nverify: full\nreused_rows: 0\nn_entries: 574627\nfallback_full_scan: True\nphases: {'parse_s': 8.389718624996021, 'subref_build_s': 0.0005164999747648835, 'prep_s': 1.66997779160738e-07, 'tool_s': 3.1356752919964492, 'read_output_s': 0.000668583030346781, 'total_s': 19.95798437501071, 'probe_wall_s': 8.423315334017389}\nprobe_phases: {'subref_build_s': 0.22914258303353563, 'prep_s': 1.0281554160173982, 'tool_s': 6.457960333034862, 'read_output_s': 0.0015993749839253724}\n",
+    "outcome": "NO_REPLAY",
+    "tables_written": true,
+    "why": "shipped exact mode did not emit a replay body"
+  },
+  "git_head_at_start": "c94f3cde37d5455f58511d45cc2e34790f4fa484",
+  "host": "Joshuas-MBP-3.lan",
+  "inputs": {
+    "diamond": {
+      "bytes": 22031624,
+      "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond"
+    },
+    "new": {
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_03.fasta.gz"
+    },
+    "old": {
+      "bytes": 93457057,
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_01.fasta.gz"
+    },
+    "queries": {
+      "bytes": 1074926,
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz"
+    }
+  },
+  "letters": {
+    "new": 209017843,
+    "old": 208482574
+  },
+  "pad_seed": 20261020,
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "prereg_commit": "4607a42",
+  "provenance": {
+    "finished_utc": "2026-10-13T05:42:20.213894+00:00",
+    "git": "c94f3cde37d5455f58511d45cc2e34790f4fa484",
+    "git_dirty": true,
+    "host": "Joshuas-MBP-3.lan",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {
+      "diamond": "diamond version 2.2.5"
+    }
+  },
+  "query_n": 300,
+  "query_seed": 20261017,
+  "scratch_df": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   397Gi    15Gi    97%    5.3M  155M    3%   /System/Volumes/Data",
+  "test": "DX2",
+  "threads": 8
+}

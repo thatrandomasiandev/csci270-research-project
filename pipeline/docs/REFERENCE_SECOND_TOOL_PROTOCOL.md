@@ -820,3 +820,54 @@ is EXACT, add the ACTS row beside iDiamond in the D-X comparison:
 shared-row exact fraction, Kendall τ, Pearson, extra and missing rows
 versus stock.
 
+## Addendum 2026-10-12 — DX2 outcome
+
+Rules above are unchanged. Result file
+`results/reference_diamond/dx2.json`. Git at the start of the run
+`c94f3cd`. Host `Joshuas-MacBook-Pro-3.local`, DIAMOND 2.2.5, macOS
+binary MD5 `711d4c7b29e24c3fd6ec6a288ec1d326`. Input MD5s matched the
+committed FASTA table. `dbinfo` letters matched D0. Threads 8. Queries
+300, seed `20261017`, from `GCF_002853805.1`. Pad seed `20261020`.
+Walls are one Mac run and are indicative.
+
+**DX2-E1 — UNSAFE.** Stock 31,377 rows, 26,797 subject entries.
+Replay with `--dbsize 209017843` has 31,371 rows. The 31,371 shared
+rows are byte-identical (`different_hsp` 0, `same_hsp_different_value`
+0, `row_extra` 0). Six stock rows are missing:
+
+| Query | Subject | Bitscore |
+|---|---|---|
+| `WP_000107384.1` | `sp\|Q00407\|VHUA_METVO` | 78.2 |
+| `WP_000137873.1` | `sp\|Q31S42\|RPAA_SYNE7` | 125 |
+| `WP_000256438.1` | `sp\|Q0WWW9\|XYLL3_ARATH` | 184 |
+| `WP_000493792.1` | `sp\|Q39QB5\|NUOI2_GEOMG` | 43.9 |
+| `WP_001026276.1` | `sp\|A9BCC5\|CH10_PROM4` | 67.8 |
+| `WP_001026276.1` | `sp\|Q5GST6\|CH10_WOLTR` | 63.2 |
+
+The unpinned control differs. IC passed: every replay row is in R+,
+and R+ has no pad hit. R+ added two rows, both on candidate subjects
+(`VHUA_METVO`, `NUOI2_GEOMG`), which the stated certificate does not
+treat as failure. That is the kill. The certificate accepted a replay
+that is not the stock body. Candidate pairs 31,377. Replay subjects
+26,797. IC walls: R 0.600 s, R+ 0.734 s, stock 3.15 s. R+/R = 1.22.
+R+/stock = 0.233.
+
+**DX2-E2 — no replay body.** The shipped CLI, pin
+`--dbsize {total_entry_length}`, slack `--evalue 0.002`, argv S1 plus
+`--evalue 0.001` and `--threads 8`, refused the fit on 2026_01:
+`out: row-key sets differ (whole 31352, union 31350, only-union 3,
+only-whole 5)`. `only-whole` is not allowed under the monotone flag, so
+slack did not save it. The run fell back to a full scan (3.14 s of
+tool time inside a 20.2 s wall, most of it parse and the probe). The
+2026_03 invocation loaded that stored refusal from the same argv
+namespace and did not refit (probe wall 0). It also fell back to a
+full scan (tool 3.21 s, wall 11.7 s). Exact mode never emitted a
+replay, so IC was not run. This is not EXACT, SAFE-REFUSE, or UNSAFE.
+Rescanned entries are the whole release: 574,627 then 575,748. No
+candidate pairs and no replay subjects. No ACTS row is added beside
+iDiamond.
+
+IC is not shipped. E1 is UNSAFE. The HMMER positive control and the
+DIAMOND negative control from the pilot are unchanged and are not a
+reason to ship over that kill.
+
