@@ -321,3 +321,58 @@ replay scan 2.81. E3b: stock 36.54, cache fill 41.03, discovery press
 5.43, discovery scan 2.13, replay press 5.31, replay scan 2.91. E3c:
 cache fill is the 38.2 stock scan (43.46); discovery press 5.37,
 discovery scan 2.15, replay press 5.28, replay scan 2.89.
+
+## Addendum 2026-10-12 — optional Q1000 power run (rules unchanged)
+
+Written before any Q1000 scan. E3's Q300 PASS stands either way. This
+run does not rewrite `results/exact_replay/e3.json` and does not change
+the sample of record.
+
+E3's locked definitions, argv, references, s values, and kill rule are
+reused verbatim on the already-locked Q1000 sample: seed `20261013`,
+k = 1000, an independent draw from the same FASTA, indices sorted,
+records written in file order. The Q300 run is this design's pilot. It
+showed the arms complete end to end, that rows exist, and that the
+controls behave (E3c differed on 1 tblout and 4 domtblout band rows).
+
+The driver file is not edited. An external runner calls
+`scripts/exact_replay_evalue.py`'s `evaluate` on that seed and k only.
+If `evaluate` returns early because an E3a or E3b body differed, the
+arms it skipped are then called through the same `run_arm` arguments
+`evaluate` uses, so E3c is still measured. No threshold, sample, hash,
+or candidate rule changes. `--cpu 4`. Work directory outside the repo.
+Uncompressed text is deleted after `hmmpress`, as the driver already
+does. Result file: `results/exact_replay/e3_q1000.json` (git hash,
+host, HMMER version, every count, walls). Walls stay one run and
+indicative.
+
+Before the arms: one stock 38.2 scan, twice, on the first 100 records
+of the Q1000 file (`-E 10 --domE 10`, no `-Z`). Bodies (lines that do
+not start with `#`) of tblout and of domtblout must be identical.
+Otherwise stop. No arm runs. That check is recorded and is not an
+E3a/E3b pass rule.
+
+Report-only quantities, not extra pass rules:
+
+- Band rows: stock body lines whose pair is absent from the s = 1
+  candidate set, per table. The driver's E3c `band_rows` count.
+- Crossed-in and crossed-out counts per arm, as E3 already defines
+  them. Zero crossed-in when s = 1, by that definition.
+- Per-query domZ changes caused by band rows. domZ for a query is the
+  number of tblout body lines for that query (one reported target per
+  line), the same normalizer named in the E3 mechanism section. For
+  each query, band_tbl is how many of its stock 38.1 tblout lines are
+  band rows under the E3c candidate set, and band_dom is the same count
+  on domtblout. A query whose band_tbl is nonzero has a domZ change
+  caused by band rows, of size band_tbl. Record each such query with
+  stock domZ, E3c replay domZ (0 if that query is absent from the
+  replay), band_tbl, band_dom, and whether stock domZ minus replay
+  domZ equals band_tbl. Also record the number of queries with
+  band_dom > 0 and band_tbl = 0: domain rows that do not change domZ.
+
+Outcome rule. An E3a or E3b body difference on Q1000 is recorded as a
+failure of exact E-value mode on a larger sample. E3's Q300 PASS stays
+recorded alongside it. Do not retune. If E3c does not differ, write
+"control not exercised at Q1000" (INCONCLUSIVE, not a kill). E3c
+differing, with E3a and E3b byte-identical to stock, means the slack
+band holds on this sample and is load-bearing.
