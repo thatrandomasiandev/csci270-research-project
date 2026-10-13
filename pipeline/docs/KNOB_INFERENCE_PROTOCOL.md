@@ -235,6 +235,16 @@ wires this in:
 - A fitter REFUSE on decomposition still refuses reuse. Knob inference
   does not override that.
 
+## Addendum 2026-10-12 — worker-count probe guard (before any K1 run)
+
+No K1 output exists yet. The locked base argv is `--cpu 1`. On this
+build the help default of that option is 0, and 0 means every core.
+The normalizer probe would pass `M(W) = 400`. Neither value is
+executed. The driver refuses an invocation that sets that option to
+anything but 1, and inference records the refusal. A refused probe
+cannot be accepted. The accept rule, `s`, the seeds, and the ground
+truth are unchanged.
+
 ## Red-team
 
 **Attack 1. "The pin is a HMMER plugin."**
