@@ -1,0 +1,198 @@
+{
+  "diamond_version": "diamond version 2.2.5",
+  "dx_e1": {
+    "verdict": "NOT_RUN",
+    "why": "KILL"
+  },
+  "dx_e2": {
+    "verdict": "NOT_RUN",
+    "why": "KILL"
+  },
+  "dx_i": {
+    "acts": {
+      "ran": false,
+      "why": "DX-E2 did not produce a body"
+    },
+    "changed_or_new": 10239,
+    "delta": {
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx/delta_s1.m8",
+      "reused": false,
+      "rows": 384,
+      "wall_s": 0.4232952499878593
+    },
+    "idiamond": {
+      "bodies_equal": false,
+      "different_hsp": 2,
+      "evalue_kendall_tau": 0.9999939628622326,
+      "evalue_pearson": 0.9999991687961751,
+      "line_order_only": false,
+      "n_correlation": 31377,
+      "n_duplicate_pairs_skipped": 0,
+      "only_other": 133,
+      "only_stock": 0,
+      "other_rows": 31510,
+      "row_extra": 133,
+      "row_missing": 0,
+      "same_hsp_different_value": 30968,
+      "shared_byte_fraction": 0.012971284698983331,
+      "shared_byte_identical": 407,
+      "shared_rows": 31377,
+      "stock_rows": 31377
+    },
+    "l_delta": 4056372,
+    "l_old": 208482574,
+    "l_sum": 212538946,
+    "merger_exit": 0,
+    "merger_wall_s": 0.7215514170238748,
+    "ran": true,
+    "stock_new": {
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx/stock_2026_03.m8",
+      "reused": false,
+      "rows": 31377,
+      "wall_s": 3.6118168339598924
+    },
+    "stock_old": {
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx/stock_2026_01.m8",
+      "reused": false,
+      "rows": 31352,
+      "wall_s": 4.059962250001263
+    }
+  },
+  "dx_k": {
+    "calls": [
+      {
+        "clock_s": 0.4269608330214396,
+        "extra": [],
+        "n_entries": 200,
+        "n_records": 50,
+        "rows": 200,
+        "wall_s": 0.4255498329875991
+      },
+      {
+        "clock_s": 0.42946179199498147,
+        "extra": [],
+        "n_entries": 400,
+        "n_records": 50,
+        "rows": 400,
+        "wall_s": 0.4283535829745233
+      }
+    ],
+    "candidates": [],
+    "construction": {
+      "body_rows": 40337,
+      "draw_n": 300,
+      "h_n": 200,
+      "hit_entries": 8713,
+      "label": "SAMPLE-CONSTRUCTION",
+      "q_n": 50,
+      "queries_with_hit": 288,
+      "unmatched_subjects": 0,
+      "w_n": 400,
+      "w_truncated": true,
+      "wall_s": 4.5027052909717895
+    },
+    "decoys_accepted": [],
+    "expected_pin": "--dbsize {total_entry_length}",
+    "help_candidates": 0,
+    "members": {
+      "total_entry_length": {
+        "reason": "no knob",
+        "status": "no knob"
+      }
+    },
+    "pin": "no knob",
+    "reason": "total_entry_length: no knob",
+    "thresholds": [],
+    "tool_calls": 2,
+    "verdict": "KILL",
+    "wall_s": 1.7285942920134403
+  },
+  "exact_mode": "not claimed",
+  "git_head_at_start": "fd9f43b2453533e578cb421756550ab470deab22",
+  "inputs": {
+    "diamond": {
+      "bytes": 22031624,
+      "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond"
+    },
+    "heldout_queries": {
+      "bytes": 883249,
+      "md5": "7bd85fa484362551378d550f7fd5f938",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_002090355.1_protein.faa.gz"
+    },
+    "iseq_main": {
+      "bytes": 2477,
+      "md5": "2c0762059f0229add06bf351edb2f979",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/Incremental-Protein-Search/source/main.py"
+    },
+    "new": {
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_03.fasta.gz"
+    },
+    "old": {
+      "bytes": 93457057,
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_01.fasta.gz"
+    },
+    "queries": {
+      "bytes": 1074926,
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz"
+    }
+  },
+  "new_entries": 575748,
+  "new_letters": 209017843,
+  "old_entries": 574627,
+  "old_letters": 208482574,
+  "provenance": {
+    "finished_utc": "2026-10-13T03:04:49.525816+00:00",
+    "git": "fd9f43b2453533e578cb421756550ab470deab22",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {
+      "diamond": "diamond version 2.2.5"
+    }
+  },
+  "query_n": 300,
+  "s1": [
+    "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+    "blastp",
+    "--db",
+    "{reference}",
+    "--query",
+    "{input}",
+    "--out",
+    "{output}",
+    "--min-score",
+    "40",
+    "-k",
+    "0",
+    "--motif-masking",
+    "0",
+    "-b",
+    "2.0",
+    "--comp-based-stats",
+    "1",
+    "--threads",
+    "32",
+    "--outfmt",
+    "6",
+    "qseqid",
+    "sseqid",
+    "pident",
+    "length",
+    "mismatch",
+    "gapopen",
+    "qstart",
+    "qend",
+    "sstart",
+    "send",
+    "evalue",
+    "bitscore"
+  ],
+  "scratch_df": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   391Gi    22Gi    95%    5.3M  227M    2%   /System/Volumes/Data",
+  "test": "D-X"
+}

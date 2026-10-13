@@ -654,3 +654,48 @@ of the e-value column on shared rows. DX-I has no kill.
 strings, MD5s, and every count. MEASURED numbers come from that file.
 Walls are single-run and indicative.
 
+## Addendum 2026-10-12 — Test D-X outcome
+
+Rules above are unchanged. Result file
+`results/reference_diamond/dx.json`. Git `fd9f43b`. The provenance
+`git_dirty` bit is true because unrelated paths were already modified;
+this run did not edit them. Host `Joshuas-MacBook-Pro-3.local`, arm64,
+14 cores, DIAMOND `diamond version 2.2.5`, macOS universal binary MD5
+`711d4c7b29e24c3fd6ec6a288ec1d326`. Scratch was APFS
+`/System/Volumes/Data`, not tmpfs. Input MD5s matched the committed
+table. `dbinfo` letters matched D0: 2026_01 is 208,482,574 and 2026_03
+is 209,017,843. Changed or new entries: 10,239, equal to D1.
+
+**DX-K — KILL.** Not a pass. Help candidates: 0. The subcommand usage
+text was retrieved, and the locked placeholder grammar extracted no
+numeric-argument option, so `--dbsize` was not a candidate and neither
+were the decoys. Pin `no knob`, reason `total_entry_length: no knob`.
+The member was visible: the reason is not `probe cannot see M`.
+`tool_calls` = 2 (the half and whole baselines only). Decoys accepted:
+none. SAMPLE-CONSTRUCTION, not a DX-K result: 300-query scan 4.50 s,
+40,337 body rows, 288 queries with a hit, Q = 50, hit entries 8,713
+(W truncated to 400), unmatched subjects 0.
+
+**DX-E1 — NOT_RUN. DX-E2 — NOT_RUN.** Stopped at the DX-K kill. No
+difference classes. Exact mode is not claimed for this tool. Nothing
+was added to `acts/` that names the tool. An inferred pin of `no knob`
+is already `REFUSE_PIN`. Step 4 (CLI smoke, regression test) was not
+run.
+
+**DX-I — comparison, no kill.** Merger exit 0. `L_old` = 208,482,574,
+`L_delta` = 4,056,372, sum 212,538,946, which is what the merger used.
+Stock 2026_03 has 31,377 rows. iDiamond has 31,510. Shared 31,377.
+Only-stock 0. Only-iDiamond 133, and all 133 subject ids are absent
+from 2026_03 (removed entries kept). Shared-row byte-identical
+fraction 407/31,377 = 0.012971. Of the other shared rows, 30,968
+differ only in the e-value cell (the merger's `str(float)` rescale)
+and 2 differ in subject coordinates as well (`sstart`/`send` shifted,
+query interval and bit score unchanged): `WP_001110573.1` /
+`sp|Q9VL32|SUR_DROME` and `WP_001285559.1` / `sp|Q9VL32|SUR_DROME`.
+E-value Pearson 0.9999991687961751. Kendall τ 0.9999939628622326.
+n = 31,377. ACTS has no rows: E2 did not run.
+
+Walls, one Mac run, indicative: stock 2026_01 4.06 s, stock 2026_03
+3.61 s, delta search 0.42 s. The whole driver was 37 s. Not a speedup
+claim.
+

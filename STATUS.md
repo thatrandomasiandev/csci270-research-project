@@ -62,7 +62,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] `--pin` is optional for score-thresholded exact mode. Inferred once per argv namespace and stored on the contract; an explicit template overrides; inference failure is `REFUSE_PIN`. `--slack` stays required.
 - [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
-- [ ] DIAMOND `--dbsize` pin vs iDiamond (exactness)
+- [x] DIAMOND Test D-X KILL — help grammar extracted 0 options, pin `no knob` (`total_entry_length` was visible). Exact mode not claimed; E1/E2 not run. iDiamond vs stock 2026_03: shared-row byte fraction 0.0130 (407/31377), Kendall τ 0.999994, Pearson 0.999999, only-iDiamond 133 (all absent from 2026_03), only-stock 0 (`pipeline/results/reference_diamond/dx.json`)
 - [ ] InterProScan wrapper
 - [ ] User conversations (3–5)
 - [ ] Commit (session could not run git: no delete permission in the folder)
