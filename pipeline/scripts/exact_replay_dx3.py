@@ -176,12 +176,15 @@ def run_pads(
     r_text: str,
     tag: str,
     near_idx: list[int],
+    *,
+    seeds: tuple[int, ...] = PAD_SEEDS,
+    work_root: Path = WORK,
 ) -> tuple[list[dict], float]:
-    work = WORK / tag
+    work = work_root / tag
     work.mkdir(parents=True, exist_ok=True)
     n_entries = len(entries)
     specs: list[tuple[str, list[int]]] = [
-        (f"random_{seed}", random_pad(n_entries, u_idx, seed)) for seed in PAD_SEEDS
+        (f"random_{seed}", random_pad(n_entries, u_idx, seed)) for seed in seeds
     ]
     specs.append(("neighbor", neighbor_indices(n_entries, u_idx)))
     specs.append(("near_miss", near_idx))
@@ -407,5 +410,134 @@ def pilot() -> None:
     )
 
 
+MEASURED_SEED = 20261029
+MEASURED_PAD_SEEDS = (20261031, 20261032, 20261033)
+MEASURED_QUERIES = 2000
+MEASURED_FLOOR = 6
+MEASURED_MIN_ROWS = 1000
+Q_MEASURED = ROOT / "data" / "recurrence" / "A" / "GCF_001515725.1_protein.faa.gz"
+MEASURED_WORK = ROOT / "data" / "reference_diamond_dx3" / "measured"
+
+
+def outcome_of(cases: int, bodies_equal: bool, ic_pass: bool, stock_rows: int) -> dict:
+    """Locked DX3 rule. EXACT is unreachable when equality implies zero cases."""
+    if stock_rows < MEASURED_MIN_ROWS:
+        name = "INCONCLUSIVE"
+    elif (not bodies_equal) and ic_pass:
+        name = "UNSAFE"
+    elif cases >= MEASURED_FLOOR and (not ic_pass) and (not bodies_equal):
+        name = "SAFE-REFUSE"
+    elif bodies_equal and ic_pass and cases >= MEASURED_FLOOR:
+        name = "EXACT"
+    else:
+        name = "INCONCLUSIVE"
+    return {
+        "outcome": name,
+        "cases": cases,
+        "floor": MEASURED_FLOOR,
+        "bodies_equal": bodies_equal,
+        "ic_pass": ic_pass,
+        "true_refusal": name == "SAFE-REFUSE",
+        "needless_refusal": name == "INCONCLUSIVE" and bodies_equal and not ic_pass,
+    }
+
+
+def measured() -> None:
+    """The locked arm. Run only after the DX3 addendum is on main."""
+    MEASURED_WORK.mkdir(parents=True, exist_ok=True)
+    diamond = file_id(DIAMOND)
+    if (diamond["bytes"], diamond["md5"]) != EXPECTED_DIAMOND_MAC:
+        raise SystemExit(f"STOP diamond md5 {diamond['md5']}")
+    entries = parse_reference(NEW_FA)
+    key_to_index = {entry.primary: index for index, entry in enumerate(entries)}
+    records = read_records(Q_MEASURED)
+    if len(records) < MEASURED_QUERIES:
+        raise SystemExit(f"STOP genome has {len(records)} proteins")
+    draw = sorted(random.Random(MEASURED_SEED).sample(range(len(records)), MEASURED_QUERIES))
+    query = MEASURED_WORK / "q.faa"
+    write_queries(records, draw, query)
+    log("measured stock")
+    stock = search(NEW_FA, query, MEASURED_WORK / "stock.m8", None)
+    stock_text = (MEASURED_WORK / "stock.m8").read_text()
+    if stock["rows"] < MEASURED_MIN_ROWS:
+        report = {
+            "label": "MEASURED",
+            "outcome": "INCONCLUSIVE",
+            "why": "below the locked stock-row floor",
+            "stock_rows": stock["rows"],
+            "provenance": provenance(),
+        }
+        write_json(OUT_DIR / "dx3.json", report)
+        return
+    u_ids = set()
+    for line in body_lines(stock_text):
+        u_ids.add(line.split()[SUBJECT_COL])
+    unknown = sorted(u_ids - set(key_to_index))
+    if unknown:
+        raise SystemExit(f"STOP unmatched subjects {len(unknown)}")
+    u_idx = {key_to_index[key] for key in u_ids}
+    u_fa = MEASURED_WORK / "U.faa"
+    write_entries([entries[i] for i in sorted(u_idx)], u_fa)
+    log("measured R")
+    replay = search(u_fa, query, MEASURED_WORK / "R.m8", PIN)
+    u_fa.unlink(missing_ok=True)
+    r_text = (MEASURED_WORK / "R.m8").read_text()
+    klass = classify(stock_text, r_text)
+    cases = (
+        klass["row_missing"]
+        + klass["row_extra"]
+        + klass["different_hsp"]
+        + klass["same_hsp_different_value"]
+    )
+    log("measured near-miss")
+    near_idx = near_miss_indices(entries, key_to_index, u_ids, query, MEASURED_WORK / "near")
+    pads, walls = run_pads(
+        entries,
+        u_idx,
+        u_ids,
+        query,
+        r_text,
+        "pads",
+        near_idx,
+        seeds=MEASURED_PAD_SEEDS,
+        work_root=MEASURED_WORK,
+    )
+    ic = ic2_all(pads)
+    q = len(u_idx) / (len(entries) - len(u_idx))
+    judged = outcome_of(cases, klass["bodies_equal"], ic["pass"], klass["stock_rows"])
+    report = {
+        "label": "MEASURED",
+        "preregistration": "4ae14763bce8ba02c769b877285a4b471d1250ec",
+        "genome": Q_MEASURED.name,
+        "query_seed": MEASURED_SEED,
+        "queries": MEASURED_QUERIES,
+        "records_available": len(records),
+        "pad_seeds": list(MEASURED_PAD_SEEDS),
+        "pin": "--dbsize 209017843",
+        "threads": 8,
+        "diamond": diamond,
+        "candidate_entries": len(u_idx),
+        "stock_rows": klass["stock_rows"],
+        "replay_rows": klass["other_rows"],
+        "cases": cases,
+        "difference_classes": difference_classes(klass),
+        "classification": klass,
+        "ic2": ic,
+        "q_one_neighbor": q,
+        "random_miss_bound_k3": (1 - q) ** 3,
+        "wall_stock_s": stock["wall_s"],
+        "wall_R_s": replay["wall_s"],
+        "wall_Rplus_sum_s": walls,
+        "overhead_Rplus_over_stock": walls / stock["wall_s"] if stock["wall_s"] else None,
+        "judgment": judged,
+        "provenance": provenance(),
+    }
+    write_json(OUT_DIR / "dx3.json", report)
+    log(f"wrote {OUT_DIR / 'dx3.json'} outcome={judged['outcome']} cases={cases}")
+
+
 if __name__ == "__main__":
-    pilot()
+    if len(sys.argv) > 1 and sys.argv[1] == "measured":
+        measured()
+    else:
+        pilot()
