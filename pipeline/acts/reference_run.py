@@ -1189,6 +1189,10 @@ class ReferenceIncremental(Strategy):
                 rec_key, ent = fields[table.record_col], fields[table.entry_col]
                 if ent not in cand.get(rec_key, set()):
                     return done("REFUSE_MATCH", f"{table.name}: replay reported a non-candidate pair ({rec_key}, {ent})", extra)
+        ic2_why = self._ic2(pinned, entries, rep_records, rep_entries, texts, tables)
+        if ic2_why:
+            return done("REFUSE", ic2_why, extra)
+        extra["ic2"] = "pass"
         started = time.perf_counter()
         dest = self.out_dir / "tables"
         dest.mkdir(parents=True, exist_ok=True)
@@ -1215,6 +1219,36 @@ class ReferenceIncremental(Strategy):
                     if a != b:
                         return done("REFUSE_AUDIT", f"{table.name}: audited records differ from a full run", extra)
         return done("SHIP", "exact replay under pinned normalizer", extra)
+
+    def _ic2(self, pinned, entries, rep_records, rep_entries, texts, tables) -> str | None:
+        """Random pads and the file-order neighbor pad. A failure does not write the replay."""
+        from acts.exact_certificate import judge, pad_indices
+
+        if not tables or not rep_entries:
+            return None
+        values = pin_values(entries)
+        u_ids = {entry.primary for entry in rep_entries}
+        u_idx = {i for i, entry in enumerate(entries) if entry.primary in u_ids}
+        for name, indices in pad_indices(entries, u_ids):
+            if not indices:
+                continue
+            pad_ids = {entries[i].primary for i in indices}
+            merged = [entries[i] for i in sorted(u_idx | set(indices))]
+            try:
+                plus = pinned(rep_records, merged, values)
+            except RunError as exc:
+                return f"IC2 {name} failed to run: {exc.reason}"
+            for table in tables:
+                verdict = judge(
+                    texts.get(table.name, ""),
+                    plus.get(table.name, ""),
+                    u_ids,
+                    pad_ids,
+                    table.entry_col,
+                )
+                if not verdict["pass"]:
+                    return f"IC2 {name} {table.name}: {verdict['fail_mode']}"
+        return None
 
     def _pin_check(self, invoke, pinned, entries, records, tables) -> tuple[bool, str]:
         """In-situ E1 on the probe sample: oracle candidates, pinned replay, body bytes."""
