@@ -9,14 +9,23 @@ from __future__ import annotations
 
 import re
 import subprocess
+from collections import Counter
 from collections.abc import Callable, Sequence
 
 from acts.reference_fit import ColumnReport, TableReport, parse_finite, parse_table_text, row_key
 from acts.reference_formats import Entry, RecordItem
 
 SIZE_MEMBERS = ("entry_count", "total_entry_length")
+PER_KEY = "per_key_row_count"
 SLACK = 4.0
 MAX_CALLS = 96
+# Threshold probes tighten a printed default. They do not relax it.
+TIGHTEN_FACTORS = (10, 100, 1000)
+MIN_REMOVED = 3
+_INTEGER = re.compile(r"[+-]?\d+")
+_NOT_A_THRESHOLD_REJECTION = frozenset(
+    {"accept", "inconclusive", "non-reporting threshold", "no numeric default", "not probed"}
+)
 
 # Placeholder names that denote one numeric argument. File and string
 # placeholders are absent on purpose.
@@ -255,33 +264,30 @@ def infer_knobs(
         pin = " ".join(member_notes[member]["template"] for member in fitted)
         pin_reason = ""
 
+    structural = _structural_columns(tables, whole_out)
     thresholds: list[dict] = []
     threshold_reason: dict[str, str] = {}
+    threshold_probes: dict[str, list] = {}
     capped = False
     for candidate in candidates:
         option = candidate["option"]
         default = candidate["default"]
         if default is None:
             threshold_reason[option] = "no numeric default"
+            threshold_probes[option] = []
             continue
         if capped:
             threshold_reason[option] = "cap"
+            threshold_probes[option] = []
             continue
-        try:
-            relaxed = run(whole, _option_argv(option, float(default) * slack))
-        except _Cap:
+        status, found, probes, hit_cap = _tighten_option(
+            tables, structural, whole_out, whole, option, float(default), run
+        )
+        if hit_cap:
             capped = True
-            threshold_reason[option] = "cap"
-            continue
-        except Exception as exc:
-            threshold_reason[option] = f"tool failed: {exc}"
-            continue
-        column, reason = _threshold_column(tables, whole_out, relaxed, float(default), slack)
-        if reason is None and column is not None:
-            threshold_reason[option] = "accept"
-            thresholds.append({"option": option, "default": default, "column": column})
-        else:
-            threshold_reason[option] = reason or "no bounded column"
+        threshold_reason[option] = status
+        threshold_probes[option] = probes
+        thresholds.extend(found)
 
     rejected = _rejections(candidates, fitted, normalizer_reason, threshold_reason, member_notes)
     audited = []
@@ -297,12 +303,14 @@ def infer_knobs(
                     for member in fitted
                 },
                 "threshold": threshold_reason.get(option, "not probed"),
+                "probes": threshold_probes.get(option, []),
             }
         )
     return {
         "pin": pin,
         "reason": pin_reason,
         "thresholds": thresholds,
+        "structural": structural,
         "rejected": rejected,
         "candidates": audited,
         "members": member_notes,
@@ -487,50 +495,373 @@ def _bodies_match(
     return saw
 
 
-def _threshold_column(
-    tables: list[TableReport],
-    baseline: dict[str, str],
-    relaxed: dict[str, str],
-    default: float,
-    slack: float,
-) -> tuple[str | None, str | None]:
-    hi = default * slack
-    qualified: list[str] = []
-    added_any = False
+def _body_rows(text: str) -> list[list[str]]:
+    return parse_table_text("", text).rows
+
+
+def _integer_token(token: str) -> int | None:
+    if _INTEGER.fullmatch(token) is None:
+        return None
+    return int(token)
+
+
+def _structural_columns(tables: list[TableReport], default_out: dict[str, str]) -> dict[str, list[dict]]:
+    """Integer columns that are a row count or a within-group rank on the default run."""
+    parsed = {table.name: _body_rows(default_out.get(table.name, "")) for table in tables}
+    pair_counts: dict[str, Counter] = {}
+    record_counts: dict[str, Counter] = {}
     for table in tables:
-        try:
-            base_rows = _index_table(table, baseline.get(table.name, ""))
-            rel_rows = _index_table(table, relaxed.get(table.name, ""))
-        except ValueError as exc:
-            return None, f"tool failed: {exc}"
-        if not set(base_rows) <= set(rel_rows):
-            return None, "rows dropped"
-        for key, (cells, raw) in base_rows.items():
-            if rel_rows[key][1] != raw or rel_rows[key][0] != cells:
-                return None, "shared rows changed"
-        added = [key for key in rel_rows if key not in base_rows]
-        if not added:
-            continue
-        added_any = True
-        width = min(len(rel_rows[key][0]) for key in added)
-        for index in range(width):
-            values: list[float] = []
-            numeric = True
-            for key in added:
-                parsed = parse_finite(rel_rows[key][0][index])
-                if parsed is None:
-                    numeric = False
-                    break
-                values.append(parsed)
-            if not numeric or not values:
+        pairs: Counter = Counter()
+        records: Counter = Counter()
+        rec, ent = table.record_col, table.entry_col
+        for row in parsed[table.name]:
+            if rec >= len(row) or ent >= len(row):
                 continue
-            if all(default < value <= hi for value in values):
-                qualified.append(f"{table.name}:{index}")
-    if not added_any:
-        return None, "row set unchanged"
-    if not qualified:
-        return None, "no bounded column"
-    return ",".join(qualified), None
+            pairs[(row[rec], row[ent])] += 1
+            records[row[rec]] += 1
+        pair_counts[table.name] = pairs
+        record_counts[table.name] = records
+    found: dict[str, list[dict]] = {}
+    for table in tables:
+        rows = parsed[table.name]
+        columns: list[dict] = []
+        if not rows:
+            found[table.name] = columns
+            continue
+        width = min(len(row) for row in rows)
+        for index in range(width):
+            if index in (table.record_col, table.entry_col):
+                continue
+            values = [_integer_token(row[index]) for row in rows]
+            if any(value is None for value in values):
+                continue
+            kind = _structural_kind(
+                table, rows, index, values, pair_counts, record_counts, tables
+            )
+            if kind is not None:
+                columns.append({"index": index, **kind})
+        found[table.name] = columns
+    return found
+
+
+def _structural_kind(
+    table: TableReport,
+    rows: list[list[str]],
+    index: int,
+    values: list[int | None],
+    pair_counts: dict[str, Counter],
+    record_counts: dict[str, Counter],
+    tables: list[TableReport],
+) -> dict | None:
+    if _is_rank(table, rows, values):
+        return {"kind": "rank"}
+    rec, ent = table.record_col, table.entry_col
+    for other in tables:
+        pairs = pair_counts[other.name]
+        records = record_counts[other.name]
+        if all(
+            pairs[(row[rec], row[ent])] == value
+            for row, value in zip(rows, values)
+            if rec < len(row) and ent < len(row)
+        ) and len(rows) == sum(1 for row in rows if rec < len(row) and ent < len(row)):
+            return {"kind": "count", "key": "record,entry", "count_table": other.name}
+        if all(
+            records[row[rec]] == value
+            for row, value in zip(rows, values)
+            if rec < len(row)
+        ) and len(rows) == sum(1 for row in rows if rec < len(row)):
+            return {"kind": "count", "key": "record", "count_table": other.name}
+    return None
+
+
+def _is_rank(table: TableReport, rows: list[list[str]], values: list[int | None]) -> bool:
+    groups: dict[tuple[str, str], list[int]] = {}
+    rec, ent = table.record_col, table.entry_col
+    for row, value in zip(rows, values):
+        if value is None or rec >= len(row) or ent >= len(row):
+            return False
+        groups.setdefault((row[rec], row[ent]), []).append(value)
+    if not groups:
+        return False
+    return all(seen == list(range(1, len(seen) + 1)) for seen in groups.values())
+
+
+def _identity_drop(table: TableReport, structural: dict[str, list[dict]]) -> set[int]:
+    drop = {int(item["index"]) for item in structural.get(table.name, [])}
+    for col in table.columns:
+        if col.member == PER_KEY:
+            drop.add(col.index)
+    return drop
+
+
+def _identity(cells: list[str], drop: set[int]) -> tuple[str, ...]:
+    return tuple(cell for index, cell in enumerate(cells) if index not in drop)
+
+
+def _align(
+    default_rows: list[list[str]],
+    tight_rows: list[list[str]],
+    drop: set[int],
+) -> tuple[list[tuple[int, int]], list[int]] | None:
+    """Pair tight rows to default rows by identity. None when a tight identity is new."""
+    used = [False] * len(default_rows)
+    default_ids = [_identity(row, drop) for row in default_rows]
+    pairs: list[tuple[int, int]] = []
+    for tight_index, row in enumerate(tight_rows):
+        ident = _identity(row, drop)
+        found = None
+        for default_index, did in enumerate(default_ids):
+            if not used[default_index] and did == ident:
+                found = default_index
+                break
+        if found is None:
+            return None
+        used[found] = True
+        pairs.append((found, tight_index))
+    removed = [index for index, flag in enumerate(used) if not flag]
+    return pairs, removed
+
+
+def _removed_count(default_rows: list[list[str]], tight_rows: list[list[str]], drop: set[int]) -> int:
+    default_ids = Counter(_identity(row, drop) for row in default_rows)
+    tight_ids = Counter(_identity(row, drop) for row in tight_rows)
+    return sum(max(0, default_ids[key] - tight_ids[key]) for key in default_ids)
+
+
+def _drop_cells_differ(
+    default_rows: list[list[str]],
+    tight_rows: list[list[str]],
+    pairs: list[tuple[int, int]],
+    drop: set[int],
+) -> bool:
+    for default_index, tight_index in pairs:
+        left, right = default_rows[default_index], tight_rows[tight_index]
+        for index in drop:
+            if index >= len(left) or index >= len(right) or left[index] != right[index]:
+                return True
+    return False
+
+
+def _bound_columns(
+    table_name: str,
+    default_rows: list[list[str]],
+    tight_rows: list[list[str]],
+    pairs: list[tuple[int, int]],
+    removed: list[int],
+    threshold: float,
+) -> list[str]:
+    if not removed:
+        return []
+    width = max(len(default_rows[index]) for index in removed)
+    qualified: list[str] = []
+    for index in range(width):
+        if not _cuts_at(default_rows, tight_rows, pairs, removed, index, threshold):
+            continue
+        qualified.append(f"{table_name}:{index}")
+    return qualified
+
+
+def _cuts_at(
+    default_rows: list[list[str]],
+    tight_rows: list[list[str]],
+    pairs: list[tuple[int, int]],
+    removed: list[int],
+    index: int,
+    threshold: float,
+) -> bool:
+    for default_index in removed:
+        row = default_rows[default_index]
+        if index >= len(row):
+            return False
+        value = parse_finite(row[index])
+        if value is None or not value > threshold:
+            return False
+    for default_index, tight_index in pairs:
+        for row in (default_rows[default_index], tight_rows[tight_index]):
+            if index >= len(row):
+                return False
+            value = parse_finite(row[index])
+            if value is None or not value <= threshold:
+                return False
+    return True
+
+
+def _table_tighten(
+    table: TableReport,
+    default_text: str,
+    tight_text: str,
+    drop: set[int],
+    threshold: float,
+) -> dict:
+    default_rows = _body_rows(default_text)
+    tight_rows = _body_rows(tight_text)
+    aligned = _align(default_rows, tight_rows, drop)
+    if aligned is None:
+        removed = _removed_count(default_rows, tight_rows, drop)
+        return {
+            "removed": removed,
+            "outcome": "shared rows changed",
+            "reason": "shared rows changed",
+            "columns": [],
+        }
+    pairs, removed = aligned
+    removed_n = len(removed)
+    if removed_n == 0:
+        if _drop_cells_differ(default_rows, tight_rows, pairs, drop):
+            return {
+                "removed": 0,
+                "outcome": "non-reporting threshold",
+                "reason": "non-reporting threshold",
+                "columns": [],
+            }
+        return {"removed": 0, "outcome": "unchanged", "reason": "unchanged", "columns": []}
+    if removed_n < MIN_REMOVED:
+        return {
+            "removed": removed_n,
+            "outcome": "inconclusive",
+            "reason": "inconclusive",
+            "columns": [],
+        }
+    columns = _bound_columns(table.name, default_rows, tight_rows, pairs, removed, threshold)
+    if not columns:
+        return {
+            "removed": removed_n,
+            "outcome": "no exact bound",
+            "reason": "no exact bound",
+            "columns": [],
+        }
+    return {"removed": removed_n, "outcome": "accept", "reason": "accept", "columns": columns}
+
+
+def _tighten_option(
+    tables: list[TableReport],
+    structural: dict[str, list[dict]],
+    default_out: dict[str, str],
+    whole: Sequence[Entry],
+    option: str,
+    default: float,
+    run: Callable[[Sequence[Entry], Sequence[str]], dict[str, str]],
+) -> tuple[str, list[dict], list[dict], bool]:
+    """Walk the tighten ladder. The bool is whether the probe cap was hit."""
+    accepted: dict[str, dict] = {}
+    probes: list[dict] = []
+    saw_removed = False
+    saw_column_only = False
+    saw_throw = False
+    reject_reason = "no exact bound"
+    hit_cap = False
+    for factor in TIGHTEN_FACTORS:
+        if tables and all(table.name in accepted for table in tables):
+            break
+        threshold = float(default) / float(factor)
+        try:
+            tight = run(whole, _option_argv(option, threshold))
+        except _Cap:
+            hit_cap = True
+            probes.append({"factor": factor, "t": threshold, "outcome": "cap", "reason": "cap", "tables": {}})
+            break
+        except Exception as exc:
+            saw_throw = True
+            reason = f"tool failed: {exc}"
+            probes.append(
+                {"factor": factor, "t": threshold, "outcome": reason, "reason": reason, "tables": {}}
+            )
+            continue
+        per_table: dict[str, dict] = {}
+        factor_removed = False
+        factor_column_only = False
+        for table in tables:
+            if table.name in accepted:
+                per_table[table.name] = {
+                    "removed": 0,
+                    "outcome": "accept",
+                    "reason": "accept",
+                    "columns": accepted[table.name]["columns"],
+                }
+                continue
+            judged = _table_tighten(
+                table,
+                default_out.get(table.name, ""),
+                tight.get(table.name, ""),
+                _identity_drop(table, structural),
+                threshold,
+            )
+            per_table[table.name] = judged
+            if judged["outcome"] == "accept":
+                columns = list(judged["columns"])
+                accepted[table.name] = {
+                    "option": option,
+                    "default": default,
+                    "table": table.name,
+                    "column": ",".join(columns),
+                    "factor": factor,
+                    "t": threshold,
+                    "columns": columns,
+                }
+            elif judged["removed"] >= MIN_REMOVED:
+                factor_removed = True
+                reject_reason = str(judged["reason"])
+            elif judged["outcome"] == "non-reporting threshold":
+                factor_column_only = True
+        saw_removed = saw_removed or factor_removed or any(
+            item["removed"] >= MIN_REMOVED and item["outcome"] != "accept" for item in per_table.values()
+        )
+        if factor_removed:
+            reject_reason = next(
+                (
+                    item["reason"]
+                    for item in per_table.values()
+                    if item["removed"] >= MIN_REMOVED and item["outcome"] != "accept"
+                ),
+                reject_reason,
+            )
+        identities_stable = all(
+            item["outcome"] in {"unchanged", "non-reporting threshold"}
+            for item in per_table.values()
+        )
+        if identities_stable and factor_column_only:
+            saw_column_only = True
+        probes.append(
+            {
+                "factor": factor,
+                "t": threshold,
+                "outcome": _factor_outcome(per_table),
+                "reason": _factor_outcome(per_table),
+                "tables": per_table,
+            }
+        )
+    found = []
+    for table in tables:
+        if table.name not in accepted:
+            continue
+        item = dict(accepted[table.name])
+        item.pop("columns", None)
+        found.append(item)
+    if hit_cap and not accepted and not saw_removed and not saw_column_only:
+        return "cap", found, probes, True
+    if accepted:
+        return "accept", found, probes, hit_cap
+    if saw_removed:
+        return reject_reason, [], probes, hit_cap
+    if saw_column_only:
+        return "non-reporting threshold", [], probes, hit_cap
+    if saw_throw:
+        thrown = next(item["reason"] for item in probes if str(item["reason"]).startswith("tool failed"))
+        return thrown, [], probes, hit_cap
+    if hit_cap:
+        return "cap", [], probes, True
+    return "inconclusive", [], probes, False
+
+
+def _factor_outcome(per_table: dict[str, dict]) -> str:
+    if any(item["outcome"] == "accept" for item in per_table.values()):
+        return "accept"
+    for name in ("shared rows changed", "no exact bound", "non-reporting threshold"):
+        if any(item["outcome"] == name for item in per_table.values()):
+            return name
+    if any(item["outcome"] == "inconclusive" for item in per_table.values()):
+        return "inconclusive"
+    return "unchanged"
 
 
 def _rejections(
@@ -556,7 +887,7 @@ def _rejections(
                 {"option": option, "role": "normalizer", "member": member, "reason": reason}
             )
         reason = threshold_reason.get(option)
-        if reason is not None and reason != "accept":
+        if reason is not None and reason not in _NOT_A_THRESHOLD_REJECTION:
             rejected.append({"option": option, "role": "threshold", "reason": reason})
     return rejected
 

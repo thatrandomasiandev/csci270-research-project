@@ -165,11 +165,17 @@ class ProbeTests(unittest.TestCase):
             _scaled_invoke("count", "-Z"),
         )
         self.assertEqual(result["pin"], "-Z {entry_count}")
-        self.assertEqual(result["thresholds"], [{"option": "-E", "default": 10.0, "column": "out:2"}])
+        self.assertEqual(len(result["thresholds"]), 1)
+        found = result["thresholds"][0]
+        self.assertEqual(found["option"], "-E")
+        self.assertEqual(found["default"], 10.0)
+        self.assertEqual(found["table"], "out")
+        self.assertEqual(found["column"], "out:2")
+        self.assertEqual(found["factor"], 10)
         warp = next(item for item in result["candidates"] if item["option"] == "--warp")
         self.assertEqual(warp["threshold"], "shared rows changed")
         self.assertNotEqual(warp["normalizer"]["entry_count"], "accept")
-        self.assertEqual(result["tool_calls"], 7)
+        self.assertEqual(result["tool_calls"], 9)
 
     def test_length_member_uses_that_placeholder(self) -> None:
         entries = _entries()
@@ -211,7 +217,7 @@ class ProbeTests(unittest.TestCase):
         seed = result["candidates"][0]
         self.assertEqual(seed["option"], "--seed")
         self.assertNotEqual(seed["normalizer"]["entry_count"], "accept")
-        self.assertEqual(seed["threshold"], "row set unchanged")
+        self.assertEqual(seed["threshold"], "inconclusive")
 
     def test_decoy_that_changes_scores_is_rejected(self) -> None:
         entries = _entries()
@@ -326,6 +332,143 @@ class ProbeTests(unittest.TestCase):
         )
         self.assertEqual(result["pin"], "no knob")
         self.assertIn("cap", result["reason"])
+
+
+class TightenTests(unittest.TestCase):
+    """K1s ladder: tighten a default, ignore renumbered counts, reject decoys."""
+
+    def test_threshold_visible_only_when_tightened(self) -> None:
+        # Every value is already inside the default, so relaxing cannot add a row.
+        # Three values sit above default/10 and disappear when the cutoff tightens.
+        values = (0.2, 0.4, 1.5, 2.5, 3.5)
+
+        def invoke(records, entries, extra):
+            limit = _opts(list(extra)).get("--cut", 10.0)
+            lines = ["# record entry value"]
+            for index, value in enumerate(values):
+                if value <= limit:
+                    lines.append(f"r0 e{index} {value}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        result = infer_knobs(
+            "  --cut <x> : reporting cutoff  [10.0]\n",
+            _records(),
+            _entries(),
+            _entries()[:2],
+            _contract(),
+            invoke,
+        )
+        self.assertEqual(len(result["thresholds"]), 1)
+        found = result["thresholds"][0]
+        self.assertEqual(found["option"], "--cut")
+        self.assertEqual(found["table"], "out")
+        self.assertEqual(found["column"], "out:2")
+        self.assertEqual(found["factor"], 10)
+        self.assertEqual(found["t"], 1.0)
+        self.assertTrue(all(value <= 10.0 for value in values))
+
+    def test_domain_threshold_survives_renumbered_index_and_count(self) -> None:
+        domains = ((0.1, "a"), (0.2, "b"), (2.0, "c"), (3.0, "d"), (4.0, "e"))
+
+        def invoke(records, entries, extra):
+            limit = _opts(list(extra)).get("--part", 10.0)
+            kept = [item for item in domains if item[0] <= limit]
+            lines = ["# record entry rank n value mark"]
+            for index, (value, mark) in enumerate(kept, start=1):
+                lines.append(f"r0 e0 {index} {len(kept)} {value} {mark}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        result = infer_knobs(
+            "  --part <x> : part cutoff  [10.0]\n",
+            _records(),
+            _entries(),
+            _entries()[:2],
+            _contract(),
+            invoke,
+        )
+        kinds = {item["index"]: item["kind"] for item in result["structural"]["out"]}
+        self.assertEqual(kinds[2], "rank")
+        self.assertEqual(kinds[3], "count")
+        self.assertEqual(len(result["thresholds"]), 1)
+        found = result["thresholds"][0]
+        self.assertEqual(found["option"], "--part")
+        self.assertEqual(found["column"], "out:4")
+        self.assertEqual(found["factor"], 10)
+
+    def test_prefilter_without_exact_bound_is_rejected(self) -> None:
+        # Dropping the small values removes three rows and matches no printed cut.
+        rows = ((0.5, "a"), (0.5, "b"), (0.5, "c"), (9.0, "d"), (9.0, "e"), (9.0, "f"))
+
+        def invoke(records, entries, extra):
+            opts = _opts(list(extra))
+            lines = ["# record entry value mark"]
+            for index, (value, mark) in enumerate(rows):
+                if "--gate" in opts and value <= 1:
+                    continue
+                lines.append(f"r0 e{index} {value} {mark}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        result = infer_knobs(
+            "  --gate <x> : early filter  [10.0]\n",
+            _records(),
+            _entries(),
+            _entries()[:2],
+            _contract(),
+            invoke,
+        )
+        self.assertEqual(result["thresholds"], [])
+        gate = result["candidates"][0]
+        self.assertEqual(gate["threshold"], "no exact bound")
+        self.assertTrue(any(item["option"] == "--gate" for item in result["rejected"]))
+
+    def test_inclusion_column_change_is_non_reporting(self) -> None:
+        def invoke(records, entries, extra):
+            opts = _opts(list(extra))
+            # Four rows share the record, so the count column is structural.
+            count = 0 if "--inc" in opts else 4
+            lines = ["# record entry n mark"]
+            for index, mark in enumerate("abcd"):
+                lines.append(f"r0 e{index} {count} {mark}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        result = infer_knobs(
+            "  --inc <x> : inclusion count  [10.0]\n",
+            _records(),
+            _entries(),
+            _entries()[:2],
+            _contract(),
+            invoke,
+        )
+        self.assertEqual(result["thresholds"], [])
+        self.assertEqual(result["structural"]["out"][0]["kind"], "count")
+        self.assertEqual(result["candidates"][0]["threshold"], "non-reporting threshold")
+        self.assertFalse(any(item.get("role") == "threshold" for item in result["rejected"]))
+
+    def test_seed_and_worker_knobs_are_rejected(self) -> None:
+        def invoke(records, entries, extra):
+            opts = _opts(list(extra))
+            if "--workers" in opts:
+                raise RuntimeError("worker-count probe refused")
+            score = opts.get("--draw", 1.0)
+            lines = ["# record entry score"]
+            for index in range(4):
+                lines.append(f"r0 e{index} {score}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        result = infer_knobs(
+            "  --draw <n> : drawing  [42]\n  --workers <n> : workers  [0]\n",
+            _records(),
+            _entries(),
+            _entries()[:2],
+            _contract(),
+            invoke,
+        )
+        self.assertEqual(result["thresholds"], [])
+        by_option = {item["option"]: item["threshold"] for item in result["candidates"]}
+        self.assertEqual(by_option["--draw"], "shared rows changed")
+        self.assertTrue(by_option["--workers"].startswith("tool failed"))
+        rejected = {item["option"] for item in result["rejected"] if item.get("role") == "threshold"}
+        self.assertEqual(rejected, {"--draw", "--workers"})
 
 
 if __name__ == "__main__":
