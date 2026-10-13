@@ -1,6 +1,6 @@
 # STATUS — STAR ≥2× (CSCI 270 A-contract)
 
-**Updated:** 2026-10-09 (baseline smoke; reruns queued)
+**Updated:** 2026-10-12 (pivot: exact reference re-annotation)
 
 ## Scope — LOCKED (Zhang)
 
@@ -48,6 +48,22 @@ Headline: **`stitchWindowAligns` spent ~half of runtime copying fat `Transcript`
 | i10 | 13.907±0.036 | 5.894±0.045 | 2.360× | 2.346× | yes | nfcore nb7 |
 
 **Scoreboard:** **10/10** datasets with min_pair ≥2.0 (all MATCH).
+
+## Research front door (2026-10-12): exact reference re-annotation
+
+Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Protocol: `pipeline/docs/EXACT_REPLAY_PROTOCOL.md`.
+
+- [x] E1 PASS — pinned replay (`-Z 30134`) byte-identical to full Pfam 38.2 run (534 tblout / 545 domtblout); unpinned control differs on every line (`pipeline/results/exact_replay/e1_e2.json`)
+- [x] E2 PASS — 38.1 cache → 4,052 changed/new models → 452-model replay; byte-identical to stock 38.2
+- [x] E3 PASS — E-value reporting. Growth s=1 and shrink s=2 byte-identical to stock; s=1 shrink control misses 1 tblout / 4 domtblout band rows (`pipeline/results/exact_replay/e3.json`). Q1000 not run.
+- [x] Shipped `--pin` exact mode in `acts/reference_run.py` + `tests/test_exact_replay.py` (6 tests)
+- [ ] Ship `--slack` for E-value exact mode (E3a and E3b passed; not in the tree yet)
+- [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
+- [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
+- [ ] DIAMOND `--dbsize` pin vs iDiamond (exactness)
+- [ ] InterProScan wrapper
+- [ ] User conversations (3–5)
+- [ ] Commit (session could not run git: no delete permission in the folder)
 
 ## Lab notebook
 

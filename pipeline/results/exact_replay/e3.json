@@ -1,0 +1,238 @@
+{
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "test": "E3",
+  "pre_registration": "4ae39ab66c9283d547e5930bcb99d5022fd9d864",
+  "git_head": "894b7ca178276f5dc45e682a629dc0f725ca95bc",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "machine": "arm64",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 4,
+  "walls_indicative": true,
+  "stated_Z": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "measured_Z": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "hash_diff_s": {
+    "38.1": 7.861322375014424,
+    "38.2": 8.34022112499224
+  },
+  "press_s": {
+    "38.1": {
+      "decomp_s": 2.7497316250228323,
+      "press_s": 10.921070125012193,
+      "pressed_models": 27481,
+      "free_after": 28205260800
+    },
+    "38.2": {
+      "decomp_s": 4.728181458020117,
+      "press_s": 10.527904457994737,
+      "pressed_models": 30134,
+      "free_after": 26116255744
+    }
+  },
+  "Q300": {
+    "sample": {
+      "seed": 20261012,
+      "k": 300,
+      "n_records": 5117,
+      "sample_sha256": "3a6e66691257ebdc2aea15c5682fab45afcb19d851c0b4d287381d9d651a7659",
+      "index_first": 10,
+      "index_last": 5085
+    },
+    "stock_walls_s": {
+      "38.1_E10": 36.541247541958,
+      "38.2_E10": 43.45582612499129,
+      "indicative": true
+    },
+    "E3a": {
+      "slack": 1,
+      "z_target": 30134,
+      "fill_E": 10,
+      "replay_E": 10,
+      "discovery_models": 4052,
+      "candidate_pairs": 1375,
+      "replay_models": 1135,
+      "replay_queries": 288,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 1300,
+          "source_only_lines": 30
+        },
+        "dom": {
+          "cache_lines": 2532,
+          "source_only_lines": 54
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 1,
+        "dom": 4
+      },
+      "crossed_in_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "band_rows": null,
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 43.45582612499129,
+        "cache_fill": 36.541247541958,
+        "cache_fill_source": "stock_38.1_E10",
+        "hash_diff": 16.201543500006665,
+        "discovery_press": 6.814333499991335,
+        "discovery_scan": 5.842382874980103,
+        "replay_press": 5.486374333966523,
+        "replay_scan": 2.8135694580269046
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 1361,
+          "lines_stock": 1361,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_replay": 2729,
+          "lines_stock": 2729,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "equal": true,
+      "differs": false,
+      "pass": true,
+      "killed": false
+    },
+    "E3b": {
+      "slack": 2,
+      "z_target": 27481,
+      "fill_E": 20,
+      "replay_E": 10,
+      "discovery_models": 1399,
+      "candidate_pairs": 1332,
+      "replay_models": 1091,
+      "replay_queries": 287,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 1391,
+          "source_only_lines": 98
+        },
+        "dom": {
+          "cache_lines": 2882,
+          "source_only_lines": 292
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 23,
+        "dom": 70
+      },
+      "crossed_in_rows": {
+        "tbl": 1,
+        "dom": 4
+      },
+      "band_rows": null,
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 36.541247541958,
+        "cache_fill": 41.03435495798476,
+        "cache_fill_source": "38.2_E20",
+        "hash_diff": 16.201543500006665,
+        "discovery_press": 5.425978248997126,
+        "discovery_scan": 2.129383958003018,
+        "replay_press": 5.314243166998494,
+        "replay_scan": 2.9088698329869658
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 1300,
+          "lines_stock": 1300,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_replay": 2532,
+          "lines_stock": 2532,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "equal": true,
+      "differs": false,
+      "pass": true,
+      "killed": false
+    },
+    "slack_cache_wall_s": 41.03435495798476,
+    "E3c": {
+      "slack": 1,
+      "z_target": 27481,
+      "fill_E": 10,
+      "replay_E": 10,
+      "discovery_models": 1399,
+      "candidate_pairs": 1305,
+      "replay_models": 1068,
+      "replay_queries": 287,
+      "cache_lines_dropped_source_only": {
+        "tbl": {
+          "cache_lines": 1361,
+          "source_only_lines": 92
+        },
+        "dom": {
+          "cache_lines": 2729,
+          "source_only_lines": 267
+        }
+      },
+      "crossed_out_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "crossed_in_rows": {
+        "tbl": 0,
+        "dom": 0
+      },
+      "band_rows": {
+        "tbl": 1,
+        "dom": 4
+      },
+      "walls_s": {
+        "indicative": true,
+        "stock_target": 36.541247541958,
+        "cache_fill": 43.45582612499129,
+        "cache_fill_source": "stock_38.2_E10",
+        "hash_diff": 16.201543500006665,
+        "discovery_press": 5.373026082990691,
+        "discovery_scan": 2.1471995420288295,
+        "replay_press": 5.279859333997592,
+        "replay_scan": 2.886458749999292
+      },
+      "check": {
+        "tbl": {
+          "lines_replay": 1299,
+          "lines_stock": 1300,
+          "equal": false,
+          "differing_positions": 1006,
+          "first_replay": "PNP_UDP_1            PF01048.27 WP_000224877.1       -            1.7e-39  136.2   1.3     2e-39  136.0   1.3   1.0   1   0   0   1   1   1   1 Phosphorylase superfamily\n",
+          "first_stock": "End3                 PF12761.14 WP_000219688.1       -                9.6    7.0   8.3       2.4    9.0   0.7   2.9   2   1   2   4   4   4   0 Actin cytoskeleton-regulatory comple"
+        },
+        "dom": {
+          "lines_replay": 2528,
+          "lines_stock": 2532,
+          "equal": false,
+          "differing_positions": 2027,
+          "first_replay": "DUF444               PF04285.19   418 WP_000219688.1       -            427  4.4e-191  636.0   3.1   1   1  5.5e-195    5e-191  635.9   3.1     2   418     4   421     3   421 0.99",
+          "first_stock": "DUF444               PF04285.19   418 WP_000219688.1       -            427  4.4e-191  636.0   3.1   1   1  7.3e-195    5e-191  635.9   3.1     2   418     4   421     3   421 0.99"
+        }
+      },
+      "equal": false,
+      "differs": true,
+      "pass": true,
+      "killed": false
+    },
+    "verdict": "PASS"
+  },
+  "verdict": "PASS",
+  "sample_of_record": "Q300"
+}

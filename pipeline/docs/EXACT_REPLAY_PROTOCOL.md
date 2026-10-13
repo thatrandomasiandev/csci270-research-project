@@ -277,3 +277,47 @@ is uninformative: do not ship, even if E3a and E3b matched.
 
 E3c differing is required for the shrink result to mean anything. It
 is not itself a kill of exact mode.
+
+## Addendum 2026-10-12 — E3 outcomes (results; rules unchanged)
+
+Pre-registration `4ae39ab`. Driver `scripts/exact_replay_evalue.py`.
+File `results/exact_replay/e3.json` (`git_head` `894b7ca`). A path bug
+stopped the first process before any body comparison; the fix is that
+commit. Completed scans were reused from their stamps. No threshold,
+sample, or hash rule was changed.
+
+Host: Joshuas-MacBook-Pro-3.local, arm64, `--cpu 4`, HMMER 3.4 on
+`PATH` (`# HMMER 3.4 (Aug 2023)`). Python 3.11.9. Model counts matched
+the stated sizes (27,481 and 30,134). Q300 only: E3c differed, so the
+Q1000 rerun did not run. Walls below are one run and indicative.
+
+**E3a — PASS.** 38.1 → 38.2, s = 1, replay `-Z 30134`. Discovery 4,052
+models. Candidates 1,375 pairs, 1,135 replay models, 288 queries.
+tblout 1,361/1,361 and domtblout 2,729/2,729 body lines byte-identical
+to stock 38.2. Crossed out (cached, absent from stock): 1 tblout, 4
+domtblout. Crossed in: 0. Not killed.
+
+**E3b — PASS.** 38.2 → 38.1, s = 2, cache and discovery at `-E 20
+--domE 20`, replay `-E 10 --domE 10 -Z 27481`. Discovery 1,399 models.
+Candidates 1,332 pairs, 1,091 replay models, 287 queries. tblout
+1,300/1,300 and domtblout 2,532/2,532 byte-identical to stock 38.1.
+Crossed out: 23 tblout, 70 domtblout. Crossed in: 1 tblout, 4
+domtblout. Not killed.
+
+**E3c — control holds.** Same shrink at s = 1. Replay 1,299 tblout
+lines against stock 1,300, and 2,528 domtblout lines against 2,532.
+Band rows (stock lines whose pair is absent from the s = 1 candidate
+set): 1 tblout, 4 domtblout, the same counts as E3b's crossed-in
+rows. Positional diffs are 1,006 and 2,027 because the missing line
+shifts the file. The stored first domtblout mismatch is a c-Evalue
+(`5.5e-195` vs `7.3e-195`) on a row whose score is `635.9` on both
+sides. Q300 was enough.
+
+Indicative walls, seconds. Hash diff 16.20 (both releases, once).
+Full press: 38.1 decompress 2.75 + press 10.92; 38.2 decompress 4.73
++ press 10.53. E3a: stock 43.46, cache fill 36.54 (the 38.1 stock
+scan), discovery press 6.81, discovery scan 5.84, replay press 5.49,
+replay scan 2.81. E3b: stock 36.54, cache fill 41.03, discovery press
+5.43, discovery scan 2.13, replay press 5.31, replay scan 2.91. E3c:
+cache fill is the 38.2 stock scan (43.46); discovery press 5.37,
+discovery scan 2.15, replay press 5.28, replay scan 2.89.
