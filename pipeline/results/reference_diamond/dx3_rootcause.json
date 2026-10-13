@@ -1,0 +1,83 @@
+{
+  "label": "DIAGNOSIS",
+  "class": "b",
+  "refusal_class": "F2",
+  "claim": "none",
+  "diamond": {
+    "version": "2.2.5",
+    "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+    "source_commit": "6dc57174369ba131d35a21db9735a48ac01e6610",
+    "host": "darwin arm64",
+    "threads": 8
+  },
+  "queries": "DX2 measured draw, Random(20261017) sample of 300 from GCF_002853805.1",
+  "releases": "Swiss-Prot 2026_03, letters 209017843, entries 575748",
+  "reproduction": {
+    "stock_vs_stock_md5": "9bb21f2756244304d1849c0f0f0e290a",
+    "stock_vs_dx2_e1_stock": true,
+    "stock_rows": 31377,
+    "R_rows": 31371,
+    "R_md5_equals_dx2_e1_R": true,
+    "shared_byte_identical": 31371,
+    "row_missing": 6,
+    "row_extra": 0,
+    "different_hsp": 0,
+    "same_hsp_different_value": 0,
+    "full_database_on_replay_query_file_byte_identical_to_stock": true
+  },
+  "missing_rows": [
+    {"query": "WP_000107384.1", "subject": "sp|Q00407|VHUA_METVO", "bitscore": 78.2},
+    {"query": "WP_000137873.1", "subject": "sp|Q31S42|RPAA_SYNE7", "bitscore": 125},
+    {"query": "WP_000256438.1", "subject": "sp|Q0WWW9|XYLL3_ARATH", "bitscore": 184},
+    {"query": "WP_000493792.1", "subject": "sp|Q39QB5|NUOI2_GEOMG", "bitscore": 43.9},
+    {"query": "WP_001026276.1", "subject": "sp|A9BCC5|CH10_PROM4", "bitscore": 67.8},
+    {"query": "WP_001026276.1", "subject": "sp|Q5GST6|CH10_WOLTR", "bitscore": 63.2}
+  ],
+  "ruled_out": [
+    {"knob": "--no-ranking", "result": "same 6 missing, same md5 as R"},
+    {"knob": "--id2 0", "result": "unset sentinel; same 6 missing. set_option keeps the trait default when the flag equals its default"},
+    {"knob": "--id2 1", "result": "row_missing 0, row_extra 33, different_hsp 1, shared_byte_identical 31376. Not a pin of stock"},
+    {"knob": "--comp-based-stats 0", "result": "row_missing 20, row_extra 2, different_hsp 5681, same_hsp_different_value 25447"},
+    {"knob": "auto --algo and -b", "result": "both sides Double-indexed, one block of 2000000000, as in DX2 B3"},
+    {"knob": "--dbsize", "result": "already pinned at 209017843 on R. It sets printed E-values only"}
+  ],
+  "context": [
+    {"row": "VHUA_METVO", "C_n": 1, "neighbor": "sp|Q58592|VHUA_METJA", "distance": -1, "length": 418, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false},
+    {"row": "RPAA_SYNE7", "C_n": 1, "neighbor": "sp|Q01080|RPA49_YEAST", "distance": -1, "length": 415, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false},
+    {"row": "XYLL3_ARATH", "C_n": 1, "neighbor": "sp|P23102|XYLL_PSEPU", "distance": 1, "length": 269, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false},
+    {"row": "NUOI2_GEOMG", "C_n": 1, "neighbor": "sp|Q746T4|NUOI2_GEOSL", "distance": 1, "length": 176, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false},
+    {"row": "CH10_PROM4", "C_n": 1, "neighbor": "sp|A2BYG2|CH10_PROM5", "distance": 1, "length": 103, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false},
+    {"row": "CH10_WOLTR", "C_n": 1, "neighbor": "sp|C0R2V4|CH10_WOLWR", "distance": 1, "length": 96, "in_U": false, "U_plus_C_byte_identical": true, "min_score_1_hit": false}
+  ],
+  "minimization": "Started from U (26797 subjects). Added halves of the 548951 non-candidates, in release order, keeping a half that restored the row, down to one entry. Confirmed on the DX2 replay query file e1_q.faa: U plus that one entry restores the stock line and no other of the six. Rows went from 31371 to 31372.",
+  "similarity": {
+    "procedure": "stock S1 on q300.faa against the full 2026_03 release with --min-score 1 appended after --min-score 40",
+    "rows": 35019,
+    "wall_s": 3.405,
+    "coupling_entries_among_hits": 0,
+    "reading": "None of the six coupling accessions is a hit of its query at score 1. They matter as adjacent bytes, not as sub-threshold alignments."
+  },
+  "query_file": {
+    "full_db_e1_q_equals_stock_q300": true,
+    "note": "Isolating the CH10 query or the RPAA query on the full release drops those stock rows. The same fingerprint reads the previous query. The six DX2 misses are not that effect: the replay query file against the full release is byte-identical to stock."
+  },
+  "mechanism": {
+    "stage": "stage-1 hamming fingerprint",
+    "cites": [
+      "src/search/hamming/finger_print.h:146-158 FingerPrint::load reads q-16, q, and q+16 with no sequence-boundary clip (ARM NEON on this Mac)",
+      "src/data/string_set.h:36 PERIMETER_PADDING 256; padding_len 1 delimiter between sequences",
+      "src/search/setup.cpp:46 DEFAULT min_identities 11, applied at setup.cpp:559",
+      "src/basic/config.h:460 set_option writes the trait default when the flag equals its sentinel",
+      "src/search/hamming/kernel.h:29-39 all_vs_all keeps a hit only when match >= hamming_filter_id"
+    ]
+  },
+  "inclusion_probability": {
+    "formula": "q = m / N for one specific non-candidate, sample size m without replacement from N",
+    "m": 26797,
+    "N": 548951,
+    "q": 0.04881492155037517,
+    "random_pads_k": 3,
+    "miss_all_three": 0.860587604137852,
+    "assumptions": "Uniform sample, |C|=1, and a pad that contains C changes the candidate-row multiset. The second is measured for these six rows and is not a theorem about every query."
+  }
+}
