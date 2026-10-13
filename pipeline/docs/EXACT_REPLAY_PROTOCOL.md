@@ -526,3 +526,91 @@ reason the pilot recorded.
 
 Uncompressed Pfam text was deleted after the run. Pressed sidecars in
 the work directory were deleted with it.
+
+## Addendum — per-record replay (pre-registered)
+
+Written after the pilot on `GCF_013315695.1` and before any scan of the
+two proteomes named below. The text above is unchanged. Pilot file
+`results/exact_replay/costpass_batch_pilot.json`. The baseline it is
+compared with is `results/exact_replay/costpass_baseline.json`.
+
+### Cost
+
+A batching of the records that have candidates costs, in pair-scan units,
+
+    T = α·k + π·Σ_b |U_b| + Σ_b |B_b|·|U_b|
+
+where k is the number of batches, U_b is the union of the candidate sets
+in batch b, α is the per-batch startup, and π is the per-entry build
+cost. Both α and π are in pair scans. From the median-wall baseline
+replay, s = 84.8388374170172 / (4555 × 3719) seconds per pair and the
+build was 1.563109832990449 / 3719 seconds per entry, so π = 84. A
+two-entry prep and a one-record scan measured 0.003 s each; α = 2000
+pair scans is 0.01 s, which leaves margin for writing the batch.
+Exactness does not depend on α or π.
+
+Records are sorted by their rarest candidate (lowest frequency, then
+id), then by input position. Equal contiguous chunks of that order are
+scored on a grid (powers of two, then a step through the neighborhood
+of the best). The chunk size with the lowest T is kept. A tie keeps the
+smaller chunk. That is the minimum on the grid, inside this family of
+partitions, not over every partition. Each chunk is searched in input
+order, pinned to the full reference's normalizer, against the union of
+its own candidates in release order. Bodies are merged back in input
+order. No tool name is compiled into `acts/`.
+
+### What the pilot showed
+
+`GCF_013315695.1` is pilot data. It is not one of the two proteomes
+below. Oracle candidates, 104 batches, both tables byte-identical to
+stock (9,094 tblout, 8,812 domtblout) in 11.1 s. Deleting 186 of 3,719
+candidate models (5%, `random.Random(20261013)`) was missing on tblout
+and missing plus value-only on domtblout. The unpinned replay was
+value-only on both tables. The shipped CLI, three runs restored from
+the same 38.1 cache, was `SHIP` and byte-identical on both tables.
+Median wall 798.1 s (791.8, 798.1, 802.8). Median replay phase 15.7 s,
+of which the scan was 10.4 s and the build 5.0 s. Median discovery
+97.5 s. The unconditional safety check was still 647 s. Loads are in
+the pilot file. Walls are indicative.
+
+### Locked procedure
+
+Question, judged alone: is the batched `--cut_ga` replay byte-identical
+to stock on a fresh whole proteome?
+
+Same argv, pin, and body-line MATCH as E1-scale. HMMER 3.4,
+`--cpu 4`. The runner is the shipped CLI for the 38.1 cache then the
+38.2 replay, plus an oracle batched replay and an unpinned batched
+replay driven from the stock 38.2 hit set.
+
+Proteomes, from `pipeline/data/recurrence/A/*.faa.gz`, excluding
+
+- `GCF_013315695.1_protein.faa.gz` (pilot, and E1-scale)
+- `GCF_049201905.1_protein.faa.gz` (E1-scale)
+- `GCF_059719525.1_protein.faa.gz` (E1-scale)
+- `GCF_002853805.1_protein.faa.gz` (E1 queries)
+- `GCF_002090355.1_protein.faa.gz` (E1-scale exclusion)
+- `GCF_001515725.1_protein.faa.gz` (DX3)
+- `GCF_001513615.1_protein.faa.gz` (DX3 rate)
+
+Draw `random.Random(20261015).sample(sorted(pool), 2)` and then sort
+the two names. The draw, recorded before the scans, is:
+
+1. `GCF_016806025.1_protein.faa.gz`
+2. `GCF_017165095.1_protein.faa.gz`
+
+The runner recomputes the draw and stops if the sorted names differ.
+
+Per proteome, one stock 38.2 scan, then the oracle batched replay (E1),
+the unpinned batched replay (Rn), and the shipped CLI filled on 38.1
+and replayed on 38.2 (E2). Classification is the E1-scale rule, both
+tables, body lines only.
+
+- EXACT: E1 and E2 byte-identical on both tables, and Rn differs.
+- TOKEN-EQUAL: E1 and E2 have no token difference, some bytes differ, and Rn differs.
+- FAIL: any E1 or E2 token differs, or Rn is byte-identical.
+
+Overall EXACT only if both proteomes are EXACT. TOKEN-EQUAL if neither
+is FAIL and at least one is TOKEN-EQUAL. FAIL if either is FAIL.
+A `REFUSE` from the CLI is not EXACT. Walls are one run and indicative.
+Result file `results/exact_replay/costpass_measured.json`.
