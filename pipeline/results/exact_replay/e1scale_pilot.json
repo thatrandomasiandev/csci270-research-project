@@ -1,0 +1,575 @@
+{
+  "pilot": true,
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "semantics": "results/exact_replay/e1scale_semantics.md",
+  "git_head": "9a0d176db9e8b66736d8918efc751d48ca966213",
+  "host": "Joshuas-MBP-3.lan",
+  "machine": "arm64",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 4,
+  "walls_indicative": true,
+  "input_md5": {
+    "Pfam-A.hmm.gz": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "pfam38.1/Pfam-A.hmm.gz": "dc814cc181ece09102c09c4e6c19f2fd",
+    "GCF_002853805.1_protein.faa.gz": "b170d133266427c46d87d99284e1fda3"
+  },
+  "pressed_models": {
+    "38.2": 30134,
+    "38.1": 27481
+  },
+  "Q1000": {
+    "seed": 20261013,
+    "k": 1000,
+    "n_records": 5117,
+    "sample_sha256": "ffaa279d4ceb09c9bc89641996f023b46f83f375c3933a0ce1db651c64f2eb7c",
+    "index_first": 11,
+    "index_last": 5112
+  },
+  "Q300": {
+    "seed": 20261012,
+    "k": 300,
+    "n_records": 5117,
+    "sample_sha256": "3a6e66691257ebdc2aea15c5682fab45afcb19d851c0b4d287381d9d651a7659",
+    "index_first": 10,
+    "index_last": 5085
+  },
+  "determinism": {
+    "walls_s": {
+      "run_1": 152.42291454196675,
+      "run_2": 147.2462038330268
+    },
+    "vs": {
+      "tbl": {
+        "lines_replay": 1738,
+        "lines_stock": 1738,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 1757,
+        "lines_stock": 1757,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "pass": true
+  },
+  "E1": {
+    "driver": {
+      "queries_replayed": 908,
+      "models_replayed": 1267,
+      "wall_R_s": 10.004188999999315,
+      "wall_Rn_s": 9.679604083998129,
+      "check1_R_vs_S": {
+        "tbl": {
+          "lines_a": 1738,
+          "lines_b": 1738,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_a": 1757,
+          "lines_b": 1757,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "check2_Rn_vs_S": {
+        "tbl": {
+          "lines_a": 1738,
+          "lines_b": 1738,
+          "equal": false,
+          "differing_positions": 1735
+        },
+        "dom": {
+          "lines_a": 1757,
+          "lines_b": 1757,
+          "equal": false,
+          "differing_positions": 1754
+        }
+      },
+      "check1_pass": true,
+      "check2_pass": true,
+      "killed": false
+    },
+    "vs_stock": {
+      "tbl": {
+        "lines_replay": 1738,
+        "lines_stock": 1738,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 1757,
+        "lines_stock": 1757,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "byte_equal": true
+  },
+  "Rn": {
+    "vs_stock": {
+      "tbl": {
+        "lines_replay": 1738,
+        "lines_stock": 1738,
+        "byte_equal": false,
+        "token_equal": false,
+        "differing_positions": 1735,
+        "differs_on_every_line": false,
+        "classes": [
+          "value-only"
+        ],
+        "missing_keys": 0,
+        "extra_keys": 0,
+        "missing_key_examples": [],
+        "extra_key_examples": [],
+        "first_replay": "PDH_E1_M             PF17831.6  WP_000003820.1       -           2.7e-104  343.7   0.1  4.8e-104  342.9   0.1   1.4   1   0   0   1   1   1   1 Pyruvate dehydrogenase E1 component middle domain\n",
+        "first_stock": "PDH_E1_M             PF17831.6  WP_000003820.1       -           6.4e-103  343.7   0.1  1.1e-102  342.9   0.1   1.4   1   0   0   1   1   1   1 Pyruvate dehydrogenase E1 component middle domain\n"
+      },
+      "dom": {
+        "lines_replay": 1757,
+        "lines_stock": 1757,
+        "byte_equal": false,
+        "token_equal": false,
+        "differing_positions": 1754,
+        "differs_on_every_line": false,
+        "classes": [
+          "value-only"
+        ],
+        "missing_keys": 0,
+        "extra_keys": 0,
+        "missing_key_examples": [],
+        "extra_key_examples": [],
+        "first_replay": "PDH_E1_M             PF17831.6    229 WP_000003820.1       -            887  2.7e-104  343.7   0.1   1   1  1.5e-106  4.8e-104  342.9   0.1    19   229   489   700   474   700 0.96 Pyruvate dehydrogenase E1 component middle domain\n",
+        "first_stock": "PDH_E1_M             PF17831.6    229 WP_000003820.1       -            887  6.4e-103  343.7   0.1   1   1  1.5e-106  1.1e-102  342.9   0.1    19   229   489   700   474   700 0.96 Pyruvate dehydrogenase E1 component middle domain\n"
+      }
+    },
+    "differs_on_every_line": false
+  },
+  "E2_driver": {
+    "driver": {
+      "changed_or_new_models": 4052,
+      "candidate_queries": 908,
+      "replay_models": 1267,
+      "candidate_pairs": 1738,
+      "wall_s": {
+        "diff": 13.74976329196943,
+        "build_discovery_db": 2.158361417008564,
+        "discovery_scan": 23.239071874995716,
+        "build_replay_db": 0.6408371249563061,
+        "replay_scan": 8.267274249985348
+      },
+      "check_vs_S": {
+        "tbl": {
+          "lines_a": 1738,
+          "lines_b": 1738,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_a": 1757,
+          "lines_b": 1757,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "pass": true,
+      "killed": false
+    },
+    "vs_stock": {
+      "tbl": {
+        "lines_replay": 1738,
+        "lines_stock": 1738,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 1757,
+        "lines_stock": 1757,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "byte_equal": true
+  },
+  "injected": {
+    "candidate_models": 1267,
+    "dropped": 63,
+    "dropped_names": [
+      "AAA_29",
+      "ACCA",
+      "AMP-binding",
+      "AMP-binding_C",
+      "Amidohydro_3",
+      "Aminotran_1_2",
+      "AsnC_trans_reg",
+      "CCG",
+      "CO_deh_flav_C",
+      "Cu_amine_oxidN2",
+      "D5_N",
+      "DAO",
+      "DUF2756",
+      "DUF4186",
+      "DUF4625",
+      "DUF8684",
+      "Dala_Dala_lig_C",
+      "FGGY_C",
+      "Fer4_10",
+      "FidL_like",
+      "GDPD",
+      "GGDEF",
+      "GhoS",
+      "Gln-synt_N",
+      "Glyco_hydro_2_N2",
+      "Glycos_transf_2",
+      "Kinase-PPPase",
+      "MFS_4",
+      "MMPL",
+      "Metalloenzyme",
+      "PCRF",
+      "PDH_E1_M",
+      "Peptidase_C92",
+      "Peptidase_M23",
+      "Peptidase_M42",
+      "Phage_CI_repr",
+      "Phage_int_M",
+      "Pribosyl_synth",
+      "Pro_isomerase",
+      "Protoglobin",
+      "QueF_N",
+      "RF-1",
+      "RelA_SpoT",
+      "Response_reg",
+      "Ribonucleas_3_3",
+      "Ribosomal_L16",
+      "Ribosomal_L27",
+      "SBP_bac_5",
+      "TOBE_2",
+      "TonB_dep_Rec_b-barrel",
+      "Transp_cyt_pur",
+      "Tyr_Deacylase",
+      "Virul_fac_BrkB",
+      "WHD_3rd_Lhr",
+      "YggL_50S_bp",
+      "YhfS-like_C",
+      "YjhX_toxin",
+      "YncL",
+      "YubG_N",
+      "Zn_Ribbon_Prim",
+      "hemP",
+      "nSTAND1",
+      "tRNA_synt_2f"
+    ],
+    "replay_models": 1204,
+    "replay_queries": 908,
+    "wall_s": 8.110748708015308,
+    "vs_stock": {
+      "tbl": {
+        "lines_replay": 1639,
+        "lines_stock": 1738,
+        "byte_equal": false,
+        "token_equal": false,
+        "differing_positions": 1738,
+        "differs_on_every_line": false,
+        "classes": [
+          "missing"
+        ],
+        "missing_keys": 99,
+        "extra_keys": 0,
+        "missing_key_examples": [
+          [
+            "PDH_E1_M",
+            "WP_000003820.1"
+          ],
+          [
+            "AMP-binding",
+            "WP_000026805.1"
+          ],
+          [
+            "AMP-binding_C",
+            "WP_000026805.1"
+          ],
+          [
+            "FGGY_C",
+            "WP_000039683.1"
+          ],
+          [
+            "ACCA",
+            "WP_000055741.1"
+          ],
+          [
+            "Transp_cyt_pur",
+            "WP_000076236.1"
+          ],
+          [
+            "AMP-binding",
+            "WP_000078239.1"
+          ],
+          [
+            "AMP-binding_C",
+            "WP_000078239.1"
+          ]
+        ],
+        "extra_key_examples": [],
+        "first_replay": "Transketolase_C_1    PF22613.2  WP_000003820.1       -            9.7e-22   78.0   0.0   1.9e-21   77.1   0.0   1.5   1   0   0   1   1   1   1 Transketolase-like TK C-terminal domain\n",
+        "first_stock": "PDH_E1_M             PF17831.6  WP_000003820.1       -           6.4e-103  343.7   0.1  1.1e-102  342.9   0.1   1.4   1   0   0   1   1   1   1 Pyruvate dehydrogenase E1 component middle domain\n"
+      },
+      "dom": {
+        "lines_replay": 1664,
+        "lines_stock": 1757,
+        "byte_equal": false,
+        "token_equal": false,
+        "differing_positions": 1757,
+        "differs_on_every_line": false,
+        "classes": [
+          "missing",
+          "value-only"
+        ],
+        "missing_keys": 93,
+        "extra_keys": 0,
+        "missing_key_examples": [
+          [
+            "PDH_E1_M",
+            "WP_000003820.1",
+            "19",
+            "229",
+            "489",
+            "700"
+          ],
+          [
+            "AMP-binding",
+            "WP_000026805.1",
+            "9",
+            "384",
+            "37",
+            "395"
+          ],
+          [
+            "AMP-binding_C",
+            "WP_000026805.1",
+            "1",
+            "76",
+            "446",
+            "520"
+          ],
+          [
+            "FGGY_C",
+            "WP_000039683.1",
+            "1",
+            "196",
+            "225",
+            "418"
+          ],
+          [
+            "ACCA",
+            "WP_000055741.1",
+            "1",
+            "310",
+            "5",
+            "317"
+          ],
+          [
+            "Transp_cyt_pur",
+            "WP_000076236.1",
+            "1",
+            "439",
+            "11",
+            "397"
+          ],
+          [
+            "AMP-binding",
+            "WP_000078239.1",
+            "2",
+            "375",
+            "83",
+            "467"
+          ],
+          [
+            "AMP-binding_C",
+            "WP_000078239.1",
+            "1",
+            "76",
+            "531",
+            "609"
+          ]
+        ],
+        "extra_key_examples": [],
+        "first_replay": "Transketolase_C_1    PF22613.2    113 WP_000003820.1       -            887   9.7e-22   78.0   0.0   1   1   1.9e-25   1.9e-21   77.1   0.0     1   113   713   845   713   845 0.97 Transketolase-like TK C-terminal domain\n",
+        "first_stock": "PDH_E1_M             PF17831.6    229 WP_000003820.1       -            887  6.4e-103  343.7   0.1   1   1  1.5e-106  1.1e-102  342.9   0.1    19   229   489   700   474   700 0.96 Pyruvate dehydrogenase E1 component middle domain\n"
+      }
+    },
+    "differs": true,
+    "missing_reported": true
+  },
+  "known_good_300": {
+    "walls_s": {
+      "38.2": 50.664551082998514,
+      "38.1": 41.995858083013445
+    },
+    "E1_byte_equal": true,
+    "E2_byte_equal": true,
+    "Rn_differs_on_every_line": true,
+    "E1": {
+      "tbl": {
+        "lines_replay": 534,
+        "lines_stock": 534,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 545,
+        "lines_stock": 545,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "E2": {
+      "tbl": {
+        "lines_replay": 534,
+        "lines_stock": 534,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 545,
+        "lines_stock": 545,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "driver_E1": {
+      "queries_replayed": 275,
+      "models_replayed": 452,
+      "wall_R_s": 1.329086792015005,
+      "wall_Rn_s": 1.335366957995575,
+      "check1_R_vs_S": {
+        "tbl": {
+          "lines_a": 534,
+          "lines_b": 534,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_a": 545,
+          "lines_b": 545,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "check2_Rn_vs_S": {
+        "tbl": {
+          "lines_a": 534,
+          "lines_b": 534,
+          "equal": false,
+          "differing_positions": 534
+        },
+        "dom": {
+          "lines_a": 545,
+          "lines_b": 545,
+          "equal": false,
+          "differing_positions": 545
+        }
+      },
+      "check1_pass": true,
+      "check2_pass": true,
+      "killed": false
+    },
+    "driver_E2": {
+      "changed_or_new_models": 4052,
+      "candidate_queries": 275,
+      "replay_models": 452,
+      "candidate_pairs": 534,
+      "wall_s": {
+        "diff": 12.44731600000523,
+        "build_discovery_db": 1.7810722499853,
+        "discovery_scan": 6.7268206250155345,
+        "build_replay_db": 0.2775025420123711,
+        "replay_scan": 1.4189662919961847
+      },
+      "check_vs_S": {
+        "tbl": {
+          "lines_a": 534,
+          "lines_b": 534,
+          "equal": true,
+          "differing_positions": 0
+        },
+        "dom": {
+          "lines_a": 545,
+          "lines_b": 545,
+          "equal": true,
+          "differing_positions": 0
+        }
+      },
+      "pass": true,
+      "killed": false
+    }
+  },
+  "cli": {
+    "fill_38.1": {
+      "returncode": 0,
+      "wall_s": 303.8693614169606,
+      "verify": "audit",
+      "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 0\nn_entries: 27481\nn_stable: 0\nn_fresh: 27481\nn_partial: 0\nlength_entries: 4374119\nlength_fresh: 4374119\nlength_partial: 0\nreplay_records: 907\nreplay_entries: 1242\ncandidate_pairs: 1711\nphases: {'parse_s': 12.969572041998617, 'coverage_read_s': 7.845798972994089e-05, 'diff_s': 0.001421083987224847, 'cache_load_s': 2.8124952223151922e-05, 'subref_build_s': 0.08848933305125684, 'prep_s': 0.875209208985325, 'tool_s': 189.66739741701167, 'read_output_s': 0.002278915955685079, 'merge_rescale_s': 0.012421124964021146, 'cache_store_s': 0.110450791020412, 'pin_check_s': 43.86315337504493, 'replay_plan_s': 0.007519459002651274, 'render_s': 0.0008221669704653323, 'total_s': 303.4015347500099, 'probe_wall_s': 96.94018004101235}\nprobe_phases: {'subref_build_s': 3.145938000991009, 'prep_s': 11.499767082044855, 'tool_s': 82.19950837496435, 'read_output_s': 0.001000459014903754}\n"
+    },
+    "replay_38.2": {
+      "returncode": 0,
+      "wall_s": 196.19506833300693,
+      "verify": "full",
+      "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nverify: full\nmode: exact\nmatch: body-bytes\nreused_rows: 3334\nn_entries: 30134\nn_stable: 26082\nn_fresh: 4052\nn_partial: 0\nlength_entries: 4754065\nlength_fresh: 600557\nlength_partial: 0\nbasis_entry_count_max: 27481\nreplay_records: 908\nreplay_entries: 1267\ncandidate_pairs: 1738\nphases: {'parse_s': 14.109191707975697, 'coverage_read_s': 0.67478470900096, 'diff_s': 0.1857724169967696, 'cache_load_s': 0.04507454199483618, 'subref_build_s': 0.2194988330011256, 'prep_s': 2.042089373979252, 'tool_s': 178.39286741695832, 'read_output_s': 0.0017288749804720283, 'merge_rescale_s': 0.02026474999729544, 'cache_store_s': 0.039651667000725865, 'replay_plan_s': 0.00793079100549221, 'render_s': 0.0005503749707713723, 'total_s': 195.82454033300746, 'probe_wall_s': 0.0}\nprobe_phases: {}\n"
+    },
+    "vs_independent_stock": {
+      "tbl": {
+        "lines_replay": 1738,
+        "lines_stock": 1738,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 1757,
+        "lines_stock": 1757,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "byte_equal": true
+  },
+  "free_bytes_end": 43903324160
+}
