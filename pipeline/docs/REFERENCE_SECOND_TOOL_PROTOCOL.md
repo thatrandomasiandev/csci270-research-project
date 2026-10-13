@@ -974,3 +974,26 @@ Difference classes on every failure: value-only, different row, missing,
 extra, order. Overhead is the sum of the R+ walls divided by the stock
 wall.
 
+### DX3 outcome
+
+Measured after driver commit `014c410`. The file is
+`results/reference_diamond/dx3.json`. Queries: 2,000 of 4,407 proteins
+in `GCF_001515725.1`, seed `20261029`. Candidate subjects 137,090.
+Stock 227,223 rows. Replay 227,205 rows. Shared byte-identical rows
+227,203. Cases 22: `row_missing` 20, `row_extra` 2, `different_hsp` 0,
+`same_hsp_different_value` 0. Difference classes: missing, extra.
+
+IC2 fails on all five pads. Each random pad fails by a pad hit and by
+missing and extra candidate rows (pad hits 3, 6, and 4). The neighbor
+pad (31,611 entries) fails by a pad hit, 2 missing candidate rows, and
+20 extra. The near-miss pad (9,615 entries) fails by 3 missing and 1
+extra candidate row, with no pad hit. The arm is SAFE-REFUSE, a true
+refusal. It is not needless. The case count is above the floor of 6, so
+the arm is not INCONCLUSIVE. It is not UNSAFE.
+
+Walls: stock 4.576 s, R 2.243 s, five R+ searches 13.998 s. Overhead
+R+/stock = 3.059. On this arm `q = 137090/438658 = 0.31252137200279034`,
+and `(1-q)^3 = 0.3249208679849812` under the stated single-neighbor
+assumption. That bound is the random-pad miss probability. It is not a
+proof that a passing certificate equals stock.
+

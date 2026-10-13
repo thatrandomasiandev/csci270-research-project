@@ -1,0 +1,211 @@
+{
+  "candidate_entries": 137090,
+  "cases": 22,
+  "classification": {
+    "bodies_equal": false,
+    "different_hsp": 0,
+    "line_order_only": false,
+    "other_rows": 227205,
+    "row_extra": 2,
+    "row_missing": 20,
+    "same_hsp_different_value": 0,
+    "shared_byte_identical": 227203,
+    "shared_rows": 227203,
+    "stock_rows": 227223
+  },
+  "diamond": {
+    "bytes": 22031624,
+    "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+    "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-dx3/pipeline/builds/diamond-2.2.5/diamond"
+  },
+  "difference_classes": [
+    "missing",
+    "extra"
+  ],
+  "genome": "GCF_001515725.1_protein.faa.gz",
+  "ic2": {
+    "pads": [
+      {
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 227211,
+          "row_extra": 11,
+          "row_missing": 5,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 227200,
+          "shared_rows": 227200,
+          "stock_rows": 227205
+        },
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "extra_candidate_rows": 8,
+        "fail_mode": "pad_hit",
+        "missing_candidate_rows": 5,
+        "name": "random_20261031",
+        "other_subject_rows": 0,
+        "pad_entries": 137090,
+        "pad_hit_rows": 3,
+        "pass": false,
+        "wall_s": 2.9865133339772
+      },
+      {
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 227216,
+          "row_extra": 15,
+          "row_missing": 4,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 227201,
+          "shared_rows": 227201,
+          "stock_rows": 227205
+        },
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "extra_candidate_rows": 9,
+        "fail_mode": "pad_hit",
+        "missing_candidate_rows": 4,
+        "name": "random_20261032",
+        "other_subject_rows": 0,
+        "pad_entries": 137090,
+        "pad_hit_rows": 6,
+        "pass": false,
+        "wall_s": 3.093514124979265
+      },
+      {
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 227214,
+          "row_extra": 12,
+          "row_missing": 3,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 227202,
+          "shared_rows": 227202,
+          "stock_rows": 227205
+        },
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "extra_candidate_rows": 8,
+        "fail_mode": "pad_hit",
+        "missing_candidate_rows": 3,
+        "name": "random_20261033",
+        "other_subject_rows": 0,
+        "pad_entries": 137090,
+        "pad_hit_rows": 4,
+        "pass": false,
+        "wall_s": 3.0338858750183135
+      },
+      {
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 227227,
+          "row_extra": 24,
+          "row_missing": 2,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 227203,
+          "shared_rows": 227203,
+          "stock_rows": 227205
+        },
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "extra_candidate_rows": 20,
+        "fail_mode": "pad_hit",
+        "missing_candidate_rows": 2,
+        "name": "neighbor",
+        "other_subject_rows": 0,
+        "pad_entries": 31611,
+        "pad_hit_rows": 4,
+        "pass": false,
+        "wall_s": 2.4699994580005296
+      },
+      {
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 227203,
+          "row_extra": 1,
+          "row_missing": 3,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 227202,
+          "shared_rows": 227202,
+          "stock_rows": 227205
+        },
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "extra_candidate_rows": 1,
+        "fail_mode": "missing_and_extra_candidate",
+        "missing_candidate_rows": 3,
+        "name": "near_miss",
+        "other_subject_rows": 0,
+        "pad_entries": 9615,
+        "pad_hit_rows": 0,
+        "pass": false,
+        "wall_s": 2.4136039579752833
+      }
+    ],
+    "pads_failed": [
+      "random_20261031",
+      "random_20261032",
+      "random_20261033",
+      "neighbor",
+      "near_miss"
+    ],
+    "pass": false
+  },
+  "judgment": {
+    "bodies_equal": false,
+    "cases": 22,
+    "floor": 6,
+    "ic_pass": false,
+    "needless_refusal": false,
+    "outcome": "SAFE-REFUSE",
+    "true_refusal": true
+  },
+  "label": "MEASURED",
+  "overhead_Rplus_over_stock": 3.058643951491792,
+  "pad_seeds": [
+    20261031,
+    20261032,
+    20261033
+  ],
+  "pin": "--dbsize 209017843",
+  "preregistration": "4ae14763bce8ba02c769b877285a4b471d1250ec",
+  "provenance": {
+    "finished_utc": "2026-10-13T07:25:28.124216+00:00",
+    "git": "014c410a59117abc6ee3403fd624c3a884e6805b",
+    "git_dirty": true,
+    "host": "Joshuas-MBP-3.lan",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {}
+  },
+  "q_one_neighbor": 0.31252137200279034,
+  "queries": 2000,
+  "query_seed": 20261029,
+  "random_miss_bound_k3": 0.3249208679849812,
+  "records_available": 4407,
+  "replay_rows": 227205,
+  "stock_rows": 227223,
+  "threads": 8,
+  "wall_R_s": 2.243093583965674,
+  "wall_Rplus_sum_s": 13.997516749950591,
+  "wall_stock_s": 4.576379916048609
+}
