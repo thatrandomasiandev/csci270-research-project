@@ -871,3 +871,106 @@ IC is not shipped. E1 is UNSAFE. The HMMER positive control and the
 DIAMOND negative control from the pilot are unchanged and are not a
 reason to ship over that kill.
 
+## Addendum 2026-10-13 — DX3 (pre-registered after pilot)
+
+Written after the pilot commit `7f42c4d` and before any measured DX3
+search. DX2's locked text is unchanged. This is the last locked
+attempt on this question. A second failure is recorded as a limitation.
+There is no DX4 and no redesign after this run. No number below this
+paragraph is a measured DX3 result. The pilot file is
+`results/reference_diamond/dx3_pilot.json`. It is a pilot, not a result.
+The semantics note is `results/reference_diamond/dx3_semantics.md`. The
+diagnosis is `results/reference_diamond/dx3_rootcause.json`.
+
+### Pilot findings
+
+Host is this Mac, DIAMOND 2.2.5, MD5 `711d4c7b29e24c3fd6ec6a288ec1d326`,
+`--threads 8`. The known-bad body is the DX2 measured replay: 31,371
+rows, six stock rows missing, the other 31,371 byte-identical.
+
+- **Known-bad.** IC2 fails. The three random pads (seeds `20261025`,
+  `20261026`, `20261027`, size `|U|`) each fail by one extra candidate
+  row. The neighbor pad (7,197 entries) fails by a pad hit and six extra
+  candidate rows. The near-miss pad (3,072 subjects hit at `--min-score 1`
+  and absent from U) passes. It does not contain the six coupling
+  entries. Keeping it does not weaken the certificate, because a pass
+  requires every pad to pass.
+- **Injected negative.** Drop 2,679 of 26,797 hit subjects (10%,
+  `random.Random(20261024)`). The reduced replay differs from stock by
+  missing rows. IC2 fails: each random pad has 125 to 137 pad hits, and
+  the neighbor pad has 2,819 pad hits. The near-miss pad passes again.
+- **HMMER.** `hmmer_positive()` passes, and the strict IC2 re-judge of
+  tblout and domtblout passes. Both replay bodies equal the stock
+  bodies. Needless refusals: 0.
+- **Rate.** `GCF_001513615.1`, `random.Random(20261028)` sample of 300.
+  Stock 28,171 rows, replay 28,168, three missing rows, no other class.
+  Three cases per 300 queries, rarer than six per 300. This genome is
+  not the measured genome.
+- **Overhead.** On the known-bad queries, stock wall 3.206 s and the five
+  R+ walls sum to 3.538 s. The ratio is 1.104.
+
+The inclusion probability of one specific neighbor in a uniform pad of
+size `m` drawn from `N` non-candidates is `q = m/N`. At the DX2 sizes,
+`q = 26797/548951 = 0.04881492155037517`, so three pads all miss that
+neighbor with probability `(1-q)^3 = 0.860587604137852`, assuming a pad
+that contains it changes the candidate multiset. The pilot's three pads
+still each added a candidate row on this one database. That is one
+draw, not a replacement for `q`.
+
+### Locked certificate
+
+IC2 passes only when every pad passes. A pad passes only when the
+multiset of body lines whose subject is in U is the same in R and in
+R+, and R+ has no line whose subject is in the pad. R and every R+ use
+the same query file, S1, `--threads 8`, and `--dbsize 209017843`. The
+database for R+ is U union the pad, in release file order.
+
+Pads:
+
+- Three uniform pads, seeds `20261031`, `20261032`, `20261033`, each of
+  size `max(200, |U|)`, from entries not in U.
+- The neighbor pad: the release-file predecessor and successor of every
+  subject in U, excluding neighbors already in U.
+- The near-miss pad: subjects of this query file that hit the full
+  2026_03 release at `--min-score 1` and are not in U.
+
+A pass is not a proof that R equals stock. Under the assumptions in
+`dx3_semantics.md`, three random pads miss one named neighbor with
+probability `(1-q)^3` at the `q` measured on that run. The neighbor pad
+contains an immediate neighbor with probability 1. The near-miss pad
+had empirical `q = 0` for the six diagnosed coupling entries.
+
+### Locked arm
+
+One arm. Releases are the committed Swiss-Prot pair, 2026_01
+(`5245b19456d9a063b13c46602269bc5f`) and 2026_03
+(`bc9d398533e6df582b563c6c03093bd0`). The search is 2026_03, which is
+the release whose subset dropped rows in DX2. 2026_01 is not a second
+question. Queries: `random.Random(20261029).sample` of 2,000 indices,
+then sorted, from `GCF_001515725.1` (4,407 proteins). Not
+`GCF_002853805.1`, not `GCF_002090355.1`, and not the rate genome.
+Stock is S1 on that query file against the full 2026_03 release. U is
+the stock subjects, in release order. R is the pinned search of U on
+the same query file.
+
+A case is a stock row missing from R, an R row absent from stock, or a
+shared key whose lines differ. The power floor is 6 cases. Below 1,000
+stock rows the arm is blind and INCONCLUSIVE.
+
+Outcomes:
+
+- UNSAFE if the body differs and IC2 passes, including when the case
+  count is under 6. That is the kill.
+- SAFE-REFUSE if the case count is at least 6 and IC2 fails. True,
+  because the body differs. Record the difference classes.
+- EXACT if the body equals stock, IC2 passes, and the case count is at
+  least 6. Equality implies a case count of 0, so this cell is not
+  reachable under the floor. It is named so it is not silently reused.
+- INCONCLUSIVE otherwise. A body that equals stock is INCONCLUSIVE, not
+  EXACT. An IC2 failure below the floor is INCONCLUSIVE, and the record
+  says whether that failure was needless.
+
+Difference classes on every failure: value-only, different row, missing,
+extra, order. Overhead is the sum of the R+ walls divided by the stock
+wall.
+
