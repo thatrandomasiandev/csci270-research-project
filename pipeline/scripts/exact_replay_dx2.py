@@ -760,5 +760,295 @@ def pilot() -> None:
     log(f"wrote {OUT_DIR / 'dx2_pilot.json'}")
 
 
+def tool_argv() -> list[str]:
+    return [
+        str(DIAMOND), "blastp",
+        "--db", "{reference}",
+        "--query", "{input}",
+        "--out", "{output}",
+        "--min-score", "40",
+        "-k", "0",
+        "--motif-masking", "0",
+        "-b", "2.0",
+        "--comp-based-stats", "1",
+        "--threads", THREADS,
+        "--evalue", "0.001",
+        "--outfmt", "6",
+        *OUTFMT,
+    ]
+
+
+def judge_arm(stock_text: str, replay_text: str | None, ic: dict | None) -> dict:
+    if replay_text is None or ic is None:
+        return {"outcome": "NO_REPLAY", "bodies_equal": None, "ic_pass": None}
+    klass = classify(stock_text, replay_text)
+    if klass["bodies_equal"] and ic["pass"]:
+        name = "EXACT"
+    elif not ic["pass"]:
+        name = "SAFE-REFUSE"
+    else:
+        name = "UNSAFE"
+    return {
+        "outcome": name,
+        "bodies_equal": klass["bodies_equal"],
+        "true_refusal": (not klass["bodies_equal"]) if name == "SAFE-REFUSE" else None,
+        "needless_refusal": klass["bodies_equal"] if name == "SAFE-REFUSE" else None,
+        "classification": klass,
+        "ic_pass": ic["pass"],
+    }
+
+
+def run_cli(reference: Path, queries: Path, cache: Path, out: Path) -> dict:
+    prep = f"{DIAMOND} makedb --in {{reference}} --db {{reference}} --threads {THREADS}"
+    cmd = [
+        sys.executable, "-m", "acts", "run",
+        "--strategy", "reference",
+        "--input", str(queries),
+        "--reference", str(reference),
+        "--prep", prep,
+        "--pin", "--dbsize {total_entry_length}",
+        "--slack", "--evalue 0.002",
+        "--cache", str(cache),
+        "--verify", "full",
+        "-o", str(out),
+        "--",
+        *tool_argv(),
+    ]
+    log("CLI " + reference.name)
+    started = time.perf_counter()
+    proc = subprocess.run(cmd, cwd=PIPE, capture_output=True, text=True, timeout=7200)
+    wall = time.perf_counter() - started
+    (out / "cli_stdout.txt").write_text(proc.stdout or "")
+    (out / "cli_stderr.txt").write_text(proc.stderr or "")
+    decision = (out / "decision.txt").read_text() if (out / "decision.txt").is_file() else ""
+    return {
+        "returncode": proc.returncode,
+        "wall_s": wall,
+        "stdout_tail": (proc.stdout or "")[-1500:],
+        "stderr_tail": (proc.stderr or "")[-1500:],
+        "decision_text": decision,
+    }
+
+
+def emitted_replay(out: Path) -> tuple[str | None, Path | None, Path | None]:
+    """Replay body, the sub-reference it searched, and the query fasta it searched.
+
+    ``tables/out`` is written only after the pin check, for the incremental
+    replay. A pin-check refusal leaves the body in the last pinned call.
+    """
+    table = out / "tables" / "out"
+    pinned = out / "calls_pinned"
+    calls = sorted(p for p in pinned.glob("r*") if (p / "out").is_file()) if pinned.is_dir() else []
+    if table.is_file() and calls:
+        last = calls[-1]
+        ref = last / "reference" if (last / "reference").is_file() else None
+        queries = last / "records" if (last / "records").is_file() else None
+        return table.read_text(), ref, queries
+    if not calls:
+        return None, None, None
+    last = calls[-1]
+    ref = last / "reference" if (last / "reference").is_file() else None
+    queries = last / "records" if (last / "records").is_file() else None
+    return (last / "out").read_text(), ref, queries
+
+
+def ic_on_fasta(
+    entries,
+    key_to_index: dict[str, int],
+    queries: Path,
+    replayed: set[str],
+    union_fa: Path,
+    pin_letters: int,
+    pad_seed: int,
+    tag: Path,
+    r_text: str,
+) -> dict:
+    """R is the replay already run on union_fa. R+ adds the pad under the same pin."""
+    union_ids = {entry.primary for entry in parse_reference(union_fa)}
+    u_idx = {key_to_index[key] for key in union_ids if key in key_to_index}
+    non = [i for i in range(len(entries)) if i not in u_idx]
+    pad_n = max(200, len(u_idx))
+    pad_idx = random.Random(pad_seed).sample(non, pad_n)
+    pad_ids = {entries[i].primary for i in pad_idx}
+    merged = sorted(u_idx | set(pad_idx))
+    up_fa = tag.parent / f"{tag.name}.UP.faa"
+    write_entries([entries[i] for i in merged], up_fa)
+    pin = ["--dbsize", str(pin_letters)]
+    plus = blast(up_fa, queries, Path(str(tag) + ".Rplus.m8"), extra=pin)
+    # Replay queries are whoever the replay file was searched with. The CLI
+    # replay uses the queries that had a candidate; pass that fasta as `queries`.
+    judge = ic_judge(
+        r_text,
+        Path(str(tag) + ".Rplus.m8").read_text(),
+        pad_ids,
+        replayed,
+        query_col=QUERY_COL,
+        subject_col=SUBJECT_COL,
+    )
+    judge.update({
+        "candidate_entries": len(u_idx),
+        "pad_entries": pad_n,
+        "pad_seed": pad_seed,
+        "wall_Rplus_s": plus["wall_s"],
+        "algorithm_Rplus": plus.get("algorithm"),
+    })
+    return judge
+
+
+def measured() -> None:
+    work = WORK / "measured"
+    work.mkdir(parents=True, exist_ok=True)
+    scratch = assert_not_tmpfs(work)
+    log("verify inputs")
+    inputs = {
+        "new": check_fasta(NEW_FA, EXPECTED_FASTA["new"], "2026_03"),
+        "old": check_fasta(OLD_FA, EXPECTED_FASTA["old"], "2026_01"),
+        "queries": file_id(Q_MEASURED),
+        "diamond": file_id(DIAMOND),
+    }
+    if (inputs["diamond"]["bytes"], inputs["diamond"]["md5"]) != EXPECTED_DIAMOND_MAC:
+        raise SystemExit("STOP_INPUTS diamond mac binary")
+    version, _err, _wall = run_cmd([str(DIAMOND), "version"], 30)
+    if "2.2.5" not in version:
+        raise SystemExit(f"STOP diamond version {version!r}")
+    for label, fasta, expect in (
+        ("new", NEW_FA, EXPECTED_LETTERS["new"]),
+        ("old", OLD_FA, EXPECTED_LETTERS["old"]),
+    ):
+        ensure_dmnd(fasta)
+        stdout, _e, _w = run_cmd([str(DIAMOND), "dbinfo", "--db", str(fasta)], 120)
+        found = next(int(line.split()[-1]) for line in stdout.splitlines() if "Letters" in line and line.split()[-1].isdigit())
+        if found != expect:
+            raise SystemExit(f"STOP_INPUTS dbinfo letters {label}={found}")
+
+    records = read_records(Q_MEASURED)
+    chosen = sorted(random.Random(20261017).sample(range(len(records)), 300))
+    qpath = work / "q300.faa"
+    write_queries(records, chosen, qpath)
+    log("parse 2026_03")
+    new_entries = parse_reference(NEW_FA)
+    if len(new_entries) != D0_ENTRIES["new"] or sum(e.length for e in new_entries) != EXPECTED_LETTERS["new"]:
+        raise SystemExit("STOP_INPUTS 2026_03 entries")
+    key_to_index: dict[str, int] = {}
+    for index, entry in enumerate(new_entries):
+        key_to_index.setdefault(entry.primary, index)
+    pin_letters = EXPECTED_LETTERS["new"]
+
+    log("DX2-E1 stock and oracle replay")
+    stock = blast(NEW_FA, qpath, work / "e1_stock.m8")
+    stock_text = (work / "e1_stock.m8").read_text()
+    stock_subjects = subjects_of(stock_text)
+    hit_queries = {line.split()[0] for line in body_lines(stock_text)}
+    id_to_record = {rec.key: i for i, rec in enumerate(records)}
+    hit_indices = sorted(id_to_record[key] for key in hit_queries if key in id_to_record)
+    q_hit = work / "e1_q.faa"
+    write_queries(records, hit_indices, q_hit)
+    u_idx = sorted(key_to_index[key] for key in stock_subjects if key in key_to_index)
+    u_fa = work / "e1_U.faa"
+    write_entries([new_entries[i] for i in u_idx], u_fa)
+    pin = ["--dbsize", str(pin_letters)]
+    replay = blast(u_fa, q_hit, work / "e1_R.m8", extra=pin)
+    unpinned = blast(u_fa, q_hit, work / "e1_Rn.m8")
+    r_text = (work / "e1_R.m8").read_text()
+    ic_e1 = diamond_ic(
+        new_entries, key_to_index, q_hit, hit_queries, stock_subjects,
+        pin_letters, 20261020, work / "e1_ic",
+    )
+    e1 = {
+        "stock_rows": stock["rows"],
+        "replay_rows": replay["rows"],
+        "candidate_entries": len(u_idx),
+        "replay_subjects": len(u_idx),
+        "candidate_pairs": stock["rows"],
+        "queries_with_hit": len(hit_queries),
+        "unmatched_subjects": sorted(stock_subjects - set(key_to_index)),
+        "unpinned_differs": body_lines(stock_text) != body_lines((work / "e1_Rn.m8").read_text()),
+        "algorithm_stock": stock.get("algorithm"),
+        "algorithm_replay": replay.get("algorithm"),
+        "wall_stock_s": stock["wall_s"],
+        "wall_R_s": replay["wall_s"],
+        "wall_Rn_s": unpinned["wall_s"],
+        "ic": ic_e1,
+        **judge_arm(stock_text, r_text, ic_e1),
+    }
+    e1["ic_overhead_Rplus_over_R"] = (
+        ic_e1["wall_Rplus_s"] / replay["wall_s"] if replay["wall_s"] else None
+    )
+    e1["ic_overhead_Rplus_over_stock"] = (
+        ic_e1["wall_Rplus_s"] / stock["wall_s"] if stock["wall_s"] else None
+    )
+    log(f"DX2-E1 {e1['outcome']}")
+
+    log("DX2-E2 shipped CLI")
+    cache = work / "e2.sqlite"
+    old_cli = run_cli(OLD_FA, qpath, cache, work / "e2_old")
+    new_cli = run_cli(NEW_FA, qpath, cache, work / "e2_new")
+    replay_text, union_fa, replay_queries = emitted_replay(work / "e2_new")
+    e2: dict = {
+        "old_cli": {k: old_cli[k] for k in ("returncode", "wall_s", "stdout_tail", "stderr_tail")},
+        "new_cli": {k: new_cli[k] for k in ("returncode", "wall_s", "stdout_tail", "stderr_tail")},
+        "new_decision": new_cli["decision_text"],
+        "old_decision": old_cli["decision_text"],
+    }
+    if replay_text is None or replay_queries is None:
+        e2.update(judge_arm(stock_text, None, None))
+        e2["why"] = "shipped exact mode did not emit a replay body"
+        e2["tables_written"] = (work / "e2_new" / "tables" / "out").is_file()
+    else:
+        replayed = {
+            line[1:].split()[0]
+            for line in replay_queries.read_text().splitlines()
+            if line.startswith(">")
+        }
+        if union_fa is None:
+            e2.update(judge_arm(stock_text, None, None))
+            e2["why"] = "replay body present, sub-reference fasta absent"
+        else:
+            ic_e2 = ic_on_fasta(
+                new_entries, key_to_index, replay_queries, replayed, union_fa,
+                pin_letters, 20261020, work / "e2_ic", replay_text,
+            )
+            # The CLI replay may have used a different query fasta than q_hit.
+            # Re-run R+ against the queries that the replay itself used.
+            e2["ic"] = ic_e2
+            e2["incremental_emitted"] = (work / "e2_new" / "tables" / "out").is_file()
+            e2["replay_subjects"] = ic_e2["candidate_entries"]
+            e2["wall_Rplus_s"] = ic_e2["wall_Rplus_s"]
+            e2.update(judge_arm(stock_text, replay_text, ic_e2))
+            if e2["outcome"] == "EXACT":
+                sys.path.insert(0, str(Path(__file__).resolve().parent))
+                from exact_replay_diamond import correlation
+                e2["versus_stock"] = correlation(stock_text, replay_text)
+    log(f"DX2-E2 {e2.get('outcome')}")
+
+    report = {
+        "test": "DX2",
+        "git_head_at_start": git_head(),
+        "host": platform.node(),
+        "platform": platform.platform(),
+        "diamond_version": version.strip(),
+        "inputs": inputs,
+        "letters": EXPECTED_LETTERS,
+        "threads": int(THREADS),
+        "scratch_df": scratch,
+        "query_n": 300,
+        "query_seed": 20261017,
+        "pad_seed": 20261020,
+        "prereg_commit": "4607a42",
+        "dx2_e1": e1,
+        "dx2_e2": e2,
+        "provenance": provenance(versions={"diamond": version.strip()}),
+    }
+    write_json(OUT_DIR / "dx2.json", report)
+    log(f"wrote {OUT_DIR / 'dx2.json'}")
+
+
 if __name__ == "__main__":
-    pilot()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=("pilot", "measured"), required=True)
+    args = parser.parse_args()
+    if args.mode == "pilot":
+        pilot()
+    else:
+        measured()
