@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from acts.infer_knobs import (  # noqa: E402
     apply_extra_argv,
     capture_help,
+    capture_help_argv,
     infer_knobs,
     parse_help_options,
 )
@@ -144,6 +145,55 @@ class ParseHelpTests(unittest.TestCase):
             found = parse_help_options(capture_help(str(path)))
         self.assertEqual(found[0]["option"], "--limit")
         self.assertEqual(found[0]["default"], 3.0)
+
+    def test_subcommand_prefix_help(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "tool"
+            path.write_text(
+                "#!/bin/sh\n"
+                'if [ "$1" = "sub" ] && [ "$2" = "--help" ]; then\n'
+                "  echo '--limit N   a cap  [3]'\n"
+                "  exit 0\n"
+                "fi\n"
+                "echo usage\n"
+                "exit 3\n"
+            )
+            path.chmod(path.stat().st_mode | stat.S_IEXEC)
+            found = parse_help_options(
+                capture_help_argv([str(path), "sub", "--db", "ref", "--query", "q"])
+            )
+        self.assertEqual(found[0]["option"], "--limit")
+        self.assertEqual(found[0]["default"], 3.0)
+
+    def test_bare_prefix_when_help_flags_have_no_option(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "tool"
+            path.write_text(
+                "#!/bin/sh\n"
+                'if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then echo usage; exit 3; fi\n'
+                'if [ "$1" = "sub" ] && [ "$2" = "--help" ]; then echo usage; exit 3; fi\n'
+                'if [ "$1" = "sub" ] && [ "$2" = "-h" ]; then echo usage; exit 3; fi\n'
+                'if [ "$1" = "sub" ]; then echo "--limit N   a cap  [3]"; exit 1; fi\n'
+                "echo usage\n"
+                "exit 3\n"
+            )
+            path.chmod(path.stat().st_mode | stat.S_IEXEC)
+            found = parse_help_options(
+                capture_help_argv([str(path), "sub", "--in", "f"])
+            )
+        self.assertEqual([item["option"] for item in found], ["--limit"])
+
+    def test_description_without_placeholder_is_not_a_candidate(self) -> None:
+        text = "\n".join(
+            [
+                "--size                 effective size in letters",
+                "--workers              number of workers (default=2.0)",
+                "--chunks               number of chunks (default=4)",
+                "--draw                 cutoff for drawing",
+                "--cap                  maximum to report (default=0.001)",
+            ]
+        )
+        self.assertEqual(parse_help_options(text), [])
 
     def test_apply_extra_argv_replaces_same_option(self) -> None:
         base = ["tool", "--cpu", "1", "--tblout", "T", "ref", "qry"]

@@ -109,6 +109,53 @@ def capture_help(executable: str) -> str:
     return _help_text(executable, "--help")
 
 
+def _first_option_index(argv: Sequence[str]) -> int:
+    """Index of the first option token after the program, or ``len(argv)``."""
+    for index, token in enumerate(argv):
+        if index > 0 and str(token).startswith("-"):
+            return index
+    return len(argv)
+
+
+def _argv_text(argv: Sequence[str]) -> str:
+    proc = subprocess.run(list(argv), check=False, capture_output=True, text=True)
+    return f"{proc.stdout or ''}{proc.stderr or ''}"
+
+
+def capture_help_argv(argv: Sequence[str]) -> str:
+    """Help text for a command that may have subcommands before its options.
+
+    ``j`` runs from 1 through the index of the first option token. For each
+    ``j``, try ``argv[:j] + ['--help']`` and then ``argv[:j] + ['-h']``.
+    Return the first text that contains a numeric-argument option.
+
+    If none do, try the bare prefixes ``argv[:j]`` in the same order. Some
+    programs print usage when required arguments are absent and reject a
+    help flag as an unknown option. Return the first bare text that
+    contains a numeric-argument option.
+
+    If that also fails, return the last bare prefix's text. Parsing it is
+    the caller's job. An empty candidate list is not an acceptance.
+    """
+    if not argv or not str(argv[0]):
+        raise ValueError("argv is empty")
+    end = _first_option_index(argv)
+    if end < 1:
+        end = 1
+    last = ""
+    for j in range(1, end + 1):
+        prefix = list(argv[:j])
+        for flag in ("--help", "-h"):
+            last = _argv_text([*prefix, flag])
+            if parse_help_options(last):
+                return last
+    for j in range(1, end + 1):
+        last = _argv_text(list(argv[:j]))
+        if parse_help_options(last):
+            return last
+    return last
+
+
 def apply_extra_argv(base: Sequence[str], extra: Sequence[str]) -> list[str]:
     """Append ``extra`` and drop an earlier copy of each option it sets.
 
