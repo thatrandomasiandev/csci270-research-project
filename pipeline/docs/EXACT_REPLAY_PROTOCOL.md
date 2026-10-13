@@ -135,3 +135,145 @@ byte-identical to an independent stock run (54 tblout, 77 domtblout rows).
 Wall 2.76 s vs stock 5.25 s at this toy size, where parsing (1.23 s) and
 the audit dominate. Not a speedup claim. The graded number stays the
 pre-registered CARC re-annotation, now to be run with `--pin`.
+
+## Addendum 2026-10-12 — Test E3, E-value reporting (pre-registered)
+
+Written **before** any E3 run. The text above is unchanged. No E3 number
+below is a result.
+
+### Why
+
+E1/E2 used `hmmscan --cut_ga`. That mode thresholds on bit score, so
+changing Z never moves a hit across the reporting line. Default
+reporting is E-value: `-E 10 --domE 10`, and E = P·Z. When Z changes,
+hits cross the line. The fitter refuses that case today (R2n: union of
+halves is a strict superset of the full run). E3 decides whether exact
+mode extends to it.
+
+### Mechanism under test (assumptions, not a theorem)
+
+HMMER's pipeline filters (F1/F2/F3) are P-value gates. They do not read
+Z. Only the reporting and inclusion E-values do. Per-model P is treated
+as a function of that model and the query alone. domZ (the c-Evalue
+normalizer) is, per query, the number of targets HMMER reported in that
+run. Replay must make HMMER recompute it. A c-Evalue mismatch is a body
+mismatch and a kill, not a tolerance. ACTS does not rescale any printed
+cell.
+
+- **Z grows** (a release adds models). Every cached hit's E rises, so an
+  unchanged model that failed the old threshold cannot newly pass.
+  Candidates = cached hits on unchanged models, plus discovery hits on
+  new or changed models. Pinned replay (`-Z Z_new`) lets HMMER drop the
+  hits that cross out and recompute domZ. Slack factor s = 1. Expected
+  exact.
+- **Z shrinks** (a release removes models). Hits whose old E lies in
+  (10, 10·Z_old/Z_new] cross in and were never cached. Fill the cache
+  at relaxed reporting thresholds `-E 10·s --domE 10·s` with
+  s ≥ Z_old/Z_new, and keep those rows as candidates only. Replay uses
+  the original thresholds and `-Z Z_new`. If Z_old/Z_new > s, the run
+  is a refusal (full run), not a replay. From the stated sizes,
+  30134 > 27481 and 30134 ≤ 2·27481, so s = 2 covers 38.2 → 38.1 and
+  s = 1 does not. That inequality is arithmetic on the stated sizes,
+  not a measurement.
+- **Discovery** runs on the sub-reference **unpinned**. Z_sub < Z_new,
+  so at a fixed reporting threshold the sub-reference is a superset;
+  replay filters. Discovery uses the same slack thresholds as the cache
+  fill. At s = 1 those thresholds are `-E 10 --domE 10`.
+
+Inclusion thresholds (`--incE`, `--incdomE`) stay at HMMER's defaults.
+They are not slack-widened. A difference they cause is a kill.
+
+### Locked procedure
+
+Tool, every scan, thresholds always on the command line, no `--cut_ga`:
+
+```
+hmmscan --noali --cpu 4 --tblout T --domtblout D -o /dev/null \
+  -E Erep --domE Erep [-Z Z] <pressed-ref> <queries>
+```
+
+`--cpu 4` matches E1. This host has 14 cores; 4 is still the locked
+width. HMMER 3.4 (`hmmscan` on `PATH`).
+
+Queries, from `pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz`.
+Draw record indices with `random.Random(seed).sample(range(n), k)`,
+sort the indices, write the records in that file order.
+
+- Q300: seed `20261012`, k = 300. The E1 sample.
+- Q1000: seed `20261013`, k = 1000. An independent draw. Used only if
+  E3c on Q300 does not differ from stock.
+
+References:
+
+- Pfam 38.1: `pipeline/data/hmmer/pfam38.1/Pfam-A.hmm.gz`, stated Z = 27,481.
+- Pfam 38.2: `pipeline/data/hmmer/Pfam-A.hmm.gz`, stated Z = 30,134.
+
+If the number of `//`-terminated model blocks is not the stated Z, that
+arm is INCONCLUSIVE and the test stops. Strict hash is
+`entry_content_hash(block, PROFILE_VOLATILE_TAGS)` (`acts/entry_hash.py`,
+tags from `acts/reference_formats.py`). A hash that occurs twice inside
+one release makes the test INCONCLUSIVE. Unchanged means the hash is in
+both releases. Discovery models are target-release blocks whose hash is
+absent from the source release, taken in target-file order. Table
+identity uses the HMM `NAME` (target field 0). A cache hit is a
+candidate only when its source model's hash equals exactly one target
+model; the replay uses that target model's name and block.
+
+Cache fill: full source release, no `-Z`, `-E 10·s --domE 10·s`.
+Discovery: the discovery sub-reference, no `-Z`, the same slack
+thresholds. Replay: queries that have at least one candidate, against
+the union of candidate models in target-file order, `-E 10 --domE 10
+-Z Z_target`. Stock, the comparison target: full target release,
+`-E 10 --domE 10`, no `-Z`. Mini-references are extracted model blocks
+in target order, then `hmmpress`. Uncompressed text is deleted after
+`hmmpress`. Pressed files stay in the work directory, not in git.
+
+### Arms (Q300 unless the control clause fires)
+
+- **E3a** growth, 38.1 → 38.2, s = 1. Replay `-Z 30134`. Check: body of
+  tblout and of domtblout byte-identical to stock 38.2.
+- **E3b** shrink, 38.2 → 38.1, s = 2. Cache and discovery at
+  `-E 20 --domE 20`. Replay `-Z 27481` with `-E 10 --domE 10`. Check:
+  byte-identical to stock 38.1.
+- **E3c** negative control, 38.2 → 38.1, s = 1. Same as E3b with no
+  slack (`-E 10 --domE 10` on the cache and on discovery). Must differ
+  from stock 38.1 by at least one body line. That is the evidence the
+  slack is load-bearing.
+
+Body = every line that does not start with `#`. Both tables. `#` lines
+are tool metadata, as in E1.
+
+### Counts (recorded, not extra pass rules)
+
+Per arm: candidate pairs; replay models; replay queries; crossed-out
+rows; crossed-in rows; walls per phase. A row's pair is (target `NAME`,
+query name), field 0 and field 2 of tblout, field 0 and field 3 of
+domtblout.
+
+- Crossed-out: cache body lines on unchanged models whose pair is
+  absent from the stock body. Count tblout and domtblout separately.
+- Crossed-in: stock body lines whose pair is absent from the s = 1
+  cache on unchanged models and present in this arm's slack cache.
+  Zero by definition when s = 1.
+- E3c band rows: stock body lines whose pair is absent from the s = 1
+  candidate set. tblout and domtblout separately.
+
+Walls, one run, indicative only: stock, cache fill, hash diff,
+discovery press, discovery scan, replay press, replay scan. The JSON
+records git hash, host, and the HMMER version line. Result file:
+`pipeline/results/exact_replay/e3.json`.
+
+### Kill rule
+
+If E3a or E3b differs in any body line on either table, exact mode
+stays `--cut_ga`-only. Write that down and stop. Do not retune s,
+thresholds, hashes, or the candidate rule. Do not ship the caller
+`--slack` path.
+
+If E3c does not differ on Q300, the control is underpowered. Rerun
+E3a, E3b, and E3c on Q1000 and record that fact. Do not change the
+locked rules. If E3c also does not differ on Q1000, the slack control
+is uninformative: do not ship, even if E3a and E3b matched.
+
+E3c differing is required for the shrink result to mean anything. It
+is not itself a kill of exact mode.
