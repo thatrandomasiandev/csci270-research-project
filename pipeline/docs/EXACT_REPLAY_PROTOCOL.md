@@ -614,3 +614,58 @@ Overall EXACT only if both proteomes are EXACT. TOKEN-EQUAL if neither
 is FAIL and at least one is TOKEN-EQUAL. FAIL if either is FAIL.
 A `REFUSE` from the CLI is not EXACT. Walls are one run and indicative.
 Result file `results/exact_replay/costpass_measured.json`.
+
+## Addendum — sampled safety check (pre-registered 2026-10-13)
+
+Written after the pilots below and before the two proteome scans, and
+before the measured DIAMOND sample. The CLI those scans use is this
+check. Locked text above is unchanged.
+
+Variant c2. The file-order neighbor pad runs on every replayed record.
+Each record is searched against its own candidates plus the predecessor
+and successor of those candidates, in the same batch plan as the replay,
+pinned to the full reference. Three random pads, seeds `20261031`,
+`20261032`, `20261033`, width `min(max(200, |U|), non-candidates)`, run
+only on 50 replayed records drawn by `sample_keys` with seed
+`20261034`. A failure does not write the replay.
+
+For one non-neighbor coupling entry that affects `k` of `n` records,
+sample size `s`, and `q` the chance one pad contains that entry:
+
+```
+P(miss) = C(n−k, s)/C(n, s) + (1 − C(n−k, s)/C(n, s)) · (1−q)^3
+```
+
+when `s ≤ n−k`. Otherwise the first term is 0. This is a counting
+identity. It is not a theorem that a pad containing the entry changes
+the candidate rows. That assumption was measured for the six DX2 rows.
+DX3 worked example: `k = 22`, `n = 2000`,
+`q = 137090/438658 = 0.31252137200279034`,
+`(1−q)^3 = 0.3249208679849812`. At `s = 50` the identity gives
+`0.7105418322019688`. Those 22 cases are file-order neighbors, so the
+neighbor pad catches them on every record. The identity is only the
+random-pad miss rate for one unknown non-neighbor entry.
+
+Pilot controls, recorded before this lock:
+
+- DX2 known-bad neighbor pad: refused, `pad_hit`, 0.9 s.
+- DX3 regeneration of the locked draw, because the m8 files were absent:
+  stock 227,223 rows, replay 227,205, bodies differ, neighbor pad
+  refused (`pad_hit`). The row counts match `dx3.json`.
+- Injected 5% model drop, sample 50: refused, 7.3 s.
+- HMMER neighbor pad on all 4,555 records of `GCF_013315695.1`: both
+  tables pass, 17.5 s.
+- HMMER random pads on that correct body, sample 50: pass, 7.8 s.
+- DIAMOND pilot, seed `20261016`, `GCF_013085185.1`, 300 queries:
+  SAFE-REFUSE. This arm chose nothing. It is not the measured sample.
+
+The pilot overhead is `17.5 + 7.8 = 25.3` s, which is `25.3 / 680.329`
+of the stock median on that proteome, under the cap of one tenth.
+
+Measured DIAMOND arm, not yet run. Seed `20261017`, 300 queries, the
+same blastp argv and `--dbsize 209017843` pin. The genome is
+`random.Random(20261017).choice` over `recurrence/A`, excluding the DX2
+and DX3 genomes, the two proteomes named above, `GCF_013315695.1`, and
+the pilot genome `GCF_013085185.1`. Outcome SAFE-REFUSE or EXACT.
+UNSAFE stops the claim. Result file
+`results/exact_replay/costpass_diamond_measured.json`.
