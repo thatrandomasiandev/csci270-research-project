@@ -1,0 +1,256 @@
+{
+  "b0": {
+    "algorithm_threads_1": "Algorithm: Double-indexed",
+    "algorithm_threads_8": "Algorithm: Double-indexed",
+    "block_threads_8": "Block size = 2000000000",
+    "repeat_identical": true,
+    "rows": 6451,
+    "threads_1_vs_8_identical": true,
+    "wall_a_s": 2.8205378329730593,
+    "wall_b_s": 2.7958185829920694,
+    "wall_threads_1_s": 19.268453416996635
+  },
+  "b1": {
+    "algorithm_replay": "Algorithm: Double-indexed",
+    "algorithm_stock": "Algorithm: Double-indexed",
+    "algorithm_unpinned": "Algorithm: Double-indexed",
+    "block_replay": "Block size = 2000000000",
+    "bodies_equal": false,
+    "candidate_entries": 6451,
+    "classification": {
+      "bodies_equal": false,
+      "different_hsp": 0,
+      "line_order_only": false,
+      "other_rows": 6448,
+      "row_extra": 0,
+      "row_missing": 3,
+      "same_hsp_different_value": 0,
+      "shared_byte_identical": 6448,
+      "shared_rows": 6448,
+      "stock_rows": 6451
+    },
+    "pin": "--dbsize 209017843",
+    "replay_rows": 6448,
+    "stock_rows": 6451,
+    "unmatched_subjects": [],
+    "unpinned_classification": {
+      "bodies_equal": false,
+      "different_hsp": 0,
+      "line_order_only": false,
+      "other_rows": 6448,
+      "row_extra": 0,
+      "row_missing": 3,
+      "same_hsp_different_value": 6335,
+      "shared_byte_identical": 113,
+      "shared_rows": 6448,
+      "stock_rows": 6451
+    },
+    "unpinned_differs": true,
+    "wall_R_s": 0.16088600002694875,
+    "wall_Rn_s": 0.15767237497493625
+  },
+  "b2": {
+    "diamond_true_candidates": {
+      "algorithm_R": "Algorithm: Double-indexed",
+      "algorithm_Rplus": "Algorithm: Double-indexed",
+      "block_R": "Block size = 2000000000",
+      "block_Rplus": "Block size = 2000000000",
+      "candidate_entries": 6451,
+      "extra_candidate_row_excess": 1,
+      "missing_example": [],
+      "missing_r_rows": 0,
+      "ordered_bodies_equal": false,
+      "pad_entries": 6451,
+      "pad_hit_example": [],
+      "pad_hit_rows": 0,
+      "pad_seed": 20261023,
+      "pass": true,
+      "r_plus_rows": 6449,
+      "r_rows": 6448,
+      "unmatched_subjects": [],
+      "wall_R_s": 0.15993533399887383,
+      "wall_Rplus_s": 0.19013045798055828
+    },
+    "diamond_wrong_candidates": {
+      "algorithm_R": "Algorithm: Double-indexed",
+      "algorithm_Rplus": "Algorithm: Double-indexed",
+      "block_R": "Block size = 2000000000",
+      "block_Rplus": "Block size = 2000000000",
+      "candidate_entries": 5806,
+      "extra_candidate_row_excess": 2,
+      "missing_example": [],
+      "missing_r_rows": 0,
+      "ordered_bodies_equal": false,
+      "pad_entries": 5806,
+      "pad_hit_example": [
+        "WP_000020749.1\tsp|A7I145|MNME_CAMHC\t33.6\t122\t72\t4\t11\t127\t240\t357\t2.85e-08\t58.2",
+        "WP_000030740.1\tsp|B5YGT5|KDSB_THEYD\t44.9\t243\t118\t5\t5\t232\t4\t245\t6.95e-55\t179",
+        "WP_000208242.1\tsp|Q8GQU1|HSLV_LEPBO\t61.4\t171\t66\t0\t2\t172\t9\t179\t2.54e-70\t213"
+      ],
+      "pad_hit_rows": 9,
+      "pad_seed": 20261023,
+      "pass": false,
+      "r_plus_rows": 5814,
+      "r_rows": 5803,
+      "unmatched_subjects": [],
+      "wall_R_s": 0.1482099590357393,
+      "wall_Rplus_s": 0.1752747080172412
+    },
+    "hmmer_positive": {
+      "argv": "hmmscan --cut_ga --noali --cpu 4 [-Z 30134] --tblout --domtblout",
+      "candidate_models": 102,
+      "label": "positive control, not a result",
+      "models": 30134,
+      "pad_models": 200,
+      "pass": true,
+      "queries": 50,
+      "queries_with_hit": 47,
+      "query_source": "first 50 indices of sorted Random(20261012).sample(n, 300) from GCF_002853805.1",
+      "tables": {
+        "dom": {
+          "extra_candidate_row_excess": 0,
+          "missing_example": [],
+          "missing_r_rows": 0,
+          "ordered_bodies_equal": true,
+          "pad_hit_example": [],
+          "pad_hit_rows": 0,
+          "pass": true,
+          "r_plus_rows": 114,
+          "r_rows": 114
+        },
+        "tbl": {
+          "extra_candidate_row_excess": 0,
+          "missing_example": [],
+          "missing_r_rows": 0,
+          "ordered_bodies_equal": true,
+          "pad_hit_example": [],
+          "pad_hit_rows": 0,
+          "pass": true,
+          "r_plus_rows": 104,
+          "r_rows": 104
+        }
+      },
+      "wall_R_s": 0.11430804198607802,
+      "wall_Rplus_s": 0.17242883401922882,
+      "wall_stock_s": 7.050581916992087,
+      "z_pin": 30134
+    },
+    "negative_dropped_in_pad": 9,
+    "negative_dropped_subjects": 645,
+    "negative_fail_mode": "pad_hit",
+    "negative_saw_the_case": true
+  },
+  "b3": {
+    "attempts": [
+      {
+        "algorithm": "Algorithm: Double-indexed",
+        "name": "--algo",
+        "why": "stock and replay logged the same algorithm; not a size-switch"
+      },
+      {
+        "name": "-b",
+        "replay": "Block size = 2000000000",
+        "stock": "Block size = 2000000000",
+        "why": "S1 already sets -b 2.0; both logs recorded"
+      },
+      {
+        "algorithm": "Algorithm: Double-indexed",
+        "classification": {
+          "bodies_equal": false,
+          "different_hsp": 0,
+          "line_order_only": false,
+          "other_rows": 6448,
+          "row_extra": 0,
+          "row_missing": 3,
+          "same_hsp_different_value": 0,
+          "shared_byte_identical": 6448,
+          "shared_rows": 6448,
+          "stock_rows": 6451
+        },
+        "name": "--no-ranking on replay only",
+        "note": "Stock stays S1. A match would be a declared extra only if the replay then equals unmodified stock."
+      }
+    ]
+  },
+  "b4": {
+    "hit_in_new_not_old": 0,
+    "hit_in_old_not_new": 0,
+    "pairs_unchanged_subject_new": 6256,
+    "pairs_unchanged_subject_old": 6256,
+    "predicts_missed_candidates": 0,
+    "unchanged_entries_in_new": 565509,
+    "wall_old_s": 2.8327964999480173
+  },
+  "b5": {
+    "ic_overhead_Rplus_over_R": 1.1817713035858373,
+    "ic_overhead_Rplus_over_stock": 0.06740929185840647,
+    "wall_R_s": 0.16088600002694875,
+    "wall_Rplus_s": 0.19013045798055828,
+    "wall_stock_s": 2.8205378329730593
+  },
+  "construction": {
+    "algorithm": "Algorithm: Double-indexed",
+    "body_rows": 7465,
+    "kept": 50,
+    "label": "SAMPLE-CONSTRUCTION",
+    "pool_n": 80,
+    "queries_with_hit": 78,
+    "wall_s": 2.8671324579627253
+  },
+  "declared_extras": [],
+  "diamond_version": "diamond version 2.2.5",
+  "git_head_at_start": "5c0057c85cce69b794b2fae2ad57afb0db074138",
+  "host": "Joshuas-MBP-3.lan",
+  "inputs": {
+    "diamond": {
+      "bytes": 22031624,
+      "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond"
+    },
+    "e1_queries": {
+      "bytes": 1074926,
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz"
+    },
+    "new": {
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_03.fasta.gz"
+    },
+    "old": {
+      "bytes": 93457057,
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_01.fasta.gz"
+    },
+    "pilot_queries": {
+      "bytes": 883249,
+      "md5": "7bd85fa484362551378d550f7fd5f938",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_002090355.1_protein.faa.gz"
+    }
+  },
+  "label": "PILOT, not a result",
+  "letters": {
+    "new": 209017843,
+    "old": 208482574
+  },
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "provenance": {
+    "finished_utc": "2026-10-13T05:28:54.215340+00:00",
+    "git": "5c0057c85cce69b794b2fae2ad57afb0db074138",
+    "git_dirty": true,
+    "host": "Joshuas-MBP-3.lan",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {
+      "diamond": "diamond version 2.2.5"
+    }
+  },
+  "query_draw": {
+    "draw": "random.Random(20261019).sample(range(n), 80)",
+    "pool_n": 80
+  },
+  "scratch_df": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   393Gi    19Gi    96%    5.3M  203M    3%   /System/Volumes/Data",
+  "semantics_note": "pipeline/results/reference_diamond/dx2_semantics.md",
+  "test": "DX2-pilot",
+  "threads": 8
+}
