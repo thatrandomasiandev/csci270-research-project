@@ -28,6 +28,7 @@ from pathlib import Path
 from collections.abc import Callable, Sequence
 
 from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit
+from acts.replay_batch import merge_bodies, plan_batches
 from acts.infer_knobs import capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
 from acts.reference_cache import ReferenceCache, argv_namespace, connect_cache
@@ -746,6 +747,15 @@ def _body_record_filter(text: str, record_col: int, keep: set[str]) -> list[str]
     return out
 
 
+# Pair-scan units for the replay batch cost. Exactness does not depend on them.
+# s = 84.8388374170172 / (4555 * 3719) seconds per pair, from the median-wall
+# replay scan in results/exact_replay/costpass_baseline.json.
+# A two-entry prep plus a one-record scan measured 0.003 s each; α = 0.01 s
+# leaves margin for writing the batch. π = 1.563109832990449 / 3719 / s.
+REPLAY_STARTUP_PAIRS = 2000.0
+REPLAY_PRESS_PAIRS = 84.0
+
+
 def replay_plan(
     held: Sequence[dict],
     entries: Sequence[Entry],
@@ -762,6 +772,39 @@ def replay_plan(
     chosen_idx = sorted({aliases[token] for tokens in cand.values() for token in tokens})
     replay_records = [rec for rec in records if rec.key in cand]
     return replay_records, [entries[i] for i in chosen_idx], cand
+
+
+def _batched_replay(
+    pinned,
+    rep_records: Sequence[RecordItem],
+    rep_entries: Sequence[Entry],
+    cand: dict[str, set[str]],
+    entries: Sequence[Entry],
+    tables: Sequence[TableReport],
+) -> tuple[dict[str, str], int]:
+    """One pinned search per batch. Bodies are merged in input order.
+
+    The pin is the full reference's normalizer. A batch is searched against
+    the union of its own candidates, in release order. The reported union
+    stays ``rep_entries``.
+    """
+    if not rep_records:
+        return {}, 0
+    order = [rec.key for rec in rep_records]
+    batches = plan_batches(order, cand, startup_pairs=REPLAY_STARTUP_PAIRS, press_pairs=REPLAY_PRESS_PAIRS)
+    by_key = {rec.key: rec for rec in rep_records}
+    values = pin_values(entries)
+    parts: dict[str, list[str]] = {table.name: [] for table in tables}
+    for keys in batches:
+        union: set[str] = set()
+        for key in keys:
+            union |= cand[key]
+        chosen = [entry for entry in rep_entries if entry.primary in union]
+        part = pinned([by_key[key] for key in keys], chosen, values)
+        for table in tables:
+            parts[table.name].append(part.get(table.name, ""))
+    texts = {table.name: merge_bodies(parts[table.name], table.record_col, order) for table in tables}
+    return texts, len(batches)
 
 
 class ReferenceIncremental(Strategy):
@@ -1194,12 +1237,12 @@ class ReferenceIncremental(Strategy):
             _clock_add(self.clock, "replay_plan_s", time.perf_counter() - started)
             started_phase = time.perf_counter()
             before_phase = dict(self.clock)
-            texts = pinned(rep_records, rep_entries, pin_values(entries)) if rep_records else {}
+            texts, n_batches = _batched_replay(pinned, rep_records, rep_entries, cand, entries, tables)
             _phase_from(self.clock, before_phase, "replay", started_phase)
         except RunError as exc:
             return done("REFUSE", exc.reason, base)
         extra = {**base, "replay_records": len(rep_records), "replay_entries": len(rep_entries),
-                 "candidate_pairs": sum(len(v) for v in cand.values())}
+                 "candidate_pairs": sum(len(v) for v in cand.values()), "n_batches": n_batches}
         # Soundness tripwire: a replay row outside the candidate set means a
         # full run could also report pairs the cache never saw.
         for table in tables:
