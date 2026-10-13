@@ -28,6 +28,7 @@ from pathlib import Path
 from collections.abc import Callable, Sequence
 
 from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit
+from acts.infer_knobs import capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
 from acts.reference_cache import ReferenceCache, argv_namespace, connect_cache
 from acts.reference_fit import (
@@ -772,6 +773,7 @@ class ReferenceIncremental(Strategy):
         pin_runner: PinnedInvoke | None = None,
         slack: str | None = None,
         slack_runner: Invoke | None = None,
+        help_text: str | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -786,7 +788,13 @@ class ReferenceIncremental(Strategy):
         self.primary_parts = primary_parts
         self.sample = sample
         self.runner = runner
-        self.pin = pin
+        # An empty pin requests inference. A template is an override and is
+        # not replaced. Incremental mode leaves pin unset and does not infer.
+        self._infer_pin = pin == ""
+        if self._infer_pin and slack:
+            raise RunError("slack requires an explicit pin")
+        self.pin = None if self._infer_pin else pin
+        self.help_text = help_text
         self.pin_runner = pin_runner
         self.slack = slack
         self.slack_runner = slack_runner
@@ -831,9 +839,107 @@ class ReferenceIncremental(Strategy):
             full_entries=self._n_entries,
         )
 
+    def _probe_invoke(self, reference: Path):
+        """Tool call that accepts extra argv. Used by pin inference and, when
+        the caller supplied a runner, by pinned replay of an inferred pin."""
+        if self.runner is not None:
+            runner = self.runner
+
+            def call(records: Sequence[RecordItem], entries: Sequence[Entry], extra: Sequence[str]) -> dict[str, str]:
+                if not extra:
+                    try:
+                        return runner(records, entries, extra)
+                    except TypeError:
+                        return runner(records, entries)
+                try:
+                    return runner(records, entries, extra)
+                except TypeError as exc:
+                    raise RunError("runner does not accept probe options") from exc
+
+            return call
+
+        def call(records: Sequence[RecordItem], entries: Sequence[Entry], extra: Sequence[str]) -> dict[str, str]:
+            if not extra:
+                return self._invoke(reference)(records, entries)
+            argv = self.argv[:1] + list(extra) + self.argv[1:]
+            inner = subprocess_invoke(
+                argv,
+                input_slot=self.input_path,
+                reference_slot=reference,
+                prep=self.prep,
+                scratch=self.out_dir / "calls_infer",
+                clock=self.clock,
+                full_entries=self._n_entries,
+            )
+            return inner(records, entries)
+
+        return call
+
+    def _take_inferred_pin(self, cache, ns, stored, reference, entries, records, tables) -> tuple[dict, str | None]:
+        """Fill ``self.pin`` from the contract, or infer it once and store it.
+
+        A stored template is reused. A missing pin, or a reporting threshold
+        (slack still required), refuses. The caller does not guess a template.
+        """
+        saved = stored.get("inferred_pin")
+        if isinstance(saved, dict) and saved.get("template"):
+            self.pin = str(saved["template"])
+            return stored, None
+        try:
+            half_idx = partition_indices(len(entries), 2, PROBE_SEED)[0]
+        except ValueError as exc:
+            return stored, str(exc)
+        half = [entries[i] for i in half_idx]
+        if not half:
+            return stored, "pin inference had an empty half"
+        help_text = self.help_text
+        if help_text is None:
+            if self.runner is not None:
+                return stored, "no help text"
+            try:
+                help_text = capture_help(self.argv[0])
+            except OSError as exc:
+                return stored, f"help text failed: {exc}"
+        chosen = sample_record_indices(len(records), min(PROBE_N, len(records)), PROBE_SEED)
+        probe_records = [records[i] for i in chosen]
+        try:
+            result = infer_knobs(
+                help_text,
+                probe_records,
+                entries,
+                half,
+                tables,
+                self._probe_invoke(reference),
+            )
+        except (OSError, ValueError, RunError) as exc:
+            return stored, getattr(exc, "reason", None) or str(exc)
+        template = result.get("pin") or "no knob"
+        if template == "no knob":
+            return stored, str(result.get("reason") or "no knob")
+        if result.get("thresholds"):
+            return stored, "reporting thresholds inferred; slack stays required"
+        evidence = {
+            "template": template,
+            "tool_calls": result.get("tool_calls"),
+            "members": result.get("members") or {},
+            "thresholds": [],
+        }
+        stored = dict(stored)
+        stored["inferred_pin"] = evidence
+        cache.save_contract(ns, stored)
+        self.pin = template
+        return stored, None
+
     def _pinned(self, reference: Path) -> PinnedInvoke:
         if self.pin_runner is not None:
             return self.pin_runner
+        if self.runner is not None:
+            probe = self._probe_invoke(reference)
+
+            def call(records: Sequence[RecordItem], entries: Sequence[Entry], values: dict[str, int]) -> dict[str, str]:
+                return probe(records, entries, pin_tokens(self.pin or "", values))
+
+            return call
         assert self.pin is not None
         counter = {"n": 0}
 
@@ -960,6 +1066,25 @@ class ReferenceIncremental(Strategy):
                 "stored contract has no tables",
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
             )
+        if self._infer_pin and not self.pin:
+            stored, why = self._take_inferred_pin(
+                cache, ns, stored, reference, entries, records, tables
+            )
+            if why:
+                return self._finish(
+                    "REFUSE_PIN",
+                    why,
+                    self._phase_extra(
+                        {
+                            "verify": self.verify,
+                            "mode": "exact",
+                            "reused_rows": 0,
+                            "n_entries": len(entries),
+                        },
+                        probe_wall=probe_wall,
+                        probe_phases=probe_phases,
+                    ),
+                )
         try:
             fill = self._slack_call(reference) if (self.pin and self.slack) else invoke
             held, reused, stats = self._incremental(cache, ns, fill, entries, records, tables)
@@ -1008,6 +1133,8 @@ class ReferenceIncremental(Strategy):
         *, probe_wall: float, probe_phases: dict,
     ) -> StrategyResult:
         base = {"verify": self.verify, "mode": "exact", "match": "body-bytes", "reused_rows": reused, **stats}
+        if self._infer_pin:
+            base["inferred_pin"] = self.pin
 
         def done(decision: str, why: str, extra: dict) -> StrategyResult:
             return self._finish(decision, why, self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases))

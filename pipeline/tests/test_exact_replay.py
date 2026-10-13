@@ -67,6 +67,7 @@ class ExactReplayTests(unittest.TestCase):
         slack=None,
         slack_runner=None,
         argv=None,
+        help_text=None,
     ):
         return ReferenceIncremental(
             argv=argv or ARGV,
@@ -80,6 +81,7 @@ class ExactReplayTests(unittest.TestCase):
             pin_runner=pin_runner,
             slack=slack,
             slack_runner=slack_runner,
+            help_text=help_text,
         ).run()
 
     def test_pin_tokens_expand_and_reject_unknown(self) -> None:
@@ -272,6 +274,98 @@ class EValueSlackTests(unittest.TestCase):
 
     def _run(self, tmp, ref, pin_runner, **kw):
         return ExactReplayTests()._run(tmp, ref, pin_runner, **kw)
+
+
+_SIZE_HELP = "--size <x> : comparisons done, for the printed score [10]\n"
+_NOTE_HELP = "--note <x> : recorded and ignored [1]\n"
+
+
+def _scaled(records, entries, extra=()):
+    """Six decimals, and only some entries hit, so the column is entry_count.
+
+    Reporting every entry also fits a per-key row count, and that tie refuses.
+    """
+    scale = len(entries)
+    if len(extra) >= 2:
+        scale = float(extra[1])
+    lines = ["# record entry evalue"]
+    for rec in records:
+        for entry in entries:
+            if entry.primary not in HITS:
+                continue
+            lines.append(f"{rec.key} {entry.primary} {scale * float(rec.description):.6f}")
+    return {"out": "\n".join(lines) + "\n"}
+
+
+class InferredPinTests(unittest.TestCase):
+    def test_inferred_pin_is_used_and_reused(self) -> None:
+        seen: list[tuple[str, ...]] = []
+
+        def law(records, entries, extra=()):
+            seen.append(tuple(extra))
+            return _scaled(records, entries, extra)
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, ref2 = ExactReplayTests()._two_releases(tmp)
+            first = ExactReplayTests()._run(
+                tmp, ref1, None, pin="", runner=law, help_text=_SIZE_HELP
+            )
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            self.assertEqual(first.extra.get("inferred_pin"), "--size {entry_count}")
+            self.assertEqual(first.extra.get("mode"), "exact")
+            want = _scaled(
+                __import__("acts.reference_formats", fromlist=["read_records"]).read_records(FIX / "ab.faa"),
+                parse_reference(ref1),
+            )["out"]
+            self.assertEqual(body_lines((tmp / ref1.stem / "tables" / "out").read_text()), body_lines(want))
+            ladder = [extra for extra in seen if len(extra) >= 2 and extra[1] in {"1", "0.1", "0.01"}]
+            self.assertTrue(ladder)
+            n = len(seen)
+            second = ExactReplayTests()._run(
+                tmp, ref2, None, pin="", runner=law, help_text=_SIZE_HELP
+            )
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(second.extra.get("inferred_pin"), "--size {entry_count}")
+            self.assertEqual(
+                [extra for extra in seen[n:] if len(extra) >= 2 and extra[1] in {"1", "0.1", "0.01"}],
+                [],
+            )
+            want2 = _scaled(
+                __import__("acts.reference_formats", fromlist=["read_records"]).read_records(FIX / "ab.faa"),
+                parse_reference(ref2),
+            )["out"]
+            self.assertEqual(body_lines((tmp / "v2" / "tables" / "out").read_text()), body_lines(want2))
+
+    def test_inference_failure_refuses_pin(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, _ = ExactReplayTests()._two_releases(tmp)
+            rec = ExactReplayTests()._run(
+                tmp,
+                ref1,
+                None,
+                pin="",
+                runner=lambda records, entries, extra=(): _scaled(records, entries),
+                help_text=_NOTE_HELP,
+            )
+            self.assertEqual(rec.decision, "REFUSE_PIN", rec.reason)
+            self.assertIn("no knob", rec.reason)
+
+    def test_explicit_pin_overrides_inference(self) -> None:
+        def law(records, entries, extra=()):
+            if extra:
+                raise AssertionError(extra)
+            return stock(records, entries)
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, _ = ExactReplayTests()._two_releases(tmp)
+            rec = ExactReplayTests()._run(
+                tmp, ref1, honest_pin, runner=law, help_text=_SIZE_HELP
+            )
+            self.assertEqual(rec.decision, "SHIP", rec.reason)
+            self.assertNotIn("inferred_pin", rec.extra)
 
 
 if __name__ == "__main__":

@@ -257,8 +257,15 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument("--input")
     rn.add_argument(
         "--pin",
+        nargs="?",
+        const="",
+        default=None,
         help="exact mode (reference strategy): options that set the tool's normalizer, inserted after the tool name, "
-        "e.g. '-Z {entry_count}'. Placeholders: {entry_count}, {total_entry_length}. Output body is byte-identical to a full run or refused.",
+        "e.g. '-Z {entry_count}'. Placeholders: {entry_count}, {total_entry_length}. "
+        "Pass --pin with no template to infer one when reporting does not need slack. "
+        "The template and its evidence are stored on the contract for that argv and reused. "
+        "An explicit template overrides inference. If inference finds no pin, exact mode refuses. "
+        "Output body is byte-identical to a full run or refused.",
     )
     rn.add_argument(
         "--slack",
@@ -268,7 +275,8 @@ def main(argv: list[str] | None = None) -> int:
             "'-E {E*2} --domE {domE*2}' multiplies those argv values by 2. "
             "A literal is allowed when argv already sets that flag; the factor is the ratio. "
             "The factor is stored on the contract. A later reference whose old/new entry-count "
-            "ratio exceeds it is a full run. Without both --pin and --slack, a row-key superset still refuses."
+            "ratio exceeds it is a full run. Without both --pin and --slack, a row-key superset still refuses. "
+            "An inferred pin is not combined with --slack; pass an explicit pin template with --slack."
         ),
     )
     rn.add_argument("--reference", help="reference file. Default: the argv file that parses as entries and is not --input")

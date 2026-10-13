@@ -59,6 +59,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] Shipped `--pin` exact mode in `acts/reference_run.py` + `tests/test_exact_replay.py` (6 tests)
 - [x] Ship `--slack` for E-value exact mode. Cache fill and discovery use the relaxed flags; replay uses the original argv plus `--pin`. A row-key superset is accepted only when both are set. `Z_old/Z_new` above the stored factor is a full run (`tests/test_exact_replay.py`).
 - [x] Knob inference K1s — held-out K1s-a PASS: pin `-Z {entry_count}`, no reporting threshold. Held-out K1s-b KILL: same pin; `-E` was `shared rows changed` at `t = 0.01` and `--domE` was `no exact bound`. Secondary agrees and does not decide. Thresholds not shippable (`pipeline/results/knob_inference/k1s.json`). `--slack` stays required. K1 stays inconclusive. K1r-b stays KILL.
+- [x] `--pin` is optional for score-thresholded exact mode. Inferred once per argv namespace and stored on the contract; an explicit template overrides; inference failure is `REFUSE_PIN`. `--slack` stays required.
 - [x] Cache fixes: stable entries not rewritten; coverage (entry, record-set) instead of per pair; one-scan row load (S3 release wall 24.4 s → 2.8 s on slice; `results/exact_replay/s3_cli_slice.json`)
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
 - [ ] DIAMOND `--dbsize` pin vs iDiamond (exactness)
