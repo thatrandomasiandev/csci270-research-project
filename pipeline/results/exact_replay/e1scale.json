@@ -1,0 +1,623 @@
+{
+  "pilot": false,
+  "protocol": "docs/EXACT_REPLAY_PROTOCOL.md",
+  "addendum": "E1-scale",
+  "git_head": "d5360fd40a9301192cc109991f5e91f24ff8c97f",
+  "host": "Joshuas-MBP-3.lan",
+  "machine": "arm64",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 4,
+  "z_new": 30134,
+  "walls_indicative": true,
+  "seed": 20261014,
+  "proteomes_locked": [
+    "GCF_013315695.1_protein.faa.gz",
+    "GCF_049201905.1_protein.faa.gz",
+    "GCF_059719525.1_protein.faa.gz"
+  ],
+  "pressed_models": {
+    "38.2": 30134,
+    "38.1": 27481
+  },
+  "input_md5": {
+    "Pfam-A.hmm.gz": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "pfam38.1/Pfam-A.hmm.gz": "dc814cc181ece09102c09c4e6c19f2fd"
+  },
+  "proteomes": [
+    {
+      "proteome": "GCF_013315695.1_protein.faa.gz",
+      "n_records": 4927,
+      "input_md5": "e8911efc1931ed996ad72fddaafbb783",
+      "walls_s": {
+        "stock_38.2": 738.3826450000051,
+        "stock_38.1": 645.2364919590182,
+        "indicative": true,
+        "driver_E1_R": 90.1220909159747,
+        "driver_E1_Rn": 89.73392137500923,
+        "driver_E2": {
+          "diff": 12.141784375009593,
+          "build_discovery_db": 2.462613290990703,
+          "discovery_scan": 101.19416591699701,
+          "build_replay_db": 6.351942458015401,
+          "replay_scan": 88.99360120797064
+        }
+      },
+      "E1": {
+        "summary": {
+          "queries_replayed": 4555,
+          "models_replayed": 3719,
+          "wall_R_s": 90.1220909159747,
+          "wall_Rn_s": 89.73392137500923,
+          "check1_R_vs_S": {
+            "tbl": {
+              "lines_a": 9094,
+              "lines_b": 9094,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8812,
+              "lines_b": 8812,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "check2_Rn_vs_S": {
+            "tbl": {
+              "lines_a": 9094,
+              "lines_b": 9094,
+              "equal": false,
+              "differing_positions": 9083
+            },
+            "dom": {
+              "lines_a": 8812,
+              "lines_b": 8812,
+              "equal": false,
+              "differing_positions": 8801
+            }
+          },
+          "check1_pass": true,
+          "check2_pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 9094,
+            "lines_stock": 9094,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8812,
+            "lines_stock": 8812,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "E2": {
+        "summary": {
+          "changed_or_new_models": 4052,
+          "candidate_queries": 4555,
+          "replay_models": 3719,
+          "candidate_pairs": 9094,
+          "wall_s": {
+            "diff": 12.141784375009593,
+            "build_discovery_db": 2.462613290990703,
+            "discovery_scan": 101.19416591699701,
+            "build_replay_db": 6.351942458015401,
+            "replay_scan": 88.99360120797064
+          },
+          "check_vs_S": {
+            "tbl": {
+              "lines_a": 9094,
+              "lines_b": 9094,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8812,
+              "lines_b": 8812,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 9094,
+            "lines_stock": 9094,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8812,
+            "lines_stock": 8812,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "Rn": {
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 9094,
+            "lines_stock": 9094,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 9083,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17 WP_000002288.1       -           9.8e-153  504.7   0.0  1.1e-152  504.4   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17 WP_000002288.1       -           7.9e-152  504.7   0.0  9.3e-152  504.4   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n"
+          },
+          "dom": {
+            "lines_replay": 8812,
+            "lines_stock": 8812,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 8801,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17   274 WP_000002288.1       -            281  9.8e-153  504.7   0.0   1   1  3.1e-156  1.1e-152  504.4   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17   274 WP_000002288.1       -            281  7.9e-152  504.7   0.0   1   1  3.1e-156  9.3e-152  504.4   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n"
+          }
+        }
+      },
+      "tblout_body_lines": 9094,
+      "domtblout_body_lines": 8812,
+      "candidate_models_E1": 3719,
+      "candidate_queries_E1": 4555,
+      "candidate_pairs_E2": 9094,
+      "replay_models_E2": 3719,
+      "changed_or_new_models": 4052,
+      "classes": {
+        "E1_tbl": [],
+        "E1_dom": [],
+        "E2_tbl": [],
+        "E2_dom": [],
+        "Rn_tbl": [
+          "value-only"
+        ],
+        "Rn_dom": [
+          "value-only"
+        ]
+      },
+      "outcome": "EXACT"
+    },
+    {
+      "proteome": "GCF_049201905.1_protein.faa.gz",
+      "n_records": 4290,
+      "input_md5": "ee88bf642d2c033bb21fcaf4cb2ed307",
+      "walls_s": {
+        "stock_38.2": 608.6982352089835,
+        "stock_38.1": 548.8088262910023,
+        "indicative": true,
+        "driver_E1_R": 75.97848733299179,
+        "driver_E1_Rn": 76.25933504197747,
+        "driver_E2": {
+          "diff": 11.9979767909972,
+          "build_discovery_db": 1.5939879579818808,
+          "discovery_scan": 86.05245308298618,
+          "build_replay_db": 1.4537596669979393,
+          "replay_scan": 75.98470662499312
+        }
+      },
+      "E1": {
+        "summary": {
+          "queries_replayed": 4108,
+          "models_replayed": 3574,
+          "wall_R_s": 75.97848733299179,
+          "wall_Rn_s": 76.25933504197747,
+          "check1_R_vs_S": {
+            "tbl": {
+              "lines_a": 8488,
+              "lines_b": 8488,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8202,
+              "lines_b": 8202,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "check2_Rn_vs_S": {
+            "tbl": {
+              "lines_a": 8488,
+              "lines_b": 8488,
+              "equal": false,
+              "differing_positions": 8477
+            },
+            "dom": {
+              "lines_a": 8202,
+              "lines_b": 8202,
+              "equal": false,
+              "differing_positions": 8191
+            }
+          },
+          "check1_pass": true,
+          "check2_pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8488,
+            "lines_stock": 8488,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8202,
+            "lines_stock": 8202,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "E2": {
+        "summary": {
+          "changed_or_new_models": 4052,
+          "candidate_queries": 4108,
+          "replay_models": 3574,
+          "candidate_pairs": 8488,
+          "wall_s": {
+            "diff": 11.9979767909972,
+            "build_discovery_db": 1.5939879579818808,
+            "discovery_scan": 86.05245308298618,
+            "build_replay_db": 1.4537596669979393,
+            "replay_scan": 75.98470662499312
+          },
+          "check_vs_S": {
+            "tbl": {
+              "lines_a": 8488,
+              "lines_b": 8488,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8202,
+              "lines_b": 8202,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8488,
+            "lines_stock": 8488,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8202,
+            "lines_stock": 8202,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "Rn": {
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8488,
+            "lines_stock": 8488,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 8477,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17 WP_000002303.1       -             1e-152  504.5   0.0  1.2e-152  504.3   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17 WP_000002303.1       -           8.6e-152  504.5   0.0    1e-151  504.3   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n"
+          },
+          "dom": {
+            "lines_replay": 8202,
+            "lines_stock": 8202,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 8191,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17   274 WP_000002303.1       -            281    1e-152  504.5   0.0   1   1  3.3e-156  1.2e-152  504.3   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17   274 WP_000002303.1       -            281  8.6e-152  504.5   0.0   1   1  3.3e-156    1e-151  504.3   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n"
+          }
+        }
+      },
+      "tblout_body_lines": 8488,
+      "domtblout_body_lines": 8202,
+      "candidate_models_E1": 3574,
+      "candidate_queries_E1": 4108,
+      "candidate_pairs_E2": 8488,
+      "replay_models_E2": 3574,
+      "changed_or_new_models": 4052,
+      "classes": {
+        "E1_tbl": [],
+        "E1_dom": [],
+        "E2_tbl": [],
+        "E2_dom": [],
+        "Rn_tbl": [
+          "value-only"
+        ],
+        "Rn_dom": [
+          "value-only"
+        ]
+      },
+      "outcome": "EXACT"
+    },
+    {
+      "proteome": "GCF_059719525.1_protein.faa.gz",
+      "n_records": 4374,
+      "input_md5": "b20521551f3783c3e93af03bb5d8dd60",
+      "walls_s": {
+        "stock_38.2": 599.9880583339836,
+        "stock_38.1": 569.0980116660357,
+        "indicative": true,
+        "driver_E1_R": 79.45203179196687,
+        "driver_E1_Rn": 78.14146595902275,
+        "driver_E2": {
+          "diff": 12.109791208989918,
+          "build_discovery_db": 1.6002380409627222,
+          "discovery_scan": 88.01399687502999,
+          "build_replay_db": 1.5052263750112616,
+          "replay_scan": 78.23322583397385
+        }
+      },
+      "E1": {
+        "summary": {
+          "queries_replayed": 4157,
+          "models_replayed": 3615,
+          "wall_R_s": 79.45203179196687,
+          "wall_Rn_s": 78.14146595902275,
+          "check1_R_vs_S": {
+            "tbl": {
+              "lines_a": 8545,
+              "lines_b": 8545,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8265,
+              "lines_b": 8265,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "check2_Rn_vs_S": {
+            "tbl": {
+              "lines_a": 8545,
+              "lines_b": 8545,
+              "equal": false,
+              "differing_positions": 8534
+            },
+            "dom": {
+              "lines_a": 8265,
+              "lines_b": 8265,
+              "equal": false,
+              "differing_positions": 8254
+            }
+          },
+          "check1_pass": true,
+          "check2_pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8545,
+            "lines_stock": 8545,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8265,
+            "lines_stock": 8265,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "E2": {
+        "summary": {
+          "changed_or_new_models": 4052,
+          "candidate_queries": 4157,
+          "replay_models": 3615,
+          "candidate_pairs": 8545,
+          "wall_s": {
+            "diff": 12.109791208989918,
+            "build_discovery_db": 1.6002380409627222,
+            "discovery_scan": 88.01399687502999,
+            "build_replay_db": 1.5052263750112616,
+            "replay_scan": 78.23322583397385
+          },
+          "check_vs_S": {
+            "tbl": {
+              "lines_a": 8545,
+              "lines_b": 8545,
+              "equal": true,
+              "differing_positions": 0
+            },
+            "dom": {
+              "lines_a": 8265,
+              "lines_b": 8265,
+              "equal": true,
+              "differing_positions": 0
+            }
+          },
+          "pass": true,
+          "killed": false
+        },
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8545,
+            "lines_stock": 8545,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          },
+          "dom": {
+            "lines_replay": 8265,
+            "lines_stock": 8265,
+            "byte_equal": true,
+            "token_equal": true,
+            "differing_positions": 0,
+            "differs_on_every_line": false,
+            "classes": []
+          }
+        }
+      },
+      "Rn": {
+        "vs_stock": {
+          "tbl": {
+            "lines_replay": 8545,
+            "lines_stock": 8545,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 8534,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17 WP_000002303.1       -             1e-152  504.5   0.0  1.2e-152  504.3   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17 WP_000002303.1       -           8.6e-152  504.5   0.0    1e-151  504.3   0.0   1.0   1   0   0   1   1   1   1 Phosphonate metabolism protein PhnJ\n"
+          },
+          "dom": {
+            "lines_replay": 8265,
+            "lines_stock": 8265,
+            "byte_equal": false,
+            "token_equal": false,
+            "differing_positions": 8254,
+            "differs_on_every_line": false,
+            "classes": [
+              "value-only"
+            ],
+            "missing_keys": 0,
+            "extra_keys": 0,
+            "missing_key_examples": [],
+            "extra_key_examples": [],
+            "first_replay": "PhnJ                 PF06007.17   274 WP_000002303.1       -            281    1e-152  504.5   0.0   1   1  3.3e-156  1.2e-152  504.3   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n",
+            "first_stock": "PhnJ                 PF06007.17   274 WP_000002303.1       -            281  8.6e-152  504.5   0.0   1   1  3.3e-156    1e-151  504.3   0.0     2   272     6   276     5   278 0.99 Phosphonate metabolism protein PhnJ\n"
+          }
+        }
+      },
+      "tblout_body_lines": 8545,
+      "domtblout_body_lines": 8265,
+      "candidate_models_E1": 3615,
+      "candidate_queries_E1": 4157,
+      "candidate_pairs_E2": 8545,
+      "replay_models_E2": 3615,
+      "changed_or_new_models": 4052,
+      "classes": {
+        "E1_tbl": [],
+        "E1_dom": [],
+        "E2_tbl": [],
+        "E2_dom": [],
+        "Rn_tbl": [
+          "value-only"
+        ],
+        "Rn_dom": [
+          "value-only"
+        ]
+      },
+      "outcome": "EXACT"
+    }
+  ],
+  "determinism": {
+    "proteome": "GCF_013315695.1_protein.faa.gz",
+    "n_records": 4927,
+    "walls_s": {
+      "run_1": 738.3826450000051,
+      "run_2": 720.6194722919608
+    },
+    "vs": {
+      "tbl": {
+        "lines_replay": 9094,
+        "lines_stock": 9094,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      },
+      "dom": {
+        "lines_replay": 8812,
+        "lines_stock": 8812,
+        "byte_equal": true,
+        "token_equal": true,
+        "differing_positions": 0,
+        "differs_on_every_line": false,
+        "classes": []
+      }
+    },
+    "pass": true
+  },
+  "tblout_body_lines_total": 26127,
+  "power_floor": 5000,
+  "overall": "EXACT",
+  "free_bytes_end": 110472978432
+}
