@@ -376,3 +376,116 @@ recorded alongside it. Do not retune. If E3c does not differ, write
 "control not exercised at Q1000" (INCONCLUSIVE, not a kill). E3c
 differing, with E3a and E3b byte-identical to stock, means the slack
 band holds on this sample and is load-bearing.
+
+## Addendum — E1-scale (pre-registered)
+
+Written before any whole-proteome `--cut_ga` scan in this test. The text
+above is unchanged. No number below is a measured result. Semantics:
+`results/exact_replay/e1scale_semantics.md` (commit `9a0d176`). Pilot:
+`results/exact_replay/e1scale_pilot.json` (commit `598e7cd`).
+
+### What the pilot decided
+
+The width question was reviewed before the pilot and then measured on the
+Q1000 draw, which is now pilot data and is not reused here.
+
+`GetMaxNameLength` walks every registered hit. Under `--cut_ga` a hit is
+registered only when its bit score already passes that model's GA1, and
+that same hit is marked reported. The pilot's comparisons were
+byte-identical, not whitespace-only, so no width remedy is adopted. The
+three remedies in the semantics note stay unadopted. This is the one
+redesign this question is allowed, and it is not spent.
+
+Pilot, reported as a pilot. Sample sha256 `ffaa279d…`, seed `20261013`,
+k = 1000, from `GCF_002853805.1`. Stock-vs-stock on Pfam 38.2 was
+byte-identical (152.4 s, 147.2 s, indicative). E1 and E2, driver, were
+byte-identical to stock: 1,738 tblout and 1,757 domtblout body lines,
+1,267 models, 908 queries. The shipped CLI
+`python3 -m acts run --strategy reference --pin '-Z {entry_count}'`
+filled on 38.1 and replayed on 38.2 (`--verify full`) and was
+byte-identical to an independent stock scan; decision `SHIP`. The
+original 300 (sha256 `3a6e6669…`) still passed: 534 tblout and 545
+domtblout, both tables, E1 and E2. Deleting 63 of 1,267 candidate models
+(5%, `random.Random(20261013)`) differed, and the classifier reported
+missing rows (99 tblout keys, 93 domtblout keys) plus value-only on the
+surviving domtblout rows. That is the domZ effect named in the semantics
+note. The tblout class was missing only, which is what a pinned `-Z`
+predicts.
+
+Rn, the unpinned replay, was value-only. On the 300 it differed on every
+body line. On Q1000 it differed on 1,735/1,738 tblout lines and
+1,754/1,757 domtblout lines. The three lines that stayed equal on each
+table print E-value `0`. A printed zero does not move when Z changes.
+E1's check 2 (Rn body differs) still holds. "Every line" is not the
+measured pass rule.
+
+### Locked procedure
+
+Question, judged alone: is `--cut_ga` pinned replay byte-identical to
+stock on a whole proteome?
+
+Same argv as E1. Same driver, `scripts/exact_replay_hmmscan.py`, unchanged.
+`--cpu 4`. HMMER 3.4 on `PATH`. Pin `-Z` equal to the number of model
+blocks in Pfam 38.2, which the semantics tree and the pilot press both
+counted as 30,134. If a press reports another count, stop; the arm is
+INCONCLUSIVE. No slack. No column-width pad. No token claim in place of
+bytes.
+
+Proteomes, from `pipeline/data/recurrence/A/*.faa.gz`, excluding
+`GCF_002853805.1_protein.faa.gz` and `GCF_002090355.1_protein.faa.gz`.
+Draw `random.Random(20261014).sample(sorted(pool), 3)` and then sort the
+three names. The draw, recorded before the scans, is:
+
+1. `GCF_013315695.1_protein.faa.gz`
+2. `GCF_049201905.1_protein.faa.gz`
+3. `GCF_059719525.1_protein.faa.gz`
+
+Whole files. No second sample of records. The runner recomputes the draw
+and stops if the sorted names differ, which happens if the directory
+gained or lost a file.
+
+Before any replay comparison: two stock 38.2 scans of proteome 1, no
+`-Z`. Bodies of both tables must be byte-identical. If they are not,
+stop. No proteome is scored. That check is determinism, not an exactness
+pass.
+
+Then, for each proteome, in the order above: stock 38.2, stock 38.1,
+E1, E2, and Rn, through the driver. E1 and E2 are the pass rules. Rn is
+the pin control: its body must differ from stock on each table. It is
+not required to differ on every line. A byte-identical Rn makes that
+proteome's match uninformative: record it, and do not call the proteome
+EXACT.
+
+Classification, both tables, body lines only. Byte equality and
+`split()` token equality are both recorded.
+
+- whitespace-only: bytes differ, tokens equal
+- value-only: some shared row's tokens differ
+- missing / extra: row-key multiset differs
+- order: same keys, different sequence
+
+tblout key is (target name, query name). domtblout key is (target name,
+query name, hmm from, hmm to, ali from, ali to).
+
+Per proteome:
+
+- EXACT: E1 and E2 byte-identical on both tables, and Rn differs.
+- TOKEN-EQUAL: E1 and E2 have no token difference, some bytes differ, and Rn differs.
+- FAIL: any E1 or E2 token differs, or Rn is byte-identical.
+
+Overall:
+
+- EXACT only if every proteome is EXACT and the three stock 38.2 tblout
+  bodies sum to at least 5,000 lines.
+- TOKEN-EQUAL if no proteome is FAIL and at least one is TOKEN-EQUAL,
+  with the same line floor.
+- FAIL if any proteome is FAIL.
+- INCONCLUSIVE if the tblout floor is not met. A byte match below the
+  floor is not EXACT.
+
+The CLI is not re-run. The pilot already compared it to stock on Q1000.
+Walls are one run and indicative. Result file:
+`results/exact_replay/e1scale.json` (git hash, host, HMMER version,
+input md5s, per-proteome line counts, difference classes, candidate
+counts, walls). Work directory `~/tmp/e1scale_work`, outside the repo.
+Uncompressed scratch is deleted after the run.
