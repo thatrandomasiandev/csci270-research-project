@@ -177,6 +177,22 @@ def _clock_add(clock: dict[str, float], name: str, dt: float) -> None:
     clock[name] = clock.get(name, 0.0) + float(dt)
 
 
+def _phase_from(clock: dict[str, float], before: dict[str, float], name: str, started: float) -> None:
+    """Record one exact-mode phase without changing what the phase does.
+
+    ``{name}_s`` is the wall of the phase. ``{name}_build_s`` is the reference
+    write plus prep inside it, and ``{name}_scan_s`` is the tool process.
+    Those two are already inside the wall; they are a split, not extra time.
+    """
+    _clock_add(clock, f"{name}_s", time.perf_counter() - started)
+    build = (clock.get("subref_build_s", 0.0) - before.get("subref_build_s", 0.0)) + (
+        clock.get("prep_s", 0.0) - before.get("prep_s", 0.0)
+    )
+    scan = clock.get("tool_s", 0.0) - before.get("tool_s", 0.0)
+    _clock_add(clock, f"{name}_build_s", build)
+    _clock_add(clock, f"{name}_scan_s", scan)
+
+
 def subprocess_invoke(
     argv: list[str],
     *,
@@ -1176,7 +1192,10 @@ class ReferenceIncremental(Strategy):
             started = time.perf_counter()
             rep_records, rep_entries, cand = replay_plan(held, entries, records)
             _clock_add(self.clock, "replay_plan_s", time.perf_counter() - started)
+            started_phase = time.perf_counter()
+            before_phase = dict(self.clock)
             texts = pinned(rep_records, rep_entries, pin_values(entries)) if rep_records else {}
+            _phase_from(self.clock, before_phase, "replay", started_phase)
         except RunError as exc:
             return done("REFUSE", exc.reason, base)
         extra = {**base, "replay_records": len(rep_records), "replay_entries": len(rep_entries),
@@ -1203,7 +1222,10 @@ class ReferenceIncremental(Strategy):
             (dest / table.name).write_text(text)
         _clock_add(self.clock, "render_s", time.perf_counter() - started)
         if self.verify == "full":
+            started_phase = time.perf_counter()
+            before_phase = dict(self.clock)
             stock = invoke(records, entries)
+            _phase_from(self.clock, before_phase, "verify", started_phase)
             for table in tables:
                 if body_lines(stock.get(table.name, "")) != body_lines(texts.get(table.name, "")):
                     return done("REFUSE_MATCH", f"{table.name}: body differs from a full run", extra)
@@ -1212,7 +1234,10 @@ class ReferenceIncremental(Strategy):
             chosen = set(pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed)))
             extra["audit_checked"] = len(chosen)
             if chosen:
+                started_phase = time.perf_counter()
+                before_phase = dict(self.clock)
                 stock = invoke([rec for rec in records if rec.key in chosen], entries)
+                _phase_from(self.clock, before_phase, "verify", started_phase)
                 for table in tables:
                     a = _body_record_filter(stock.get(table.name, ""), table.record_col, chosen)
                     b = _body_record_filter(texts.get(table.name, ""), table.record_col, chosen)
@@ -1234,10 +1259,14 @@ class ReferenceIncremental(Strategy):
                 continue
             pad_ids = {entries[i].primary for i in indices}
             merged = [entries[i] for i in sorted(u_idx | set(indices))]
+            started_phase = time.perf_counter()
+            before_phase = dict(self.clock)
             try:
                 plus = pinned(rep_records, merged, values)
             except RunError as exc:
+                _phase_from(self.clock, before_phase, f"ic2_{name}", started_phase)
                 return f"IC2 {name} failed to run: {exc.reason}"
+            _phase_from(self.clock, before_phase, f"ic2_{name}", started_phase)
             for table in tables:
                 verdict = judge(
                     texts.get(table.name, ""),
@@ -1323,11 +1352,15 @@ class ReferenceIncremental(Strategy):
         _clock_add(self.clock, "cache_load_s", time.perf_counter() - started)
         reused = len(held)
         ran_rows: list[dict] = []
-        if fresh:
-            ran_rows.extend(_rows_from_run(invoke(records, fresh), tables, fresh))
-        if partial and missing_keys:
-            subset = [rec for rec in records if rec.key in missing_keys]
-            ran_rows.extend(_rows_from_run(invoke(subset, partial), tables, partial))
+        if fresh or (partial and missing_keys):
+            started_phase = time.perf_counter()
+            before_phase = dict(self.clock)
+            if fresh:
+                ran_rows.extend(_rows_from_run(invoke(records, fresh), tables, fresh))
+            if partial and missing_keys:
+                subset = [rec for rec in records if rec.key in missing_keys]
+                ran_rows.extend(_rows_from_run(invoke(subset, partial), tables, partial))
+            _phase_from(self.clock, before_phase, "discovery", started_phase)
         held.extend(ran_rows)
         if reused:
             bases = [
