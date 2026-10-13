@@ -193,3 +193,72 @@ every token matches and some bytes do not. The known-good 300 and the
 pilot E1/E2 runs must not change a `-` into a description or the reverse.
 The injected deletion must be missing keys, not a rewrite of another
 row's description.
+
+## Addendum — per-record replay (no runs)
+
+Written before any per-record replay. The sections above are unchanged.
+Question: can replay run a record against only that record's candidates,
+then put the body lines back in input order? Source is the same HMMER
+3.4 tree. Line numbers are that tree.
+
+### Does one query's block depend on a model outside its candidate set?
+
+A query's tblout and domtblout rows are printed from that query's own
+hit list. `hmmscan` creates the list at the start of the query
+(`src/hmmscan.c:453`), merges worker threads of that same query into it
+(`src/hmmscan.c:479-487`), sorts and thresholds it (`src/hmmscan.c:490-491`),
+writes it (`src/hmmscan.c:496-497`), and destroys it (`src/hmmscan.c:507`)
+before the next query is read. No later query, and no earlier query, is
+in that list.
+
+Under `--cut_ga`, a model is registered only when its bit score passes
+that model's GA1 (`src/p7_pipeline.c:832-840`, `src/p7_pipeline.c:414-416`),
+and that same hit is marked reported (`src/p7_pipeline.c:913-919`).
+Widths walk that list (`src/p7_tophits.c:1613-1615`, `1718-1720`).
+`domZ`, when `--domZ` is not set, is `th->nreported` for that list
+(`src/p7_tophits.c:962-963`). The sort key is the bit score, then the
+model name, then strand, then alignment start
+(`src/p7_tophits.c:310-328`), and the sort runs once on this list
+(`src/hmmscan.c:490`). `-Z` is copied from the command line
+(`src/p7_pipeline.c:194-198`). `p7_pli_NewModel` replaces `Z` with the
+running model count only when `Z` was not set that way
+(`src/p7_pipeline.c:498`).
+
+So a model that is absent from this query's database cannot change this
+query's rows, widths, `domZ`, or order. A model that is present and
+fails GA1 is not registered, so it is not in the width, not in
+`nreported`, and not in the sort. A model that passes GA1 is a reported
+row. If the candidate set is exactly the reported set, a model outside
+it does not pass GA1 for this query, and the block does not depend on
+it. If that assumption is wrong, the extra row is a non-candidate pair.
+The existing tripwire refuses that run. It is not silently merged.
+
+This does not extend to E-value reporting. That path can register a hit
+it does not print (`src/p7_pipeline.c:832-835`). It is not this replay.
+
+### How are queries ordered?
+
+The outer loop reads the query file with `esl_sqio_Read` and increments
+`nquery` (`src/hmmscan.c:427-430`). Tabular rows for that query are
+written before the next read (`src/hmmscan.c:496-497`). Output order is
+the query-file order. A query with no reported hit writes no body line
+(`src/p7_tophits.c:1643-1644`).
+
+### Are the blocks contiguous?
+
+Yes. Both tabular writers emit every reported row of the current list
+before returning (`src/p7_tophits.c:1643-1692`, `1736-1782`). The next
+query is not read until that return. The comment on both writers says
+the tables are designed to be concatenated across queries
+(`src/p7_tophits.c:1601-1602`, `1705-1706`). Header lines are written
+only for the first query (`show_header` is `nquery == 1`,
+`src/hmmscan.c:496-497`) and start with `#`. The tail is written once,
+after the loop, and also starts with `#` (`src/hmmscan.c:517-518`).
+Body lines, which exclude `#`, are one contiguous block per query, in
+input order, and a batch's body can be split by query name and emitted
+again in the original record order.
+
+Column widths are computed inside the current list, so two queries can
+pad to different widths. Merging keeps each query's bytes. It does not
+recompute a file-wide width. The header width is the first query's
+width and is not part of the body.
