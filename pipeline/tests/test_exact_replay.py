@@ -14,6 +14,8 @@ from acts.reference_run import (
     ReferenceIncremental,
     RunError,
     body_lines,
+    filter_aux_text,
+    parse_subset_aux,
     pin_tokens,
     slack_rewrite,
 )
@@ -92,6 +94,7 @@ class ExactReplayTests(unittest.TestCase):
             pin_tokens("-Z {nonsense}", values)
 
     def test_release_update_is_byte_identical_to_stock(self) -> None:
+        """E1-scale shape: the printed value is the reference size, and the pin sets it."""
         with tempfile.TemporaryDirectory() as raw:
             tmp = Path(raw)
             ref1, ref2 = self._two_releases(tmp)
@@ -352,6 +355,60 @@ class InferredPinTests(unittest.TestCase):
             self.assertEqual(rec.decision, "REFUSE_PIN", rec.reason)
             self.assertIn("no knob", rec.reason)
 
+    def test_entry_count_without_a_pin_refuses(self) -> None:
+        """A fitted size member and no pin template is REFUSE_PIN.
+
+        Six decimals make entry_count separable from identity. No option in
+        the help text sets it, so inference refuses instead of shipping.
+        """
+
+        def law(records, entries, extra=()):
+            return _scaled(records, entries)
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, _ = ExactReplayTests()._two_releases(tmp)
+            rec = ExactReplayTests()._run(
+                tmp, ref1, None, pin="", runner=law, help_text=_NOTE_HELP
+            )
+            self.assertEqual(rec.decision, "REFUSE_PIN", rec.reason)
+            self.assertIn("no knob", rec.reason)
+            self.assertNotIn("identity check", rec.reason)
+
+    def test_e1_shape_without_a_pin_refuses(self) -> None:
+        """The pinned E1 shape, with the pin omitted, does not ship."""
+
+        def law(records, entries, extra=()):
+            return stock(records, entries)
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, _ = ExactReplayTests()._two_releases(tmp)
+            rec = ExactReplayTests()._run(
+                tmp, ref1, None, pin="", runner=law, help_text=_NOTE_HELP
+            )
+            self.assertEqual(rec.decision, "REFUSE_PIN", rec.reason)
+
+    def test_identity_exact_ships_without_a_pin(self) -> None:
+        def identity(records, entries, extra=()):
+            return _render(records, entries, 1.0)
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, ref2 = ExactReplayTests()._two_releases(tmp)
+            first = ExactReplayTests()._run(tmp, ref1, None, pin="", runner=identity)
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            self.assertEqual(first.extra.get("normalizer"), "identity")
+            self.assertNotIn("inferred_pin", first.extra)
+            records = read_records(FIX / "ab.faa")
+            want = _render(records, parse_reference(ref1), 1.0)["out"]
+            self.assertEqual(body_lines((tmp / ref1.stem / "tables" / "out").read_text()), body_lines(want))
+            second = ExactReplayTests()._run(tmp, ref2, None, pin="", runner=identity)
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertGreater(int(second.extra["reused_rows"]), 0)
+            want2 = _render(records, parse_reference(ref2), 1.0)["out"]
+            self.assertEqual(body_lines((tmp / "v2" / "tables" / "out").read_text()), body_lines(want2))
+
     def test_explicit_pin_overrides_inference(self) -> None:
         def law(records, entries, extra=()):
             if extra:
@@ -366,6 +423,103 @@ class InferredPinTests(unittest.TestCase):
             )
             self.assertEqual(rec.decision, "SHIP", rec.reason)
             self.assertNotIn("inferred_pin", rec.extra)
+
+
+class SubsetAuxTests(unittest.TestCase):
+    def test_filter_keeps_a_label_and_drops_a_short_line(self) -> None:
+        names = {"e0", "e1", "e2"}
+        text = "G1\te0\te1\nG2\te2\nLONER\n"
+        got = filter_aux_text(text, names, {"e0"})
+        self.assertEqual(got, "G1\te0\n")
+        self.assertEqual(filter_aux_text("G2\te0\n", names, {"e0"}), "G2\te0\n")
+        self.assertEqual(parse_subset_aux("{arg-after:--side}:tokens"), "--side")
+        with self.assertRaises(RunError):
+            parse_subset_aux("--side")
+
+    def test_declared_rule_lets_a_subset_run_ship(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            side = tmp / "groups"
+            side.write_text("G1 e0 e1\nG2 e2 e3\n")
+            log = tmp / "seen"
+            tool = tmp / "tool.py"
+            tool.write_text(
+                "import sys\n"
+                "from pathlib import Path\n"
+                "args = sys.argv[1:]\n"
+                "side = Path(args[args.index('--side') + 1])\n"
+                "log = Path(args[args.index('--log') + 1])\n"
+                "ref = Path(args[args.index('--ref') + 1])\n"
+                "rec = Path(args[args.index('--rec') + 1])\n"
+                "dest = Path(args[args.index('--out') + 1])\n"
+                "order = [line.split()[0] for line in ref.read_text().splitlines() if line.strip()]\n"
+                "names = set(order)\n"
+                "members = []\n"
+                "for line in side.read_text().splitlines():\n"
+                "    tokens = line.split()\n"
+                "    members.extend(tokens[1:])\n"
+                "    if any(token not in names for token in tokens[1:]):\n"
+                "        sys.stderr.write('absent member\\n')\n"
+                "        raise SystemExit(3)\n"
+                "with log.open('a') as handle:\n"
+                "    handle.write(str(side.resolve()) + '\\t' + str(len(members)) + '\\n')\n"
+                "rows = []\n"
+                "present = set(members)\n"
+                "for record in rec.read_text().splitlines():\n"
+                "    if not record.startswith('>'):\n"
+                "        continue\n"
+                "    name = record[1:].split()[0]\n"
+                "    for entry in order:\n"
+                "        if entry in present:\n"
+                "            rows.append(f'{name} {entry} 1.000')\n"
+                "dest.write_text('# record entry evalue\\n' + '\\n'.join(rows) + '\\n')\n"
+            )
+            argv = [
+                sys.executable, str(tool),
+                "--side", str(side),
+                "--log", str(log),
+                "--ref", "{reference}",
+                "--rec", "{input}",
+                "--out", "{output}",
+            ]
+            ref = FIX / "ab.entryline"
+            bare = ReferenceIncremental(
+                argv=argv,
+                input_path=FIX / "ab.faa",
+                out_dir=tmp / "bare",
+                reference=ref,
+                cache_path=tmp / "bare.sqlite",
+                verify="full",
+                pin="",
+            ).run()
+            self.assertTrue(bare.decision.startswith("REFUSE"), bare.reason)
+            ruled = ReferenceIncremental(
+                argv=argv,
+                input_path=FIX / "ab.faa",
+                out_dir=tmp / "ruled",
+                reference=ref,
+                cache_path=tmp / "ruled.sqlite",
+                verify="full",
+                pin="",
+                subset_aux="{arg-after:--side}:tokens",
+            ).run()
+            self.assertEqual(ruled.decision, "SHIP", ruled.reason)
+            self.assertEqual(side.read_text(), "G1 e0 e1\nG2 e2 e3\n")
+            seen = [line.split("\t") for line in log.read_text().splitlines() if line.strip()]
+            original = str(side.resolve())
+            self.assertTrue(any(path == original for path, _count in seen))
+            self.assertTrue(any(path != original for path, _count in seen))
+
+    def test_pinned_release_is_unchanged_without_the_rule(self) -> None:
+        """The size-member replay, with its pin and with no side-file rule, still ships."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, ref2 = ExactReplayTests()._two_releases(tmp)
+            first = ExactReplayTests()._run(tmp, ref1, honest_pin)
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            second = ExactReplayTests()._run(tmp, ref2, honest_pin)
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertNotIn("normalizer", second.extra)
 
 
 if __name__ == "__main__":

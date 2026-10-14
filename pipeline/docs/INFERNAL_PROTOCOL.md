@@ -105,3 +105,47 @@ member`, 2058.5 s (probe tool time 616.8 s, then the full-reference
 tool time 1408.3 s). Clan `REFUSE`, the subset probe cannot find
 `alpha_tmRNA` in the full clan file, 628.2 s. Same decisions as the
 pilot. Nothing was retuned.
+
+## Addendum 2026-10-14 — identity exact mode and subset side files
+
+Written before the end-to-end run. The two CLI refusals above are
+separate gates. Each is a caller-declared rule. Neither name is
+compiled into `acts/`.
+
+### No pin when every value column is identity
+
+Exact mode is requested with `--pin` and no template. If the fit's
+numeric columns include a reference-size member (`entry_count` or
+`total_entry_length`), inference runs as before, and a missing knob is
+still `REFUSE_PIN`. If every value column is the identity normalizer,
+there is no pin to infer: replay runs with the caller's argv unchanged.
+The in-situ check is the probe-sample replay against the whole probe
+sample, with no added option, and it must be byte-identical. The safety
+check is unchanged. A size member with no pin still refuses.
+
+Fixture tests: identity ships; a six-decimal `entry_count` column with
+no knob is `REFUSE_PIN`; the pinned size-scaled release still ships;
+the same shape with the pin omitted refuses.
+
+### Subset side files are declared, not inferred
+
+A subset invocation was passing an argv file that names entries absent
+from the subset, and the tool exited. Inferring which file to rewrite
+is the wrong default: a token that happens to equal an entry name is
+not evidence that the file is an entry list, and a silent rewrite can
+change a full run's answer. The caller declares the file, as with
+`--pin` and `--prep`:
+
+```
+--subset-aux '{arg-after:--flag}:tokens'
+```
+
+On a subset invocation only, tokens in that file that name an entry
+outside the subset are dropped. A token that is not an entry name is a
+label and stays, so a one-member group still carries its label. A line
+with fewer than two tokens left is dropped. A call on the full
+reference uses the original file. HMMER-shaped replay with no such
+rule is unchanged.
+
+The rewritten file is not a new normalizer. It only makes the subset
+invocation a legal call.

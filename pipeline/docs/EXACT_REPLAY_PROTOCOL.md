@@ -769,3 +769,18 @@ was 0.10. The fresh DIAMOND sample in
 `results/exact_replay/costpass_diamond_measured.json` is the same
 genome and the same row counts as this rerun, and it does not record
 `git_head`.
+
+## Addendum 2026-10-14 — identity exact mode, and declared subset side files
+
+`--pin` with no template still infers a pin when a value column is
+fitted to `entry_count` or `total_entry_length`. If every value column
+is the identity normalizer, exact replay runs with no added option.
+The probe-sample replay must match the whole probe sample, and the
+safety check still runs. A fitted size member with no pin is
+`REFUSE_PIN`.
+
+`--subset-aux '{arg-after:--flag}:tokens'` rewrites that argv file on
+subset invocations only: entry-name tokens outside the subset are
+dropped, other tokens stay, and a line with fewer than two tokens is
+dropped. A full run uses the original file. The rule is not inferred.
+Tests are in `tests/test_exact_replay.py`.

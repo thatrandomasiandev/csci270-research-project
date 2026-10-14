@@ -203,6 +203,8 @@ def subprocess_invoke(
     scratch: Path,
     clock: dict[str, float] | None = None,
     full_entries: int | None = None,
+    aux_flags: Sequence[str] = (),
+    entry_names: set[str] | None = None,
 ) -> Invoke:
     """`full_entries`: a call on that many entries first tries the caller's own
     reference as is (it is prepared for the stock command), with no rewrite and
@@ -229,6 +231,11 @@ def subprocess_invoke(
             reference_file=ref_path,
             work=work,
         )
+        # A full run uses the caller's own side files. A subset run rewrites
+        # only the files the caller named, and only for this invocation.
+        if aux_flags and not use_original:
+            keep = {key for entry in entries for key in entry.keys}
+            cmd = apply_aux_filter(cmd, aux_flags, entry_names or set(), keep, work)
         started = time.perf_counter()
         proc = subprocess.run(cmd, check=False, capture_output=True, text=True)
         _clock_add(phase, "tool_s", time.perf_counter() - started)
@@ -571,6 +578,75 @@ def _index_held(held: list[dict], table: TableReport) -> dict[tuple[str, str, st
     return out
 
 
+_AUX_RULE = re.compile(r"^\{arg-after:(--[A-Za-z0-9][A-Za-z0-9-]*)\}:tokens$")
+
+
+def parse_subset_aux(rule: str) -> str:
+    """The flag whose following argv file is an entry list. The rule is data."""
+    match = _AUX_RULE.fullmatch(rule.strip())
+    if match is None:
+        raise RunError("subset-aux rule must be {arg-after:--flag}:tokens")
+    return match.group(1)
+
+
+def filter_aux_text(text: str, names: set[str], keep: set[str]) -> str:
+    """Drop entry-name tokens absent from this subset. Keep every other token.
+
+    A token that is not an entry name is a label and stays. A line with fewer
+    than two tokens left is dropped, so an empty group is not passed on.
+    """
+    lines: list[str] = []
+    for raw in text.splitlines():
+        tokens = raw.split()
+        if not tokens:
+            continue
+        kept = [token for token in tokens if token not in names or token in keep]
+        if len(kept) < 2:
+            continue
+        lines.append("\t".join(kept))
+    if not lines:
+        return ""
+    return "\n".join(lines) + "\n"
+
+
+def apply_aux_filter(
+    cmd: list[str],
+    flags: Sequence[str],
+    names: set[str],
+    keep: set[str],
+    work: Path,
+) -> list[str]:
+    out = list(cmd)
+    for flag in flags:
+        try:
+            index = out.index(flag)
+        except ValueError as exc:
+            raise RunError(f"subset-aux flag {flag} is not in argv") from exc
+        if index + 1 >= len(out):
+            raise RunError(f"subset-aux flag {flag} needs a file")
+        src = Path(out[index + 1])
+        if not src.is_file():
+            raise RunError(f"subset-aux file for {flag} is missing")
+        dest = work / f"aux{flag.replace('-', '_')}"
+        dest.write_text(filter_aux_text(src.read_text(), names, keep))
+        out[index + 1] = str(dest)
+    return out
+
+
+def fitted_size_members(tables: Sequence[TableReport]) -> list[str]:
+    """Numeric columns fitted to a reference-size member the pin can set."""
+    found: list[str] = []
+    for table in tables:
+        for col in table.columns:
+            member = col.member or ""
+            if col.role != "numeric" or member not in PIN_PLACEHOLDERS:
+                continue
+            item = f"{table.name} column {col.index} ({member})"
+            if item not in found:
+                found.append(item)
+    return found
+
+
 def pin_tokens(pin: str, values: dict[str, int]) -> list[str]:
     """Expand a caller-declared pin template, e.g. '-Z {entry_count}'. Data, not tool code."""
     out: list[str] = []
@@ -710,11 +786,14 @@ def namespace_for(
     baseline: str | None,
     pin: str | None,
     slack: str | None,
+    subset_aux: str | None = None,
 ) -> str:
     ns = argv_namespace(argv, reference, baseline)
-    if not pin and not slack:
+    if not pin and not slack and not subset_aux:
         return ns
     extra = ns + "\0pin:" + (pin or "") + "\0slack:" + (slack or "")
+    if subset_aux:
+        extra += "\0subset_aux:" + subset_aux
     return hashlib.sha256(extra.encode()).hexdigest()[:16]
 
 
@@ -840,6 +919,7 @@ class ReferenceIncremental(Strategy):
         slack: str | None = None,
         slack_runner: Invoke | None = None,
         help_text: str | None = None,
+        subset_aux: str | Sequence[str] | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -864,6 +944,10 @@ class ReferenceIncremental(Strategy):
         self.pin_runner = pin_runner
         self.slack = slack
         self.slack_runner = slack_runner
+        rules = [subset_aux] if isinstance(subset_aux, str) else list(subset_aux or [])
+        self._aux_rules = tuple(rule.strip() for rule in rules if rule and rule.strip())
+        self._aux_flags = tuple(parse_subset_aux(rule) for rule in self._aux_rules)
+        self._entry_names: set[str] = set()
         self._slack_factor: float | None = None
         if slack:
             _argv, self._slack_factor = slack_rewrite(self.argv, slack)
@@ -880,13 +964,21 @@ class ReferenceIncremental(Strategy):
             entries = parse_reference(reference)
             records = read_records(self.input_path)
             self._n_entries = len(entries)
+            self._entry_names = {key for entry in entries for key in entry.keys}
             _clock_add(self.clock, "parse_s", time.perf_counter() - started)
         except (RunError, FormatError, OSError, UnicodeError) as exc:
             reason = getattr(exc, "reason", None) or str(exc)
             return self._finish("REFUSE", reason, self._phase_extra({}))
 
         cache = connect_cache(self.cache_path or (self.out_dir / "reference.sqlite"))
-        ns = namespace_for(self.argv, reference, self.baseline, self.pin, self.slack)
+        ns = namespace_for(
+            self.argv,
+            reference,
+            self.baseline,
+            self.pin,
+            self.slack,
+            "\n".join(self._aux_rules) or None,
+        )
         try:
             return self._run_cached(cache, ns, reference, entries, records)
         finally:
@@ -903,6 +995,8 @@ class ReferenceIncremental(Strategy):
             scratch=self.out_dir / "calls",
             clock=self.clock,
             full_entries=self._n_entries,
+            aux_flags=self._aux_flags,
+            entry_names=self._entry_names,
         )
 
     def _probe_invoke(self, reference: Path):
@@ -936,6 +1030,8 @@ class ReferenceIncremental(Strategy):
                 scratch=self.out_dir / "calls_infer",
                 clock=self.clock,
                 full_entries=self._n_entries,
+                aux_flags=self._aux_flags,
+                entry_names=self._entry_names,
             )
             return inner(records, entries)
 
@@ -1006,7 +1102,6 @@ class ReferenceIncremental(Strategy):
                 return probe(records, entries, pin_tokens(self.pin or "", values))
 
             return call
-        assert self.pin is not None
         counter = {"n": 0}
 
         def call(records: Sequence[RecordItem], entries: Sequence[Entry], values: dict[str, int]) -> dict[str, str]:
@@ -1020,6 +1115,8 @@ class ReferenceIncremental(Strategy):
                 scratch=self.out_dir / "calls_pinned" / f"r{counter['n']}",
                 clock=self.clock,
                 full_entries=self._n_entries,
+                aux_flags=self._aux_flags,
+                entry_names=self._entry_names,
             )
             return inner(records, entries)
 
@@ -1039,6 +1136,8 @@ class ReferenceIncremental(Strategy):
             scratch=self.out_dir / "calls_slack",
             clock=self.clock,
             full_entries=self._n_entries,
+            aux_flags=self._aux_flags,
+            entry_names=self._entry_names,
         )
 
     def _phase_extra(self, extra: dict, *, probe_wall: float = 0.0, probe_phases: dict | None = None) -> dict:
@@ -1132,7 +1231,7 @@ class ReferenceIncremental(Strategy):
                 "stored contract has no tables",
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
             )
-        if self._infer_pin and not self.pin:
+        if self._infer_pin and not self.pin and fitted_size_members(tables):
             stored, why = self._take_inferred_pin(
                 cache, ns, stored, reference, entries, records, tables
             )
@@ -1160,7 +1259,7 @@ class ReferenceIncremental(Strategy):
                 exc.reason,
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
             )
-        if self.pin:
+        if self.pin or self._infer_pin:
             return self._run_exact(
                 cache, ns, stored, reference, invoke, entries, records, tables, held, reused, stats,
                 probe_wall=probe_wall, probe_phases=probe_phases,
@@ -1199,8 +1298,10 @@ class ReferenceIncremental(Strategy):
         *, probe_wall: float, probe_phases: dict,
     ) -> StrategyResult:
         base = {"verify": self.verify, "mode": "exact", "match": "body-bytes", "reused_rows": reused, **stats}
-        if self._infer_pin:
+        if self._infer_pin and self.pin:
             base["inferred_pin"] = self.pin
+        elif self._infer_pin:
+            base["normalizer"] = "identity"
 
         def done(decision: str, why: str, extra: dict) -> StrategyResult:
             return self._finish(decision, why, self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases))
@@ -1209,17 +1310,19 @@ class ReferenceIncremental(Strategy):
         if missing:
             return done("REFUSE_PIN", "pin does not set fitted normalizer: " + "; ".join(missing), base)
         pinned = self._pinned(reference)
+        check_key = self.pin or ""
         checks = dict(stored.get("pin_checks") or {})
-        if self.pin not in checks:
+        if check_key not in checks:
             started = time.perf_counter()
             ok, why = self._pin_check(invoke, pinned, entries, records, tables)
             _clock_add(self.clock, "pin_check_s", time.perf_counter() - started)
-            checks[self.pin] = {"ok": ok, "reason": why}
+            checks[check_key] = {"ok": ok, "reason": why}
             stored = dict(stored)
             stored["pin_checks"] = checks
             cache.save_contract(ns, stored)
-        if not checks[self.pin]["ok"]:
-            return done("REFUSE_PIN", f"pin check failed: {checks[self.pin]['reason']}", base)
+        if not checks[check_key]["ok"]:
+            label = "pin check failed" if self.pin else "identity check failed"
+            return done("REFUSE_PIN", f"{label}: {checks[check_key]['reason']}", base)
         if self.slack and stats.get("basis_entry_count_max") is not None:
             factor = stored.get("slack_factor")
             if factor is None:
@@ -1293,7 +1396,8 @@ class ReferenceIncremental(Strategy):
                     b = _body_record_filter(texts.get(table.name, ""), table.record_col, chosen)
                     if a != b:
                         return done("REFUSE_AUDIT", f"{table.name}: audited records differ from a full run", extra)
-        return done("SHIP", "exact replay under pinned normalizer", extra)
+        why = "exact replay under pinned normalizer" if self.pin else "exact replay under identity normalizer"
+        return done("SHIP", why, extra)
 
     def _ic2(self, pinned, entries, rep_records, texts, tables, cand: dict[str, set[str]]) -> str | None:
         """Neighbor pad on every replayed record; random pads on a sample.
@@ -1374,7 +1478,8 @@ class ReferenceIncremental(Strategy):
             return False, exc.reason
         for table in tables:
             if body_lines(whole.get(table.name, "")) != body_lines(texts.get(table.name, "")):
-                return False, f"{table.name}: pinned replay body differs from the whole run"
+                kind = "pinned replay" if self.pin else "identity replay"
+                return False, f"{table.name}: {kind} body differs from the whole run"
         return True, ""
 
     def _full(self, invoke, records, entries, tables) -> list[dict]:

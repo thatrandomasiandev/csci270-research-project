@@ -193,6 +193,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 audit_seed=args.audit_seed,
                 pin=args.pin,
                 slack=args.slack,
+                subset_aux=args.subset_aux,
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -262,7 +263,10 @@ def main(argv: list[str] | None = None) -> int:
         default=None,
         help="exact mode (reference strategy): options that set the tool's normalizer, inserted after the tool name, "
         "e.g. '-Z {entry_count}'. Placeholders: {entry_count}, {total_entry_length}. "
-        "Pass --pin with no template to infer one when reporting does not need slack. "
+        "Pass --pin with no template to infer one when a value column depends on reference size. "
+        "If every value column is the identity normalizer, exact mode runs with no pin: "
+        "the probe-sample replay is compared with no added option, and the safety check still runs. "
+        "A fitted size member with no pin still refuses. "
         "The template and its evidence are stored on the contract for that argv and reused. "
         "An explicit template overrides inference. If inference finds no pin, exact mode refuses. "
         "Output body is byte-identical to a full run or refused.",
@@ -283,6 +287,18 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument(
         "--prep",
         help="command run on each reference file before the tool. Use {reference} for that path. Builds index sidecars.",
+    )
+    rn.add_argument(
+        "--subset-aux",
+        action="append",
+        default=None,
+        help=(
+            "exact and fit subset runs only: rewrite an argv file that lists entries. "
+            "'{arg-after:--flag}:tokens' takes the file after --flag, drops tokens that name "
+            "an entry outside the current subset, keeps every other token, and drops a line "
+            "left with fewer than two tokens. A full run keeps the original file. "
+            "The rule is caller data. It is not inferred."
+        ),
     )
     rn.add_argument(
         "--baseline",
