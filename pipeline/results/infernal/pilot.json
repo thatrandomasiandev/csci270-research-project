@@ -1,0 +1,351 @@
+{
+  "z": "9.188170",
+  "residues": 4594085,
+  "z_cast_ok": true,
+  "entries": 4227,
+  "discarded_header_z": {
+    "z": "9.188506",
+    "reason": "counted letters in FASTA headers as residues; not compared",
+    "wall_s": 276.25
+  },
+  "noclan": {
+    "stock_a": {
+      "wall_s": 275.175253125024,
+      "argv": [
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/src/infernal-1.1.5/src/cmscan",
+        "--cpu",
+        "4",
+        "-Z",
+        "9.188170",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "/Users/joshuaterranova/tmp/infernal_work/noclan/stock_a.tbl",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.cm",
+        "/Users/joshuaterranova/tmp/infernal_work/pilot.fa"
+      ],
+      "tbl_bytes": 79980,
+      "body_rows": 440
+    },
+    "stock_b": {
+      "wall_s": 275.9086556659895,
+      "argv": [
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/src/infernal-1.1.5/src/cmscan",
+        "--cpu",
+        "4",
+        "-Z",
+        "9.188170",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "/Users/joshuaterranova/tmp/infernal_work/noclan/stock_b.tbl",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.cm",
+        "/Users/joshuaterranova/tmp/infernal_work/pilot.fa"
+      ],
+      "tbl_bytes": 79980,
+      "body_rows": 440
+    },
+    "determinism": {
+      "lines_replay": 440,
+      "lines_stock": 440,
+      "byte_equal": true,
+      "token_equal": true,
+      "classes": [],
+      "file_byte_equal": false
+    },
+    "e1": {
+      "lines_replay": 440,
+      "lines_stock": 440,
+      "byte_equal": true,
+      "token_equal": true,
+      "classes": [],
+      "file_byte_equal": false,
+      "models": 146,
+      "candidate_models": 146
+    },
+    "drop": {
+      "seed": 20261043,
+      "dropped": 7,
+      "dropped_names": [
+        "CsrC",
+        "IS128",
+        "PssrA",
+        "PyrC_leader",
+        "STnc40",
+        "SraG",
+        "sraL"
+      ],
+      "replay_models": 139,
+      "wall_s": 42.68348166602664,
+      "vs_stock": {
+        "lines_replay": 433,
+        "lines_stock": 440,
+        "byte_equal": false,
+        "token_equal": false,
+        "classes": [
+          "missing"
+        ],
+        "missing_keys": 7,
+        "extra_keys": 0
+      },
+      "differs": true
+    },
+    "omit_z": {
+      "wall_s": 275.7148745000013,
+      "vs_stock": {
+        "lines_replay": 440,
+        "lines_stock": 440,
+        "byte_equal": false,
+        "token_equal": false,
+        "classes": [
+          "value-only"
+        ],
+        "missing_keys": 0,
+        "extra_keys": 0
+      }
+    },
+    "safety": {
+      "pads": [
+        {
+          "name": "neighbor",
+          "models": 349,
+          "wall_s": 63.838789083005395,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261031",
+          "models": 346,
+          "wall_s": 57.31961325003067,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261032",
+          "models": 346,
+          "wall_s": 67.62581966700964,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261033",
+          "models": 346,
+          "wall_s": 65.7549587499816,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        }
+      ],
+      "refused": false,
+      "sample_records": [
+        "NZ_CP188138.1",
+        "NZ_CP188140.1"
+      ]
+    },
+    "cli": {
+      "returncode": 1,
+      "wall_s": 1799.507802667038,
+      "decision_text": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      no fitted size member\nverify: audit\nmode: exact\nreused_rows: 0\nn_entries: 4227\nphases: {'parse_s': 3.0402403749758378, 'subref_build_s': 2.4740245418506674, 'prep_s': 26.1488348308485, 'tool_s': 1227.3376139958855, 'read_output_s': 0.0012569170212373137, 'total_s': 1799.3545258330414, 'probe_wall_s': 540.298440249986}\nprobe_phases: {'subref_build_s': 0.17597400001250207, 'prep_s': 1.9453884990070947, 'tool_s': 538.1636077070143, 'read_output_s': 0.0007068330305628479}\n",
+      "stdout_tail": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      no fitted size member\nwrote /Users/joshuaterranova/tmp/infernal_work/noclan/cli/decision.txt\n",
+      "stderr_tail": ""
+    }
+  },
+  "clan": {
+    "stock_a": {
+      "wall_s": 272.25988245900953,
+      "argv": [
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/src/infernal-1.1.5/src/cmscan",
+        "--cpu",
+        "4",
+        "-Z",
+        "9.188170",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "/Users/joshuaterranova/tmp/infernal_work/clan/stock_a.tbl",
+        "--fmt",
+        "2",
+        "--clanin",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.clanin",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.cm",
+        "/Users/joshuaterranova/tmp/infernal_work/pilot.fa"
+      ],
+      "tbl_bytes": 114127,
+      "body_rows": 440
+    },
+    "stock_b": {
+      "wall_s": 271.7957669169991,
+      "argv": [
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/src/infernal-1.1.5/src/cmscan",
+        "--cpu",
+        "4",
+        "-Z",
+        "9.188170",
+        "--cut_ga",
+        "--rfam",
+        "--nohmmonly",
+        "--tblout",
+        "/Users/joshuaterranova/tmp/infernal_work/clan/stock_b.tbl",
+        "--fmt",
+        "2",
+        "--clanin",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.clanin",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.1/Rfam.cm",
+        "/Users/joshuaterranova/tmp/infernal_work/pilot.fa"
+      ],
+      "tbl_bytes": 114127,
+      "body_rows": 440
+    },
+    "determinism": {
+      "lines_replay": 440,
+      "lines_stock": 440,
+      "byte_equal": true,
+      "token_equal": true,
+      "classes": [],
+      "file_byte_equal": false
+    },
+    "e1": {
+      "lines_replay": 440,
+      "lines_stock": 440,
+      "byte_equal": true,
+      "token_equal": true,
+      "classes": [],
+      "file_byte_equal": false,
+      "models": 146,
+      "candidate_models": 146
+    },
+    "drop": {
+      "seed": 20261043,
+      "dropped": 7,
+      "dropped_names": [
+        "CsrC",
+        "IS128",
+        "PssrA",
+        "PyrC_leader",
+        "STnc40",
+        "SraG",
+        "sraL"
+      ],
+      "replay_models": 139,
+      "wall_s": 42.66205537505448,
+      "vs_stock": {
+        "lines_replay": 433,
+        "lines_stock": 440,
+        "byte_equal": false,
+        "token_equal": false,
+        "classes": [
+          "missing",
+          "value-only"
+        ],
+        "missing_keys": 7,
+        "extra_keys": 0
+      },
+      "differs": true
+    },
+    "safety": {
+      "pads": [
+        {
+          "name": "neighbor",
+          "models": 349,
+          "wall_s": 63.74640599999111,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261031",
+          "models": 346,
+          "wall_s": 57.428175167005975,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261032",
+          "models": 346,
+          "wall_s": 67.71671754203271,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        },
+        {
+          "name": "random_20261033",
+          "models": 346,
+          "wall_s": 65.58814395900117,
+          "verdict": {
+            "pass": true,
+            "fail_mode": "pass",
+            "missing_candidate_rows": 0,
+            "extra_candidate_rows": 0,
+            "pad_hit_rows": 0,
+            "other_subject_rows": 0
+          }
+        }
+      ],
+      "refused": false,
+      "sample_records": [
+        "NZ_CP188138.1",
+        "NZ_CP188140.1"
+      ]
+    },
+    "cli": {
+      "returncode": 1,
+      "wall_s": 551.933667416044,
+      "decision_text": "strategy: reference\ndecision: REFUSE\nwhy:      tool failed (1): \nError: unable to find model alpha_tmRNA listed in /Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.\n\nverify: audit\nreused_rows: 0\nn_entries: 4227\nfallback_full_scan: True\nphases: {'parse_s': 3.0804271250381134, 'subref_build_s': 0.006511125015094876, 'prep_s': 1.25030055642128e-07, 'tool_s': 274.7883712910116, 'read_output_s': 0.00023333297576755285, 'total_s': 551.8004789580009, 'probe_wall_s': 273.9206573750125}\nprobe_phases: {'subref_build_s': 0.08957191597437486, 'prep_s': 0.9522763339919038, 'tool_s': 272.87625404202845, 'read_output_s': 0.00022933300351724029}\n",
+      "stdout_tail": "strategy: reference\ndecision: REFUSE\nwhy:      tool failed (1): \nError: unable to find model alpha_tmRNA listed in /Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.\n\nwrote /Users/joshuaterranova/tmp/infernal_work/clan/cli/decision.txt\n",
+      "stderr_tail": ""
+    }
+  },
+  "dx2_unit": {
+    "returncode": 0,
+    "stdout_tail": "",
+    "stderr_tail": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.023s\n\nOK\n"
+  },
+  "cmscan_banner": "# INFERNAL 1.1.5 (Sep 2023)",
+  "git_head": "27c9c27197152774df8533c3194942c4b4059865",
+  "pilot_genome": "GCF_049949635.1",
+  "seed": 20261041,
+  "drop_seed": 20261043,
+  "walls_indicative": true
+}
