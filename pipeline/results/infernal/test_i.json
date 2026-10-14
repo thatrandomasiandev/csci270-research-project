@@ -1,0 +1,609 @@
+{
+  "protocol": "docs/INFERNAL_PROTOCOL.md",
+  "pilot": "results/infernal/pilot.json",
+  "git_head": "c4646226f4e6ace101d0e4d4e1fb82a6ccd58f07",
+  "cmscan_banner": "# INFERNAL 1.1.5 (Sep 2023)",
+  "seed": 20261042,
+  "floor": 2000,
+  "timing_genome": "GCF_003956185.1",
+  "rows": {
+    "noclan": 4217,
+    "clan": 4217
+  },
+  "outcome": {
+    "noclan": "EXACT",
+    "clan": "EXACT"
+  },
+  "cli": {
+    "genome": "GCF_003956185.1",
+    "noclan": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      no fitted size member\nwrote /Users/joshuaterranova/tmp/infernal_work/measured/GCF_003956185.1/cli_noclan/decision.txt\n",
+    "clan": "strategy: reference\ndecision: REFUSE\nwhy:      tool failed (1): \nError: unable to find model alpha_tmRNA listed in /Users/joshuaterranova/Desktop/CSCI270/ACTS-infernal/pipeline/data/infernal/rfam/15.\n\nwrote /Users/joshuaterranova/tmp/infernal_work/measured/GCF_003956185.1/cli_clan/decision.txt\n",
+    "noclan_wall_s": 2058.465655874985,
+    "clan_wall_s": 628.2032733749948
+  },
+  "genomes": {
+    "GCF_003956185.1": {
+      "z": "10.401468",
+      "residues": 5200734,
+      "noclan": {
+        "stock_walls": [
+          311.75576854200335,
+          310.8312773749931,
+          311.27263245900394
+        ],
+        "body_rows": 410,
+        "stock_bodies_equal": true,
+        "oracle_models": 158,
+        "candidate_models": 158,
+        "oracle_walls": [
+          46.76526087499224,
+          46.545723041985184,
+          46.73757508298149
+        ],
+        "oracle": [
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          },
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          },
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.6663964384878485,
+          6.677977203074426,
+          6.66000818198947
+        ],
+        "median_ratio": 6.6663964384878485
+      },
+      "clan": {
+        "stock_walls": [
+          313.70102691696957,
+          312.2618665409973,
+          312.2641679170192
+        ],
+        "body_rows": 410,
+        "stock_bodies_equal": true,
+        "oracle_models": 158,
+        "candidate_models": 158,
+        "oracle_walls": [
+          46.62502791598672,
+          46.83686320798006,
+          46.88847116596298
+        ],
+        "oracle": [
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          },
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          },
+          {
+            "lines_replay": 410,
+            "lines_stock": 410,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.728168130692062,
+          6.66701066538961,
+          6.659721678954981
+        ],
+        "median_ratio": 6.66701066538961
+      }
+    },
+    "GCF_013168095.1": {
+      "z": "11.188244",
+      "residues": 5594122,
+      "noclan": {
+        "stock_walls": [
+          329.8646437500138
+        ],
+        "body_rows": 460,
+        "stock_bodies_equal": true,
+        "oracle_models": 162,
+        "candidate_models": 162,
+        "oracle_walls": [
+          64.30760145897511
+        ],
+        "oracle": [
+          {
+            "lines_replay": 460,
+            "lines_stock": 460,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          5.129481371816521
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          329.78144258400425
+        ],
+        "body_rows": 460,
+        "stock_bodies_equal": true,
+        "oracle_models": 162,
+        "candidate_models": 162,
+        "oracle_walls": [
+          64.03145187499467
+        ],
+        "oracle": [
+          {
+            "lines_replay": 460,
+            "lines_stock": 460,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          5.150303997913708
+        ]
+      }
+    },
+    "GCF_022846215.1": {
+      "z": "10.221688",
+      "residues": 5110844,
+      "noclan": {
+        "stock_walls": [
+          304.1378676670138
+        ],
+        "body_rows": 398,
+        "stock_bodies_equal": true,
+        "oracle_models": 151,
+        "candidate_models": 151,
+        "oracle_walls": [
+          63.00396341702435
+        ],
+        "oracle": [
+          {
+            "lines_replay": 398,
+            "lines_stock": 398,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.827281510115798
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          303.8930027920287
+        ],
+        "body_rows": 398,
+        "stock_bodies_equal": true,
+        "oracle_models": 151,
+        "candidate_models": 151,
+        "oracle_walls": [
+          62.55751833401155
+        ],
+        "oracle": [
+          {
+            "lines_replay": 398,
+            "lines_stock": 398,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.85781742762655
+        ]
+      }
+    },
+    "GCF_028743355.1": {
+      "z": "9.478526",
+      "residues": 4739263,
+      "noclan": {
+        "stock_walls": [
+          282.89844116702443
+        ],
+        "body_rows": 447,
+        "stock_bodies_equal": true,
+        "oracle_models": 147,
+        "candidate_models": 147,
+        "oracle_walls": [
+          42.34076495899353
+        ],
+        "oracle": [
+          {
+            "lines_replay": 447,
+            "lines_stock": 447,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.681467409504949
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          283.52710325003136
+        ],
+        "body_rows": 447,
+        "stock_bodies_equal": true,
+        "oracle_models": 147,
+        "candidate_models": 147,
+        "oracle_walls": [
+          42.326947874971665
+        ],
+        "oracle": [
+          {
+            "lines_replay": 447,
+            "lines_stock": 447,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.698501013763945
+        ]
+      }
+    },
+    "GCF_030515405.1": {
+      "z": "10.155266",
+      "residues": 5077633,
+      "noclan": {
+        "stock_walls": [
+          299.13671237498056
+        ],
+        "body_rows": 375,
+        "stock_bodies_equal": true,
+        "oracle_models": 151,
+        "candidate_models": 151,
+        "oracle_walls": [
+          63.45147833303781
+        ],
+        "oracle": [
+          {
+            "lines_replay": 375,
+            "lines_stock": 375,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.714416751724862
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          300.2164774169796
+        ],
+        "body_rows": 375,
+        "stock_bodies_equal": true,
+        "oracle_models": 151,
+        "candidate_models": 151,
+        "oracle_walls": [
+          63.65408791700611
+        ],
+        "oracle": [
+          {
+            "lines_replay": 375,
+            "lines_stock": 375,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.716373877014934
+        ]
+      }
+    },
+    "GCF_030708175.1": {
+      "z": "10.863860",
+      "residues": 5431930,
+      "noclan": {
+        "stock_walls": [
+          317.2300184579799
+        ],
+        "body_rows": 404,
+        "stock_bodies_equal": true,
+        "oracle_models": 157,
+        "candidate_models": 157,
+        "oracle_walls": [
+          47.830754666007124
+        ],
+        "oracle": [
+          {
+            "lines_replay": 404,
+            "lines_stock": 404,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.632343994426505
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          317.09628770896234
+        ],
+        "body_rows": 404,
+        "stock_bodies_equal": true,
+        "oracle_models": 157,
+        "candidate_models": 157,
+        "oracle_walls": [
+          47.72031158400932
+        ],
+        "oracle": [
+          {
+            "lines_replay": 404,
+            "lines_stock": 404,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.64489139285542
+        ]
+      }
+    },
+    "GCF_037287675.1": {
+      "z": "10.709132",
+      "residues": 5354566,
+      "noclan": {
+        "stock_walls": [
+          312.4328615409904
+        ],
+        "body_rows": 404,
+        "stock_bodies_equal": true,
+        "oracle_models": 153,
+        "candidate_models": 153,
+        "oracle_walls": [
+          63.44571816700045
+        ],
+        "oracle": [
+          {
+            "lines_replay": 404,
+            "lines_stock": 404,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.924412089065039
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          313.75904520903714
+        ],
+        "body_rows": 404,
+        "stock_bodies_equal": true,
+        "oracle_models": 153,
+        "candidate_models": 153,
+        "oracle_walls": [
+          63.217593665991444
+        ],
+        "oracle": [
+          {
+            "lines_replay": 404,
+            "lines_stock": 404,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          4.9631602061093165
+        ]
+      }
+    },
+    "GCF_054510725.1": {
+      "z": "10.248564",
+      "residues": 5124282,
+      "noclan": {
+        "stock_walls": [
+          304.08342749997973
+        ],
+        "body_rows": 387,
+        "stock_bodies_equal": true,
+        "oracle_models": 152,
+        "candidate_models": 152,
+        "oracle_walls": [
+          44.84167245798744
+        ],
+        "oracle": [
+          {
+            "lines_replay": 387,
+            "lines_stock": 387,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.781268646589357
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          303.5588941659662
+        ],
+        "body_rows": 387,
+        "stock_bodies_equal": true,
+        "oracle_models": 152,
+        "candidate_models": 152,
+        "oracle_walls": [
+          44.75199724995764
+        ],
+        "oracle": [
+          {
+            "lines_replay": 387,
+            "lines_stock": 387,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.783136235696241
+        ]
+      }
+    },
+    "GCF_055382035.1": {
+      "z": "11.316600",
+      "residues": 5658300,
+      "noclan": {
+        "stock_walls": [
+          332.9538013749989
+        ],
+        "body_rows": 479,
+        "stock_bodies_equal": true,
+        "oracle_models": 166,
+        "candidate_models": 166,
+        "oracle_walls": [
+          65.40914245898603
+        ],
+        "oracle": [
+          {
+            "lines_replay": 479,
+            "lines_stock": 479,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          5.090325126701873
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          334.65259991702624
+        ],
+        "body_rows": 479,
+        "stock_bodies_equal": true,
+        "oracle_models": 166,
+        "candidate_models": 166,
+        "oracle_walls": [
+          65.66437495802529
+        ],
+        "oracle": [
+          {
+            "lines_replay": 479,
+            "lines_stock": 479,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          5.096410346263808
+        ]
+      }
+    },
+    "GCF_059615465.1": {
+      "z": "9.848246",
+      "residues": 4924123,
+      "noclan": {
+        "stock_walls": [
+          290.1904297079891
+        ],
+        "body_rows": 453,
+        "stock_bodies_equal": true,
+        "oracle_models": 158,
+        "candidate_models": 158,
+        "oracle_walls": [
+          45.859806667023804
+        ],
+        "oracle": [
+          {
+            "lines_replay": 453,
+            "lines_stock": 453,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.327772635741506
+        ]
+      },
+      "clan": {
+        "stock_walls": [
+          290.0580529170111
+        ],
+        "body_rows": 453,
+        "stock_bodies_equal": true,
+        "oracle_models": 158,
+        "candidate_models": 158,
+        "oracle_walls": [
+          45.88676950003719
+        ],
+        "oracle": [
+          {
+            "lines_replay": 453,
+            "lines_stock": 453,
+            "byte_equal": true,
+            "token_equal": true,
+            "classes": []
+          }
+        ],
+        "body_equal": true,
+        "ratios": [
+          6.321169611139786
+        ]
+      }
+    }
+  },
+  "walls_indicative": true
+}
