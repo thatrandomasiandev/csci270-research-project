@@ -210,3 +210,27 @@ that still differ are the rank and the overlap marks (columns 0 and
 when every refusal is one of those column failures and the row keys
 match. The probe-sample body check still has to pass. A key mismatch
 still refuses.
+
+## Pre-registration 2026-10-14 — entry groups invalidated together
+
+Not implemented yet. The witness is the removal of one overlapping family.
+
+The caller declares a group file the same way as a pin:
+
+```
+--invalidate-group '{arg-after:--flag}'
+```
+
+Each line is a group id and then entry names. At cache fill, every covered
+content hash stores the group ids it belonged to. On a later run a group is
+invalid when any member is new, changed, or removed, or a member's set of
+groups changed. Every still-present member of an invalid group is scanned
+again; its cached rows are not reused. A removed entry is absent from the new
+reference, so its group ids are the ones stored under its old hash. A removed
+hash with no stored groups invalidates every group in the current file.
+
+The path of that file is not part of the argv namespace, for the same reason
+the reference path is not: a new release is the same command with new files.
+A run that does not pass the rule keeps the old namespace. Overlap between
+different groups is outside this rule. The documented command marks overlaps
+across models whether or not they share a group.
