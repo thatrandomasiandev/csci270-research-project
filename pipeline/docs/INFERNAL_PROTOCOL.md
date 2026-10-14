@@ -245,3 +245,30 @@ probe-sample body check is still the gate. A row present only in the full
 set, a key that appears in two parts, and a fitted size member with no pin
 still refuse. A run that does not pass `--invalidate-group` does not rescan
 the group.
+
+## Measured 2026-10-14 — removing GlmZ_SraJ
+
+Genome `GCF_013168095.1`. Cache on Rfam 15.1, then 15.1 with
+`GlmZ_SraJ` removed. Shipped CLI, `--pin` with no template, audit.
+
+Documented command, no `--oskip`. Fill 1711.6 s, `SHIP`, identity
+exact, 4,227 models. Update 666.0 s, `SHIP`, 459 reused rows, 4,226
+models. Stock 328.4 s, 459 rows. Bodies identical. Outcome EXACT.
+Removing one overlapping family does not unmask a row, which matches
+the source: the documented command does not pass `--oskip`.
+
+With `--oskip`. Fill 1345.4 s. `REFUSE_PIN`: the identity replay body
+differs from the whole run. Both sides have 423 rows and the same hit
+keys. Fourteen rows differ in the overlap mark only (column 19, `^` on
+the full scan, `*` on the candidate replay). Each of those rows
+overlaps a hit `--oskip` omitted, from a family with no remaining row:
+`LSU_rRNA_archaea`, `LSU_rRNA_eukarya`, `SSU_rRNA_archaea`,
+`SSU_rRNA_eukarya`, `SSU_rRNA_microsporidia`. The replay searches the
+families that have a row. It does not search a family whose every hit
+was omitted, and the mark on the survivor changes. The update reused
+that failed check in 3.3 s and refused the same way. Stock on the
+reduced CM, 333.1 s, 423 rows. Outcome SAFE-REFUSE. The group rule is
+not reached, because the first run does not ship a cache. The unit
+test is the case the rule covers: the sibling has no row while the
+removed member is present, and with the rule the sibling is scanned
+again.
