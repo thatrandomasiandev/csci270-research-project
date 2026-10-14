@@ -1,0 +1,111 @@
+{
+  "git_head_code": "c18c980",
+  "genomes": 10,
+  "seed_note": "Test I locked genomes, seed 20261042, not a new draw",
+  "suppressed_absent": 0,
+  "same_clan_overlap_still_present": 516,
+  "key_sets_equal_every_genome": true,
+  "body_rows_each_variant": 4217,
+  "suppressor_families": 0,
+  "suppressors_changed_or_removed": 0,
+  "overlap_partner_families": [
+    "GlmY_tke1",
+    "GlmZ_SraJ",
+    "LSU_rRNA_archaea",
+    "LSU_rRNA_bacteria",
+    "LSU_rRNA_eukarya",
+    "SSU_rRNA_archaea",
+    "SSU_rRNA_bacteria",
+    "SSU_rRNA_eukarya",
+    "SSU_rRNA_microsporidia",
+    "group-II-D1D4-4",
+    "group-II-D1D4-6"
+  ],
+  "overlap_partners_changed": [
+    "GlmZ_SraJ"
+  ],
+  "overlap_partners_removed": [],
+  "overlap_partners_new": [],
+  "per_genome": [
+    {
+      "acc": "GCF_003956185.1",
+      "noclan_rows": 410,
+      "clan_rows": 410,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 55
+    },
+    {
+      "acc": "GCF_013168095.1",
+      "noclan_rows": 460,
+      "clan_rows": 460,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_022846215.1",
+      "noclan_rows": 398,
+      "clan_rows": 398,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_028743355.1",
+      "noclan_rows": 447,
+      "clan_rows": 447,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_030515405.1",
+      "noclan_rows": 375,
+      "clan_rows": 375,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_030708175.1",
+      "noclan_rows": 404,
+      "clan_rows": 404,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_037287675.1",
+      "noclan_rows": 404,
+      "clan_rows": 404,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_054510725.1",
+      "noclan_rows": 387,
+      "clan_rows": 387,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_055382035.1",
+      "noclan_rows": 479,
+      "clan_rows": 479,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 51
+    },
+    {
+      "acc": "GCF_059615465.1",
+      "noclan_rows": 453,
+      "clan_rows": 453,
+      "suppressed_absent": 0,
+      "same_clan_overlap_still_present": 53
+    }
+  ],
+  "oskip_probe": {
+    "genome": "GCF_013168095.1",
+    "models": [
+      "GlmY_tke1",
+      "GlmZ_SraJ"
+    ],
+    "plain_rows": 3,
+    "oskip_rows": 2,
+    "omitted": "GlmY_tke1 NZ_CP038408.1 5406578 5406430 -"
+  }
+}

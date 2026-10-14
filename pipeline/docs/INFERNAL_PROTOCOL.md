@@ -149,3 +149,53 @@ rule is unchanged.
 
 The rewritten file is not a new normalizer. It only makes the subset
 invocation a legal call.
+
+## Addendum 2026-10-14 — when a cached replay can miss a hit
+
+From Infernal 1.1.5. The documented argv does not pass `--oskip` or
+`--oclan`.
+
+Same-model duplicates are removed. `cmscan.c:672-673` sorts for removal
+and calls `cm_tophits_RemoveOrMarkOverlaps` with clans ignored. Removal
+clears `CM_HIT_IS_REPORTED` (`cm_tophits.c:1141-1143`). The group is the
+same model, the same sequence, and the same strand
+(`cm_tophits.c:1239-1243`). Removal combined with clan-only matching is
+an error (`cm_tophits.c:1230-1232`). That hit is not in tblout. It is
+the same family as the hit that removed it.
+
+Cross-family competition is markup. `cmscan.c:676-677` sorts for markup
+and calls the same function with `--oclan`. Markup sets
+`CM_HIT_IS_MARKED_OVERLAP` and does not clear `CM_HIT_IS_REPORTED`
+(`cm_tophits.c:1146-1148`). With `--oclan` false the group is any models
+on one sequence and strand. With `--oclan` true it is also the same
+`clan_idx`, and a family in no clan is not marked
+(`cm_tophits.c:1246-1250`).
+
+A marked hit is left out of format-2 tblout only when `--oskip` is set
+and `win_oidx != -1` (`cm_tophits.c:2489-2491`, from `cmscan.c:721`).
+`--oskip` requires `--fmt 2` (`cmscan.c:2154-2156`). The documented
+command does not pass it, so a marked overlap is still a row.
+
+A cached replay misses a hit after an update only when that hit was
+absent from the cached table. Under the documented argv the absent hit
+is a same-model duplicate, so removing a different family cannot unmask
+it. Under `--oskip`, a lower-scoring overlap of another family is
+absent. If that other family changes or disappears, a full run can
+report the lower hit and a replay of the cached rows does not.
+
+Measured on the ten Test I genomes, both variants, Rfam 15.1
+(`results/infernal/exposure.json`). Hit keys are equal on every genome:
+4,217 body rows each. Suppressed rows, defined as a no-clan row that
+overlaps a different same-clan family and is absent from the clan
+output: 0. Same-clan overlaps that remain in the clan output: 516, in
+11 families. Of those families, `GlmZ_SraJ` changed from 15.0 to 15.1
+and none were removed. Suppressors changed or vanished: 0, because no
+row was suppressed.
+
+A two-model check on `GCF_013168095.1` (`GlmY_tke1`, `GlmZ_SraJ`,
+CL00011): format 2 without `--oskip` printed 3 body rows; with
+`--oskip` it printed 2. The omitted row was `GlmY_tke1` on
+`NZ_CP038408.1`, 5406578–5406430, minus strand. That switch is not in
+the documented command. The constructed removal uses `GlmZ_SraJ`
+because it is the overlap partner that changed, and because `--oskip`
+omits a `GlmY_tke1` hit when both models are searched.
