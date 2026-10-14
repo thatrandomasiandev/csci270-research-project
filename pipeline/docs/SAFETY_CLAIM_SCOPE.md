@@ -58,3 +58,33 @@ not. DX2-E1, judged by the old certificate, was UNSAFE and retired that
 certificate. DX3, judged by IC2, was SAFE-REFUSE (22 cases, true
 refusal, overhead 3.059). An equal body below the power floor is
 INCONCLUSIVE, not EXACT.
+
+## Addendum 2026-10-13 — what the check caught
+
+The text above stays as it was locked. This addendum is the wording
+that applies to the shipped check. A pass is a check.
+
+The shipped check refused every known failure that was run: the DX2
+known-bad replay (`pad_hit`), the injected 5% candidate drop at sample
+size 50, and a regeneration of DX3's locked draw (stock 227,223 rows,
+replay 227,205, neighbor pad `pad_hit`; the original m8 files were
+absent, and the row counts match `dx3.json`). No UNSAFE output was
+seen in any run. File-order neighbor coupling is caught by construction:
+the neighbor pad is searched for every replayed record.
+
+`(1−q)^3 = 0.3249208679849812` is only the random-pad miss rate for one
+unknown coupling entry, with `q = 137090/438658`. It is not the
+headline. With a sample of 50 out of 2,000 records the counting
+identity raises that miss rate to 0.711 when the entry affects 22
+records. DX3's 22 cases are file-order neighbors, so that identity does
+not describe them.
+
+DIAMOND exact mode refuses because its stage-1 fingerprint reads
+neighbor bytes. The fresh sample, seed 20261017, genome
+`GCF_023657995.1`, 300 queries, was SAFE-REFUSE (stock 37,211 rows,
+replay 37,208, neighbor pad `pad_hit`). A pilot on `GCF_013085185.1`
+was the same outcome. Neither arm was UNSAFE.
+
+On HMMER the check passed with no needless refusal. On the two fresh
+proteomes the neighbor pad plus the three sample pads took 34.6 s and
+37.3 s, which is 0.053 and 0.054 of those stock walls. The cap was 0.10.
