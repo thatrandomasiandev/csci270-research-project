@@ -669,3 +669,45 @@ and DX3 genomes, the two proteomes named above, `GCF_013315695.1`, and
 the pilot genome `GCF_013085185.1`. Outcome SAFE-REFUSE or EXACT.
 UNSAFE stops the claim. Result file
 `results/exact_replay/costpass_diamond_measured.json`.
+
+## Addendum 2026-10-13 — Deviation: judge change during the measured run
+
+Written before the control rerun. The locked text above is unchanged.
+
+`1c8d3be` (2026-10-13 16:54:28 -0700) changes `ReferenceIncremental._ic2`.
+After the per-record neighbor set is built, the candidate union is
+subtracted (`neighbor_pad -= u_ids`). A model that is a candidate for
+one record and the file-order neighbor of another record's candidate
+stays in the second record's search. It is no longer a pad subject.
+The candidate-row multiset is what covers it, so a row on that model
+is not a `pad_hit`. That loosens the pad-hit test. The same commit
+adds `test_candidate_that_is_another_records_neighbor_still_ships`.
+
+The fill that triggered it is the measured 38.2 replay of
+`GCF_016806025.1`. Exact mode refused: a candidate of one record was
+another record's file-order neighbor, and the judge counted that
+record's own row as a pad hit. The `GCF_017165095.1` fill was still
+running under that judge and was stopped. Both fills were discarded.
+The recorded run is the rerun after the change.
+
+Timing. The control results were committed at `7c5d5d3`, 16:22:13.
+The sampled-check pre-registration is `c04d981`, 16:22:16. The judge
+change is 32 minutes later, during the measured runs. No addendum
+above discloses it.
+
+Which commit each recorded result ran under:
+
+- The DX2 known-bad check, the DX3 regeneration, the injected 5% drop,
+  and the HMMER pilot on `GCF_013315695.1` are the files committed in
+  `7c5d5d3`, before `1c8d3be`. DX2 and DX3 refused by `pad_hit`.
+- `results/exact_replay/costpass_measured.json` records `git_head`
+  `1c8d3bede554ba7ed0eb7fa9b45a27feae2d3b46`. That is the rerun after
+  the refused fill.
+- `results/exact_replay/costpass_diamond_measured.json` does not
+  record `git_head`. It was launched after `c04d981` by
+  `scripts/costpass_diamond_fresh.py`. `1c8d3be` does not modify that
+  script. The script already removes the candidate union from its pad
+  set. The commit of that process is not in the file.
+
+The controls below are rerun under the shipped judge on current main,
+which includes `1c8d3be`. The rerun records `git_head` and `git_dirty`.
