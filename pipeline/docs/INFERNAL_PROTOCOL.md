@@ -87,3 +87,21 @@ the floor is met. The CLI outcome is reported beside that, not folded
 into it.
 
 Mac walls are indicative. Scratch is `~/tmp/infernal_work/measured`.
+
+## Outcome addendum (2026-10-14)
+
+`results/infernal/test_i.json`, git `c464622`. Both variants,
+oracle bodies byte-identical on all ten genomes. 4,217 stock body
+lines each, above the floor of 2,000. Outcome EXACT for the oracle.
+The CLI outcome is separate and is not EXACT.
+
+Timing genome `GCF_003956185.1`, three paired walls. Median
+stock/oracle ratio 6.67× on both variants (no-clan 6.666, clan
+6.667). That is the replay against the hit set (158 models), not a
+shipped CLI speedup.
+
+CLI on that genome, once: no-clan `REFUSE_PIN`, `no fitted size
+member`, 2058.5 s (probe tool time 616.8 s, then the full-reference
+tool time 1408.3 s). Clan `REFUSE`, the subset probe cannot find
+`alpha_tmRNA` in the full clan file, 628.2 s. Same decisions as the
+pilot. Nothing was retuned.

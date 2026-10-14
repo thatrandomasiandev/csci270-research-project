@@ -68,6 +68,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [ ] CARC timed 38.1→38.2 on full genomes with `--pin` (supersedes the ref-merge arm)
 - [x] DIAMOND Test D-X KILL — help grammar extracted 0 options, pin `no knob` (`total_entry_length` was visible). Exact mode not claimed; E1/E2 not run. iDiamond vs stock 2026_03: shared-row byte fraction 0.0130 (407/31377), Kendall τ 0.999994, Pearson 0.999999, only-iDiamond 133 (all absent from 2026_03), only-stock 0 (`pipeline/results/reference_diamond/dx.json`)
 - [x] DIAMOND DX2 UNSAFE — declared `--dbsize` replay misses 6 of 31,377 stock rows (shared rows byte-identical) and the Independence Certificate passes (`pipeline/results/reference_diamond/dx2.json`). E2 fit refuses (`only-whole` 5) before a replay. IC not shipped.
+- [x] Infernal cmscan `--cut_ga`, Rfam 15.1, ten genomes seed 20261042. Oracle bodies byte-identical on both variants, 4,217 tblout lines. Mechanism median 6.67× on GCF_003956185.1 (three paired walls). CLI does not ship: no-clan `REFUSE_PIN` (no fitted size member); clan `REFUSE` because a subset probe is given the full clan file (`cmscan.c:2816`). (`pipeline/results/infernal/test_i.json`)
 - [ ] InterProScan wrapper
 - [ ] User conversations (3–5)
 - [ ] Commit (session could not run git: no delete permission in the folder)
