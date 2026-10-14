@@ -560,5 +560,69 @@ class RankColumnTests(unittest.TestCase):
             self.assertEqual(body_lines(body), body_lines(whole["out"]))
 
 
+def _suppress_when_together(records, entries):
+    """e1 is omitted while e0 is also searched. Removing e0 unmasks e1."""
+    names = {entry.primary for entry in entries}
+    lines = ["# record entry value"]
+    for rec in records:
+        for entry in entries:
+            if entry.primary not in {"e0", "e1"}:
+                continue
+            if entry.primary == "e1" and "e0" in names:
+                continue
+            lines.append(f"{rec.key} {entry.primary} 1")
+    return {"out": "\n".join(lines) + "\n"}
+
+
+class GroupInvalidationTests(unittest.TestCase):
+    def _pair(self, tmp: Path) -> tuple[Path, Path, Path]:
+        ref1 = FIX / "ab.entryline"
+        ref2 = tmp / "v2.entryline"
+        kept = [entry for entry in parse_reference(ref1) if entry.primary != "e0"]
+        write_entries(kept, ref2)
+        groups = tmp / "groups.txt"
+        groups.write_text("G e0 e1\n")
+        return ref1, ref2, groups
+
+    def _run(self, tmp: Path, ref: Path, groups: Path, *, rule: str | None, cache: Path):
+        argv = ["law", "--group", str(groups), "{reference}", "{input}", "{output}"]
+        return ReferenceIncremental(
+            argv=argv,
+            input_path=FIX / "ab.faa",
+            out_dir=tmp / ref.stem,
+            reference=ref,
+            cache_path=cache,
+            verify="full",
+            pin="",
+            runner=_suppress_when_together,
+            invalidate_group=rule,
+        ).run()
+
+    def test_without_the_rule_a_removed_member_hides_its_sibling(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, ref2, groups = self._pair(tmp)
+            cache = tmp / "cache.sqlite"
+            first = self._run(tmp, ref1, groups, rule=None, cache=cache)
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            second = self._run(tmp, ref2, groups, rule=None, cache=cache)
+            self.assertTrue(second.decision.startswith("REFUSE"), second.reason)
+
+    def test_a_removed_member_rescans_its_group(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1, ref2, groups = self._pair(tmp)
+            cache = tmp / "cache.sqlite"
+            rule = "{arg-after:--group}"
+            first = self._run(tmp, ref1, groups, rule=rule, cache=cache)
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            second = self._run(tmp, ref2, groups, rule=rule, cache=cache)
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            body = (tmp / ref2.stem / "tables" / "out").read_text()
+            stock = _suppress_when_together(read_records(FIX / "ab.faa"), parse_reference(ref2))
+            self.assertEqual(body_lines(body), body_lines(stock["out"]))
+            self.assertTrue(any(" e1 " in line for line in body_lines(body)))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -194,6 +194,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 pin=args.pin,
                 slack=args.slack,
                 subset_aux=args.subset_aux,
+                invalidate_group=args.invalidate_group,
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -298,6 +299,17 @@ def main(argv: list[str] | None = None) -> int:
             "an entry outside the current subset, keeps every other token, and drops a line "
             "left with fewer than two tokens. A full run keeps the original file. "
             "The rule is caller data. It is not inferred."
+        ),
+    )
+    rn.add_argument(
+        "--invalidate-group",
+        default=None,
+        help=(
+            "exact mode: a file whose lines are a group id and then entry names. "
+            "'{arg-after:--flag}' names the argv flag that points at the file. "
+            "A new, changed, or removed member makes every still-present member "
+            "of that group get scanned again. The file path is not part of the "
+            "cache namespace. The rule is caller data."
         ),
     )
     rn.add_argument(

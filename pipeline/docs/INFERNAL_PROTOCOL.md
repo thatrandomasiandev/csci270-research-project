@@ -209,11 +209,13 @@ that still differ are the rank and the overlap marks (columns 0 and
 19–25 on this file). Those are not normalizers. Exact mode now replays
 when every refusal is one of those column failures and the row keys
 match. The probe-sample body check still has to pass. A key mismatch
-still refuses.
+still refuses, except the case below: a part reported rows the full
+set omitted, and the full set lost none.
 
 ## Pre-registration 2026-10-14 — entry groups invalidated together
 
-Not implemented yet. The witness is the removal of one overlapping family.
+Registered before the implementation. The witness is the removal of one
+overlapping family. The rule below is what shipped.
 
 The caller declares a group file the same way as a pin:
 
@@ -234,3 +236,12 @@ the reference path is not: a new release is the same command with new files.
 A run that does not pass the rule keeps the old namespace. Overlap between
 different groups is outside this rule. The documented command marks overlaps
 across models whether or not they share a group.
+
+One addition was required after registration, or the witness could not be
+cached. Under `--oskip` a part that does not contain the suppressor reports
+the hit the full set omitted. That is a key mismatch: rows only in the
+parts, none lost from the full set. Exact mode replays that refusal. The
+probe-sample body check is still the gate. A row present only in the full
+set, a key that appears in two parts, and a fitted size member with no pin
+still refuse. A run that does not pass `--invalidate-group` does not rescan
+the group.

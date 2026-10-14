@@ -50,6 +50,12 @@ CREATE TABLE IF NOT EXISTS entry_cover (
   recset_id TEXT NOT NULL,
   PRIMARY KEY (ns, entry_hash, recset_id)
 );
+CREATE TABLE IF NOT EXISTS entry_group (
+  ns TEXT NOT NULL,
+  entry_hash TEXT NOT NULL,
+  group_id TEXT NOT NULL,
+  PRIMARY KEY (ns, entry_hash, group_id)
+);
 """
 
 
@@ -251,6 +257,31 @@ class ReferenceCache:
                 )
                 self._conn.execute(
                     "DELETE FROM entry_cover WHERE ns = ? AND entry_hash = ?", (ns, entry_hash)
+                )
+                self._conn.execute(
+                    "DELETE FROM entry_group WHERE ns = ? AND entry_hash = ?", (ns, entry_hash)
+                )
+
+    def group_map(self, ns: str) -> dict[str, set[str]]:
+        """content hash -> group ids stored when that hash was cached."""
+        out: dict[str, set[str]] = {}
+        for entry_hash, group_id in self._conn.execute(
+            "SELECT entry_hash, group_id FROM entry_group WHERE ns = ?", (ns,)
+        ):
+            out.setdefault(entry_hash, set()).add(group_id)
+        return out
+
+    def replace_groups(self, ns: str, groups: dict[str, set[str]]) -> None:
+        """Replace the group ids recorded for these content hashes."""
+        with self._conn:
+            for entry_hash, group_ids in groups.items():
+                self._conn.execute(
+                    "DELETE FROM entry_group WHERE ns = ? AND entry_hash = ?",
+                    (ns, entry_hash),
+                )
+                self._conn.executemany(
+                    "INSERT OR IGNORE INTO entry_group (ns, entry_hash, group_id) VALUES (?, ?, ?)",
+                    [(ns, entry_hash, group_id) for group_id in group_ids],
                 )
 
 

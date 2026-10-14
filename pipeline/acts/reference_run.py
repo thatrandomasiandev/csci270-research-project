@@ -579,6 +579,73 @@ def _index_held(held: list[dict], table: TableReport) -> dict[tuple[str, str, st
 
 
 _AUX_RULE = re.compile(r"^\{arg-after:(--[A-Za-z0-9][A-Za-z0-9-]*)\}:tokens$")
+_GROUP_RULE = re.compile(r"^\{arg-after:(--[A-Za-z0-9][A-Za-z0-9-]*)\}$")
+
+
+def parse_invalidate_group(rule: str) -> str:
+    """The flag whose following file lists groups. The rule is data."""
+    match = _GROUP_RULE.fullmatch(rule.strip())
+    if match is None:
+        raise RunError("invalidate-group rule must be {arg-after:--flag}")
+    return match.group(1)
+
+
+def group_membership(text: str, entries: Sequence[Entry]) -> dict[str, set[str]]:
+    """content hash -> group ids. The first token on a line is the group id."""
+    by_name: dict[str, list[str]] = {}
+    for entry in entries:
+        for key in entry.keys:
+            by_name.setdefault(key, []).append(entry.content_hash)
+    out: dict[str, set[str]] = {}
+    for raw in text.splitlines():
+        tokens = raw.split()
+        if len(tokens) < 2:
+            continue
+        group = tokens[0]
+        seen: set[str] = set()
+        for token in tokens[1:]:
+            for content in by_name.get(token, ()):
+                if content in seen:
+                    continue
+                seen.add(content)
+                out.setdefault(content, set()).add(group)
+    return out
+
+
+def invalidated_hashes(
+    entries: Sequence[Entry],
+    covered: set[str],
+    stored: dict[str, set[str]],
+    current: dict[str, set[str]],
+) -> set[str]:
+    """Hashes to rescan because their group gained, lost, or changed a member.
+
+    A removed hash is not in ``entries``. Its groups are the stored ones. A
+    removed hash with no stored groups invalidates every current group.
+    """
+    present = {entry.content_hash for entry in entries}
+    removed = covered - present
+    bad: set[str] = set()
+    every_current = {group for groups in current.values() for group in groups}
+    for content in removed:
+        groups = stored.get(content)
+        if groups:
+            bad |= groups
+        else:
+            bad |= every_current
+    for entry in entries:
+        now = current.get(entry.content_hash, set())
+        if entry.content_hash not in covered:
+            bad |= now
+            continue
+        before = stored.get(entry.content_hash, set())
+        if now != before:
+            bad |= now | before
+    return {
+        entry.content_hash
+        for entry in entries
+        if current.get(entry.content_hash, set()) & bad
+    }
 
 
 def parse_subset_aux(rule: str) -> str:
@@ -787,14 +854,40 @@ def namespace_for(
     pin: str | None,
     slack: str | None,
     subset_aux: str | None = None,
+    group_rule: str | None = None,
+    strip_flags: Sequence[str] = (),
 ) -> str:
-    ns = argv_namespace(argv, reference, baseline)
-    if not pin and not slack and not subset_aux:
+    hashed = list(argv)
+    if strip_flags and group_rule:
+        # A declared group file is release data, like the reference. Its path
+        # is not part of the command. Stripping only when the group rule is
+        # set leaves every earlier namespace unchanged.
+        hashed = _drop_flag_values(hashed, strip_flags)
+    ns = argv_namespace(hashed, reference, baseline)
+    if not pin and not slack and not subset_aux and not group_rule:
         return ns
     extra = ns + "\0pin:" + (pin or "") + "\0slack:" + (slack or "")
     if subset_aux:
         extra += "\0subset_aux:" + subset_aux
+    if group_rule:
+        extra += "\0group:" + group_rule
     return hashlib.sha256(extra.encode()).hexdigest()[:16]
+
+
+def _drop_flag_values(argv: Sequence[str], flags: Sequence[str]) -> list[str]:
+    """Keep the flags, drop the following path. Used only for a group rule."""
+    skip = set(flags)
+    out: list[str] = []
+    index = 0
+    while index < len(argv):
+        token = argv[index]
+        if token in skip and index + 1 < len(argv):
+            out.append(token)
+            index += 2
+            continue
+        out.append(token)
+        index += 1
+    return out
 
 
 def uncovered_members(tables: Sequence[TableReport], pin: str) -> list[str]:
@@ -920,6 +1013,7 @@ class ReferenceIncremental(Strategy):
         slack_runner: Invoke | None = None,
         help_text: str | None = None,
         subset_aux: str | Sequence[str] | None = None,
+        invalidate_group: str | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -947,6 +1041,9 @@ class ReferenceIncremental(Strategy):
         rules = [subset_aux] if isinstance(subset_aux, str) else list(subset_aux or [])
         self._aux_rules = tuple(rule.strip() for rule in rules if rule and rule.strip())
         self._aux_flags = tuple(parse_subset_aux(rule) for rule in self._aux_rules)
+        self._group_rule = (invalidate_group or "").strip()
+        self._group_flag = parse_invalidate_group(self._group_rule) if self._group_rule else ""
+        self._current_groups: dict[str, set[str]] = {}
         self._entry_names: set[str] = set()
         self._slack_factor: float | None = None
         if slack:
@@ -978,6 +1075,8 @@ class ReferenceIncremental(Strategy):
             self.pin,
             self.slack,
             "\n".join(self._aux_rules) or None,
+            self._group_rule or None,
+            strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
         )
         try:
             return self._run_cached(cache, ns, reference, entries, records)
@@ -1196,14 +1295,22 @@ class ReferenceIncremental(Strategy):
         # A column that is not a normalizer (a rank, an overlap mark) still
         # has to come out of the tool. Exact mode replays instead of refusing,
         # and the probe-sample body check is what decides.
-        column_only = (
+        # Column failures, and a part that reports rows the full set omitted,
+        # still go through exact mode. The probe-sample body check decides.
+        # A size member, a lost row, or an explicit pin template does not.
+        replay_refusal = (
             decision != "SHIP"
             and self._infer_pin
             and not self.pin
-            and bool(stored.get("column_only_refusal"))
-            and stored.get("primary_key_equal") is True
+            and (
+                bool(stored.get("exact_eligible"))
+                or (
+                    bool(stored.get("column_only_refusal"))
+                    and stored.get("primary_key_equal") is True
+                )
+            )
         )
-        if decision != "SHIP" and not column_only:
+        if decision != "SHIP" and not replay_refusal:
             try:
                 self._dump_raw(invoke(records, entries))
             except RunError as exc:
@@ -1509,6 +1616,17 @@ class ReferenceIncremental(Strategy):
         started = time.perf_counter()
         coverage = cache.coverage_map(ns)
         removed = set(coverage) - present
+        forced: set[str] = set()
+        if self._group_flag:
+            stored_groups = cache.group_map(ns)
+            path = _flag_value(self.argv, self._group_flag)
+            if not path:
+                raise RunError(f"invalidate-group flag {self._group_flag} is not in argv")
+            group_path = Path(path)
+            if not group_path.is_file():
+                raise RunError(f"invalidate-group file for {self._group_flag} is missing")
+            self._current_groups = group_membership(group_path.read_text(), entries)
+            forced = invalidated_hashes(entries, set(coverage), stored_groups, self._current_groups)
         cache.drop_hashes(ns, removed)
         _clock_add(self.clock, "coverage_read_s", time.perf_counter() - started)
         stable: list[Entry] = []
@@ -1518,7 +1636,7 @@ class ReferenceIncremental(Strategy):
         started = time.perf_counter()
         for entry in entries:
             covered = coverage.get(entry.content_hash, set())
-            if not covered:
+            if entry.content_hash in forced or not covered:
                 fresh.append(entry)
             elif record_keys <= covered:
                 stable.append(entry)
@@ -1593,6 +1711,10 @@ class ReferenceIncremental(Strategy):
         cache.cover_and_replace(
             ns, [table.name for table in tables], hashes, [rec.key for rec in records], by_table
         )
+        if self._group_flag:
+            cache.replace_groups(
+                ns, {content: set(self._current_groups.get(content, set())) for content in hashes}
+            )
 
     def _verify_full(self, invoke, records, entries, tables, held) -> tuple[bool, str]:
         stock = invoke(records, entries)

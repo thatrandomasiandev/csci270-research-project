@@ -187,6 +187,10 @@ class FitResult:
     # True when every refusal is a column that is not a normalizer and the
     # row keys still match. Exact mode may replay; the body check is the gate.
     column_only_refusal: bool = False
+    # True when exact mode may replay a refusal: column failures of the
+    # allowed kind, and any key mismatch is only extra rows in a part
+    # (a hit the full set omitted). The body check is still the gate.
+    exact_eligible: bool = False
 
     @property
     def shipped(self) -> bool:
@@ -200,6 +204,7 @@ class FitResult:
             "primary_key_equal": self.primary_key_equal,
             "probe_invocations": self.probe_invocations,
             "column_only_refusal": self.column_only_refusal,
+            "exact_eligible": self.exact_eligible,
             "tables": [table.as_dict() for table in self.tables],
         }
 
@@ -355,6 +360,8 @@ class TableBundle:
     aligned: list[Aligned]
     key_equal: bool
     key_reason: str
+    # The full set omitted rows that a part reported, and lost none.
+    subset_extra: bool = False
 
 
 def _bundle_table(
@@ -412,6 +419,9 @@ def _bundle_table(
     # Shared rows are still aligned below; a non-normalizer column that is
     # not identical fails the column fit and the result stays a refusal.
     key_equal = not overlap and not only_whole and (not only_union or monotone)
+    # A part reported a row the full set did not, and the full set lost none.
+    # That is a hit the full set omitted. Monotone already accepts it.
+    subset_extra = (not key_equal) and (not overlap) and (not only_whole) and bool(only_union)
     key_reason = ""
     if overlap:
         key_reason = f"{name}: row key appears in two parts"
@@ -455,6 +465,7 @@ def _bundle_table(
         aligned=aligned,
         key_equal=key_equal,
         key_reason=key_reason,
+        subset_extra=subset_extra,
     )
 
 
@@ -825,6 +836,23 @@ def ref_merge_printed_rows(
     return True, ""
 
 
+_COLUMN_REFUSAL = ("matches no normalizer", "not byte-identical", "mixed numeric and text")
+
+
+def _exact_replay_eligible(refusals: list[str], bundles: list[TableBundle]) -> bool:
+    """A refusal exact mode may still replay.
+
+    Every column failure has to be a value the tool must reprint. A key
+    mismatch is allowed only when a part reported rows the full set omitted
+    and the full set lost none. Any other refusal stays a refusal.
+    """
+    if refusals and not all(any(phrase in item for phrase in _COLUMN_REFUSAL) for item in refusals):
+        return False
+    if any(not bundle.key_equal and not bundle.subset_extra for bundle in bundles):
+        return False
+    return bool(refusals) or any(bundle.subset_extra for bundle in bundles)
+
+
 def fit_observations(
     *,
     entries_n: int,
@@ -987,16 +1015,12 @@ def fit_observations(
     result._phi_for = phi_for  # type: ignore[attr-defined]
     result._names = names  # type: ignore[attr-defined]
     result._key_reason = key_reasons[0] if key_reasons else ""  # type: ignore[attr-defined]
+    result.exact_eligible = False
     if refusals:
         result.decision = "REFUSE"
         result.reason = refusals[0]
-        result.column_only_refusal = not key_reasons and all(
-            any(
-                phrase in item
-                for phrase in ("matches no normalizer", "not byte-identical", "mixed numeric and text")
-            )
-            for item in refusals
-        )
+        result.exact_eligible = _exact_replay_eligible(refusals, bundles)
+        result.column_only_refusal = not key_reasons and result.exact_eligible
         return result
     if any(col.tie for table in table_reports for col in table.columns):
         if baseline == "gestore":
@@ -1009,6 +1033,7 @@ def fit_observations(
     if key_reasons:
         result.decision = "REFUSE"
         result.reason = key_reasons[0]
+        result.exact_eligible = _exact_replay_eligible(refusals, bundles)
         return result
     return result
 
