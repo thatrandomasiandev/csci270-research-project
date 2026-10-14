@@ -522,5 +522,43 @@ class SubsetAuxTests(unittest.TestCase):
             self.assertNotIn("normalizer", second.extra)
 
 
+class RankColumnTests(unittest.TestCase):
+    def test_a_presentation_rank_still_ships_exact(self) -> None:
+        """Two hits per entry. The rank renumbers in a subset; the coordinate does not.
+
+        Exact mode replays, so the rank is produced again. It is not a reason
+        to refuse when the row keys still match.
+        """
+
+        def ranked(records, entries):
+            lines = ["# record entry rank coord"]
+            rank = 1
+            for rec in records:
+                present = [entry for entry in entries if entry.primary in {"e1", "e3"}]
+                for entry in present:
+                    for coord in (10, 20):
+                        lines.append(f"{rec.key} {entry.primary} {rank} {coord}")
+                        rank += 1
+            return {"out": "\n".join(lines) + "\n"}
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            result = ReferenceIncremental(
+                argv=ARGV,
+                input_path=FIX / "ab.faa",
+                out_dir=tmp / "rank",
+                reference=FIX / "ab.entryline",
+                cache_path=tmp / "cache.sqlite",
+                verify="full",
+                pin="",
+                runner=ranked,
+            ).run()
+            self.assertEqual(result.decision, "SHIP", result.reason)
+            self.assertEqual(result.extra.get("normalizer"), "identity")
+            body = (tmp / "rank" / "tables" / "out").read_text()
+            whole = ranked(read_records(FIX / "ab.faa"), parse_reference(FIX / "ab.entryline"))
+            self.assertEqual(body_lines(body), body_lines(whole["out"]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -184,6 +184,9 @@ class FitResult:
     used_tie_break: bool = False
     primary_key_equal: bool | None = None
     probe_invocations: int = 0
+    # True when every refusal is a column that is not a normalizer and the
+    # row keys still match. Exact mode may replay; the body check is the gate.
+    column_only_refusal: bool = False
 
     @property
     def shipped(self) -> bool:
@@ -196,6 +199,7 @@ class FitResult:
             "used_tie_break": self.used_tie_break,
             "primary_key_equal": self.primary_key_equal,
             "probe_invocations": self.probe_invocations,
+            "column_only_refusal": self.column_only_refusal,
             "tables": [table.as_dict() for table in self.tables],
         }
 
@@ -250,26 +254,56 @@ def infer_key_columns(
     )
     if record_score[record_col] == 0 or entry_score[entry_col] == 0:
         raise ValueError("output columns do not match record and entry identifiers")
+    return record_col, entry_col, index_candidates(rows, record_col, entry_col)[0]
+
+
+def index_candidates(
+    rows: list[list[str]], record_col: int, entry_col: int
+) -> list[int | None]:
+    """Columns that make (record, entry, column) unique. Integers first.
+
+    ``None`` means (record, entry) is already unique. The caller picks among
+    these when a part-scan is available: a presentation rank uniques the rows
+    of one file and then fails to align that file with a subset.
+    """
     groups: dict[tuple[str, str], int] = Counter()
     for row in rows:
         groups[(row[record_col], row[entry_col])] += 1
     if all(count == 1 for count in groups.values()):
-        return record_col, entry_col, None
-    for col in range(width):
-        if col in (record_col, entry_col):
-            continue
-        if not all(row[col].lstrip("-").isdigit() for row in rows):
-            continue
-        triples = [(row[record_col], row[entry_col], row[col]) for row in rows]
-        if len(triples) == len(set(triples)):
-            return record_col, entry_col, col
+        return [None]
+    width = min(len(row) for row in rows)
+    integers: list[int] = []
+    rest: list[int] = []
     for col in range(width):
         if col in (record_col, entry_col):
             continue
         triples = [(row[record_col], row[entry_col], row[col]) for row in rows]
-        if len(triples) == len(set(triples)):
-            return record_col, entry_col, col
-    raise ValueError("duplicate rows have no row-index column")
+        if len(triples) != len(set(triples)):
+            continue
+        if all(row[col].lstrip("-").isdigit() for row in rows):
+            integers.append(col)
+        else:
+            rest.append(col)
+    found = integers + rest
+    if not found:
+        raise ValueError("duplicate rows have no row-index column")
+    return found
+
+
+def _shared_key_count(
+    whole_rows: list[list[str]],
+    part_rows: list[list[list[str]]],
+    record_col: int,
+    entry_col: int,
+    index_col: int | None,
+) -> int:
+    whole_idx = index_rows(whole_rows, record_col, entry_col, index_col)
+    part_idx = [index_rows(rows, record_col, entry_col, index_col) for rows in part_rows]
+    shared = 0
+    for key in whole_idx:
+        if sum(1 for indexed in part_idx if key in indexed) == 1:
+            shared += 1
+    return shared
 
 
 def row_key(cells: list[str], record_col: int, entry_col: int, index_col: int | None) -> tuple[str, str, str]:
@@ -351,7 +385,20 @@ def _bundle_table(
             key_reason="",
         )
     source = whole.rows or next(part.rows for part in parts if part.rows)
-    record_col, entry_col, index_col = infer_key_columns(source, record_ids, entry_ids)
+    record_col, entry_col, _first = infer_key_columns(source, record_ids, entry_ids)
+    candidates = index_candidates(source, record_col, entry_col)
+    part_rows = [part.rows for part in parts if part.rows]
+    index_col = candidates[0]
+    if len(candidates) > 1 and part_rows:
+        # A later column that aligns strictly more rows is the stable key.
+        # Equal counts keep the earliest column, which is the old rule.
+        best = candidates[0]
+        best_n = _shared_key_count(whole.rows, part_rows, record_col, entry_col, best)
+        for col in candidates[1:]:
+            shared = _shared_key_count(whole.rows, part_rows, record_col, entry_col, col)
+            if shared > best_n:
+                best, best_n = col, shared
+        index_col = best
     whole_idx = index_rows(whole.rows, record_col, entry_col, index_col)
     part_idx = [index_rows(part.rows, record_col, entry_col, index_col) for part in parts]
     union: set[tuple[str, str, str]] = set()
@@ -943,6 +990,13 @@ def fit_observations(
     if refusals:
         result.decision = "REFUSE"
         result.reason = refusals[0]
+        result.column_only_refusal = not key_reasons and all(
+            any(
+                phrase in item
+                for phrase in ("matches no normalizer", "not byte-identical", "mixed numeric and text")
+            )
+            for item in refusals
+        )
         return result
     if any(col.tie for table in table_reports for col in table.columns):
         if baseline == "gestore":

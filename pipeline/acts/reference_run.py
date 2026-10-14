@@ -1193,7 +1193,17 @@ class ReferenceIncremental(Strategy):
                 stored["slack_factor"] = self._slack_factor
         decision = stored.get("decision")
         tables = tables_from_dict(stored.get("tables") or [])
-        if decision != "SHIP":
+        # A column that is not a normalizer (a rank, an overlap mark) still
+        # has to come out of the tool. Exact mode replays instead of refusing,
+        # and the probe-sample body check is what decides.
+        column_only = (
+            decision != "SHIP"
+            and self._infer_pin
+            and not self.pin
+            and bool(stored.get("column_only_refusal"))
+            and stored.get("primary_key_equal") is True
+        )
+        if decision != "SHIP" and not column_only:
             try:
                 self._dump_raw(invoke(records, entries))
             except RunError as exc:

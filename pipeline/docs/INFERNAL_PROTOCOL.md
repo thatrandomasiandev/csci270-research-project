@@ -199,3 +199,14 @@ CL00011): format 2 without `--oskip` printed 3 body rows; with
 the documented command. The constructed removal uses `GlmZ_SraJ`
 because it is the overlap partner that changed, and because `--oskip`
 omits a `GlmY_tke1` hit when both models are searched.
+
+The shipped CLI on that removal, before the index fix below, refused at
+the fit: `tblout: column 9 matches no normalizer`. Format 2's first
+integer column is a per-file rank. It uniques the rows of one file and
+aligns 36 of 460 hits with a half-file scan. The sequence-start column
+aligns all 460, and the keys then match. With that key, the columns
+that still differ are the rank and the overlap marks (columns 0 and
+19–25 on this file). Those are not normalizers. Exact mode now replays
+when every refusal is one of those column failures and the row keys
+match. The probe-sample body check still has to pass. A key mismatch
+still refuses.
