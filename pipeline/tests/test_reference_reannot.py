@@ -11,6 +11,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.reference_formats import (  # noqa: E402
+    FormatError,
+    alias_map,
     length_weighted_churn,
     parse_reference,
     parse_reference_text,
@@ -209,6 +211,33 @@ class SmokeSubsetTests(unittest.TestCase):
             self.assertIn("NAME alpha", new_text)
             self.assertIn("NAME fresh", new_text)
             self.assertNotIn("NAME gone", new_text)
+
+    def test_second_magic_uses_the_same_block_grammar(self) -> None:
+        text = "BLOCK1/a\nNAME alpha\nACC RF00001\nCLEN 12\n//\n"
+        entries = parse_reference_text(text)
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].length, 12)
+        self.assertEqual(entries[0].keys, ("alpha", "RF00001"))
+        hmm = "HMMER3/f\nNAME beta\nACC PF00001.1\nLENG 4\nCLEN 99\n//\n"
+        kept = parse_reference_text(hmm)
+        self.assertEqual(kept[0].length, 4)
+
+    def test_adjacent_filter_block_is_the_same_entry(self) -> None:
+        text = (
+            "BLOCK1/a\nNAME alpha\nACC A1\nCLEN 12\n//\n"
+            "FILTER1/b\nNAME alpha\nACC A1\nLENG 9\n//\n"
+            "BLOCK1/a\nNAME beta\nACC A2\nCLEN 4\n//\n"
+        )
+        entries = parse_reference_text(text)
+        self.assertEqual(len(entries), 2)
+        self.assertEqual(entries[0].length, 12)
+        self.assertIn("FILTER1/b", entries[0].raw)
+        self.assertEqual(entries[1].keys[0], "beta")
+        doubled = "HMMER3/f\nNAME a\nACC x\nLENG 1\n//\n" * 2
+        pair = parse_reference_text(doubled)
+        self.assertEqual(len(pair), 2)
+        with self.assertRaises(FormatError):
+            alias_map(pair)
 
 
 if __name__ == "__main__":

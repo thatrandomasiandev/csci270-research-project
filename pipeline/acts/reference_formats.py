@@ -7,14 +7,22 @@ The fitter reads those fields; it does not compute a length itself.
 from __future__ import annotations
 
 import gzip
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
 from acts.entry_hash import entry_content_hash
 from acts.fasta import parse_fasta
 
-# File-format header token. It names the on-disk grammar, not a program.
+# One profile grammar's header. Callers and tests still name this token.
+# Detection accepts any magic of the same shape, so a second block format
+# is not a second parser.
 PROFILE_MAGIC = "HMMER3/f"
+_PROFILE_MAGIC_RE = re.compile(r"^[A-Za-z][A-Za-z0-9]*\/[A-Za-z0-9.]+$")
+
+# Integer length tag, first match wins. LENG stays ahead of any other tag
+# so an existing profile's length does not move.
+_LENGTH_TAGS = ("LENG", "CLEN")
 
 # Lines whose first token is here cannot change a score-thresholded scan.
 PROFILE_VOLATILE_TAGS = ("DATE", "BM", "SM", "COM")
@@ -64,6 +72,10 @@ def read_text(path: Path) -> str:
     return read_bytes(path).decode()
 
 
+def _is_profile_magic(token: str) -> bool:
+    return _PROFILE_MAGIC_RE.fullmatch(token) is not None
+
+
 def _tag_value(text: str, tag: str) -> str | None:
     for line in text.splitlines():
         parts = line.split()
@@ -72,14 +84,30 @@ def _tag_value(text: str, tag: str) -> str | None:
     return None
 
 
+def _first_block(text: str) -> str:
+    lines: list[str] = []
+    for line in text.splitlines(keepends=True):
+        lines.append(line)
+        if line.startswith("//"):
+            break
+    return "".join(lines)
+
+
 def _profile_entry(raw: str) -> Entry:
-    length_token = _tag_value(raw, "LENG")
+    # Length belongs to the model block. A following filter block can carry
+    # its own length tag and must not replace the model's.
+    length_token = None
+    head = _first_block(raw)
+    for tag in _LENGTH_TAGS:
+        length_token = _tag_value(head, tag)
+        if length_token is not None:
+            break
     if length_token is None:
-        raise FormatError("profile entry has no LENG line")
+        raise FormatError("profile entry has no length tag")
     try:
         length = int(length_token)
     except ValueError as exc:
-        raise FormatError(f"profile LENG is not an integer: {length_token}") from exc
+        raise FormatError(f"profile length is not an integer: {length_token}") from exc
     name = _tag_value(raw, "NAME")
     acc = _tag_value(raw, "ACC")
     keys: list[str] = []
@@ -108,51 +136,71 @@ def _is_gzip(path: Path) -> bool:
         return handle.read(2) == b"\x1f\x8b"
 
 
+def _block_magic(raw: str) -> str:
+    return raw.lstrip().split(None, 1)[0]
+
+
+def _same_record(left: str, right: str) -> bool:
+    """Adjacent blocks with the same keys and different magics are one entry.
+
+    A model file may store a second block (a filter) under the same name.
+    Two blocks with the same magic stay separate, and a repeated key then
+    fails in ``alias_map``.
+    """
+    keys = tuple(token for token in (_tag_value(left, "NAME"), _tag_value(left, "ACC")) if token)
+    other = tuple(token for token in (_tag_value(right, "NAME"), _tag_value(right, "ACC")) if token)
+    return bool(keys) and keys == other and _block_magic(left) != _block_magic(right)
+
+
+def _iter_profile_blocks(lines):
+    buf: list[str] = []
+    started = False
+    for line in lines:
+        if not started:
+            if not line.strip():
+                continue
+            if not _is_profile_magic(line.split(None, 1)[0]):
+                raise FormatError("not profile text")
+            started = True
+        buf.append(line if line.endswith("\n") else line + "\n")
+        if line.startswith("//"):
+            yield "".join(buf)
+            buf = []
+            started = False
+    if "".join(buf).strip():
+        raise FormatError("truncated profile entry")
+
+
+def _iter_profile_entries(lines):
+    pending: str | None = None
+    for block in _iter_profile_blocks(lines):
+        if pending is None:
+            pending = block
+            continue
+        if _same_record(pending, block):
+            yield pending + block
+            pending = None
+            continue
+        yield pending
+        pending = block
+    if pending is not None:
+        yield pending
+
+
 def iter_profile_raw(path: Path):
     """Yield each profile entry's raw text, one entry at a time.
 
     The yielded text includes the ``//`` line and ends with a newline, matching
     the raw stored by ``parse_profile_text``. The file is not held in memory.
+    Adjacent blocks that are the same record are one yield.
     """
     opener = gzip.open if _is_gzip(path) else open
     with opener(path, "rt") as handle:
-        buf: list[str] = []
-        started = False
-        for line in handle:
-            if not started:
-                if not line.strip():
-                    continue
-                if line.split(None, 1)[0] != PROFILE_MAGIC:
-                    raise FormatError("not profile text")
-                started = True
-            buf.append(line if line.endswith("\n") else line + "\n")
-            if line.startswith("//"):
-                yield "".join(buf)
-                buf = []
-                started = False
-        if "".join(buf).strip():
-            raise FormatError("truncated profile entry")
+        yield from _iter_profile_entries(handle)
 
 
 def parse_profile_text(text: str) -> list[Entry]:
-    entries: list[Entry] = []
-    buf: list[str] = []
-    started = False
-    for line in text.splitlines(keepends=True):
-        if not started:
-            if not line.strip():
-                continue
-            if line.split(None, 1)[0] != PROFILE_MAGIC:
-                raise FormatError("not profile text")
-            started = True
-        buf.append(line)
-        if line.startswith("//"):
-            entries.append(_profile_entry("".join(buf)))
-            buf = []
-            started = False
-    leftover = "".join(buf).strip()
-    if leftover:
-        raise FormatError("truncated profile entry")
+    entries = [_profile_entry(raw) for raw in _iter_profile_entries(text.splitlines(keepends=True))]
     if not entries:
         raise FormatError("profile text contained no entries")
     return entries
@@ -225,7 +273,7 @@ def parse_reference_text(text: str) -> list[Entry]:
         raise FormatError("empty reference")
     first = stripped.splitlines()[0]
     first_token = first.split(None, 1)[0]
-    if first_token == PROFILE_MAGIC:
+    if _is_profile_magic(first_token):
         return parse_profile_text(text)
     if stripped.startswith(">"):
         return parse_fasta_entries(text)
