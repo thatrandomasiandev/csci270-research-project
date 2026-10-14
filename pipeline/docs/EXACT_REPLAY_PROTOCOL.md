@@ -615,6 +615,25 @@ is FAIL and at least one is TOKEN-EQUAL. FAIL if either is FAIL.
 A `REFUSE` from the CLI is not EXACT. Walls are one run and indicative.
 Result file `results/exact_replay/costpass_measured.json`.
 
+## Addendum 2026-10-13 — per-record replay outcome (results; rules unchanged)
+
+The pre-registration is the addendum above. File
+`results/exact_replay/costpass_measured.json`. It records `git_head`
+`1c8d3bede554ba7ed0eb7fa9b45a27feae2d3b46`. Walls are one run and
+indicative. The judge that run used is the one disclosed in the
+deviation addendum below.
+
+**Overall EXACT.** On both proteomes E1 and E2 are byte-identical to
+stock on both tables, and Rn is value-only on both tables.
+
+| Proteome | Records | Batches | tblout | domtblout | Stock s | E2 s | Outcome |
+|---|---:|---:|---:|---:|---:|---:|---|
+| GCF_016806025.1 | 4,583 | 107 | 8,714 | 8,405 | 648.9 | 190.7 | EXACT |
+| GCF_017165095.1 | 5,019 | 111 | 9,291 | 9,024 | 693.2 | 205.2 | EXACT |
+
+E2 replayed 4,266 and 4,657 records. The unrounded walls, phase clocks,
+and line counts are in the result file.
+
 ## Addendum — sampled safety check (pre-registered 2026-10-13)
 
 Written after the pilots below and before the two proteome scans, and
@@ -711,3 +730,42 @@ Which commit each recorded result ran under:
 
 The controls below are rerun under the shipped judge on current main,
 which includes `1c8d3be`. The rerun records `git_head` and `git_dirty`.
+
+## Addendum 2026-10-13 — sampled safety check outcome (results; rules unchanged)
+
+The rerun is `results/exact_replay/costpass_controls_rerun.json`.
+`git_head` is `1bc7bbc7ddf88abf13c56947d74e901db1181f30`, the disclosure
+commit, which contains `1c8d3be`. `git_dirty` is true because that file
+and `scripts/costpass_controls_rerun.py` were still untracked.
+`pipeline/acts/` was the disclosure commit. No replay was written for a
+refused arm.
+
+The shipped pad drops subjects that are another record's candidates.
+That removed 764 DX2 subjects and 10,270 DX3 subjects from the pad set.
+Both arms still refuse, and the fail mode is still `pad_hit`.
+
+| Arm | Outcome | Fail mode | Replay |
+|---|---|---|---|
+| DX2 known-bad | REFUSE | `pad_hit` (3 pad rows, 4 other-subject rows) | not written |
+| DX3 regeneration | REFUSE | `pad_hit` (10 pad rows, 2 missing, 3 extra, 11 other-subject) | not written |
+| Injected 5% drop, sample 50 | REFUSE | `pad_hit` on the second and third pads, both tables | not written |
+| HMMER `GCF_013315695.1` | PASS | neighbor pad and the size-50 pads pass | byte-identical |
+| DIAMOND `GCF_023657995.1`, seed 20261017 | SAFE-REFUSE | neighbor `pad_hit` | not written |
+
+DX3 regeneration: stock 227,223 rows, replay 227,205, the same counts as
+`dx3.json`. The drop removed 186 of the candidate models
+(`random.Random(20261013)`), and 3 of the 50 sampled records had lost a
+model. HMMER's oracle replay matched the stock body on both tables
+(9,094 tblout, 8,812 domtblout). DIAMOND stock 37,211 rows, replay
+37,208. That arm is not UNSAFE. No known-bad control passed.
+`1c8d3be` stands. The judge was not reverted.
+
+The measured HMMER runs are in `results/exact_replay/costpass_measured.json`
+(`git_head` `1c8d3be`). Both are EXACT, as the per-record outcome
+addendum records. The neighbor pad plus the three sample pads took
+34.6 s on `GCF_016806025.1` and 37.3 s on `GCF_017165095.1`, which is
+0.053 and 0.054 of those stock walls (648.9 s and 693.2 s). The cap
+was 0.10. The fresh DIAMOND sample in
+`results/exact_replay/costpass_diamond_measured.json` is the same
+genome and the same row counts as this rerun, and it does not record
+`git_head`.

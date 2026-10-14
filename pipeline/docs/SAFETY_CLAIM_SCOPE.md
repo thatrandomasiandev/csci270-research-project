@@ -77,7 +77,9 @@ unknown coupling entry, with `q = 137090/438658`. It is not the
 headline. With a sample of 50 out of 2,000 records the counting
 identity raises that miss rate to 0.711 when the entry affects 22
 records. DX3's 22 cases are file-order neighbors, so that identity does
-not describe them.
+not describe them. For coupling that is not a file-order neighbor, the
+random pads on 50 records miss with probability 0.711 in the DX3
+example, so the neighbor pad is the protection that the evidence supports.
 
 DIAMOND exact mode refuses because its stage-1 fingerprint reads
 neighbor bytes. The fresh sample, seed 20261017, genome
