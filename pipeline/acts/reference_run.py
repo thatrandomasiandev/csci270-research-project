@@ -628,11 +628,10 @@ def invalidated_hashes(
     bad: set[str] = set()
     every_current = {group for groups in current.values() for group in groups}
     for content in removed:
-        groups = stored.get(content)
-        if groups:
-            bad |= groups
-        else:
+        if content not in stored:
             bad |= every_current
+            continue
+        bad |= {group for group in stored[content] if group}
     for entry in entries:
         now = current.get(entry.content_hash, set())
         if entry.content_hash not in covered:

@@ -272,3 +272,51 @@ not reached, because the first run does not ship a cache. The unit
 test is the case the rule covers: the sibling has no row while the
 removed member is present, and with the rule the sibling is scanned
 again.
+
+## Pilot 2026-10-14 — seed 20261044
+
+Not a result. One genome, `GCF_058683675.1`, drawn from the pool that
+excludes the Test I pilot and the locked ten. Rfam 15.0 cache, then
+15.1. Shipped CLI, audit. The clan variant passes `--subset-aux` and
+`--invalidate-group`. Five records, so the audit checks all of them.
+
+No clan: EXACT, 461 rows. Fill 1655.4 s, `SHIP`. Update 629.0 s,
+`SHIP`, 457 fresh, 3,770 stable, 459 reused rows. Stock 310.7 s.
+Update phases: discovery scan 17.1 s, replay scan 46.5 s, neighbor pad
+67.5 s, three random pads 60.0 s, 53.1 s, 70.2 s, audit scan 309.9 s.
+The 457 fresh models are the families that changed or are new.
+
+Clan: EXACT, 461 rows. Fill 1651.1 s, `SHIP`. Update 693.4 s, `SHIP`,
+892 fresh, 291 reused rows. Stock 309.0 s. Discovery scan 77.2 s,
+replay scan 47.5 s, audit scan 311.2 s. The 892 is every family in a
+15.1 clan (480) plus every changed or new family outside a clan (412).
+A removed family that belonged to no clan had no group row, and the
+fail-closed clause rescanned every clan.
+
+The pilot changes the stored group before the measured run. A fill
+writes an empty group id for an entry that is in no group, so removing
+that entry invalidates no group. A content hash with no group row at
+all still invalidates every current group. That is a cache filled
+before groups were stored.
+
+## Measured run — locked 2026-10-14
+
+Seed `20261045`, ten genomes, sorted after the draw. The pool is the
+genome accessions in `results/infernal/inputs.tsv`, minus
+`GCF_049949635.1`, the Test I ten, and the pilot
+`GCF_058683675.1`.
+
+`GCF_001515725.1`, `GCF_003722195.1`, `GCF_005389605.2`,
+`GCF_017654165.1`, `GCF_023657995.1`, `GCF_032384295.1`,
+`GCF_041235215.1`, `GCF_048568975.1`, `GCF_059131955.1`,
+`GCF_059719525.1`.
+
+Both variants. Clan passes `--subset-aux` and `--invalidate-group`.
+Cache fill on Rfam 15.0 once. Three updates to 15.1, each from a copy
+of that cache. Three stock scans of 15.1. Floor 2,000 body lines per
+variant, summed across the ten. Per genome, speedup is the median of
+the three update walls over the median of the three stock walls. The
+reported figure is the median of those ten ratios. The first update
+keeps the phase breakdown. Discovery from 15.0 to 15.1, by
+content hash with `DATE`, `BM`, `SM`, and `COM` dropped: 397 changed,
+60 new, 11 removed, 457/4227 of 15.1.

@@ -623,6 +623,46 @@ class GroupInvalidationTests(unittest.TestCase):
             self.assertEqual(body_lines(body), body_lines(stock["out"]))
             self.assertTrue(any(" e1 " in line for line in body_lines(body)))
 
+    def test_an_ungrouped_removal_does_not_rescan_other_groups(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref1 = FIX / "ab.entryline"
+            ref2 = tmp / "v2.entryline"
+            kept = [entry for entry in parse_reference(ref1) if entry.primary != "e2"]
+            write_entries(kept, ref2)
+            groups = tmp / "groups.txt"
+            groups.write_text("G e0 e1\n")
+
+            def emit(records, entries):
+                lines = ["# record entry value"]
+                for rec in records:
+                    for entry in entries:
+                        lines.append(f"{rec.key} {entry.primary} 1")
+                return {"out": "\n".join(lines) + "\n"}
+
+            cache = tmp / "cache.sqlite"
+            rule = "{arg-after:--group}"
+            argv = ["law", "--group", str(groups), "{reference}", "{input}", "{output}"]
+
+            def run(ref: Path):
+                return ReferenceIncremental(
+                    argv=argv,
+                    input_path=FIX / "ab.faa",
+                    out_dir=tmp / ref.stem,
+                    reference=ref,
+                    cache_path=cache,
+                    verify="full",
+                    pin="",
+                    runner=emit,
+                    invalidate_group=rule,
+                ).run()
+
+            first = run(ref1)
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            second = run(ref2)
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(second.extra.get("n_fresh"), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

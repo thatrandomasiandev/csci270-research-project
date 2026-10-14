@@ -279,9 +279,12 @@ class ReferenceCache:
                     "DELETE FROM entry_group WHERE ns = ? AND entry_hash = ?",
                     (ns, entry_hash),
                 )
+                # An empty id records "in no group". No row at all means the
+                # cache never stored groups, which the caller treats as unknown.
+                recorded = group_ids or {""}
                 self._conn.executemany(
                     "INSERT OR IGNORE INTO entry_group (ns, entry_hash, group_id) VALUES (?, ?, ?)",
-                    [(ns, entry_hash, group_id) for group_id in group_ids],
+                    [(ns, entry_hash, group_id) for group_id in recorded],
                 )
 
 
