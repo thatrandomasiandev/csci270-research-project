@@ -1,0 +1,168 @@
+{
+  "test": "costpass-controls-rerun",
+  "judge": "ReferenceIncremental._ic2 after 1c8d3be (neighbor_pad -= u_ids)",
+  "label": "RERUN",
+  "git_head": "1bc7bbc7ddf88abf13c56947d74e901db1181f30",
+  "git_dirty": true,
+  "git_status": [
+    "?? pipeline/results/exact_replay/costpass_controls_rerun.json",
+    "?? pipeline/scripts/costpass_controls_rerun.py"
+  ],
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "dx2": {
+    "arm": "dx2-known-bad",
+    "wall_s": 0.7068396249669604,
+    "candidate_subjects": 26791,
+    "fasta_subjects": 26797,
+    "shipped_pad_subjects": 7191,
+    "union_pad_subjects": 7197,
+    "pad_equals_union_neighbors": false,
+    "overlap_removed_by_1c8d3be": 764,
+    "verdict": {
+      "pass": false,
+      "fail_mode": "pad_hit",
+      "missing_candidate_rows": 0,
+      "extra_candidate_rows": 0,
+      "pad_hit_rows": 3,
+      "other_subject_rows": 4
+    },
+    "refused": true,
+    "fail_mode": "pad_hit",
+    "emitted_replay": false
+  },
+  "dx3": {
+    "arm": "dx3-regeneration",
+    "queries": 2000,
+    "records": 4407,
+    "seed": 20261029,
+    "genome": "GCF_001515725.1",
+    "stock_rows": 227223,
+    "replay_rows": 227205,
+    "bodies_equal": false,
+    "stock_rows_match_dx3_json": true,
+    "replay_rows_match_dx3_json": true,
+    "candidate_subjects": 137073,
+    "stock_subjects": 137090,
+    "shipped_pad_subjects": 31596,
+    "union_pad_subjects": 31611,
+    "pad_equals_union_neighbors": false,
+    "overlap_removed_by_1c8d3be": 10270,
+    "stock_wall_s": 4.20052879099967,
+    "replay_wall_s": 2.3997851249878295,
+    "neighbor_wall_s": 2.280268292000983,
+    "verdict": {
+      "pass": false,
+      "fail_mode": "pad_hit",
+      "missing_candidate_rows": 2,
+      "extra_candidate_rows": 3,
+      "pad_hit_rows": 10,
+      "other_subject_rows": 11
+    },
+    "refused": true,
+    "fail_mode": "pad_hit",
+    "emitted_replay": false
+  },
+  "diamond": {
+    "genome": "GCF_023657995.1_protein.faa.gz",
+    "seed": 20261017,
+    "queries": 300,
+    "stock_rows": 37211,
+    "replay_rows": 37208,
+    "bodies_equal": false,
+    "stock_wall_s": 3.3729604170075618,
+    "replay_wall_s": 12.92869145795703,
+    "neighbor_wall_s": 13.255330292042345,
+    "neighbor": {
+      "pass": false,
+      "fail_mode": "pad_hit",
+      "missing_candidate_rows": 1,
+      "extra_candidate_rows": 0,
+      "pad_hit_rows": 2,
+      "other_subject_rows": 0
+    },
+    "random_modes": [
+      "pass",
+      "pass",
+      "pass"
+    ],
+    "random_wall_s": 13.728291292034555,
+    "refused": true,
+    "outcome": "SAFE-REFUSE",
+    "load": [
+      5.41,
+      4.52,
+      4.42
+    ],
+    "arm": "diamond-fresh",
+    "emitted_replay": false
+  },
+  "hmmer": {
+    "arm": "hmmer-GCF_013315695.1",
+    "proteome": "GCF_013315695.1",
+    "stock_source": "/Users/joshuaterranova/tmp/e1scale_work/measured/GCF_013315695.1/S382.tbl",
+    "stock_tbl_lines": 9094,
+    "stock_dom_lines": 8812,
+    "oracle_byte_identical": true,
+    "oracle_wall_s": 11.953704082989134,
+    "overlap_removed_by_1c8d3be": 1798,
+    "shipped_pad_subjects": 4040,
+    "neighbor": {
+      "wall_s": 18.243389459035825,
+      "tbl": {
+        "pass": true,
+        "fail_mode": "pass",
+        "missing_candidate_rows": 0,
+        "extra_candidate_rows": 0,
+        "pad_hit_rows": 0,
+        "other_subject_rows": 0
+      },
+      "dom": {
+        "pass": true,
+        "fail_mode": "pass",
+        "missing_candidate_rows": 0,
+        "extra_candidate_rows": 0,
+        "pad_hit_rows": 0,
+        "other_subject_rows": 0
+      }
+    },
+    "neighbor_pass": true,
+    "injected_drop_sample_50": {
+      "wall_s": 7.511378041002899,
+      "refused": true,
+      "modes": [
+        "pass",
+        "pass",
+        "pad_hit",
+        "pad_hit",
+        "pad_hit",
+        "pad_hit"
+      ],
+      "sample_size": 50,
+      "sample_hits_affected": 3,
+      "emitted_replay": false,
+      "dropped_models": 186,
+      "scan_wall_s": 11.272365375014488,
+      "body_differs": true
+    },
+    "good_sample_50": {
+      "wall_s": 7.659740667033475,
+      "refused": false,
+      "modes": [
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass",
+        "pass"
+      ],
+      "sample_size": 50,
+      "sample_hits_affected": 0,
+      "emitted_replay": false
+    },
+    "pass": true,
+    "byte_identical": true,
+    "emitted_replay": false
+  },
+  "known_bad_passed": [],
+  "kill_1c8d3be": false
+}
