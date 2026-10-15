@@ -1014,3 +1014,20 @@ Jobs 12760029 and 12864042 ran the checker that omitted source rounding. They ar
 The old-release cache filled by 12760029 is reusable. The project2 file `reference_reannot/work/reference.sqlite` is 31,876,743,168 bytes, mtime 2026-10-08 19:54:35 -0700. That write is the save after the genome-1 fill and the gestore probe. The log's last line is still `preflight ref-merge on genome 1`, which is printed before the preflight stock scan, so the file is not a post-preflight rewrite. Job 12865202 copied it to `reference_reannot_cache_salvage_2026-10-09/reference.sqlite` while the source size and mtime stayed the same. The row payload keys are `basis`, `cells`, `entry_hash`, `entry_token`, `record_key`, `row_index`, and `table`. There is no `rescale` field. Those are the keys the corrected code writes, so this fix does not change the cache format. The copy holds 2 contracts, 18,282 rows, and 140,620,277 coverage rows. The rerun reuses that copy.
 
 Smoke job 12865788, code `0dd3446`, passed preflight ref-merge on both tables and then `STOP_MATCH` on the timed arm: `targets` column 4 of `('WP_000010777.1', 'AAA_lid_14', '')`. The first render still had the source printed value, so the locked predicate accepted it. The cache then stored the reprint and the new basis. The next render saw \(\phi = 1\), dropped the source, and byte-compared the reprint. The cache now keeps the cell the tool printed and the basis that cell was produced under. The reprint and its sidecar are produced when the table is rendered. Job 12865788 is not a measurement.
+
+## Addendum 2026-10-14 — timed 38.1→38.2 ref-merge run cancelled, no result
+
+Job `12866284` (`reannot_381_382`), the timed re-annotation pre-registered
+above on 2026-10-06, was cancelled by Josh on 2026-10-13 after 36.5 h of
+its 48 h limit. It produced **no result**. Reasons:
+
+- It measured the ref-merge design, which exact mode superseded on
+  2026-10-12 (`EXACT_REPLAY_PROTOCOL.md`).
+- It never passed "preflight ref-merge on genome 1". From 07:29 on
+  2026-10-13 its log did not advance.
+- It was one Python process at one core on an exclusive 64-core node,
+  grinding a 35 GB SQLite cache plus a 35 GB write-ahead log.
+
+Its question (the measured per-release speedup on a dedicated node) is
+answered by the headline timing in `EXACT_REPLAY_PROTOCOL.md`, measured
+with exact mode. Nothing from this job is reported as a measurement.
