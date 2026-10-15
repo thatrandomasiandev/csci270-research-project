@@ -1,0 +1,34 @@
+{
+  "seed": 20261045,
+  "floor": 2000,
+  "variants": {
+    "noclan": {
+      "genomes": 2,
+      "body_lines": 862,
+      "power": "INCONCLUSIVE",
+      "outcomes": {
+        "GCF_001515725.1": "EXACT",
+        "GCF_003722195.1": "EXACT"
+      },
+      "ratios": [
+        0.4600082579966682,
+        0.4846141812373669
+      ],
+      "median_ratio": 0.47231121961701755
+    },
+    "clan": {
+      "genomes": 2,
+      "body_lines": 862,
+      "power": "INCONCLUSIVE",
+      "outcomes": {
+        "GCF_001515725.1": "EXACT",
+        "GCF_003722195.1": "EXACT"
+      },
+      "ratios": [
+        0.45604009543352636,
+        0.47555696581456586
+      ],
+      "median_ratio": 0.4657985306240461
+    }
+  }
+}

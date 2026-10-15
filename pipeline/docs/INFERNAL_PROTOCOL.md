@@ -320,3 +320,23 @@ reported figure is the median of those ten ratios. The first update
 keeps the phase breakdown. Discovery from 15.0 to 15.1, by
 content hash with `DATE`, `BM`, `SM`, and `COM` dropped: 397 changed,
 60 new, 11 removed, 457/4227 of 15.1.
+
+## Addendum 2026-10-14 — measured run (seed 20261045) stopped, not a result
+
+Josh stopped the locked measured run at about 23:00 PDT on 2026-10-14,
+after 2 of the 10 genomes, because it was draining the laptop's battery
+during the day. This is a resource stop, not an outcome-driven one: no
+pass/fail rule had been applied when it was stopped.
+
+Completed before the stop (`results/infernal/measured45_interrupted_summary.json`,
+copied from the work directory): `GCF_001515725.1` and `GCF_003722195.1`,
+both variants EXACT, 862 body lines per variant (below the 2,000 floor,
+so INCONCLUSIVE on power). Median update/stock ratios 0.472 (no clan)
+and 0.466 (clan). These are **not reported as the measured result**.
+
+The run will be redone in full on a weekend, from the beginning. Because
+both genomes' outcomes have now been seen, the redo will either (a) rerun
+the same locked ten unchanged, disclosed as a restart, or (b) use a new
+seed under a new pre-registration if the shipped code changes before
+then (for example, sizing the check by residues). Whichever applies is
+recorded before the redo starts.
