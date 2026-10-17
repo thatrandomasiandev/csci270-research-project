@@ -940,6 +940,391 @@ def audit(lines: list[str], index: int, repo: Path, previous: list[Path]) -> tup
     return errors, files or previous
 
 
+TARE_PAPER = REPO / "pipeline" / "paper" / "tare" / "main.tex"
+TARE_FILE = re.compile(r"(pipeline/(?:results|docs|scripts)/[A-Za-z0-9_./-]+\.(?:json|md|py))")
+TARE_PATH = r"(?:[A-Za-z_][\w-]*|'(?:[^']+)')(?:\.(?:[A-Za-z_][\w-]*|'(?:[^']+)'|\d+))*"
+TARE_ASSIGN = re.compile(rf"({TARE_PATH})\s*=\s*({NUMBER})(?![A-Za-z0-9])")
+TARE_DERIVED = re.compile(r"DERIVED\s+([A-Za-z_]\w*)\s*=\s*([^;]+)")
+TARE_TEXT = re.compile(rf"TEXT\s+([A-Za-z_]\w*)\s*=\s*({NUMBER})(?![A-Za-z0-9])")
+TARE_GIVEN = re.compile(rf"GIVEN\s+([A-Za-z_]\w*)\s*=\s*({NUMBER})(?![A-Za-z0-9])")
+TARE_YY = re.compile(r"yy:(\d{2})/(\d{2})=(\d{4})")
+TARE_LEN = re.compile(rf"LEN\s+({TARE_PATH})\s*=\s*(\d+)")
+TARE_HAS = re.compile(r"HAS\s+(\d+\.\d+|\d+\.\d+\.\d+|\d+)")
+TARE_NOMINAL = re.compile(rf"NOMINAL\s+([A-Za-z_]\w*)\s*=\s*({NUMBER})(?![A-Za-z0-9])")
+
+
+def round_half_up(value: float, digits: int) -> float:
+    factor = 10 ** digits
+    return math.floor(value * factor + 0.5) / factor
+
+
+def wilson_bounds(k: float, n: float, z: float = 1.959963984540054) -> tuple[float, float]:
+    ph = k / n
+    den = 1 + z * z / n
+    center = (ph + z * z / (2 * n)) / den
+    half = z * math.sqrt(ph * (1 - ph) / n + z * z / (4 * n * n)) / den
+    return center - half, center + half
+
+
+def tare_env_functions() -> dict:
+    import statistics
+    from math import comb, sqrt
+
+    def geomean(*values: float) -> float:
+        return math.prod(values) ** (1 / len(values))
+
+    def mean(*values: float) -> float:
+        return statistics.mean(values)
+
+    def stdev(*values: float) -> float:
+        return statistics.stdev(values)
+
+    def comb_counts(n: float, k: float) -> int:
+        return comb(int(round(n)), int(round(k)))
+
+    return {
+        "abs": abs,
+        "comb": comb_counts,
+        "sqrt": sqrt,
+        "mean": mean,
+        "stdev": stdev,
+        "geomean": geomean,
+        "wilson_lo": lambda k, n: wilson_bounds(k, n)[0],
+        "wilson_hi": lambda k, n: wilson_bounds(k, n)[1],
+        "clopper_up": lambda n: 1 - 0.05 ** (1 / n),
+        "t975_df3": 3.182446305284263,
+    }
+
+
+def eval_derived(expr: str, env: dict) -> float:
+    import ast
+
+    tree = ast.parse(expr.strip(), mode="eval")
+    allowed = (
+        ast.Expression, ast.BinOp, ast.UnaryOp, ast.Constant, ast.Name, ast.Load,
+        ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.USub, ast.UAdd, ast.Call,
+    )
+    for node in ast.walk(tree):
+        if not isinstance(node, allowed):
+            raise ValueError(f"derived expression uses {type(node).__name__}")
+        if isinstance(node, ast.Call) and not isinstance(node.func, ast.Name):
+            raise ValueError("derived calls must be plain names")
+    return float(eval(compile(tree, "<derived>", "eval"), {"__builtins__": {}}, env))
+
+
+def path_parts(path: str) -> list[str]:
+    parts = []
+    for part in re.findall(r"'[^']+'|[^.]+", path):
+        parts.append(part[1:-1] if part.startswith("'") else part)
+    return parts
+
+
+def path_env_name(path: str) -> str:
+    return re.sub(r"[^A-Za-z0-9]+", "_", path).strip("_")
+
+
+def resolve_path(node, path: str):
+    current = node
+    for part in path_parts(path):
+        if isinstance(current, dict) and part in current:
+            current = current[part]
+            continue
+        if isinstance(current, list) and part.isdigit():
+            index = int(part)
+            if index >= len(current):
+                return None
+            current = current[index]
+            continue
+        return None
+    return current
+
+
+def file_number(blobs: list, path: str):
+    found = []
+    for blob in blobs:
+        got = resolve_path(blob, path)
+        if isinstance(got, (int, float)) and not isinstance(got, bool):
+            found.append(float(got))
+        elif isinstance(got, str):
+            try:
+                found.append(float(got))
+            except ValueError:
+                continue
+        for item in find_path(blob, path):
+            if isinstance(item, (int, float)) and not isinstance(item, bool):
+                found.append(float(item))
+            elif isinstance(item, str):
+                try:
+                    found.append(float(item))
+                except ValueError:
+                    continue
+    return found
+
+
+def value_matches_written(got: float, raw: str) -> bool:
+    value = float(raw)
+    if close(got, value):
+        return True
+    if "e" in raw.lower() or "." in raw:
+        decimals = 0 if "e" in raw.lower() else len(raw.split(".")[-1])
+        if "e" in raw.lower():
+            return close(got, value)
+        return close(round_half_up(got, decimals), value)
+    return float(got).is_integer() and int(round_half_up(got, 0)) == int(value) and abs(got - value) < 0.5
+
+
+def strip_pending(text: str) -> str:
+    out = []
+    i = 0
+    while i < len(text):
+        if text.startswith(r"\pending", i) or text.startswith(r"\tbd", i):
+            if text.startswith(r"\tbd", i):
+                i += len(r"\tbd")
+                continue
+            i += len(r"\pending")
+            if i < len(text) and text[i] == "{":
+                depth = 1
+                i += 1
+                while i < len(text) and depth:
+                    if text[i] == "{":
+                        depth += 1
+                    elif text[i] == "}":
+                        depth -= 1
+                    i += 1
+            continue
+        out.append(text[i])
+        i += 1
+    return "".join(out)
+
+
+def tare_claim(lines: list[str], index: int, source: str) -> str:
+    """Lines since the previous source comment, blank line, or structural command."""
+    chunks = []
+    j = index - 1
+    while j >= 0:
+        piece = lines[j].strip()
+        if not piece or "% source:" in piece or piece.startswith("%"):
+            break
+        if piece.startswith((
+            r"\begin{equation}", r"\end{equation}", r"\label{eq:",
+            r"\begin{lstlisting}", r"\end{lstlisting}",
+        )):
+            j -= 1
+            continue
+        if piece.startswith((
+            r"\section", r"\subsection", r"\paragraph", r"\begin", r"\end",
+            r"\item", r"\label", r"\includegraphics", r"\centering", r"\caption",
+        )):
+            if piece.startswith(r"\caption"):
+                chunks.append(strip_pending(piece))
+            break
+        if piece.startswith(r"\["):
+            break
+        chunks.append(strip_pending(piece))
+        j -= 1
+    chunks.reverse()
+    if "DATAONLY" in source or "BYTES" in source:
+        tokens = []
+        if "DATAONLY" in source:
+            tokens.extend(("Pfam", "subset only", r"\times", "family subset", "Pinned replay"))
+        if "BYTES" in source:
+            tokens.extend(("16 byte", "16-byte", "32 after", "2.2.5"))
+        chunks = [piece for piece in chunks if any(token in piece for token in tokens)]
+    text = " ".join(chunks)
+    if "DATAONLY" in source or "BYTES" in source:
+        text = re.sub(r"-?\d+(?:\.\d+)?\s*pt", " ", text)
+        text = re.sub(r"\([^)]*\)", " ", text)
+        text = re.sub(r"\d+\.\d+/", " ", text)
+    return text.replace("\\,", " ")
+
+
+def anchor_matches(quantity: dict, anchors: list[float]) -> bool:
+    kind = quantity["kind"]
+    if kind == "version":
+        return False
+    if kind == "fraction":
+        return any(close(value, float(quantity["num"])) for value in anchors) and any(
+            close(value, float(quantity["den"])) for value in anchors
+        )
+    if kind == "percent":
+        return any(
+            close(round_half_up(value * 100, quantity["decimals"]), quantity["value"])
+            or close(round_half_up(value, quantity["decimals"]), quantity["value"])
+            for value in anchors
+        )
+    if kind == "decimal":
+        return any(close(round_half_up(value, quantity["decimals"]), quantity["value"]) for value in anchors)
+    if kind == "scientific":
+        return any(matches_quantity(quantity, value) for value in anchors)
+    if kind == "integer":
+        claim = quantity["value"]
+        for value in anchors:
+            if float(value).is_integer() and int(round(value)) == claim and close(value, float(claim)):
+                return True
+            if claim >= 20 and abs(value - claim) < 0.5 and int(round_half_up(value, 0)) == claim:
+                return True
+        return False
+    return False
+
+
+def audit_tare_comment(lines: list[str], index: int, repo: Path) -> tuple[list[str], list[str]]:
+    """Return (mismatches, unsourced descriptions)."""
+    source = lines[index].split("% source:", 1)[1].strip()
+    claim = tare_claim(lines, index, source)
+    quantities = [item for item in claim_quantities(claim) if item["kind"] != "token"]
+    if "UNSOURCED" in source:
+        described = []
+        for quantity in quantities:
+            described.append(f"L{index + 1} {quantity}")
+        return [], described
+    if not quantities and "GIVEN" not in source and "DERIVED" not in source and not TARE_ASSIGN.search(source):
+        return [], []
+
+    files = []
+    for match in TARE_FILE.finditer(source):
+        path = repo / match.group(1)
+        if path not in files:
+            files.append(path)
+    missing = [str(path.relative_to(repo)) for path in files if not path.is_file()]
+    errors = [f"missing {', '.join(missing)}"] if missing else []
+    blobs = []
+    texts = []
+    blob_text = ""
+    for path in files:
+        if path.suffix == ".json":
+            blobs.append(load_json(path))
+        else:
+            texts.append(path.read_text())
+    if blobs:
+        blob_text = "\n".join(json.dumps(blob) for blob in blobs)
+    text_blob = "\n".join(texts)
+
+    env = tare_env_functions()
+    anchors: list[float] = []
+
+    for match in TARE_ASSIGN.finditer(source):
+        key, raw = match.group(1), match.group(2)
+        if key in {"DERIVED", "TEXT", "GIVEN"}:
+            continue
+        # Skip the right-hand side of DERIVED/TEXT/GIVEN, which the other scanners own.
+        prefix = source[max(0, match.start() - 24) : match.start()]
+        if re.search(r"(DERIVED|TEXT|GIVEN|LEN|NOMINAL)\s+$", prefix):
+            continue
+        found = file_number(blobs, key) if blobs else []
+        if not found:
+            errors.append(f"{key}={raw} is not in the cited file")
+            continue
+        if not any(value_matches_written(got, raw) for got in found):
+            errors.append(f"{key}={raw} != file value {found[0]}")
+            continue
+        chosen = next(got for got in found if value_matches_written(got, raw))
+        env[path_env_name(key)] = chosen
+        env[path_parts(key)[-1].replace(".", "_")] = chosen
+        anchors.append(chosen)
+
+    for match in TARE_TEXT.finditer(source):
+        raw = match.group(2)
+        digits = raw.split(".")[0]
+        hay = text_blob.replace(",", "").replace("{,}", "")
+        if not re.search(rf"(?<!\d){re.escape(digits)}(?!\d)", hay) and not re.search(rf"(?<!\d){re.escape(raw)}(?!\d)", hay):
+            errors.append(f"TEXT {match.group(1)}={raw} is not in the cited text")
+            continue
+        value = float(raw)
+        env[match.group(1)] = value
+        anchors.append(value)
+
+    if "ILLUSTRATIVE" not in source and TARE_GIVEN.search(source):
+        errors.append("GIVEN values require the comment to say ILLUSTRATIVE")
+    for match in TARE_GIVEN.finditer(source):
+        value = float(match.group(2))
+        env[match.group(1)] = value
+        anchors.append(value)
+
+    for match in TARE_HAS.finditer(source):
+        token = match.group(1)
+        hay = (blob_text + "\n" + text_blob).replace(",", "")
+        if not re.search(rf"(?<!\d){re.escape(token)}(?!\d)", hay):
+            errors.append(f"HAS {token} is not in the cited file")
+            continue
+        if token.count(".") >= 2:
+            continue
+        anchors.append(float(token))
+        env[f"has_{token.replace('.', '_')}"] = float(token)
+
+    for match in TARE_LEN.finditer(source):
+        path, raw = match.group(1), int(match.group(2))
+        found = False
+        for blob in blobs:
+            got = resolve_path(blob, path)
+            if isinstance(got, (list, dict)) and len(got) == raw:
+                found = True
+                break
+        if not found:
+            errors.append(f"LEN {path}={raw} does not match a cited collection")
+            continue
+        env[path_env_name(path)] = float(raw)
+        anchors.append(float(raw))
+
+    for match in TARE_NOMINAL.finditer(source):
+        value = float(match.group(2))
+        env[match.group(1)] = value
+        anchors.append(value)
+
+    for match in TARE_YY.finditer(source):
+        token = f"{match.group(1)}/{match.group(2)}"
+        year = int(match.group(3))
+        if token not in text_blob and token not in blob_text:
+            errors.append(f"{token} is not in the cited file")
+            continue
+        if year != 2000 + int(match.group(2)):
+            errors.append(f"yy:{token} does not expand to {year}")
+            continue
+        env[f"y{year}"] = float(year)
+        anchors.append(float(year))
+
+    for match in TARE_DERIVED.finditer(source):
+        name, expr = match.group(1), match.group(2).strip()
+        try:
+            value = eval_derived(expr, env)
+        except Exception as exc:
+            errors.append(f"DERIVED {name} failed: {exc}")
+            continue
+        env[name] = value
+        anchors.append(value)
+
+    joined = blob_text + "\n" + text_blob
+    for quantity in quantities:
+        if quantity["kind"] == "version":
+            if quantity["value"] in joined:
+                continue
+            errors.append(f"version {quantity['value']} is not in the cited file")
+            continue
+        if anchor_matches(quantity, anchors):
+            continue
+        errors.append(f"claim {quantity} does not match a cited value at printed precision")
+    return errors, []
+
+
+def check_tare(repo: Path) -> int:
+    if not TARE_PAPER.is_file():
+        print(f"FAIL missing {TARE_PAPER.relative_to(repo)}")
+        return 1
+    lines = TARE_PAPER.read_text().splitlines()
+    comments = [index for index, line in enumerate(lines) if "% source:" in line]
+    failures = 0
+    unsourced: list[str] = []
+    for index in comments:
+        problems, pending = audit_tare_comment(lines, index, repo)
+        unsourced.extend(pending)
+        if problems:
+            failures += 1
+            print(f"FAIL tare L{index + 1}: " + "; ".join(problems))
+    print(f"tare_source_comments={len(comments)} mismatches={failures} unsourced={len(unsourced)}")
+    for item in unsourced:
+        print(f"UNSOURCED {item}")
+    return 1 if failures else 0
+
+
 def main() -> int:
     lines = PAPER.read_text().splitlines()
     comments = [index for index, line in enumerate(lines) if "% source:" in line]
@@ -954,7 +1339,8 @@ def main() -> int:
     if len(comments) < 180:
         print("FAIL fewer source comments than main.tex is expected to carry")
         return 1
-    return 1 if failures else 0
+    tare_failed = check_tare(REPO)
+    return 1 if failures or tare_failed else 0
 
 
 if __name__ == "__main__":
