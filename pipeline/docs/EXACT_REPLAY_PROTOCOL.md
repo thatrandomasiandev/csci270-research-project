@@ -784,3 +784,29 @@ subset invocations only: entry-name tokens outside the subset are
 dropped, other tokens stay, and a line with fewer than two tokens is
 dropped. A full run uses the original file. The rule is not inferred.
 Tests are in `tests/test_exact_replay.py`.
+
+## Addendum 2026-10-17 — headline pilot on CARC (job 13138266): a pilot, not a result
+
+Job 13138266 ran 2026-10-15 12:27–16:02 on `b22-24` (AMD EPYC 7542, exclusive,
+tmpfs scratch, whole-node memory) at code `d125151` (`git_dirty` false), genome
+`GCF_030717825.1`, seed 20261035. File: `results/exact_replay/headline_pilot_carc.json`.
+
+- Correctness: all three B runs `SHIP` and byte-identical to the paired stock run
+  (tblout and domtblout). The three stock 38.2 runs were byte-identical to each
+  other. The unpinned control differs (value-only).
+- Phase shape: passes on every B (discovery largest, diff smallest, all pads
+  present, audit under a quarter of stock).
+- Cache 20.8 MB, far under the 5 GB cap. Fill 2,489 s against a stock 38.1 run
+  of 2,476 s: first-run overhead 1.005.
+- Walls: stock 2,206 / 2,054 / 2,028 s (median 2,054, CV 4.6%); TARE 489 / 501 /
+  545 s (median 501, CV 5.78%). Ratio of medians 4.10; per-pair 4.51, 4.10, 3.72.
+  Discovery was 276–299 s against f·T_stock = 0.1345 × 2,054 = 276 s.
+- The runner's pass rule failed on one item only: CV of B is 5.78%, above the 5%
+  gate. The excess comes from B3 (audit 69.6 s vs ~46 s; parse 47.5 vs 36.8 s).
+
+Decision (Josh/hub, recorded before any measured run): the pilot's purpose was
+to validate the harness, correctness, and phase shape on the cluster, and all of
+those passed. The CV gate failed by 0.78 points on n = 3. No re-pilot. The
+measured array keeps r = 3 alternating runs, reports CV per arm, and flags
+CV > 5% without dropping the genome, as the metric definitions already state.
+These pilot walls are not a result and are not reported as the headline.
