@@ -10,4 +10,5 @@ python3 pipeline/artifact/laptop/t3_synthetic.py
 python3 pipeline/artifact/laptop/record_reuse.py
 python3 pipeline/artifact/laptop/ref_merge_smoke.py
 python3 pipeline/artifact/laptop/probe_eval_smoke.py
+python3 pipeline/paper/tare/figures/make_figures.py
 python3 pipeline/artifact/check_paper_sources.py
