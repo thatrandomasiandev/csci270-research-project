@@ -810,3 +810,143 @@ those passed. The CV gate failed by 0.78 points on n = 3. No re-pilot. The
 measured array keeps r = 3 alternating runs, reports CV per arm, and flags
 CV > 5% without dropping the genome, as the metric definitions already state.
 These pilot walls are not a result and are not reported as the headline.
+
+## Addendum — headline timing (CARC), measured
+
+Written before the array is submitted. No measured wall in this section
+is a result. The pilot above stays a pilot. `pipeline/acts/` under test
+is commit `d125151` (`d12515169eae5c8d4dbb555b33eabee1b815cbc7`). At
+pre-registration, `git diff d125151 HEAD -- pipeline/acts` was empty.
+The submit script stages that tree and records `acts_commit = d125151`
+in `ACTS_COMMIT` and in every result file. A later change to
+`pipeline/acts/` is not what this array runs.
+
+### Genomes
+
+Directory `data/recurrence/A`, the 100 `*_protein.faa.gz` stems. The
+pool is those stems minus the 50 accessions below. Pool size 50.
+SHA-256 of the newline-joined sorted stems is
+`856a93c152e0e7bfb2715076f3dc872551579301526783da8e83c82f6591b0c2`.
+The job recomputes that hash from the CARC directory and stops if it
+differs. The submit script checks the same hash before `sbatch`.
+
+Seed `20261046`, not used before. Draw
+`sorted(random.Random(20261046).sample(pool, 10))`. Array task `i`
+runs draw `i`. The runner stops if the recomputed draw differs.
+
+Exclusions, every accession already used or designated:
+
+- E1, baselines, knobs, savings position 1: `GCF_002853805.1`
+- baselines genome 2, knobs, savings position 2: `GCF_002090355.1`
+- savings A_hmmscan positions 3–22, which that run reached on
+  2026-09-28: `GCF_001650275.1`, `GCF_052050745.1`,
+  `GCF_016659085.1`, `GCF_041316645.1`, `GCF_013201215.1`,
+  `GCF_054510725.1`, `GCF_002058765.1`, `GCF_003956185.1`,
+  `GCF_025254305.1`, `GCF_041235215.1`, `GCF_016904475.1`,
+  `GCF_015571655.1`, `GCF_005389605.2`, `GCF_030515405.1`,
+  `GCF_002180275.1`, `GCF_020905655.1`, `GCF_048568975.1`,
+  `GCF_053102875.1`, `GCF_013343615.1`, `GCF_049949635.1`
+- savings designated prefix positions 23–30, planned and not scanned,
+  excluded so the draw cannot land on that prefix:
+  `GCF_052882435.1`, `GCF_036884535.1`, `GCF_012934475.1`,
+  `GCF_013315695.1`, `GCF_004377995.2`, `GCF_046107165.1`,
+  `GCF_022846215.1`, `GCF_024298565.1`
+- E1-scale: `GCF_013315695.1`, `GCF_049201905.1`, `GCF_059719525.1`
+- per-record measured: `GCF_016806025.1`, `GCF_017165095.1`
+- DX3 and DX3 rate: `GCF_001515725.1`, `GCF_001513615.1`
+- DIAMOND pilot and measured sample: `GCF_013085185.1`,
+  `GCF_023657995.1`
+- headline pilot, job 13138266: `GCF_030717825.1`
+- Infernal Test I: `GCF_003956185.1`, `GCF_013168095.1`,
+  `GCF_022846215.1`, `GCF_028743355.1`, `GCF_030515405.1`,
+  `GCF_030708175.1`, `GCF_037287675.1`, `GCF_054510725.1`,
+  `GCF_055382035.1`, `GCF_059615465.1`, plus pilot
+  `GCF_049949635.1` and pilot `GCF_058683675.1`
+- Infernal measured draw, including the two genomes seen before the
+  battery stop: `GCF_001515725.1`, `GCF_003722195.1`,
+  `GCF_005389605.2`, `GCF_017654165.1`, `GCF_023657995.1`,
+  `GCF_032384295.1`, `GCF_041235215.1`, `GCF_048568975.1`,
+  `GCF_059131955.1`, `GCF_059719525.1`
+
+Names that appear twice above are one exclusion. The runner's
+`EXCLUDE_REASONS` is the set of 50.
+
+The ten draws, task order:
+
+0. `GCF_002302335.1`
+1. `GCF_009433135.1`
+2. `GCF_009948655.1`
+3. `GCF_015290725.1`
+4. `GCF_022559285.1`
+5. `GCF_030347155.1`
+6. `GCF_049949335.1`
+7. `GCF_054388855.1`
+8. `GCF_055556535.1`
+9. `GCF_061234675.1`
+
+### Argv and design
+
+Same as the pilot. `hmmscan --cut_ga --noali --cpu 4`, tblout and
+domtblout. TARE is `python3 -m acts run --strategy reference --pin
+'-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}'`.
+The frozen CLI runs one `hmmscan` at a time (`subprocess.run`), so
+four threads is the concurrency. Press is logged and is not charged
+to either arm. Each task: stock 38.1, fill, then A B A B A B with
+r = 3, restoring one cache snapshot before every B, then the unpinned
+control, with phases kept. Exclusive EPYC 7542, `--mem=0`, 4 h.
+Scratch may be tmpfs when at least 40 GiB is free. Cache cap 5 GiB.
+A guard failure (hash, md5, model count, scratch, cache cap, crash,
+signal) writes the JSON and exits 2. A scored FAIL exits 0. The file
+is `results/headline_measured_<jobid>_<task>.json`.
+
+Before this text was committed, the runner's classifier, cache
+restore, stock scan, unpinned control, and shipped CLI were exercised
+locally on the first 300 proteins of `GCF_002853805.1` against 20
+Pfam models. That accession is excluded. The exercise is not a result.
+
+### Metrics
+
+Paper definitions M3–M7, applied by `scripts/headline_analysis.py`,
+which reads only result JSON.
+
+- Per genome, S_g = median of the three stock 38.2 walls over the
+  median of the three TARE walls.
+- HEADLINE = median of S_g over the genomes that finished both arms.
+  A genome that did not finish is listed and is not imputed. The
+  headline is the locked G = 10 figure only when all ten finished.
+- 95% CI: percentile bootstrap over those genomes, 10,000 resamples,
+  `random.Random(20261047)`. The endpoints are the empirical quantiles
+  at 0.025 and 0.975, the order statistics at indexes 249 and 9749
+  of the sorted resample medians (`ceil(p * 10000) - 1`).
+- Also the geometric mean and the range of S_g.
+- CV = sample standard deviation / arithmetic mean, per arm, per
+  genome. Flag when CV > 0.05. Do not drop the genome.
+- CPU time is user + sys from `resource.RUSAGE_CHILDREN` around each
+  arm. CPU ratio = median CPU of A / median CPU of B.
+- First-run overhead = fill wall / stock 38.1 wall.
+- Break-even n = (F - T_stock) / (T_stock - U), with F the fill wall,
+  T_stock the median stock 38.2 wall, and U the median TARE wall.
+  Undefined when U is not smaller than T_stock, and then reported null.
+- Prediction error = |S_pred - S_g| / S_g. S_pred = 1 / (a f + c),
+  f = 4052/30134. From the pilot's three paired B runs,
+  a_i = discovery_s / (f * paired stock wall) and
+  c_i = (TARE wall - discovery_s) / paired stock wall.
+  a = 1.0146410126797523 and c = 0.10846594102974193, the arithmetic
+  means. S_pred = 4.0832874372486945. The reported error is the
+  maximum over genomes.
+
+### Outcomes
+
+A genome is EXACT only when all three of these hold: every B decision
+is SHIP and its tblout and domtblout bodies are byte-identical to the
+paired A; the three stock 38.2 bodies are byte-identical to each
+other; the unpinned control differs. Anything else that finished is
+FAIL. A FAIL is reported and stays in the median. CV > 5% and a phase
+shape miss are flags, not FAIL and not a stop.
+
+`scripts/headline_analysis.py` is this addendum's scorer and is
+committed before any measured JSON exists. `tests/test_headline_analysis.py`
+runs it on `results/exact_replay/headline_pilot_carc.json`. Under
+these rules that pilot genome is EXACT and its B arm is CV-flagged.
+The pilot file's own `pilot_pass: false` is the old gate. It is not
+the headline.
