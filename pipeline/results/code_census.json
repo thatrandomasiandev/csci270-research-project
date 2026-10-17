@@ -1,0 +1,7 @@
+{
+  "git_head": "375f9a4214efafaf77adc4f1bfdfc6906fa99dcd",
+  "acts_python_lines": 12555,
+  "test_python_lines": 8465,
+  "test_functions": 358,
+  "method": "physical lines of *.py under acts/ and tests/ (including blank and comment lines); test_* functions counted by AST"
+}
