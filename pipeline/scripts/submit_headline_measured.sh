@@ -77,14 +77,6 @@ def blob_sha(rev: str, path: str) -> str:
     data = subprocess.check_output(["git", "-C", root, "cat-file", "blob", f"{rev}:{path}"])
     return hashlib.sha256(data).hexdigest()
 
-def remote_sha(path: str) -> str:
-    out = subprocess.check_output(
-        ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "discovery",
-         f"sha256sum '{dest}/{path}'"],
-        text=True,
-    )
-    return out.split()[0]
-
 pairs = []
 listed = subprocess.check_output(
     ["git", "-C", root, "ls-tree", "-r", "--name-only", acts_commit, "pipeline/acts"],
@@ -102,11 +94,20 @@ for path in (
 ):
     pairs.append((blob_sha(git_head, path), path[len("pipeline/"):], path))
 
+quoted = " ".join("'" + rel.replace("'", "'\\''") + "'" for _expected, rel, _path in pairs)
+remote = subprocess.check_output(
+    ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=20", "discovery",
+     f"cd '{dest}' && sha256sum {quoted}"],
+    text=True,
+)
+got = {}
+for line in remote.splitlines():
+    digest, rel = line.split(None, 1)
+    got[rel] = digest
 bad = []
 for expected, rel, path in pairs:
-    got = remote_sha(rel)
-    if got != expected:
-        bad.append(f"{path}: remote {got} != git {expected}")
+    if got.get(rel) != expected:
+        bad.append(f"{path}: remote {got.get(rel)} != git {expected}")
 if bad:
     raise SystemExit("STOP: sha256 mismatch\n" + "\n".join(bad))
 print(f"sha256 ok for {len(pairs)} files")

@@ -950,3 +950,11 @@ runs it on `results/exact_replay/headline_pilot_carc.json`. Under
 these rules that pilot genome is EXACT and its B arm is CV-flagged.
 The pilot file's own `pilot_pass: false` is the old gate. It is not
 the headline.
+
+Deviation before any measured JSON, transport only. The first submit
+opened one ssh per staged file for `sha256sum` and discovery timed out,
+so nothing was submitted. The check is unchanged: each staged blob is
+compared with `git cat-file` of `d125151` for `pipeline/acts/` and of
+HEAD for the runner, the analysis script, and the job. The remote
+checksums are one `sha256sum` on discovery. No genome, argv, metric,
+or `pipeline/acts/` byte changed.
