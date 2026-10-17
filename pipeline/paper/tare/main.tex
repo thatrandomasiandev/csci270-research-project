@@ -505,7 +505,7 @@ becomes cheaper than repeated full runs after $n \ge (F - T_{\text{stock}})/(T_{
 \section{Implementation}
 \label{sec:impl}
 
-\sys's core is about 12{,}500 lines of Python with 358 test functions. Its core contains no program names: small parsers read
+\sys's core is 12{,}555 lines of Python, with 358 test functions. Its core contains no program names: small parsers read
 % source: MEASURED pipeline/results/code_census.json acts_python_lines=12555 test_functions=358
 profile databases, covariance-model databases, FASTA files, and tabular outputs, and users declare pins, side files,
 groups, and reporting thresholds as data. The cache is a SQLite file keyed by entry hash and record. A typical
