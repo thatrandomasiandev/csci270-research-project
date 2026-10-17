@@ -27,7 +27,7 @@ import time
 from pathlib import Path
 from collections.abc import Callable, Sequence
 
-from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit
+from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit, residue_cap_binds
 from acts.replay_batch import merge_bodies, plan_batches
 from acts.infer_knobs import capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
@@ -1393,8 +1393,10 @@ class ReferenceIncremental(Strategy):
                     self._phase_extra(extra, probe_wall=probe_wall, probe_phases=probe_phases),
                 )
         elif self.verify == "audit" and reused:
-            ok, why, report = self._verify_audit(invoke, records, entries, tables, held)
+            ok, why, report, note = self._verify_audit(invoke, records, entries, tables, held)
             extra["audit_checked"] = report
+            if note:
+                extra["audit"] = note
             if not ok:
                 return self._finish(
                     "REFUSE_AUDIT",
@@ -1478,6 +1480,7 @@ class ReferenceIncremental(Strategy):
                 if ent not in cand.get(rec_key, set()):
                     return done("REFUSE_MATCH", f"{table.name}: replay reported a non-candidate pair ({rec_key}, {ent})", extra)
         ic2_why = self._ic2(pinned, entries, rep_records, texts, tables, cand)
+        extra.update(self._budget_fields)
         if ic2_why:
             return done("REFUSE", ic2_why, extra)
         extra["ic2"] = "pass"
@@ -1500,7 +1503,17 @@ class ReferenceIncremental(Strategy):
                     return done("REFUSE_MATCH", f"{table.name}: body differs from a full run", extra)
         elif self.verify == "audit" and reused:
             keys = [rec.key for rec in rep_records]
-            chosen = set(pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed)))
+            lengths = [len(rec.sequence) for rec in rep_records]
+            if self.audit_p > 0 and residue_cap_binds(lengths):
+                chosen = set()
+                extra["audit"] = "skipped, input below record granularity"
+            else:
+                chosen = set(pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed)))
+                if self.audit_p > 0:
+                    total = sum(lengths)
+                    got = sum(length for rec, length in zip(rep_records, lengths) if rec.key in chosen)
+                    share = (got / total) if total else 0.0
+                    extra["audit"] = f"checked {len(chosen)}, residue fraction {share:.6f}"
             extra["audit_checked"] = len(chosen)
             if chosen:
                 started_phase = time.perf_counter()
@@ -1521,12 +1534,18 @@ class ReferenceIncremental(Strategy):
         A failure does not write the replay. The neighbor pad is the
         file-order predecessor and successor of each record's own
         candidates. The three random pads use the locked seeds and run
-        only on ``IC2_SAMPLE_SIZE`` records.
+        only on ``IC2_SAMPLE_SIZE`` records. A record longer than half
+        the replayed residues skips those pads. The neighbor pad still runs.
         """
         from acts.exact_certificate import judge, neighbor_ids, pad_indices, sample_keys
 
+        self._budget_fields = {}
         if not tables or not rep_records or not cand:
             return None
+        lengths = [len(rec.sequence) for rec in rep_records]
+        random_skipped = residue_cap_binds(lengths)
+        if random_skipped:
+            self._budget_fields["random_pads"] = "skipped, input below record granularity"
         u_ids = {token for tokens in cand.values() for token in tokens}
 
         def run_pad(name: str, records: Sequence[RecordItem], pad_cand: dict[str, set[str]], pad_ids: set[str], keep: set[str] | None) -> str | None:
@@ -1563,20 +1582,31 @@ class ReferenceIncremental(Strategy):
         why = run_pad("neighbor", rep_records, expanded, neighbor_pad, None)
         if why:
             return why
+        if random_skipped:
+            return None
         order = [rec.key for rec in rep_records]
         sample = sample_keys(order, IC2_SAMPLE_SIZE, IC2_SAMPLE_SEED)
         if not sample:
+            self._budget_fields["random_pads"] = "0 on 0 records"
             return None
         keep = set(sample)
         sampled = [rec for rec in rep_records if rec.key in keep]
+        n_pads = 0
         for name, indices in pad_indices(entries, u_ids):
             if not name.startswith("random") or not indices:
                 continue
+            n_pads += 1
             pad_ids = {entries[i].primary for i in indices}
             pad_cand = {key: set(cand.get(key, set())) | pad_ids for key in sample}
             why = run_pad(name, sampled, pad_cand, pad_ids, keep)
             if why:
                 return why
+        total = sum(lengths)
+        got = sum(length for rec, length in zip(rep_records, lengths) if rec.key in keep)
+        share = (got / total) if total else 0.0
+        self._budget_fields["random_pads"] = (
+            f"{n_pads} on {len(sample)} records, residue fraction {share:.6f}"
+        )
         return None
 
     def _pin_check(self, invoke, pinned, entries, records, tables) -> tuple[bool, str]:
@@ -1732,7 +1762,7 @@ class ReferenceIncremental(Strategy):
                 return False, f"{table.name}: {why}"
         return True, ""
 
-    def _verify_audit(self, invoke, records, entries, tables, held) -> tuple[bool, str, int]:
+    def _verify_audit(self, invoke, records, entries, tables, held) -> tuple[bool, str, int, str]:
         reused_keys = []
         seen: set[str] = set()
         # Audit records that still have a cached contribution. The caller passes
@@ -1742,6 +1772,10 @@ class ReferenceIncremental(Strategy):
             if row["record_key"] not in seen:
                 seen.add(row["record_key"])
                 reused_keys.append(row["record_key"])
+        by_length = {rec.key: len(rec.sequence) for rec in records}
+        lengths = [by_length.get(key, 0) for key in reused_keys]
+        if self.audit_p > 0 and residue_cap_binds(lengths):
+            return True, "", 0, "skipped, input below record granularity"
         chosen = pick_audit(
             reused_keys,
             p=self.audit_p,
@@ -1749,7 +1783,11 @@ class ReferenceIncremental(Strategy):
             rng=random.Random(self.audit_seed),
         )
         if not chosen:
-            return True, "", 0
+            return True, "", 0, ""
+        total = sum(lengths)
+        got = sum(by_length.get(key, 0) for key in chosen)
+        share = (got / total) if total else 0.0
+        note = f"checked {len(set(chosen))}, residue fraction {share:.6f}" if self.audit_p > 0 else ""
         subset = [rec for rec in records if rec.key in set(chosen)]
         stock = invoke(subset, entries)
         wanted = set(chosen)
@@ -1760,7 +1798,7 @@ class ReferenceIncremental(Strategy):
                     parsed.rows, table.record_col, table.entry_col, table.index_col
                 )
             except ValueError as exc:
-                return False, str(exc), len(chosen)
+                return False, str(exc), len(chosen), note
             ours = {
                 key: cells
                 for key, cells in _index_held(held, table).items()
@@ -1774,8 +1812,8 @@ class ReferenceIncremental(Strategy):
             }
             ok, why = ref_merge_rows(stock_kept, ours, table.columns, prov)
             if not ok:
-                return False, f"{table.name}: {why}", len(chosen)
-        return True, "", len(chosen)
+                return False, f"{table.name}: {why}", len(chosen), note
+        return True, "", len(chosen), note
 
     def _write_tables(self, tables, held, entries, records) -> None:
         dest = self.out_dir / "tables"

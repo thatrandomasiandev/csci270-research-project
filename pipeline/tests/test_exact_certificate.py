@@ -5,6 +5,8 @@ The bodies are small. They reproduce the row pattern, not the tool files.
 
 from __future__ import annotations
 
+import gzip
+import random
 import sys
 import tempfile
 import unittest
@@ -12,10 +14,19 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from acts.exact_certificate import judge, neighbor_ids, sample_keys
+from acts.audit import (
+    AUDIT_FLOOR,
+    AUDIT_P,
+    AUDIT_SEED,
+    audit_miss_probability,
+    pick_audit,
+    residue_cap_binds,
+)
+from acts.exact_certificate import judge, neighbor_ids, pad_miss_probability, sample_keys
+from acts.fasta import parse_fasta
 from acts.reference_fit import PROBE_N, PROBE_SEED, sample_record_indices
 from acts.reference_formats import write_entries, parse_entryline
-from acts.reference_run import ReferenceIncremental
+from acts.reference_run import IC2_SAMPLE_SEED, IC2_SAMPLE_SIZE, ReferenceIncremental
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "reference_fitter"
 
@@ -151,6 +162,83 @@ class CertificateExactModeTests(unittest.TestCase):
                 pin_runner=pinned,
             ).run()
             self.assertEqual(result.decision, "SHIP", result.reason)
+
+    def test_one_record_skips_audit_and_random_pads(self) -> None:
+        hits = {"e1"}
+
+        def render(records, entries, scale: float) -> dict[str, str]:
+            present = {entry.primary for entry in entries}
+            lines = ["# record entry evalue"]
+            for rec in records:
+                for entry in entries:
+                    if entry.primary in hits and entry.primary in present:
+                        lines.append(f"{rec.key} {entry.primary} {scale * float(rec.description):.6f}")
+            return {"out": "\n".join(lines) + "\n"}
+
+        def runner(records, entries):
+            return render(records, entries, len(entries))
+
+        def pinned(records, entries, values):
+            return render(records, entries, values["entry_count"])
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            query = tmp / "q.faa"
+            query.write_text(">r0 1.0\nM\n")
+            reference = tmp / "ref.entryline"
+            write_entries(parse_entryline("e0 1\ne1 2\ne2 3\n"), reference)
+            cache = tmp / "cache.sqlite"
+            kwargs = dict(
+                argv=["law", "{reference}", "{input}", "{output}"],
+                input_path=query,
+                reference=reference,
+                cache_path=cache,
+                verify="audit",
+                runner=runner,
+                pin="-Z {entry_count}",
+                pin_runner=pinned,
+            )
+            first = ReferenceIncremental(out_dir=tmp / "fill", **kwargs).run()
+            self.assertEqual(first.decision, "SHIP", first.reason)
+            self.assertEqual(first.extra["random_pads"], "skipped, input below record granularity")
+            second = ReferenceIncremental(out_dir=tmp / "update", **kwargs).run()
+            self.assertEqual(second.decision, "SHIP", second.reason)
+            self.assertEqual(second.extra["audit"], "skipped, input below record granularity")
+            self.assertEqual(second.extra["audit_checked"], 0)
+            self.assertEqual(second.extra["random_pads"], "skipped, input below record granularity")
+            text = (tmp / "update" / "decision.txt").read_text()
+            self.assertIn("audit: skipped, input below record granularity", text)
+            self.assertIn("random_pads: skipped, input below record granularity", text)
+
+    def test_cap_does_not_bind_and_the_locked_draw_is_unchanged(self) -> None:
+        proteome = Path(
+            "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/recurrence/A/GCF_013315695.1_protein.faa.gz"
+        )
+        if not proteome.is_file():
+            self.skipTest(f"missing {proteome}")
+        recs = parse_fasta(gzip.open(proteome, "rt").read())
+        keys = [rec.name for rec in recs]
+        lengths = [len(rec.seq) for rec in recs]
+        self.assertGreater(len(keys), 1000)
+        self.assertFalse(residue_cap_binds(lengths))
+        self.assertLess(max(lengths) * 2, sum(lengths))
+        locked_audit = pick_audit(keys, p=AUDIT_P, floor=AUDIT_FLOOR, rng=random.Random(AUDIT_SEED))
+        again = pick_audit(keys, p=AUDIT_P, floor=AUDIT_FLOOR, rng=random.Random(AUDIT_SEED))
+        self.assertEqual(locked_audit, again)
+        self.assertGreater(len(locked_audit), AUDIT_FLOOR)
+        locked_random = sample_keys(keys, IC2_SAMPLE_SIZE, IC2_SAMPLE_SEED)
+        self.assertEqual(len(locked_random), IC2_SAMPLE_SIZE)
+        self.assertEqual(locked_random, sample_keys(keys, IC2_SAMPLE_SIZE, IC2_SAMPLE_SEED))
+
+    def test_pad_and_audit_miss_identities(self) -> None:
+        q = 137090 / 438658
+        got = pad_miss_probability(n=2000, k=22, s=50, q=q, repetitions=3)
+        self.assertAlmostEqual(got, 0.7105418322019688, places=12)
+        self.assertEqual(pad_miss_probability(n=5, k=1, s=5, q=0.05, repetitions=0), 1.0)
+        self.assertEqual(audit_miss_probability(n=5, k=1, s=5, skipped=False), 0.0)
+        self.assertEqual(audit_miss_probability(n=5, k=1, s=5, skipped=True), 1.0)
+        self.assertTrue(residue_cap_binds([100, 900]))
+        self.assertFalse(residue_cap_binds([1, 1]))
 
 
 if __name__ == "__main__":

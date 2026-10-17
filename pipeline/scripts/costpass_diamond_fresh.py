@@ -22,6 +22,7 @@ from types import SimpleNamespace
 PIPE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PIPE))
 
+from acts.audit import residue_cap_binds  # noqa: E402
 from acts.exact_certificate import judge, neighbor_ids, pad_indices, sample_keys  # noqa: E402
 from acts.reference_run import body_lines  # noqa: E402
 from acts.replay_batch import merge_bodies, plan_batches  # noqa: E402
@@ -161,6 +162,15 @@ def main() -> None:
     plus, neighbor_wall = search(expanded, replay_keys, WORK / "neighbor", True)
     u_ids = {name for ids in cand.values() for name in ids}
     neighbor_verdict = judge(replay, plus, u_ids, neighbor_pad, 1)
+    query_lengths = []
+    by_key = {}
+    for index in draw:
+        text = recs[index]
+        header, _, body = text.partition("\n")
+        by_key[header.split()[0][1:]] = sum(len(line.strip()) for line in body.splitlines())
+    query_lengths = [by_key[key] for key in replay_keys]
+    if residue_cap_binds(query_lengths):
+        raise SystemExit("stop: residue cap bound on the DIAMOND queries; the locked draw would change")
     sample = sample_keys(replay_keys, 50, 20261034)
     keep = set(sample)
     random_refused = False

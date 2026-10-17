@@ -958,3 +958,40 @@ compared with `git cat-file` of `d125151` for `pipeline/acts/` and of
 HEAD for the runner, the analysis script, and the job. The remote
 checksums are one `sha256sum` on discovery. No genome, argv, metric,
 or `pipeline/acts/` byte changed.
+
+## Addendum 2026-10-17 — residue budget for the audit and the random-pad sample
+
+Written before the Infernal pilot that uses it. The locked text above is unchanged. The picker is unchanged when the cap does not bind.
+
+### Windowing
+
+A sub-window of one sequence is not used. In Infernal 1.1.5, `cmscan` already cuts a long sequence into overlapping chunks of `CM_MAX_RESIDUE_COUNT` (100,000 residues; `infernal.h:116`) with an overlap of `pli->maxW` (`cmscan.c:886-894`). `maxW` is per model, `max(wmult * cm_W, cmult * cm_clen)` (`cm_pipeline.c:1048-1055`). A chunk keeps the source sequence's `L`. `have5term` is `start == 1` and `have3term` is `end == L` (`cm_pipeline.c:1337-1339`), and hit coordinates are shifted back onto that sequence (`cmscan.c:916`). Duplicates from the overlap are removed only after every model has been searched (`cmscan.c:671-673`). Overlap marks are likewise over the whole sequence (`cmscan.c:675-677`).
+
+A window supplied as its own FASTA record is a different call. Its ends are termini, so the default truncation passes re-search its outer `maxW` residues (`cm_pipeline.c:1375-1378`). Those coordinates are interior on the full sequence. No single overlap matches every model's `maxW`. A hit that survives inside the window can be a same-model duplicate, or the partner of an overlap outside the window. E-values use `pli->Z` (`cmscan.c:918-921`). With `-Z` off, `Z` is the sequence size passed into the pipeline (`cm_pipeline.c:383-389`). The first Infernal pilot showed that omitting `-Z` changes body cells. Passing the full-sequence `-Z` holds the database size fixed and does not hold the terminus flags, the model-dependent overlap, or the global overlap removal fixed. The rows of a window are not provably the full run's rows in that region. The check does not window.
+
+### Budget
+
+The audit draw is the locked one: inclusion probability `0.02`, then a floor of 20 records (`AUDIT_P`, `AUDIT_FLOOR`). That probability is the residue fraction the draw is sized to cover in expectation when record lengths are exchangeable. It is not trimmed. Trimming it would change the proteome sample.
+
+The random-pad record draw is the locked 50-record sample, seed `20261034`. It is not retargeted at `0.02`. A `0.02` draw on `GCF_013315695.1` (4,927 proteins) is about 100 records, not 50, and the invariance requirement is the locked sample. The floor of that draw is 50 records, or every record when there are fewer. Its residue fraction is whatever those 50 records add up to. On this proteome the cap does not bind, so the fraction is recorded and the records stay.
+
+The cap is half the residues of the records being drawn from, compared as `2 * length > total`. If any one record exceeds it, that layer is skipped. The decision line is `audit: skipped, input below record granularity` or the same sentence under `random_pads`. The neighbor pad still runs on every replayed record. The in-situ check still runs. Three random pads still run when the cap does not bind. Dropping to one pad on a short input was considered and not taken: the injected 5% drop refused on the second and third pads, and for the DX3 counts `q = 137090/438658`, `(1-q)^3 = 0.3249208679849812` while `(1-q) = 0.6874786279972096`.
+
+`GCF_013315695.1` has 4,927 proteins, 1,490,793 residues, longest protein 6,119 (`WP_087900056.1`, fraction 0.0041). Half the residues is 745,396. The cap does not bind. Every genome FASTA under the Infernal input list has a longest record of at least 0.849 of that file, so the cap binds and both layers skip.
+
+### What a skip costs
+
+The random-pad miss identity, with `r` pads, is
+
+```
+P_miss = h + (1-h) * (1-q)^r
+h = C(n-k, s) / C(n, s)    when s <= n-k, else 0
+```
+
+`k` of `n` records are affected, the sample has `s` records, and one pad contains the coupling entry with probability `q`. This is a counting identity. It is not a claim that a pad which contains the entry changes a row. The DX3 numbers (`k = 22`, `n = 2000`, `s = 50`, `r = 3`) still give `0.7105418322019688`.
+
+A skipped layer is `r = 0`, so `P_miss = 1` for a coupling the neighbor pad does not cover. On a few-record input the locked sample was already the whole input (`s = n`). For `k >= 1` that forces `h = 0`, and the three pads had `P_miss = (1-q)^3`, not `h`. The first Infernal pilot's random pad searched 346 models against 146 candidate models, so the pad width was 200 and `q = 200/4081 = 0.0490075961774075`. Then `(1-q)^3 = 0.8600647411932927`. Skipping the pads moves that figure from 0.860 to 1. The neighbor pad's miss probability for a file-order neighbor stays 0.
+
+The audit misses a body difference on `k` of `n` records with probability `C(n-k, s) / C(n, s)`, or 0 when `s > n-k`. The floor of 20 makes `s = n` whenever `n <= 20`, so a difference on at least one record was seen. A skipped audit has miss probability 1. The in-situ check still compares the probe sample at cache fill. For `n <= 300` that sample is every record, and the stored result is not repeated on an update.
+
+On the 2026-10-14 Infernal pilot (`GCF_058683675.1`, stock 310.7 s) the three random pads were 60.0 + 53.1 + 70.2 s and the audit was 309.9 s. Those are the scans the cap removes. The neighbor pad (67.5 s) remains.

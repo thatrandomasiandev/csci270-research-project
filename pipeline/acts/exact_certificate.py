@@ -10,6 +10,7 @@ The near-miss pad is tool-specific and is not built here.
 
 from __future__ import annotations
 
+import math
 import random
 from collections import Counter
 from collections.abc import Sequence
@@ -63,6 +64,36 @@ def judge(
         "pad_hit_rows": pad_hits,
         "other_subject_rows": other,
     }
+
+
+def pad_miss_probability(*, n: int, k: int, s: int, q: float, repetitions: int = len(SEEDS)) -> float:
+    """Probability the random pads miss one coupling that is not a neighbor.
+
+    ``h = C(n-k, s) / C(n, s)`` when ``s <= n-k``, and ``h = 0`` otherwise.
+    With ``repetitions`` pads that each contain the coupling entry with
+    probability ``q``,
+
+        P = h + (1-h) * (1-q) ** repetitions
+
+    A skipped layer has ``repetitions = 0``, so ``P = 1``. This is a
+    counting identity. It does not say that a pad which contains the
+    entry changes a row. Three pads stay when the layer runs: the
+    injected-drop control refuses on the second and third, and one pad
+    replaces ``(1-q)^3`` with ``(1-q)``.
+    """
+    if repetitions < 0:
+        raise ValueError("repetitions must be non-negative")
+    if repetitions == 0:
+        return 1.0
+    if n <= 0 or k <= 0 or not 0.0 <= q <= 1.0:
+        return 1.0
+    if s < 0 or s > n:
+        raise ValueError("sample size out of range")
+    if s > n - k:
+        h = 0.0
+    else:
+        h = math.comb(n - k, s) / math.comb(n, s)
+    return h + (1.0 - h) * ((1.0 - q) ** repetitions)
 
 
 def sample_keys(keys: Sequence[str], k: int, seed: int) -> list[str]:

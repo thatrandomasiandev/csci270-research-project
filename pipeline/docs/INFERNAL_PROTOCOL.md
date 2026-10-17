@@ -340,3 +340,7 @@ the same locked ten unchanged, disclosed as a restart, or (b) use a new
 seed under a new pre-registration if the shipped code changes before
 then (for example, sizing the check by residues). Whichever applies is
 recorded before the redo starts.
+
+## Semantics 2026-10-17 — do not window a sequence
+
+Reviewed before the residue-budget pilot. Infernal 1.1.5, file and line as in `docs/EXACT_REPLAY_PROTOCOL.md` (addendum 2026-10-17). A sub-window scanned as its own sequence is not the full run's rows in that region: truncation passes treat the window ends as termini (`cm_pipeline.c:1375-1378`), `maxW` depends on the model (`cm_pipeline.c:1055`), overlap removal is global (`cmscan.c:671-677`), and `-Z` is the full-sequence database size (`cmscan.c:918-921`). The check does not window. The audit and the random-pad record sample skip when one record is longer than half the residues. The neighbor pad and the in-situ check still run. The miss probabilities are in that addendum.

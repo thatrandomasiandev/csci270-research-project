@@ -26,11 +26,12 @@ sys.path.insert(0, str(PIPE / "scripts"))
 import costpass_diamond_fresh as diamond_fresh  # noqa: E402
 import costpass_dx3_regen as dx3  # noqa: E402
 import costpass_ic2_pilot as ic2  # noqa: E402
+from acts.audit import residue_cap_binds  # noqa: E402
 from acts.exact_certificate import judge, neighbor_ids, pad_indices, sample_keys  # noqa: E402
 from acts.provenance import provenance  # noqa: E402
 from acts.reference_run import body_lines  # noqa: E402
 
-WORK = Path.home() / "tmp" / "ctlrerun_work"
+WORK = Path.home() / "tmp" / "infernal3_work" / "controls"
 DATA = Path("/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data")
 PFAM_GZ = DATA / "hmmer" / "Pfam-A.hmm.gz"
 QUERY_GZ = DATA / "recurrence" / "A" / "GCF_013315695.1_protein.faa.gz"
@@ -44,7 +45,7 @@ DROP_SEED = 20261013
 SAMPLE_SEED = 20261034
 SAMPLE_SIZE = 50
 EXPECTED_DIAMOND = "GCF_023657995.1_protein.faa.gz"
-OUT = PIPE / "results" / "exact_replay" / "costpass_controls_rerun.json"
+OUT = PIPE / "results" / "exact_replay" / "residue_budget_controls.json"
 
 
 def log(msg: str) -> None:
@@ -397,6 +398,25 @@ def injected_body(cand, mspans, fspans, qorder):
 
 def random_pads(entries, order_models, qorder, mspans, fspans, full_cand, reduced, replay_tbl, replay_dom, tag: str) -> dict:
     pool = [key for key in qorder if key in reduced or key in full_cand]
+    lengths = []
+    with ic2.QUERIES.open() as handle:
+        size = 0
+        wanted = set(pool)
+        take = False
+        for line in handle:
+            if line.startswith(">"):
+                if take:
+                    lengths.append(size)
+                size = 0
+                take = line[1:].split()[0] in wanted
+            elif take:
+                size += len(line.strip())
+        if take:
+            lengths.append(size)
+    if len(lengths) != len(pool):
+        raise SystemExit(f"stop: residue lengths {len(lengths)} != sample pool {len(pool)}")
+    if residue_cap_binds(lengths):
+        raise SystemExit("stop: residue cap bound on the proteome sample; the locked draw would change")
     sample = sample_keys(pool, SAMPLE_SIZE, SAMPLE_SEED)
     keep = set(sample)
     u_red = {name for ids in reduced.values() for name in ids}
