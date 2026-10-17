@@ -344,3 +344,51 @@ recorded before the redo starts.
 ## Semantics 2026-10-17 — do not window a sequence
 
 Reviewed before the residue-budget pilot. Infernal 1.1.5, file and line as in `docs/EXACT_REPLAY_PROTOCOL.md` (addendum 2026-10-17). A sub-window scanned as its own sequence is not the full run's rows in that region: truncation passes treat the window ends as termini (`cm_pipeline.c:1375-1378`), `maxW` depends on the model (`cm_pipeline.c:1055`), overlap removal is global (`cmscan.c:671-677`), and `-Z` is the full-sequence database size (`cmscan.c:918-921`). The check does not window. The audit and the random-pad record sample skip when one record is longer than half the residues. The neighbor pad and the in-situ check still run. The miss probabilities are in that addendum.
+
+## Pilot 2026-10-17 — seed 20261046
+
+Not a result. One genome, `GCF_010365405.1`, drawn by `random.Random(20261046).choice` from the genome names in `results/infernal/inputs.tsv` after removing `GCF_049949635.1`, `GCF_058683675.1`, the Test I ten, and seed 20261045's ten. The script recomputed that draw and would have stopped on a mismatch. Residues 4,835,592, `-Z 9.671184`. Both variants. Cache fill on Rfam 15.0, then three updates to 15.1, each from a sqlite backup of that cache, alternating with three stock scans of 15.1. File: `results/infernal/budget_pilot.json`.
+
+No clan: three updates `SHIP`, each body byte-identical to its stock body, 384 body lines. Stock walls 288.405 s, 287.015 s, 287.243 s. Update walls 138.479 s, 138.425 s, 138.531 s. Median ratio 2.074. First update: discovery 17.663 s, replay 47.626 s, neighbor pad 69.892 s. Audit and random pads both `skipped, input below record granularity`. Fill 1343.785 s (`SHIP`).
+
+Clan: three updates `SHIP`, byte-identical, 384 body lines. Stock walls 287.375 s, 286.929 s, 286.998 s. Update walls 140.433 s, 140.406 s, 140.739 s. Median ratio 2.044. First update: discovery 19.746 s, replay 47.688 s, neighbor pad 69.777 s. The same two layers skipped. Fill 1343.876 s (`SHIP`).
+
+The runner's `rates_first_pair` read `phases["discovery"]`. The decision clock stores `discovery_s`, so that object records discovery 0 and `a = 0`. The prediction in the next section uses `discovery_s` from the same phases. The measured runner reads `discovery_s`. The pilot file is not rewritten.
+
+## Measured run 2 — locked 2026-10-17
+
+This is clause (b) of the 2026-10-14 stop note. The residue budget changed the shipped check, so this is a new seed, not a restart of seed 20261045. No scan of these ten genomes starts until this section is committed.
+
+Seed `20261047`. The pool is the genome names in `results/infernal/inputs.tsv`, minus the exclusions below. The draw is `sorted(random.Random(20261047).sample(rest, 10))`. `scripts/infernal_measured2.py` recomputes it and stops if the list differs.
+
+Exclusions: `GCF_049949635.1` (first pilot), `GCF_058683675.1` (seed 20261044), `GCF_010365405.1` (seed 20261046), the Test I ten (`GCF_003956185.1`, `GCF_013168095.1`, `GCF_022846215.1`, `GCF_028743355.1`, `GCF_030515405.1`, `GCF_030708175.1`, `GCF_037287675.1`, `GCF_054510725.1`, `GCF_055382035.1`, `GCF_059615465.1`), and seed 20261045's ten (`GCF_001515725.1`, `GCF_003722195.1`, `GCF_005389605.2`, `GCF_017654165.1`, `GCF_023657995.1`, `GCF_032384295.1`, `GCF_041235215.1`, `GCF_048568975.1`, `GCF_059131955.1`, `GCF_059719525.1`).
+
+Drawn ten: `GCF_002058765.1`, `GCF_002090355.1`, `GCF_009433135.1`, `GCF_013315695.1`, `GCF_020034635.1`, `GCF_020905655.1`, `GCF_024918035.1`, `GCF_045689345.1`, `GCF_049949335.1`, `GCF_900196535.2`.
+
+`GCF_013315695.1` is also the proteome in the residue-budget invariance test. That test read the protein FASTA. This run reads `*_genomic.fna.gz`. The accession was not excluded, and the draw is not edited.
+
+Both variants. The clan variant passes `--subset-aux '{arg-after:--clanin}:tokens'` and `--invalidate-group '{arg-after:--clanin}'`. Per variant: one cache fill on Rfam 15.0, then ABABAB with `r = 3` (a stock scan of 15.1, then an update to 15.1 from a fresh sqlite backup of the fill cache). An update does not write the fill cache. The CM and the clan file are copies in the work directory. The data tree is not written.
+
+Floor: 2,000 body lines per variant, summed across the ten, each genome's stock body counted once. The three stock bodies of a genome must be byte-identical. Each update is compared with the stock body from the same pass. Under the floor, the speedup claim is INCONCLUSIVE. A genome whose stock repeats disagree is INCONCLUSIVE, and its lines stay out of the floor and out of `S_g`.
+
+Metrics, as in the paper. For genome `g`, `S_g` is the median of the three stock walls divided by the median of the three update walls. Medians are Python's `statistics.median`. Across genomes, report the median of `S_g`, the geometric mean (exponential of the mean of the logs), and the range. `CV = s / mean` with `n - 1`, on the three walls of each arm of each genome; report the largest. CPU time is user plus sys from `/usr/bin/time -p`; report the median CPU of each arm. These are workstation timings and are indicative. Also a percentile bootstrap of the median of `S_g`: 10,000 resamples with replacement, seed `20261047`, and the elements at index `floor(p * (n - 1))` of the sorted resample medians for `p = 0.025` and `p = 0.975`. The maximum relative error is `|T_hat - T| / T`, where `T` is the median update wall and `T_hat = (a f + c)` times the median stock wall.
+
+Outcomes, per genome per variant. The genome takes the worst of its runs, in this order: UNSAFE, TOKEN-EQUAL, SAFE-REFUSE, EXACT.
+
+- EXACT: `SHIP`, and the output body is byte-identical to that pass's stock body.
+- TOKEN-EQUAL: `SHIP`, tokens match, bytes differ.
+- UNSAFE: `SHIP`, and the tokens differ. The run stops. Completed genomes stay in the file.
+- SAFE-REFUSE true: a `REFUSE` decision, and the written body differs from stock, or the reason says the body or an audited record differs from a full run.
+- SAFE-REFUSE needless: a `REFUSE` decision, and the written body is byte-identical to stock.
+- SAFE-REFUSE, replay not compared: a `REFUSE` decision and no body was written. An ic2 failure does not write the replay, so this is not labeled true or needless.
+- INCONCLUSIVE: the floor is missed, or the stock repeats disagree.
+
+Prediction, from the pilot's first update, `f = 457/4227`. `a = discovery_s / (f * T_stock)`, `c = (T_tare - discovery_s) / T_stock`, predicted speedup `1 / (a f + c)`.
+
+No clan: `discovery_s = 17.662800875001267`, `T_stock = 288.4050472919989`, `T_tare = 138.47929170800126`, `a = 0.5664645860536466`, `c = 0.4189125397333216`, predicted `S = 2.0826583074972143`.
+
+Clan: `discovery_s = 19.746049458000925`, `T_stock = 287.37537862500176`, `T_tare = 140.4329675000008`, `a = 0.6355455932375328`, `c = 0.4199626238665531`, predicted `S = 2.0463526744530274`.
+
+Each predicted value equals that pair's stock/tare ratio by construction. The measured test is the median of the ten `S_g` values, and the per-genome time error.
+
+Result file: `results/infernal/measured2.json`, rewritten after every stock scan and every update. Power is checked before each process. If the Mac is on battery, the runner exits before the next process and leaves the partial file in place.

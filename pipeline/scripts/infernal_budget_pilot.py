@@ -305,7 +305,10 @@ def compare(stock_tbl: Path, tare_dir: Path) -> dict:
 
 def rates(stock_s: float, tare: dict) -> dict:
     phases = tare.get("phases") or {}
-    discovery = float(phases.get("discovery", 0.0) or 0.0)
+    # The decision clock stores discovery_s. The 20261046 pilot file read
+    # the absent key "discovery" and stored a = 0; the protocol recomputes
+    # from discovery_s and does not rewrite that file.
+    discovery = float(phases.get("discovery_s", phases.get("discovery", 0.0)) or 0.0)
     if stock_s <= 0:
         return {}
     a = discovery / (F_DELTA * stock_s)
