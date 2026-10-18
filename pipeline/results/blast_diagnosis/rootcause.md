@@ -156,21 +156,135 @@ identical, and the E-value fits `total_entry_length`. The closed family
 already describes the printed E-value of a fixed alignment. The refusal
 is the one alignment that was replaced.
 
-Hypothesis, not a result: the half database's smaller search space
-either saves a seed the whole database's cutoff drops, or keeps a
-composition-adjusted Smith-Waterman alignment whose E-value is under
-1000 only on the half. `-dbsize` set to the whole reference's residue
-count is the TARE-expressible correction. It pins `n` and leaves `N`
-equal to the half's sequence count, so it may be short of
-`-searchsp`. The script `pipeline/scripts/blast_hsp_diagnosis.py`
-(frozen at the commit recorded in `rootcause.json`) reruns the locked
-probe, checks stock against stock, then pins `-dbsize`, `-searchsp`,
+`-dbsize` set to the whole reference's residue count is the
+TARE-expressible correction. It pins `n` and leaves `N` equal to the
+half's sequence count. The script
+`pipeline/scripts/blast_hsp_diagnosis.py` reruns the locked probe,
+checks stock against stock, then pins `-dbsize`, `-searchsp`,
 `-comp_based_stats 0/1/2`, `-max_hsps 1`, and `-ungapped` together with
-`-comp_based_stats 0` (the binary rejects ungapped composition adjustment)
-one at a time.
+`-comp_based_stats 0` (the binary rejects ungapped composition
+adjustment) one at a time.
 
 ## Evidence
 
-Not measured in this file yet. The CARC job is
-`pipeline/jobs/blast_hsp_diagnosis.job`. It was not submitted while
-tasks of job `13208152` were still `PENDING`.
+Measured on CARC job `13223561` (host `b09-03`), BLAST+ 2.14.1+, git
+`10c3c81acf67eca1d427ea9afc04cec9d170b646` (dirty false). Numbers are
+`results/blast_diagnosis/rootcause.json`. The binary is the spack
+module used for B1. `OLD_FSC` was unset. Threads in the probe were 4,
+matching B1.
+
+Stock versus stock on the 20-query probe is byte-identical: 15,125
+lines, MD5 `e1792cd30e1b67f1c9a0227f31a24f19`. The partition matches B1
+(575,748 sequences, 209,017,843 letters, part lengths 104,399,849 and
+104,617,994). The one joined disagreement is the published line, and
+no other joined line disagrees:
+
+```
+whole  WP_000153074.1  sp|A0KJE6|LOLA_AERHH  33.333  36  23  1  3  37  1  36  205  25.0
+part0  WP_000153074.1  sp|A0KJE6|LOLA_AERHH  21.875  128 72  5  3 105 1 125  180  24.3
+```
+
+Key sets match the published diagnosis: whole 15,125, union 28,937,
+only_union 13,812, only_whole 0, in_two_parts 0. Classification
+`different_hsp`. 12/36 is 33.333 percent. 28/128 is 21.875 percent.
+The pairwise report of the same binary, preserved under
+`/scratch1/jjt_373/tare_e/blast_pairwise_preserve/`, shows the same two
+alignments: both are "Compositional matrix adjust," both start at
+query 3 and subject 1, and the long one ends at query 105 and subject
+125.
+
+One option reproduces the unpinned whole line, including the E-value
+and the bit score. `-dbsize 209017843` on the half that contains
+`A0KJE6` prints
+
+```
+WP_000153074.1  sp|A0KJE6|LOLA_AERHH  33.333  36  23  1  3  37  1  36  205  25.0
+```
+
+The same flag on the whole database leaves that line unchanged
+(853 lines on the one-query file either way). On the full 20-query
+probe, each pinned half is the whole table restricted to subjects in
+that half: part 0 has 7,498 rows, part 1 has 7,627, the sum is 15,125,
+and each half has zero missing and zero extra against the whole
+(`full_probe_confirmation.reproduces_whole` is true). A check on those
+same files, after the job, found the half's lines equal to the
+filtered whole lines in whole-file order, not only as a multiset.
+
+The other pins do not reproduce the unpinned command.
+
+| Pin on the half | Line for A0KJE6 | Equals unpinned whole |
+|---|---|---|
+| none | 21.875, length 128, E 180, bits 24.3 | no |
+| `-dbsize 209017843` | 33.333, length 36, E 205, bits 25.0 | yes |
+| `-searchsp 5214656096` | same interval, E 161, bits 25.0 | no |
+| `-comp_based_stats 0` | same short interval, E 242, bits 23.9 | no |
+| `-comp_based_stats 1` | the long interval, E 152, bits 24.6 | no |
+| `-comp_based_stats 2` | the long interval, E 180, bits 24.3 | no |
+| `-max_hsps 1` | the long interval | no |
+| `-ungapped -comp_based_stats 0` | the pair is absent | no |
+| `-num_threads 1` | the long interval | no |
+
+`-searchsp 5214656096` is the effective search space the binary printed
+for this query (`report_stats`). It selects the short HSP and the bit
+score 25.0, and it also changes the whole-database E-value from 205 to
+161. The printed E-value follows `db_length` (Spouge), which
+`-searchsp` does not set. It is also one number per query, and TARE
+has no per-query placeholder.
+
+Mode 0 reports the short interval on both databases, at bit score 23.9
+instead of 25.0, so the database-size split goes away and the stock
+score goes away with it. Mode 1 reports the long interval on both
+(E-values 152 and 304). Default mode 2 is the only mode in which the
+half and the whole disagree about which alignment to print. Culling
+the HSP list to one, and running on one thread, leave the
+disagreement in place. The stock pair being byte-identical already
+says the disagreement is not a thread race.
+
+## Mechanism
+
+`-dbsize` writes `BlastEffectiveLengthsOptions.db_length`
+(`blast_options.h:482-491`; a zero value means "use the real length,"
+`BLAST_FillEffectiveLengthsOptions` at `907-922`). That length is `n`
+in `BLAST_ComputeLengthAdjustment` (`blast_stat.h:771-785`) and the
+database factor in the printed E-value (`BLAST_SpougeStoE`). The score
+cutoff that decides which initial hits are kept takes the effective
+search space (`BLAST_Cutoffs`, `blast_stat.h:577-578`). Mode 2, the
+blastp default, then redoes the alignment with a composition-adjusted
+matrix and keeps the Smith-Waterman result only when its E-value,
+computed from `eff_search_space`, is under the `-evalue` cutoff
+(`redo_alignment.c`, `Blast_RedoOneMatchSmithWaterman`; the line
+numbers of that keep test are the public toolkit source, not a
+re-count of the 2.14.1 tarball). The composition used for the adjusted
+matrix is taken from the preliminary alignment's window, so a cutoff
+that changes with database length can change which adjusted alignment
+is reported.
+
+The sweep names that path. Mode 2 is required for the two databases to
+disagree. Pinning `db_length` to the whole reference's residue count
+puts the half back on the whole database's alignment, including the
+E-value. Pinning the search-space product fixes the alignment and not
+the printed E-value. No blastp flag pins the sequence count `N`. On
+these halves that remainder did not move a printed cell.
+
+`infer_knobs` will not discover the flag. The help bracket is
+`<Int8>`, and `int8` is not in `_PLACEHOLDER_NAMES`. A declared pin
+can still set it: `--pin '-dbsize {total_entry_length}'`. The value
+on this release is 209,017,843.
+
+## What this does not change
+
+The gate is untouched. An explicit pin is applied only after the
+unpinned fit returns SHIP (`reference_run.py`, the refusal return
+before `_run_exact`). This file does not claim that
+`python3 -m acts run` emits SHIP for blastp. That is the pilot in
+`docs/BLAST_PIN_PROTOCOL.md`.
+
+## Deviation
+
+Two earlier jobs, `13223485` and `13223517`, omitted `-outfmt 6`.
+blastp wrote the pairwise report. The harness then treated two empty
+tabular joins as a match and wrote a `SHIP_CANDIDATE` JSON that is
+void. Those jobs are not this result. Job `13223561` is the tabular
+rerun: the published lines are present, the joins are nonempty, and
+the confirmation above is that file. The pairwise text is kept only as
+a picture of the two alignments.
