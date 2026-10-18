@@ -995,3 +995,27 @@ A skipped layer is `r = 0`, so `P_miss = 1` for a coupling the neighbor pad does
 The audit misses a body difference on `k` of `n` records with probability `C(n-k, s) / C(n, s)`, or 0 when `s > n-k`. The floor of 20 makes `s = n` whenever `n <= 20`, so a difference on at least one record was seen. A skipped audit has miss probability 1. The in-situ check still compares the probe sample at cache fill. For `n <= 300` that sample is every record, and the stored result is not repeated on an update.
 
 On the 2026-10-14 Infernal pilot (`GCF_058683675.1`, stock 310.7 s) the three random pads were 60.0 + 53.1 + 70.2 s and the audit was 309.9 s. Those are the scans the cap removes. The neighbor pad (67.5 s) remains.
+
+## Addendum 2026-10-18 — headline array 13208152: time-limit rerun (deviation, written before the rerun)
+
+Array 13208152 ran the locked design at `acts_commit = d125151`. Six tasks finished
+(0, 1, 6, 7, 8, 9), each scored EXACT. Three hit the 4 h wall limit before their
+last arm or the unpinned control: task 2 (`GCF_009948655.1`, four of six arms),
+task 4 (`GCF_022559285.1`, four of six), task 5 (`GCF_030347155.1`, six arms, no
+control). Task 3 (`GCF_015290725.1`) stopped at cache fill with
+`REFUSE: duplicate row key ('WP_000726974.1', 'Gly-zipper_OmpA', '1.2e-06')`:
+the protein and the Pfam entry each appear once, so this is a refusal by the
+row-key rule on the domain table, not a duplicate input. TARE returns the stock
+run there. It is listed as not finished and is not imputed, as locked.
+
+Deviation: tasks 2, 4, 5 are rerun from the start as a new array with
+`--time=08:00:00`. Nothing else changes: same staged tree
+(`/project2/.../headline_exact`, `ACTS_COMMIT = d125151`), same runner, job file,
+genomes, argv, seeds, cache cap, node type, and scorer. The partial JSON of the
+three timed-out tasks is kept and is not merged into the rerun; each rerun
+genome is scored only from its own complete run. Task 3 is not rerun, because the
+same code would refuse again; changing the row key is a code change after
+pre-registration and is out of scope for this headline.
+
+Consequence: the headline is reported over the genomes that finish (at most 9);
+it is not the locked G = 10 figure, and the paper says so.
