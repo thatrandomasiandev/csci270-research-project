@@ -710,7 +710,7 @@ def g1_pilot(stamp: dict) -> Path:
         "outcome": outcome,
         "semantics": "pipeline/results/diamond_order/g_semantics.md",
         "minimum_stock_rows": MIN_ROWS,
-        "code_commit": stamp["git"],
+        "code_commit": stamp["provenance_at_start"]["git"],
         "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab",
         "deviations": [
             "threads 2, dx3 used 8",
@@ -957,7 +957,7 @@ def g2_sweep(stamp: dict) -> Path:
         "not_a_result": True,
         "outcome": outcome,
         "semantics": "pipeline/results/diamond_order/g_semantics.md",
-        "code_commit": stamp["git"],
+        "code_commit": stamp["provenance_at_start"]["git"],
         "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab",
         "known_bad_keys": [list(key) for key in LOST_KEYS],
         "deviations": [
