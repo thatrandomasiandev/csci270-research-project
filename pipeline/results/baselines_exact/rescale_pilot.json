@@ -1,0 +1,140 @@
+{
+  "pilot": true,
+  "protocol": "docs/BASELINES_EXACT_PROTOCOL.md",
+  "git_head": "64975d886e6cba9d0221ee36b5b8a467ad6429c3",
+  "seed": 20261133,
+  "proteome": "GCF_024585005.1_protein.faa.gz",
+  "n_records_file": 4757,
+  "indices_head": [
+    97,
+    105,
+    107,
+    149,
+    198,
+    207,
+    369,
+    404,
+    458,
+    492
+  ],
+  "n_sample": 100,
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 2,
+  "walls_are_evidence": false,
+  "stock_walls_s": {
+    "S382_a": 16.531551332998788,
+    "S382_b": 19.280291666000267,
+    "S381": 15.308192749987938
+  },
+  "stock_vs_stock": true,
+  "families": {
+    "z_old": 27481,
+    "z_new": 30134,
+    "stable": 26082,
+    "changed": 4052,
+    "removed": 165,
+    "cksum_stable": 26193,
+    "strict_stable_cksum_differs": 0,
+    "cksum_stable_strict_differs": 111
+  },
+  "label": "PILOT_OK",
+  "result": {
+    "queries": "queries.faa",
+    "n_records": 100,
+    "positive_control": true,
+    "negative_control_differs": true,
+    "discovery_wall_s": 2.3537357919994975,
+    "walls_are_evidence": false,
+    "tbl": {
+      "stock_lines": 190,
+      "rescaler_lines": 190,
+      "byte_identical": 106,
+      "byte_identical_over_stock": 0.5578947368421052,
+      "token_identical": 106,
+      "wilson95": {
+        "low": 0.48682406011409896,
+        "high": 0.6266707522642492
+      },
+      "padding_only": 0,
+      "value_only_by_column": {
+        "full_sequence_E": 48,
+        "best_domain_E": 50
+      },
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "order_only": false,
+      "bodies_equal": false,
+      "difference_classes": [
+        "value-only"
+      ]
+    },
+    "dom": {
+      "stock_lines": 189,
+      "rescaler_lines": 189,
+      "byte_identical": 102,
+      "byte_identical_over_stock": 0.5396825396825397,
+      "token_identical": 102,
+      "wilson95": {
+        "low": 0.46854057596866266,
+        "high": 0.6092435275728229
+      },
+      "padding_only": 0,
+      "value_only_by_column": {
+        "full_sequence_E": 47,
+        "i_Evalue": 51,
+        "c_Evalue": 2
+      },
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "order_only": false,
+      "bodies_equal": false,
+      "difference_classes": [
+        "value-only"
+      ]
+    },
+    "cutoffs_full_sequence_E": {
+      "tbl": {
+        "1e-03": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-05": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-10": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        }
+      },
+      "dom": {
+        "1e-03": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-05": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-10": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        }
+      }
+    },
+    "stock_body_sha256": {
+      "tbl": "3bc7900a55c6d35c64c0aaa8f9f91351d8b4f4042de7fdd5f45c3ffccbbb2cd5",
+      "dom": "a14f720521cd1a3be0f27b24fa103af79e82978c353bf301a09f17c94b4e9d6f"
+    }
+  }
+}

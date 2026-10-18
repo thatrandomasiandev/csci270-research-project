@@ -1,0 +1,80 @@
+{
+  "mode": "pilot",
+  "pilot": true,
+  "seed": 20261133,
+  "proteome": "GCF_024585005.1_protein.faa.gz",
+  "git_head": "db6a2f0893d72a7f59e61791086d6df12f86862f",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 2,
+  "walls_are_evidence": false,
+  "script_lines": {
+    "expert_update_hmmscan.sh": 190,
+    "expert_batch.awk": 121,
+    "expert_update_diamond.sh": 166
+  },
+  "positive_bodies_equal": true,
+  "negative_control_differs": true,
+  "positive": {
+    "run": {
+      "argv": [
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS-exp-d/pipeline/scripts/expert_update_hmmscan.sh",
+        "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.1.hmm",
+        "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.2.hmm",
+        "/Users/joshuaterranova/tmp/tare_d/pilot/S381.tbl",
+        "/Users/joshuaterranova/tmp/tare_d/pilot/queries.faa",
+        "/Users/joshuaterranova/tmp/tare_d/expert_pilot/out"
+      ],
+      "returncode": 0,
+      "killed_over_rss": false,
+      "peak_rss_bytes": 109576192,
+      "log": "/Users/joshuaterranova/tmp/tare_d/expert_pilot/work.log",
+      "wall_s": 173.39172929199412
+    },
+    "tbl": {
+      "stock_lines": 190,
+      "rescaler_lines": 190,
+      "byte_identical": 190,
+      "byte_identical_over_stock": 1.0,
+      "token_identical": 190,
+      "wilson95": {
+        "low": 0.9801824705402803,
+        "high": 0.9999999999999998
+      },
+      "padding_only": 0,
+      "value_only_by_column": {},
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "order_only": false,
+      "bodies_equal": true,
+      "difference_classes": [],
+      "expert_lines": 190
+    },
+    "dom": {
+      "stock_lines": 189,
+      "rescaler_lines": 189,
+      "byte_identical": 189,
+      "byte_identical_over_stock": 1.0,
+      "token_identical": 189,
+      "wilson95": {
+        "low": 0.9800797046227184,
+        "high": 1.0
+      },
+      "padding_only": 0,
+      "value_only_by_column": {},
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "order_only": false,
+      "bodies_equal": true,
+      "difference_classes": [],
+      "expert_lines": 189
+    },
+    "bodies_equal": true
+  },
+  "negative_tbl_byte_identical": 0,
+  "negative_dom_byte_identical": 0,
+  "label": "PILOT_EXACT"
+}
