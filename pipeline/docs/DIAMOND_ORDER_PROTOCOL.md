@@ -2,7 +2,7 @@
 
 Pre-registered after the laptop pilot and before the measured run. The pilot is `pipeline/results/diamond_order/g1_pilot.json` (outcome `PILOT`, code commit `eaefdf862ee35205f4edaaaa5bb4f0ec9bc4800e`). It is not this result. Semantics: `pipeline/results/diamond_order/g_semantics.md`.
 
-Submitted as Slurm job 13223637 on 2026-10-18, after `ssh -O check discovery` succeeded and `squeue -j 13208152` showed no PENDING task. The job writes `pipeline/results/diamond_order/g1_measured.json` on scratch. That file is not a result until the job finishes and the JSON is committed.
+Slurm job 13223637 exited in two seconds on the login image's Python 2 (`SyntaxError` on `from __future__ import annotations`) and did not run DIAMOND. The resubmit is job 13223646, code commit `0f807c5ca836fcefd635380cdda2ab03d4f231df`, `module load python/3.11.9`, submitted on 2026-10-18 after `squeue -j 13208152` again showed no PENDING task. It was PENDING at submission. The job writes `pipeline/results/diamond_order/g1_measured.json` on scratch. That file is not a result until the job finishes and the JSON is committed.
 
 ## What the pilot already showed
 
