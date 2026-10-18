@@ -195,7 +195,7 @@ def blast(
     *,
     threads: str,
     extra: list[str] | None = None,
-    outfmt: str | None = None,
+    outfmt: str | None = OUTFMT,
     evalue: str | None = "1000",
     max_target_seqs: str | None = "100000",
 ) -> dict:
@@ -314,6 +314,17 @@ def rows_touching(text: str, subjects: set[str]) -> list[str]:
 
 def compare_row_sets(whole_lines: list[str], part_lines: list[str]) -> dict:
     """Difference classes for one subject-restricted table pair."""
+    if not whole_lines:
+        return {
+            "byte_identical": False,
+            "missing": 0,
+            "extra": len(part_lines),
+            "different_hsp": 0,
+            "same_interval_different_score": 0,
+            "value_only": 0,
+            "examples": [],
+            "reason": "no whole rows joined on subject id",
+        }
     whole_counts: dict[str, int] = {}
     part_counts: dict[str, int] = {}
     for line in whole_lines:
@@ -532,6 +543,14 @@ def main() -> int:
     whole_target = pair_rows(whole_text, TARGET_QUERY, TARGET_SUBJECT)
     part_target = pair_rows(part_texts[subject_part], TARGET_QUERY, TARGET_SUBJECT)
     other_target = pair_rows(part_texts[1 - subject_part], TARGET_QUERY, TARGET_SUBJECT)
+    query_sample = []
+    n_query_lines = 0
+    for line in body_lines(whole_text):
+        cells = cells_of(line)
+        if cells and cells[0] == TARGET_QUERY:
+            n_query_lines += 1
+            if len(query_sample) < 3:
+                query_sample.append(line)
     reproduction = {
         "key_sets": key_sets(whole_text, part_texts),
         "whole_lines": whole_target,
@@ -540,6 +559,8 @@ def main() -> int:
         "subject_part": subject_part,
         "matches_published_whole": whole_target == [EXPECTED_WHOLE],
         "matches_published_part": part_target == [EXPECTED_PART],
+        "n_query_lines": n_query_lines,
+        "sample_query_lines": query_sample,
         "classification": (
             classify_line(whole_target[0], part_target[0])
             if len(whole_target) == 1 and len(part_target) == 1
@@ -551,6 +572,24 @@ def main() -> int:
         f"published_whole={reproduction['matches_published_whole']} "
         f"published_part={reproduction['matches_published_part']}"
     )
+    if reproduction["classification"] != "different_hsp":
+        payload = {
+            "decision": "STOP",
+            "reason": "the locked probe did not reproduce one different HSP for the published pair",
+            "self_check": checked,
+            "setup": setup,
+            "whole_prep": whole_prep,
+            "stock_vs_stock": stock,
+            "part_runs": [
+                {"wall_s": run["wall_s"], "n_lines": run["n_lines"], "md5": run["md5"]} for run in part_runs
+            ],
+            "reproduction": reproduction,
+            "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab",
+            "provenance": provenance(versions=versions),
+        }
+        dump(args.out, payload)
+        log(f"wrote {args.out} decision=STOP")
+        return 0
 
     log("reading effective search space")
     stats_run = blast(
@@ -592,8 +631,8 @@ def main() -> int:
             "wall_s": run["wall_s"],
             "n_lines": run["n_lines"],
             "target_lines": lines,
-            "matches_unpinned_whole": lines == whole_target,
-            "matches_probe_part": lines == part_target,
+            "matches_unpinned_whole": bool(whole_target) and lines == whole_target,
+            "matches_probe_part": bool(part_target) and lines == part_target,
         }
 
     part_db = work / "db" / f"part{subject_part}"
@@ -737,8 +776,10 @@ def main() -> int:
             compared["wall_s"] = run["wall_s"]
             compared["n_part_lines"] = run["n_lines"]
             compared["n_whole_rows_in_part"] = len(whole_rows)
+            if len(whole_rows) == 0:
+                all_ok = False
             confirm_parts.append(compared)
-            all_ok = all_ok and compared["byte_identical"]
+            all_ok = all_ok and compared["byte_identical"] and len(whole_rows) > 0
         confirmation = {
             "pin": template,
             "name": name,
