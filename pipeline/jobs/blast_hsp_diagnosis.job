@@ -1,0 +1,62 @@
+#!/bin/bash
+# TARE experiment E: why one BLAST+ HSP matched no normalizer.
+# Diagnosis only. Not a timing run. Ordinary shared node.
+# Do not add --exclusive. Do not touch jobs 12864756 or 13208152.
+#SBATCH --job-name=tare_e_blast
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=02:30:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-e/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-e/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-e
+PIPE="${ROOT}/pipeline"
+REF=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz
+QUERIES=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz
+OUT="${ROOT}/results/rootcause.json"
+WORK=/scratch1/jjt_373/tare_e/blast_diagnosis
+
+mkdir -p "${ROOT}/logs" "${ROOT}/results" "${WORK}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || true
+module load python/3.11.9
+module load blast-plus/2.14.1
+
+export PYTHONPATH="${PIPE}"
+export ACTS_GIT_HASH_FILE="${ROOT}/GIT_HASH"
+export OMP_NUM_THREADS=4
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+unset OLD_FSC || true
+
+echo "=== TARE BLAST HSP diagnosis (not a timing run) ==="
+hostname
+date -Is
+python3 --version
+command -v blastp
+command -v makeblastdb
+blastp -version
+echo "GIT_HASH=$(tr -d '[:space:]' < "${ACTS_GIT_HASH_FILE}")"
+echo "WORK=${WORK}"
+
+nice -n 10 python3 "${PIPE}/scripts/blast_hsp_diagnosis.py" \
+  --reference "${REF}" \
+  --queries "${QUERIES}" \
+  --blastp "$(command -v blastp)" \
+  --makeblastdb "$(command -v makeblastdb)" \
+  --work "${WORK}" \
+  --out "${OUT}" \
+  --threads 4
+
+# Drop the database copies. Keep the JSON and the tabular outputs under WORK
+# until they have been copied back; the fasta and BLAST volumes are the bulk.
+rm -rf "${WORK}/db" "${WORK}/whole.faa" "${WORK}/part0.faa" "${WORK}/part1.faa"
+echo BLAST_HSP_DIAG_DONE
