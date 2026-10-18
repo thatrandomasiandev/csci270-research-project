@@ -638,6 +638,7 @@ def g1_pilot(stamp: dict) -> Path:
     query.write_text("".join(f">{records[i].name}\n{records[i].sequence}\n" for i in draw))
     query_ids = [records[i].name for i in draw]
     query_seqs = {records[i].name: records[i].sequence for i in draw}
+    n_records = len(records)
     del records
 
     log("search original twice")
@@ -724,7 +725,7 @@ def g1_pilot(stamp: dict) -> Path:
             "letters": letters,
             "extracted_fasta": fasta_id,
         },
-        "genome": {"path": str(GENOME), **file_id(GENOME), "records": len(records)},
+        "genome": {"path": str(GENOME), **file_id(GENOME), "records": n_records},
         "query": {
             "seed": PILOT_SEED,
             "n": PILOT_N,
