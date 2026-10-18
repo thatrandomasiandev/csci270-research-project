@@ -25,15 +25,14 @@ if [[ -z "${ACTS_COHORT:-}" || -z "${ACTS_SIZE:-}" ]]; then
   echo "STOP: ACTS_COHORT and ACTS_SIZE are required" >&2
   exit 2
 fi
-# Scratch: node-local /tmp (tmpfs on these nodes) when it has room, else /scratch1.
-# The floor matches pipeline/jobs/headline_carc_pilot.job.
-TMP_FREE_KB="$(df -Pk /tmp | awk 'NR==2{print $4}')"
-if [[ "${TMP_FREE_KB}" -ge $((40*1024*1024)) ]]; then
-  SCRATCH="/tmp/tare_div_${SLURM_JOB_ID}"
-else
-  SCRATCH="/scratch1/${USER}/tare_div_${SLURM_JOB_ID}"
-  echo "NOTE: /tmp has ${TMP_FREE_KB} KB free; using ${SCRATCH}"
-fi
+# Scratch is /scratch1. These tasks are non-exclusive and memory-limited.
+# /tmp is tmpfs on the compute nodes and is charged to the job cgroup, so a
+# pressed Pfam there is enough to OOM a 16G task (archaeon fill, job
+# 13224419_0, oom_kill, 2026-10-18). The 40 GiB floor is checked in Python
+# against this directory. The headline pilot could use /tmp because it was
+# exclusive with --mem=0.
+SCRATCH="/scratch1/${USER}/tare_div_${SLURM_JOB_ID}"
+echo "SCRATCH=${SCRATCH} (not /tmp; tmpfs counts against --mem)"
 HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
 INSTALL="${ACTS_HMMER_PREFIX:-/project2/biyik_1165/jjt_373/csci270-star/diverse_genomes/hmmer-3.4-install}"
 
