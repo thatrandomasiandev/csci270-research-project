@@ -51,6 +51,17 @@ CONTROL_KEYS = (
     "frac_new_unchanged_strict",
     "frac_new_unchanged_body",
 )
+# Cited from the Pfam 38.2 relnotes via MOTIVATION_EVIDENCE.md. A flag, not f_delta.
+RELNOTES = {
+    "37.0": 21979,
+    "37.1": 23794,
+    "37.2": 24076,
+    "37.3": 24424,
+    "37.4": 24736,
+    "38.0": 25545,
+    "38.1": 27481,
+    "38.2": 30134,
+}
 
 
 def git_head() -> str:
@@ -156,6 +167,22 @@ def compare(old_name: str, new_name: str, old: dict, new: dict) -> dict:
         "magics_old": old["magics"],
         "magics_new": new["magics"],
     }
+
+
+def inconclusive_reasons(indexed: dict) -> list[str]:
+    """Pin Z is the r1 model count only when these are all empty."""
+    reasons: list[str] = []
+    if indexed["overwrites"]:
+        reasons.append("duplicate_acc_stem")
+    if indexed["empty_acc"]:
+        reasons.append("empty_acc")
+    if indexed["duplicate_hashes"]:
+        reasons.append("duplicate_strict_hash")
+    if indexed["n_blocks"] != indexed["z"]:
+        reasons.append("n_blocks_ne_z")
+    if indexed.get("parser_entries") != indexed["z"]:
+        reasons.append("parser_entries_ne_z")
+    return reasons
 
 
 def control_mismatches(pair: dict, expected: dict) -> list[str]:
@@ -267,6 +294,15 @@ def main() -> None:
         pair["parser_matches_r1_z"] = (
             pair["parser_entries_old"] == pair["z_old"] and pair["parser_entries_new"] == pair["z_new"]
         )
+        old_reasons = inconclusive_reasons(indexed[old_name])
+        new_reasons = inconclusive_reasons(indexed[new_name])
+        pair["inconclusive_reasons_old"] = old_reasons
+        pair["inconclusive_reasons_new"] = new_reasons
+        pair["inconclusive"] = bool(old_reasons or new_reasons)
+        pair["z_matches_relnotes_old"] = pair["z_old"] == RELNOTES[old_name]
+        pair["z_matches_relnotes_new"] = pair["z_new"] == RELNOTES[new_name]
+        pair["relnotes_old"] = RELNOTES[old_name]
+        pair["relnotes_new"] = RELNOTES[new_name]
         if (old_name, new_name) == ("38.1", "38.2"):
             mismatches = control_mismatches(pair, expected)
             pair["control"] = "reference_kill_r1.json"
