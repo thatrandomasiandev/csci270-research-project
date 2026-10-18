@@ -583,6 +583,8 @@ def require_inputs() -> dict:
     if not SWISSPROT.is_file():
         raise SystemExit(f"STOP missing {SWISSPROT}")
     gz_id = file_id(SWISSPROT)
+    if (gz_id["bytes"], gz_id["md5"]) != EXPECTED_FASTA:
+        raise SystemExit(f"STOP swissprot gzip md5 {gz_id['md5']} bytes {gz_id['bytes']}")
     free = disk_free_bytes(Path.home())
     log(df_text(Path.home()))
     if free < 8 * (1 << 30):
@@ -611,8 +613,8 @@ def g1_pilot(stamp: dict) -> Path:
     log("writing original FASTA")
     write_fasta(raws, list(range(len(keys))), orig_fa)
     fasta_id = file_id(orig_fa)
-    if (fasta_id["bytes"], fasta_id["md5"]) != EXPECTED_FASTA:
-        raise SystemExit(f"STOP extracted fasta md5 {fasta_id['md5']} bytes {fasta_id['bytes']}")
+    if fasta_id["bytes"] < 200_000_000:
+        raise SystemExit(f"STOP extracted fasta is unexpectedly small: {fasta_id['bytes']}")
 
     log("writing shuffled FASTA files")
     for seed in SHUFFLE_SEEDS:
@@ -714,6 +716,7 @@ def g1_pilot(stamp: dict) -> Path:
             "--tmpdir set to the scratch directory",
             "nice -n 10",
             "RSS killed above 4 GiB",
+            "the gzip checksum was applied to the extracted FASTA on the first launch; that launch stopped before any search and was corrected",
         ],
         "inputs": stamp,
         "swissprot": {
