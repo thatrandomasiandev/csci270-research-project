@@ -1,0 +1,125 @@
+{
+  "kind": "measured_partial",
+  "complete": false,
+  "passes": 6,
+  "unsafe": [],
+  "passed_lines_L": 30169,
+  "pooled_floor": 50000,
+  "note": "Six finished genomes. The array is still running. p_up is not quoted.",
+  "genomes": [
+    {
+      "accession": "GCF_000016385.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 3301,
+      "dom_lines": 3027,
+      "max_domain_of": 5,
+      "queries_over_20_domains": 0,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    },
+    {
+      "accession": "GCF_000812185.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 2352,
+      "dom_lines": 2177,
+      "max_domain_of": 16,
+      "queries_over_20_domains": 0,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    },
+    {
+      "accession": "GCF_002214165.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 1346,
+      "dom_lines": 1269,
+      "max_domain_of": 14,
+      "queries_over_20_domains": 0,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    },
+    {
+      "accession": "GCF_008000775.2",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 5976,
+      "dom_lines": 5676,
+      "max_domain_of": 54,
+      "queries_over_20_domains": 1,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    },
+    {
+      "accession": "GCF_023169545.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 963,
+      "dom_lines": 890,
+      "max_domain_of": 3,
+      "queries_over_20_domains": 0,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    },
+    {
+      "accession": "GCF_029232205.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "byte_equal": true,
+      "tbl_lines": 1665,
+      "dom_lines": 1527,
+      "max_domain_of": 5,
+      "queries_over_20_domains": 0,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "file_residue_cap_binds": false,
+      "max_name_token_len": 14
+    }
+  ]
+}
