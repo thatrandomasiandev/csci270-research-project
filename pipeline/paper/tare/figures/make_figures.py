@@ -140,8 +140,11 @@ def fig_exact():
     ti = load("infernal/test_i.json")
     rows.append(("Infernal oracle, 10 genomes", ti["rows"]["noclan"], 0, None))
     rows.append(("Infernal oracle + clans", ti["rows"]["clan"], 0, None))
+    m2 = load("infernal/measured2.json")["summary"]
+    rows.append(("Infernal tool, 10 new genomes", m2["noclan"]["body_lines"], 0, None))
+    rows.append(("Infernal tool + clans", m2["clan"]["body_lines"], 0, None))
 
-    fig, ax = plt.subplots(figsize=(ONE, 2.35))
+    fig, ax = plt.subplots(figsize=(ONE, 2.7))
     y = list(range(len(rows)))
     for i, (name, t, d, rn) in enumerate(rows):
         ax.barh(i, t, color=C["tare"], height=0.62)
@@ -251,7 +254,15 @@ def fig_model():
             label="projected, other releases (net additions only)")
     # INFERNAL_PROTOCOL.md "Measured 2026-10-14 — removing GlmZ_SraJ": update 666.0 s, stock 328.4 s, 1 of 4,227 families.
     ax.scatter([100 * 1 / 4227], [328.4 / 666.0], marker="x", color=C["warn"], s=18, zorder=5, clip_on=False,
-               label="measured, Infernal one-family removal (check dominates)")
+               label="Infernal before: one-family removal (check dominates)")
+    m2 = load("infernal/measured2.json")["summary"]
+    for var, mk in (("noclan", "D"), ("clan", "d")):
+        f_inf = m2[var]["f"]
+        ax.errorbar([100 * f_inf], [m2[var]["median_s_g"]],
+                    yerr=[[m2[var]["median_s_g"] - m2[var]["bootstrap_median"]["p2.5"]],
+                          [m2[var]["bootstrap_median"]["p97.5"] - m2[var]["median_s_g"]]],
+                    fmt=mk, ms=3.6, color=C["warn"], mec="black", mew=0.3, capsize=1.5, lw=0.7, zorder=6,
+                    label=f"Infernal after, {'no clan' if var == 'noclan' else 'clans'}: median, 95% CI (10 genomes)")
     ax.set_xlim(0, 30)
     ax.set_ylim(0, 8)
     ax.set_xlabel("fraction of the reference that changed, $f_\\Delta$ (%)")
