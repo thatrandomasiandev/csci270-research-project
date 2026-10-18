@@ -70,10 +70,10 @@ def fig_churn():
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(TWO, 1.9), gridspec_kw={"width_ratios": [1.35, 1]})
     x = list(range(len(releases)))
     prev = [families[0]] + families[:-1]
-    ax.bar(x, prev, color=C["n2"], width=0.62, label="carried from the previous release (net)")
+    ax.bar(x, prev, color=C["n2"], width=0.62, label="carried from the previous release")
     ax.bar(x[1:], [families[i] - prev[i] for i in x[1:]], bottom=prev[1:], color=C["tare"], width=0.62,
            label="net families added")
-    for i in x:
+    for i in (x[0], x[-1]):
         ax.text(i, families[i] + 400, f"{families[i]:,}", ha="center", fontsize=FS)
     ax.set_xticks(x)
     ax.set_xticklabels([f"{r}\n{d}" for r, d in zip(releases, dates)])
@@ -147,8 +147,9 @@ def fig_phases():
         ax.text(left + 8, i + 0.08, f"{left:.0f}s = {stock / left:.2f}$\\times$", va="center", fontsize=FS,
                 fontweight="bold", color=C["bad"] if stock < left else C["tare"])
         if pred is not None:
-            ax.plot([pred], [i + 0.42], marker="v", ms=3.2, color=C["ink"])
-    ax.text(110, 2.66, "$\\blacktriangledown$ model: discovery = $f_\\Delta T_{stock}$", fontsize=FS)
+            ax.plot([pred, pred], [i - 0.36, i + 0.36], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
+    ax.plot([110, 135], [2.66, 2.66], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
+    ax.text(142, 2.66, "model: discovery = $f_\\Delta T_{stock}$", fontsize=FS, va="center")
     ax.set_yticks(range(len(rows)))
     ax.set_yticklabels([r[0] for r in rows])
     ax.invert_yaxis()
@@ -180,10 +181,10 @@ def fig_model():
 
     fig, (ax, bx) = plt.subplots(1, 2, figsize=(ONE, 2.05), sharey=True, gridspec_kw={"width_ratios": [1.5, 1]})
     ax.plot([100 * f for f in fs], [1 / f for f in fs], ls="--", color=C["n3"], lw=0.8)
-    ax.text(17.5, 6.4, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
+    ax.text(22.5, 4.75, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
     ax.plot([100 * f for f in fs], [1 / (a * f + c) for f in fs], color=C["tare"], lw=1.4)
     ax.axhline(1 / c, color=C["tare"], lw=0.5, ls=":")
-    ax.text(29.5, 1 / c + 0.2, f"1/c = {1 / c:.1f}$\\times$", ha="right", fontsize=FS, color=C["tare"])
+    ax.text(1.0, 1 / c + 0.25, f"1/c = {1 / c:.1f}$\\times$", ha="left", fontsize=FS, color=C["tare"])
     ax.axhline(1, color=C["stock"], lw=0.6)
     ax.scatter([100 * f_meas] * len(pts), pts, color=C["tare"], edgecolor=C["ink"], lw=0.4, zorder=5, s=16,
                label="measured, 38.1$\\rightarrow$38.2")
@@ -205,12 +206,12 @@ def fig_model():
     bx.axhline(1, color=C["stock"], lw=0.6)
     bx.scatter([100 * 1 / 4227], [328.4 / 666.0], marker="x", color=C["bad"], s=18, zorder=5, clip_on=False,
                label="before")
-    for var, mk in (("noclan", "o"), ("clan", "s")):
+    for var, mk, dx, face in (("noclan", "o", -0.9, C["tare"]), ("clan", "D", 0.9, "white")):
         f_inf = m2[var]["f"]
-        bx.errorbar([100 * f_inf], [m2[var]["median_s_g"]],
+        bx.errorbar([100 * f_inf + dx], [m2[var]["median_s_g"]],
                     yerr=[[m2[var]["median_s_g"] - m2[var]["bootstrap_median"]["p2.5"]],
                           [m2[var]["bootstrap_median"]["p97.5"] - m2[var]["median_s_g"]]],
-                    fmt=mk, ms=3.2, color=C["tare"], mec=C["ink"], mew=0.3, capsize=1.5, lw=0.7, zorder=6,
+                    fmt=mk, ms=3.6, color=C["tare"], mfc=face, mec=C["tare"], mew=0.9, capsize=1.5, lw=0.7, zorder=6,
                     label="after" + ("" if var == "noclan" else ", clans"))
     bx.set_xlim(0, 20)
     bx.set_xlabel("$f_\\Delta$ (%)")
