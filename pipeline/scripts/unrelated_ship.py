@@ -314,6 +314,22 @@ def load_contract(cache: Path) -> dict | None:
     return json.loads(row[0])
 
 
+def decision_counts(text: str) -> dict:
+    wanted = {
+        "n_entries", "n_stable", "n_fresh", "n_partial",
+        "reused_rows", "ic2", "normalizer",
+    }
+    found: dict[str, str] = {}
+    for line in text.splitlines():
+        if ":" not in line:
+            continue
+        key, value = line.split(":", 1)
+        key = key.strip()
+        if key in wanted:
+            found[key] = value.strip()
+    return found
+
+
 def contract_summary(payload: dict | None) -> dict | None:
     if payload is None:
         return None
@@ -661,6 +677,7 @@ def run_measured() -> None:
                 "xalip": stock["xalip"] or ("xalip" in (update.get("stderr_tail") or "")),
             },
             "contract": contract_summary(load_contract(cache)),
+            "release_diff": decision_counts(update.get("decision_text") or ""),
         })
     if any(row["decision"] == "INCONCLUSIVE" for row in genomes):
         outcome = "INCONCLUSIVE"
