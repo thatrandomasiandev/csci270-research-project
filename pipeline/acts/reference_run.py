@@ -31,7 +31,13 @@ from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit, residue_cap
 from acts.replay_batch import merge_bodies, plan_batches
 from acts.infer_knobs import capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
-from acts.reference_cache import ReferenceCache, argv_namespace, connect_cache
+from acts.reference_cache import (
+    UNRESOLVED_BINARY,
+    ReferenceCache,
+    argv_namespace,
+    connect_cache,
+    program_binary,
+)
 from acts.reference_fit import (
     PROBE_K,
     PROBE_N,
@@ -871,6 +877,17 @@ def namespace_for(
     if group_rule:
         extra += "\0group:" + group_rule
     return hashlib.sha256(extra.encode()).hexdigest()[:16]
+
+
+def _binary_line(argv: Sequence[str]) -> str:
+    """What the cache namespace keyed for argv[0], for decision.txt."""
+    info = program_binary(list(argv))
+    if info["digest"] == UNRESOLVED_BINARY:
+        return (
+            f"{info['path']!r} not found on PATH; namespace keys the fixed marker "
+            f"{UNRESOLVED_BINARY!r}, so a changed binary is not detected"
+        )
+    return f"{info['path']} sha256:{info['digest']}"
 
 
 def _drop_flag_values(argv: Sequence[str], flags: Sequence[str]) -> list[str]:
@@ -1833,6 +1850,7 @@ class ReferenceIncremental(Strategy):
             (dest / name).write_text(text)
 
     def _finish(self, decision: str, reason: str, extra: dict) -> StrategyResult:
+        extra = {**extra, "program_binary": _binary_line(self.argv)}
         rec = StrategyResult(self.name, decision, reason, extra)
         rec.write(self.out_dir / "decision.txt")
         return rec

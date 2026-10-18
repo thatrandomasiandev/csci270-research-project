@@ -995,3 +995,11 @@ A skipped layer is `r = 0`, so `P_miss = 1` for a coupling the neighbor pad does
 The audit misses a body difference on `k` of `n` records with probability `C(n-k, s) / C(n, s)`, or 0 when `s > n-k`. The floor of 20 makes `s = n` whenever `n <= 20`, so a difference on at least one record was seen. A skipped audit has miss probability 1. The in-situ check still compares the probe sample at cache fill. For `n <= 300` that sample is every record, and the stored result is not repeated on an update.
 
 On the 2026-10-14 Infernal pilot (`GCF_058683675.1`, stock 310.7 s) the three random pads were 60.0 + 53.1 + 70.2 s and the audit was 309.9 s. Those are the scans the cap removes. The neighbor pad (67.5 s) remains.
+
+## Addendum 2026-10-17 — reference cache key includes the program binary (cache-key change; rules unchanged)
+
+The reference-strategy namespace (`argv_namespace` in `acts/reference_cache.py`) hashed the argv with the reference path removed, plus the baseline, pin, slack, subset and group settings. It did not hash the program. A new binary at the same path (HMMER 3.4 to 3.5, say) kept the namespace, so the stored contract and cached rows were reused, and a cached run could differ from a full run of the new binary.
+
+The namespace now also hashes the SHA-256 of `shutil.which(argv[0])`. That is the digest the record cache already keys as its `binary` component (`acts/cache.py`). When `argv[0]` does not resolve to a file, the fixed marker `unresolved` is hashed instead, so the namespace stays deterministic. A changed binary is then not detected. `decision.txt` has a `program_binary:` line. It gives the resolved path and digest, or says the marker was used.
+
+An identical binary gives the same namespace on every run. A cache filled before this change misses once and refills. This changes no measured result: the measured runs used fresh caches, so no measured run read a row or contract under the old key. `tests/test_reference_namespace_binary.py` checks that the same argv with different binary bytes gives a different namespace, that the same binary gives the same one, and that the unresolved marker is deterministic and reported.
