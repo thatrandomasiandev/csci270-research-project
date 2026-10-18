@@ -145,7 +145,7 @@ that. Two threads are not the claim.
 | Duplicate FASTA headers. | Two records share a key. TARE cannot tell their rows apart. | Pilot checks header tokens are unique. NCBI protein ids in the existing proteomes are. |
 | `NALI` buffer passed to `xalip`. | Matches of one profile on one sequence beyond the buffer are dropped in both the full run and the subset. | Same binary, so byte identity can hold. If a row count looks capped, record it. Do not retune. |
 | Pattern entries left in the reference while `--matrix-only` is set. | A changed pattern is a changed entry with no row. Waste, not a wrong row. | The reference file is the matrix entries only, written by the generalized-profile parser. |
-| Cross-references (`DR`) and dates (`DT`) change when the matrix does not. | Every entry looks new if the hash includes them. | Parser drops `DT DE CC DR 3D PR DO`. A matrix-score edit changes the hash. Unit test, not a search. |
+| Cross-references (`DR`), dates (`DT`), and match counts (`NR`) change when the matrix does not. | Every entry looks new if the hash includes them. | Parser drops `DT DE CC DR NR 3D PR DO`. A matrix-score edit changes the hash. Unit test, not a search. |
 | Apple Silicon versus SSE. pfscanV3's heuristic and alignment call SSE2/SSE4.1 (`_mm_malloc`, `GetHeuristicVersion`). This laptop is arm64. | The build fails, or a binary built for x86_64 does not run. | No run is attempted until the source is approved. If the build fails, that is the stop. It is not a reason to switch tools inside this review. |
 
 ## Releases
@@ -243,9 +243,13 @@ TARE had no reader for this format. `acts/reference_formats.py` now
 parses it as `generalized_profile`. The module does not name pfscan or
 PROSITE. Tests: `pipeline/tests/test_generalized_profile.py`.
 
-Volatile line codes: `DT`, `DE`, `CC`, `DR`, `3D`, `PR`, `DO`.
-Primary key: `AC|ID`. Length: count of `/M:`, or the PA text length for
-a pattern.
+Volatile line codes: `DT`, `DE`, `CC`, `DR`, `NR`, `3D`, `PR`, `DO`.
+`NR` is the per-release match-count block (the pftools SH3 example
+carries `NR /RELEASE=...` and `NR /TOTAL=...`). The first draft of this
+list omitted it. A release that only refreshes those counts must not
+look like a new matrix. Primary key: `AC|ID`. Length: count of `/M:`,
+or the PA text length for a pattern. A file that opens with `CC` lines,
+as `prosite.dat` does, is the same format.
 
 ## What is not done
 

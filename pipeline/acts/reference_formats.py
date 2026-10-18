@@ -34,8 +34,9 @@ PROFILE = "profile_text"
 GENERALIZED_PROFILE = "generalized_profile"
 
 # Line codes that do not change a score. The matrix (MA) and the pattern
-# (PA) stay. Dates, prose, cross-references, and documentation pointers do not.
-GENERALIZED_VOLATILE_TAGS = ("DT", "DE", "CC", "DR", "3D", "PR", "DO")
+# (PA) stay. Dates, prose, cross-references, documentation pointers, and
+# per-release match counts (NR) do not.
+GENERALIZED_VOLATILE_TAGS = ("DT", "DE", "CC", "DR", "NR", "3D", "PR", "DO")
 
 _ID_LINE = re.compile(r"^ID\s+(\S+?);\s*(MATRIX|PATTERN)\.")
 _AC_LINE = re.compile(r"^AC\s+([^;\s]+)")
@@ -277,12 +278,20 @@ def parse_entryline(text: str) -> list[Entry]:
 
 
 def _looks_like_generalized_profile(text: str) -> bool:
-    """True when the first real line is an ID entry, after a // banner."""
+    """True when an ID entry and a // terminator both occur.
+
+    A release file may open with comment lines (CC) or a starred banner
+    before the first ID. Those lines are not a different format.
+    """
+    saw_id = False
+    saw_end = False
     for line in text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped == "//" or stripped.startswith("**"):
-            continue
-        return _ID_LINE.match(line) is not None
+        if _ID_LINE.match(line):
+            saw_id = True
+        if line.strip() == "//":
+            saw_end = True
+        if saw_id and saw_end:
+            return True
     return False
 
 

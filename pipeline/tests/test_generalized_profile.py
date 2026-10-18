@@ -24,6 +24,7 @@ AC   PS50001;
 DT   NOV-1995 (CREATED).
 DE   Src homology 2 (SH2) domain profile.
 DR   P12345;
+NR   /TOTAL=1(1); /POSITIVE=1(1);
 MA   /GENERAL_SPEC: ALPHABET='AC'; LENGTH=2;
 MA   /M: SY='W'; M=-16,-34;
 MA   /M:/M: SY='Y'; M=-17,-24;
@@ -86,6 +87,14 @@ class GeneralizedProfileTests(unittest.TestCase):
         self.assertEqual(report["n_unchanged_hash"], 1)
         self.assertEqual(report["n_changed_and_new"], 0)
         self.assertEqual(report["c_length"], 0.0)
+
+    def test_comment_banner_and_match_counts_are_not_scoring(self) -> None:
+        text = "CC   motifs file\nCC\n" + MATRIX
+        entries = parse_reference_text(text)
+        self.assertEqual(entries[0].primary, "PS50001|SH2")
+        recounted = text.replace("NR   /TOTAL=1(1); /POSITIVE=1(1);", "NR   /TOTAL=9(8); /POSITIVE=8(7);")
+        self.assertEqual(parse_reference_text(recounted)[0].content_hash, entries[0].content_hash)
+        self.assertTrue(entries[0].raw.startswith("CC   motifs file\n"))
 
     def test_truncated_and_missing_accession(self) -> None:
         with self.assertRaises(FormatError):
