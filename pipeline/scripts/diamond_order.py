@@ -2,8 +2,8 @@
 """Laptop pilot for DIAMOND database-order dependence, and the option sweep.
 
 The semantics review is pipeline/results/diamond_order/g_semantics.md.
-A pilot number is not a measured result. The measured arm is specified in
-pipeline/docs/DIAMOND_ORDER_PROTOCOL.md and is not started here.
+A pilot number is not a measured result. `g1-measured` is the CARC arm
+specified in pipeline/docs/DIAMOND_ORDER_PROTOCOL.md.
 """
 
 from __future__ import annotations
@@ -47,6 +47,10 @@ RSS_LIMIT_KB = 4 * 1024 * 1024
 DBSIZE = "209017843"
 PILOT_SEED = 20261161
 PILOT_N = 300
+MEASURED_SEED = 20261162
+MEASURED_N = 2000
+MEASURED_MIN_ROWS = 10_000
+CARC_DIAMOND_MD5 = "7de14b7f9f4c440ddfb5142ad96b1d8b"
 SHUFFLE_SEEDS = (20261163, 20261164, 20261165, 20261166, 20261167)
 SHAPES = ("111101110111", "111011010010111")
 SAMPLE_CAP = 8
@@ -1078,7 +1082,254 @@ def _one_option(
     return arm
 
 
+def measured_draw(names: list[str], exclude: set[str]) -> list[int]:
+    """Indices into the genome, after dropping the pilot ids.
+
+    random.Random(20261162).sample of the remainder, then sorted.
+    """
+    eligible = [index for index, name in enumerate(names) if name not in exclude]
+    if len(eligible) < MEASURED_N:
+        raise SystemExit(f"STOP measured pool {len(eligible)} < {MEASURED_N}")
+    return sorted(random.Random(MEASURED_SEED).sample(eligible, MEASURED_N))
+
+
+def g1_measured() -> Path:
+    """CARC measured arm. Paths come from the environment, not the Mac defaults."""
+    global DIAMOND, SWISSPROT, GENOME, SCRATCH, RSS_LIMIT_KB
+    required = ("TARE_DIAMOND", "TARE_SWISSPROT", "TARE_GENOME", "TARE_SCRATCH", "TARE_PILOT_JSON")
+    missing = [name for name in required if not os.environ.get(name)]
+    if missing:
+        raise SystemExit(f"STOP g1-measured needs {missing}")
+    DIAMOND = Path(os.environ["TARE_DIAMOND"])
+    SWISSPROT = Path(os.environ["TARE_SWISSPROT"])
+    GENOME = Path(os.environ["TARE_GENOME"])
+    SCRATCH = Path(os.environ["TARE_SCRATCH"])
+    pilot_json = Path(os.environ["TARE_PILOT_JSON"])
+    # Slurm requests 8 GiB. Stay under that. The laptop pilot used 4 GiB.
+    RSS_LIMIT_KB = 7 * 1024 * 1024
+
+    SCRATCH.mkdir(parents=True, exist_ok=True)
+    if "tmpfs" in df_text(SCRATCH).lower():
+        raise SystemExit("STOP scratch is tmpfs")
+    comparator_control()
+    if not DIAMOND.is_file():
+        raise SystemExit(f"STOP missing diamond {DIAMOND}")
+    diamond = file_id(DIAMOND)
+    if diamond["md5"] != CARC_DIAMOND_MD5:
+        raise SystemExit(f"STOP diamond md5 {diamond['md5']}")
+    gz_id = file_id(SWISSPROT)
+    if (gz_id["bytes"], gz_id["md5"]) != EXPECTED_FASTA:
+        raise SystemExit(f"STOP swissprot gzip md5 {gz_id['md5']} bytes {gz_id['bytes']}")
+    version = run_limited([str(DIAMOND), "version"], 30)
+    version_text = (version["stdout"] or version["stderr"]).strip()
+    if not version_text.startswith("diamond version 2.2.5"):
+        raise SystemExit(f"STOP diamond version {version_text}")
+    stamp = {
+        "diamond": diamond,
+        "swissprot_gz": gz_id,
+        "diamond_version": version_text,
+        "disk_free_bytes": disk_free_bytes(SCRATCH),
+        "df": df_text(SCRATCH),
+        "provenance_at_start": provenance(versions={"diamond": version_text}),
+    }
+
+    work = SCRATCH / "g1m"
+    work.mkdir(parents=True, exist_ok=True)
+    log("loading Swiss-Prot")
+    raws, keys, lengths = load_swissprot(SWISSPROT)
+    letters = sum(lengths)
+    if len(keys) != EXPECTED_ENTRIES or letters != EXPECTED_DMND_LETTERS:
+        raise SystemExit(f"STOP swissprot entries={len(keys)} letters={letters}")
+    key_to_index = {key: index for index, key in enumerate(keys)}
+    if len(key_to_index) != len(keys):
+        raise SystemExit("STOP duplicate Swiss-Prot ids")
+
+    orig_fa = work / "original.faa"
+    log("writing original FASTA")
+    write_fasta(raws, list(range(len(keys))), orig_fa)
+    fasta_id = file_id(orig_fa)
+    if fasta_id["bytes"] < 200_000_000:
+        raise SystemExit(f"STOP extracted fasta is unexpectedly small: {fasta_id['bytes']}")
+    log("writing shuffled FASTA files")
+    for seed in SHUFFLE_SEEDS:
+        write_fasta(raws, shuffled_order(len(keys), seed), work / f"shuffle_{seed}.faa")
+    del raws
+
+    log("makedb original, twice")
+    build_a = makedb(orig_fa, work / "original_a")
+    build_b = makedb(orig_fa, work / "original_b")
+    build_same = build_a["dmnd"]["md5"] == build_b["dmnd"]["md5"]
+    cleanup(Path(str(work / "original_b") + ".dmnd"))
+    cleanup(orig_fa)
+    db = work / "original_a"
+    first_offset = id_offset(Path(str(db) + ".dmnd"), keys[0])
+
+    pilot = json.loads(pilot_json.read_text())
+    exclude = set(pilot["query"]["ids"])
+    if len(exclude) != PILOT_N:
+        raise SystemExit(f"STOP pilot id count {len(exclude)}")
+    records = read_records(GENOME)
+    genome_id = file_id(GENOME)
+    if genome_id["md5"] != "69a2ef84c55d8fac05393b5023734505":
+        raise SystemExit(f"STOP genome md5 {genome_id['md5']}")
+    if len(records) < PILOT_N + MEASURED_N:
+        raise SystemExit(f"STOP genome has {len(records)} proteins")
+    names = [record.name for record in records]
+    draw = measured_draw(names, exclude)
+    if set(names[i] for i in draw) & exclude:
+        raise SystemExit("STOP measured draw overlaps the pilot")
+    query = work / "q2000.faa"
+    query.write_text("".join(f">{records[i].name}\n{records[i].sequence}\n" for i in draw))
+    query_ids = [records[i].name for i in draw]
+    query_seqs = {records[i].name: records[i].sequence for i in draw}
+    n_records = len(records)
+    query_md5 = md5_file(query)
+    expected_query = os.environ.get("TARE_QUERY_MD5", "").strip()
+    if expected_query and expected_query != query_md5:
+        raise SystemExit(f"STOP query fasta md5 {query_md5} != {expected_query}")
+    del records
+
+    log("search original twice")
+    first = search(db, query, work / "original_1.m8", [], dbsize=False)
+    second = search(db, query, work / "original_2.m8", [], dbsize=False)
+    search_same = first["text"] == second["text"]
+    stock_text = first["text"]
+    stock_rows = first["rows"]
+
+    shuffles = []
+    pending: list[dict] = []
+    for seed in SHUFFLE_SEEDS:
+        log(f"shuffle {seed}")
+        order = shuffled_order(len(keys), seed)
+        fasta = work / f"shuffle_{seed}.faa"
+        built = makedb(fasta, work / f"shuffle_{seed}")
+        cleanup(fasta)
+        found = search(work / f"shuffle_{seed}", query, work / f"shuffle_{seed}.m8", [], dbsize=False)
+        klass = classify(stock_text, found["text"])
+        summary = content_of(klass)
+        queries = affected_queries(stock_text, found["text"])
+        changes = changed_keys(stock_text, found["text"])
+        boundary_hits = 0
+        for query_id, subject, kind in changes:
+            fields = _row_fields(stock_text, found["text"], query_id, subject, kind)
+            if subject not in key_to_index:
+                continue
+            mark = near_boundary(fields, lengths[key_to_index[subject]])
+            if mark["alignment_starts_within_16"] or mark["alignment_ends_within_32"]:
+                boundary_hits += 1
+            if len(pending) < SAMPLE_CAP:
+                pending.append(
+                    _pending_sample(seed, query_id, subject, kind, fields, mark, order, key_to_index, keys)
+                )
+        shuffles.append(
+            {
+                "seed": seed,
+                "dmnd": built["dmnd"],
+                "first_id": keys[order[0]],
+                "first_id_offset": id_offset(Path(str(work / f"shuffle_{seed}") + ".dmnd"), keys[order[0]]),
+                "makedb_wall_s": built["wall_s"],
+                "search_wall_s": found["wall_s"],
+                "peak_rss_kb": found["peak_rss_kb"],
+                "log": found["log"],
+                "rows": found["rows"],
+                "output_md5": found["md5"],
+                "comparison": summary,
+                "affected_queries": queries,
+                "affected_query_count": len(queries),
+                "changed_row_count": len(changes),
+                "changed_rows_alignment_near_boundary": boundary_hits,
+            }
+        )
+        cleanup(work / f"shuffle_{seed}.m8")
+        cleanup(Path(str(work / f"shuffle_{seed}") + ".dmnd"))
+
+    sample_rows = hydrate_samples(pending, query_seqs)
+    md5s = [row["dmnd"]["md5"] for row in shuffles]
+    distinct = len(set(md5s) | {build_a["dmnd"]["md5"]}) == len(md5s) + 1
+    if not search_same or not build_same or not comparator_control()["pass"]:
+        outcome = "CONTROLS_FAILED"
+    elif stock_rows < MEASURED_MIN_ROWS or not distinct:
+        outcome = "INCONCLUSIVE"
+    else:
+        outcome = "MEASURED"
+    report = {
+        "label": "MEASURED",
+        "not_a_result": False,
+        "outcome": outcome,
+        "semantics": "pipeline/results/diamond_order/g_semantics.md",
+        "protocol": "pipeline/docs/DIAMOND_ORDER_PROTOCOL.md",
+        "minimum_stock_rows": MEASURED_MIN_ROWS,
+        "code_commit": stamp["provenance_at_start"]["git"],
+        "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab",
+        "deviations": [
+            "threads 2, dx3 used 8",
+            "--tmpdir set to the scratch directory",
+            "nice -n 10",
+            "CARC binary is DIAMOND 2.2.5 md5 7de14b7f9f4c440ddfb5142ad96b1d8b, not the Mac binary md5 711d4c7b29e24c3fd6ec6a288ec1d326",
+            "self-kill RSS is 7 GiB under a Slurm request of 8 GiB; the laptop pilot used 4 GiB",
+            "the staged tree is not a git checkout; provenance.git is ACTS_GIT_HASH",
+        ],
+        "inputs": stamp,
+        "swissprot": {
+            "entries": len(keys),
+            "letters": letters,
+            "extracted_fasta": fasta_id,
+        },
+        "genome": {"path": str(GENOME), **genome_id, "records": n_records},
+        "query": {
+            "seed": MEASURED_SEED,
+            "n": MEASURED_N,
+            "excluded_pilot_ids": PILOT_N,
+            "ids": query_ids,
+            "fasta_md5": query_md5,
+        },
+        "controls": {
+            "comparator": comparator_control(),
+            "original_build_md5_equal": build_same,
+            "original_build_md5": build_a["dmnd"]["md5"],
+            "second_build_md5": build_b["dmnd"]["md5"],
+            "original_search_byte_identical": search_same,
+            "shuffle_dmnd_all_distinct": distinct,
+            "original_first_id": keys[0],
+            "original_first_id_offset": first_offset,
+        },
+        "original_search": {
+            "rows": stock_rows,
+            "md5": first["md5"],
+            "wall_s": first["wall_s"],
+            "repeat_wall_s": second["wall_s"],
+            "peak_rss_kb": max(first["peak_rss_kb"], second["peak_rss_kb"]),
+            "log": first["log"],
+            "argv": first["argv"],
+            "makedb_argv": build_a["argv"],
+            "makedb_wall_s": build_a["wall_s"],
+        },
+        "shuffles": shuffles,
+        "boundary_sample": sample_rows,
+        "boundary_sample_note": (
+            "Seed coordinates are murphy10 matches of the two default shapes "
+            "(src/stats/stats.cpp, src/search/setup.cpp). Only seed starts that "
+            "would read outside the entry are scanned, and at most 6 hits are "
+            "kept. Alignment proximity uses subject start within 16 residues or "
+            "subject end within 32 and is counted for every changed row."
+        ),
+        "provenance": provenance(versions={"diamond": version_text}),
+    }
+    dest = OUT_DIR / "g1_measured.json"
+    write_json(dest, report)
+    cleanup(query)
+    cleanup(work / "original_1.m8")
+    cleanup(work / "original_2.m8")
+    cleanup(Path(str(db) + ".dmnd"))
+    log(f"wrote {dest} outcome={outcome} rows={stock_rows}")
+    return dest
+
+
 def main() -> None:
+    which = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if which == "g1-measured":
+        g1_measured()
+        return
     SCRATCH.mkdir(parents=True, exist_ok=True)
     if "tmpfs" in df_text(SCRATCH).lower():
         raise SystemExit("STOP scratch is tmpfs")
@@ -1087,7 +1338,6 @@ def main() -> None:
     version = run_limited([str(DIAMOND), "version"], 30)
     stamp["diamond_version"] = (version["stdout"] or version["stderr"]).strip()
     stamp["provenance_at_start"] = provenance(versions={"diamond": stamp["diamond_version"]})
-    which = sys.argv[1] if len(sys.argv) > 1 else "all"
     if which in {"g1", "all"}:
         g1_pilot(stamp)
     if which in {"g2", "all"}:
