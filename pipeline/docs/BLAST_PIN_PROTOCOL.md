@@ -98,6 +98,30 @@ this file.
 
 ## Addendum 2026-10-18, after job 13223656
 
+The run is `results/blast_diagnosis/pin_pilot.json`, git
+`f2f1f189e937655a4eb419c6c1af4a06e9d8e497`, host `a03-19`. The 20 query
+ids are disjoint from the B1 twenty. Swiss-Prot 2026_03 has the same
+MD5 as the diagnosis file (`bc9d398533e6df582b563c6c03093bd0`),
+575,748 entries, 209,017,843 residues.
+
+Stock versus stock is byte-identical: 15,498 lines, MD5
+`543e49c6748995b5bf04d47546829d29`. The row floor is met.
+
+The shipped tool returns REFUSE on 2026_01 and on 2026_03, both with
+`duplicate rows have no row-index column` (`reference_fit.py`,
+`index_candidates`). The pin is not applied. The gate was not changed.
+
+Beside the tool, the pin does what the half probe did. Searching the
+14,955 subjects that appear in the stock table, with `-dbsize
+209017843`, returns the same 15,498 lines: zero missing, zero extra.
+Dropping 748 of those subjects (seed 20261142, 5 percent) returns
+14,718 lines. The 780 absent lines are missing, and there are no extra
+lines. 14,718 + 780 = 15,498.
+
+Outcome recorded by the script: `PIN_EXACT_GATE_DID_NOT_SHIP`.
+
+## Addendum 2026-10-18, after job 13223656
+
 The pilot ran once, at git `f2f1f189e937655a4eb419c6c1af4a06e9d8e497`.
 The result is `results/blast_diagnosis/pin_pilot.json`. Outcome
 `PIN_EXACT_GATE_DID_NOT_SHIP`. Stock versus stock was byte-identical
