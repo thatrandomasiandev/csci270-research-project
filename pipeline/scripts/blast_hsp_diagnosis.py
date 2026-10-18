@@ -13,6 +13,7 @@ The half-plus-pin output is compared with the unpinned whole run.
 from __future__ import annotations
 
 import argparse
+import gc
 import hashlib
 import json
 import subprocess
@@ -476,9 +477,15 @@ def main() -> int:
     if not one_path.is_file():
         write_fasta(one_path, [FastaRec(one.name, one.description, one.sequence)])
 
-    log("building whole database")
+    log("writing databases, then releasing the parsed FASTA")
     whole_fa = work / "whole.faa"
     write_subset(entries, list(range(len(entries))), whole_fa)
+    part_subjects = []
+    for part_i, indices in enumerate(parts):
+        write_subset(entries, indices, work / f"part{part_i}.faa")
+        part_subjects.append({entries[i].primary for i in indices})
+    del entries
+    gc.collect()
     whole_db = work / "db" / "whole"
     whole_prep = make_db(args.makeblastdb, whole_fa, whole_db)
 
@@ -512,17 +519,14 @@ def main() -> int:
     log("half databases")
     part_texts = []
     part_runs = []
-    part_subjects = []
-    for part_i, indices in enumerate(parts):
+    for part_i in range(len(parts)):
         fasta = work / f"part{part_i}.faa"
-        write_subset(entries, indices, fasta)
         db = work / "db" / f"part{part_i}"
         prep = make_db(args.makeblastdb, fasta, db)
         run = blast(args.blastp, db, query_path, work / f"part{part_i}.tsv", threads=threads)
         run["prep"] = prep
         part_runs.append(run)
         part_texts.append((work / f"part{part_i}.tsv").read_text())
-        part_subjects.append({entries[i].primary for i in indices})
 
     whole_text = (work / "stock_a.tsv").read_text()
     whole_target = pair_rows(whole_text, TARGET_QUERY, TARGET_SUBJECT)
@@ -624,8 +628,10 @@ def main() -> int:
         pin_runs.append(one_pair(whole_db, f"whole_cbs_{mode}", extra, query_file=sweep_query))
     pin_runs.append(one_pair(part_db, "half_max_hsps_1", ["-max_hsps", "1"], query_file=sweep_query))
     pin_runs.append(one_pair(whole_db, "whole_max_hsps_1", ["-max_hsps", "1"], query_file=sweep_query))
-    pin_runs.append(one_pair(part_db, "half_ungapped", ["-ungapped"], query_file=sweep_query))
-    pin_runs.append(one_pair(whole_db, "whole_ungapped", ["-ungapped"], query_file=sweep_query))
+    # Mode 2 rejects -ungapped. The arm turns composition adjustment off with it.
+    ungapped = ["-ungapped", "-comp_based_stats", "0"]
+    pin_runs.append(one_pair(part_db, "half_ungapped", ungapped, query_file=sweep_query))
+    pin_runs.append(one_pair(whole_db, "whole_ungapped", ungapped, query_file=sweep_query))
     pin_runs.append(one_pair(part_db, "half_threads_1", None, "1", sweep_query))
     pin_runs.append(one_pair(whole_db, "whole_threads_1", None, "1", sweep_query))
 
