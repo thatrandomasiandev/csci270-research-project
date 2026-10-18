@@ -112,9 +112,11 @@ Counted from that file, not from a new sample:
 | MAG | 1 | 7 | five stratified, plus the two prefix additions |
 
 Measured genomes: 57. With the pilot: 60 proteomes. Exact total size
-88,232,300 bytes. Each size is the `Content-Range` total from
-`curl -r 0-16383` (HTTP 206). A HEAD of this FTP did not return
-`Content-Length`. The 16 KiB ranges are not the proteomes. The proteomes
+88,232,300 bytes. Each size is the `Content-Length` from HTTP HEAD
+(`pipeline/results/diverse_genomes/proteome_heads.json`). The same
+integer was read from the `Content-Range` total of a 16 KiB range
+request, which was used only to see the first FASTA headers. The two
+agree on every file. Those ranges are not the proteomes. The proteomes
 are not downloaded in this commit.
 
 Pilot, disjoint from the measured set:

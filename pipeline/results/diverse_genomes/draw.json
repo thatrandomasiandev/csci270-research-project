@@ -217,7 +217,13 @@
       "bytes": 120870371,
       "md5": "b6aecaf94f7d2fbd06d789399c64a93e",
       "rows": 248829,
-      "local_file_note": "Not the full GenBank bacteria summary. Every data row is a latest GCA assembly whose excluded_from_refseq contains 'metagenome'. The md5 is this extract. The url is the upstream catalog it was taken from."
+      "local_file_note": "Not the full GenBank bacteria summary. Every data row is a latest GCA assembly whose excluded_from_refseq contains 'metagenome'. The md5 is this extract. The url is the upstream catalog it was taken from.",
+      "local_file_is": "filtered extract, not the raw GenBank bacteria summary",
+      "source_content_length_bytes": 1555087961,
+      "source_stored": false,
+      "scanned_rows": 3399894,
+      "kept_rows": 248829,
+      "filter": "GCA_; version_status latest; assembly_level Contig or Scaffold; ftp_path set and not na; 'metagenome' in excluded_from_refseq; protein_coding_gene_count > 0"
     }
   ],
   "rankedlineage_bytes": 401134793,
@@ -2168,7 +2174,7 @@
       }
     ]
   },
-  "size_method": "Content-Range total from curl -r 0-16383 (HTTP 206). HEAD on this FTP returned no Content-Length.",
+  "size_method": "HTTP HEAD Content-Length, matched on every file by the Content-Range total of curl -r 0-16383. See proteome_heads.json.",
   "total_bytes": 88232300,
   "prefix_name_note": "Across the drawn 16 KiB prefixes and a 40-MAG 256 KiB prefix sample, the longest FASTA name token was 14 characters on RefSeq rows and 12 on the MAG sample. No query name longer than the HMMER width floor of 20 was observed. File-wide maxima are measured after the proteomes are approved, before any hmmscan."
 }
