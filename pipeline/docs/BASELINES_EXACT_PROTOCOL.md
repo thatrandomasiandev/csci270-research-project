@@ -334,4 +334,7 @@ comparison. `hmmscan` could not open `batches/b0.faa`. The FASTA
 writer used a tab field separator, so `$1` on a header was the whole
 line and no query id matched the plan. The same writer in the DIAMOND
 script is fixed the same way. This is the one allowed script-bug fix
-(dropped query file). The NAME+CKSUM diff is unchanged.
+(dropped query file). The rerun then exited because `hmmfetch --index`
+refuses to overwrite `Pfam-A.hmm.h3m.ssi`, while the guard only looked
+for a `.ssi` suffix. An existing `.ssi` or `.h3m.ssi` is now left in
+place. The NAME+CKSUM diff is unchanged.

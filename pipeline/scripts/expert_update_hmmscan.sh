@@ -79,7 +79,7 @@ awk 'NR==FNR { old[$1] = $2; next }
      ($1 in old) && old[$1] == $2 { print $1 }
 ' "$WORK/old.ck" "$WORK/new.ck" > "$WORK/stable.names"
 
-if [ ! -f "${NEW_TXT}.ssi" ]; then
+if [ ! -f "${NEW_TXT}.ssi" ] && [ ! -f "${NEW_TXT}.h3m.ssi" ]; then
     "$HMMFETCH" --index "$NEW_TXT"
 fi
 
