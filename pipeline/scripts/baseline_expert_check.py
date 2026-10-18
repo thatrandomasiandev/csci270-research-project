@@ -209,7 +209,7 @@ def score_expert(stock_tbl: Path, stock_dom: Path, old_tbl: Path, queries: Path,
         subprocess.run(["rm", "-rf", str(work)], check=True)
     started = time.perf_counter()
     watched = run_watched(
-        [str(SCRIPT), str(SCRATCH / "db" / "pfam38.1.hmm"), str(SCRATCH / "db" / "pfam38.2.hmm"), str(old_tbl), str(queries), str(out_prefix)],
+        [str(SCRIPT), str(SCRATCH / "hmm" / "pfam38.1.hmm"), str(SCRATCH / "hmm" / "pfam38.2.hmm"), str(old_tbl), str(queries), str(out_prefix)],
         work.parent / (work.name + ".log"),
         env,
     )
