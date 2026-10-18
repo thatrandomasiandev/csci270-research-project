@@ -70,7 +70,7 @@ Pivot recorded in [`WHAT_WE_ARE_BUILDING.md`](WHAT_WE_ARE_BUILDING.md) §0. Prot
 - [x] DIAMOND DX2 UNSAFE — declared `--dbsize` replay misses 6 of 31,377 stock rows (shared rows byte-identical) and the Independence Certificate passes (`pipeline/results/reference_diamond/dx2.json`). E2 fit refuses (`only-whole` 5) before a replay. IC not shipped.
 - [x] Infernal cmscan `--cut_ga`, Rfam 15.1, ten genomes seed 20261042. Oracle bodies byte-identical on both variants, 4,217 tblout lines. Mechanism median 6.67× on GCF_003956185.1 (three paired walls). CLI does not ship: no-clan `REFUSE_PIN` (no fitted size member); clan `REFUSE` because a subset probe is given the full clan file (`cmscan.c:2816`). (`pipeline/results/infernal/test_i.json`)
 - [x] Identity exact mode, caller-declared subset files, stable row index, and caller-declared group invalidation. Documented removal of `GlmZ_SraJ` on `GCF_013168095.1` is EXACT (459 rows). `--oskip` on that removal is SAFE-REFUSE: 14 overlap marks depend on families with no row (`pipeline/docs/INFERNAL_PROTOCOL.md`).
-- [ ] Infernal 15.0→15.1 measured ten, seed 20261045, locked in `pipeline/docs/INFERNAL_PROTOCOL.md`. Pilot `GCF_058683675.1` was EXACT on both variants and is not in the ten.
+- [x] Infernal 15.0→15.1 measured ten, seed 20261047 (Measured run 2). Both variants EXACT, 4,307 body lines. Median `S_g` 2.164 (no clan) and 2.075 (clan). Seed 20261045 was stopped after two genomes and is not this result (`pipeline/results/infernal/measured2.json`).
 - [ ] InterProScan wrapper
 - [ ] User conversations (3–5)
 - [ ] Commit (session could not run git: no delete permission in the folder)

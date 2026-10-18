@@ -392,3 +392,15 @@ Clan: `discovery_s = 19.746049458000925`, `T_stock = 287.37537862500176`, `T_tar
 Each predicted value equals that pair's stock/tare ratio by construction. The measured test is the median of the ten `S_g` values, and the per-genome time error.
 
 Result file: `results/infernal/measured2.json`, rewritten after every stock scan and every update. Power is checked before each process. If the Mac is on battery, the runner exits before the next process and leaves the partial file in place.
+
+## Addendum 2026-10-18 — measured run 2 (seed 20261047)
+
+Completed on AC power. The file is `results/infernal/measured2.json`. `git_head` at the start and at the end is `20ed9176d17fa04fb5b84b3c13d8b9d0334c7410`. `partial` is false. Nothing was stopped. These are workstation timings and are indicative. No rule changed after the lock.
+
+Every update was EXACT on both variants (30 updates each). On every update the audit and the random-pad sample were `skipped, input below record granularity`. The neighbor pad ran. Body lines, the stock body counted once: 4,307 per variant. The floor of 2,000 is met.
+
+No clan. `S_g` in draw order: 2.36906, 1.40813, 2.09530, 2.27663, 2.26114, 2.29057, 2.23243, 2.00669, 1.99160, 2.00921. Median 2.16386. Geometric mean 2.07468. Range 1.40813 to 2.36906. Largest CV 0.29258, the stock arm of `GCF_002090355.1` (walls 274.9 s, 276.7 s, 443.9 s). Median CPU, the median of the ten per-genome medians: stock 962.32 s, TARE 396.86 s. Bootstrap of the median: 2.00041 to 2.27663. Predicted `S` 2.08266. Maximum relative time error 0.32388, on `GCF_002090355.1`: the formula gave 132.9 s and the median update was 196.5 s.
+
+Clan. `S_g` in draw order: 2.32535, 2.05209, 2.09782, 1.96555, 2.21841, 2.25604, 2.20053, 1.96333, 1.98364, 1.97851. Median 2.07495. Geometric mean 2.10022. Range 1.96333 to 2.32535. Largest CV 0.10484, the stock arm of `GCF_002090355.1`. Median CPU: stock 989.13 s, TARE 400.33 s. Bootstrap of the median: 1.97460 to 2.22828. Predicted `S` 2.04635. Maximum relative time error 0.13634, on `GCF_002058765.1`, where the update was faster than the formula.
+
+`GCF_002090355.1` ran while the laptop was hot and the battery was near empty, still on AC power. Its no-clan ratio is the bottom of that range. The medians include it. The full-precision values are the `summary` object in the result file.
