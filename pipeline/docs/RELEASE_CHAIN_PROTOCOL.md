@@ -196,7 +196,7 @@ Job `13208152` still had a PENDING task at the one listing
 (`13208152_9 PENDING`; tasks 4–8 RUNNING). No release-chain job is
 submitted while any task of `13208152` is PENDING.
 
-That same listing found no `Pfam-A.hmm.gz` under `/scratch1/jjt_373`.
+A second listing, after the master check had already succeeded, found no `Pfam-A.hmm.gz` under `/scratch1/jjt_373`.
 Three uncompressed `Pfam-A.hmm` files in the 2026-10-08 and 2026-10-09
 trees (`acts-baselines-20261009`, `acts-hmmscan-stock-20261009`,
 `acts-hmmsearch-stock-20261008`) are not versioned release archives
@@ -464,9 +464,10 @@ not drawn from this block.
 
 None of the pass rules have moved. The SSH note at the start of the
 session said the ControlMaster was down. `ssh -O check discovery` found
-a master (pid 73601), so CARC was listed once for existing files and
-for `squeue -j 13208152`. No second ssh followed. No download. No
-`sbatch`. `pipeline/paper/tare/main.tex` was not edited.
+a master (pid 73601), so CARC was listed for existing files and for
+`squeue -j 13208152`. A second ssh listed `/scratch1/jjt_373` and the
+uncompressed `Pfam-A.hmm` paths named above. No download. No `sbatch`.
+`pipeline/paper/tare/main.tex` was not edited.
 
 ## Open, blocked on Josh or on the pilot
 
