@@ -30,6 +30,16 @@ PROFILE_VOLATILE_TAGS = ("DATE", "BM", "SM", "COM")
 ENTRYLINE = "entryline"
 FASTA = "fasta"
 PROFILE = "profile_text"
+# Bucher & Bairoch, ISMB 1994. ID/AC header, MA or PA body, // terminator.
+GENERALIZED_PROFILE = "generalized_profile"
+
+# Line codes that do not change a score. The matrix (MA) and the pattern
+# (PA) stay. Dates, prose, cross-references, and documentation pointers do not.
+GENERALIZED_VOLATILE_TAGS = ("DT", "DE", "CC", "DR", "3D", "PR", "DO")
+
+_ID_LINE = re.compile(r"^ID\s+(\S+?);\s*(MATRIX|PATTERN)\.")
+_AC_LINE = re.compile(r"^AC\s+([^;\s]+)")
+_MATCH_MARK = re.compile(r"/M:")
 
 
 class FormatError(ValueError):
@@ -266,6 +276,95 @@ def parse_entryline(text: str) -> list[Entry]:
     return entries
 
 
+def _looks_like_generalized_profile(text: str) -> bool:
+    """True when the first real line is an ID entry, after a // banner."""
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped == "//" or stripped.startswith("**"):
+            continue
+        return _ID_LINE.match(line) is not None
+    return False
+
+
+def _slash_blocks(text: str) -> list[str]:
+    blocks: list[str] = []
+    buf: list[str] = []
+    for line in text.splitlines(keepends=True):
+        buf.append(line if line.endswith("\n") else line + "\n")
+        if line.strip() == "//":
+            blocks.append("".join(buf))
+            buf = []
+    if "".join(buf).strip():
+        raise FormatError("truncated generalized-profile entry")
+    return blocks
+
+
+def _pattern_length(raw: str) -> int:
+    body: list[str] = []
+    for line in raw.splitlines():
+        if line.startswith("PA") and line[2:3].isspace():
+            parts = line.split(None, 1)
+            if len(parts) == 2:
+                body.append(parts[1])
+    return sum(1 for ch in "".join(body) if not ch.isspace()) or 1
+
+
+def _generalized_entry(raw: str) -> Entry | None:
+    name = None
+    accession = None
+    for line in raw.splitlines():
+        if name is None:
+            matched = _ID_LINE.match(line)
+            if matched:
+                name = matched.group(1)
+        if accession is None:
+            matched = _AC_LINE.match(line)
+            if matched:
+                accession = matched.group(1)
+    if name is None:
+        return None
+    if not accession:
+        raise FormatError("generalized-profile entry has no AC")
+    n_match = len(_MATCH_MARK.findall(raw))
+    length = n_match if n_match else _pattern_length(raw)
+    joined = f"{accession}|{name}"
+    keys: list[str] = []
+    for token in (joined, accession, name):
+        if token not in keys:
+            keys.append(token)
+    stored = raw if raw.endswith("\n") else raw + "\n"
+    return Entry(
+        raw=stored,
+        length=length,
+        content_hash=entry_content_hash(stored, GENERALIZED_VOLATILE_TAGS),
+        keys=tuple(keys),
+        format_name=GENERALIZED_PROFILE,
+    )
+
+
+def parse_generalized_profile(text: str) -> list[Entry]:
+    """Entries of a generalized-profile library, in file order.
+
+    A leading block with no ID line is a banner and is not an entry.
+    The primary key is ``accession|name``. That is the one field the
+    format's tabular export uses to name the entry, and replay selects
+    entries by the primary key.
+    Length is the number of ``/M:`` match positions. A pattern entry,
+    which has none, uses the number of non-space characters on its PA
+    lines.
+    """
+    if not _looks_like_generalized_profile(text):
+        raise FormatError("not generalized-profile text")
+    entries: list[Entry] = []
+    for raw in _slash_blocks(text):
+        entry = _generalized_entry(raw)
+        if entry is not None:
+            entries.append(entry)
+    if not entries:
+        raise FormatError("generalized-profile text contained no entries")
+    return entries
+
+
 def parse_reference_text(text: str) -> list[Entry]:
     """Detect one reference format and return its entries in file order."""
     stripped = text.lstrip()
@@ -277,6 +376,8 @@ def parse_reference_text(text: str) -> list[Entry]:
         return parse_profile_text(text)
     if stripped.startswith(">"):
         return parse_fasta_entries(text)
+    if _looks_like_generalized_profile(text):
+        return parse_generalized_profile(text)
     try:
         return parse_entryline(text)
     except FormatError:
