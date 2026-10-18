@@ -1,0 +1,7651 @@
+{
+  "arms": [
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--faster"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_faster.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--faster"
+      ],
+      "full_has_lost_keys": [],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "c0cbfd53d32df134fc408866053ac1ba",
+      "full_rows": 8797,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 25,
+        "extra": 19,
+        "line_order_only": false,
+        "missing": 22599,
+        "other_rows": 8797,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 8753,
+        "stock_rows": 31377,
+        "value_changed": 25
+      },
+      "full_wall_s": 17.03583041600359,
+      "lost_lines_returned": 0,
+      "name": "faster",
+      "peak_rss_kb": 324512,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_faster.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--faster"
+      ],
+      "subset_md5": "8a4bd119b87621a67182cde14dcae286",
+      "subset_rows": 8793,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 25,
+        "extra": 15,
+        "line_order_only": false,
+        "missing": 22593,
+        "other_rows": 8793,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 8753,
+        "stock_rows": 31371,
+        "value_changed": 25
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 4,
+        "other_rows": 8793,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 8793,
+        "stock_rows": 8797,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.9129918329999782
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--fast"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_fast.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--fast"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "b1d677e1ab994260ce0543fc1f322fec",
+      "full_rows": 19174,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 98,
+        "extra": 298,
+        "line_order_only": false,
+        "missing": 12501,
+        "other_rows": 19174,
+        "same_hsp_different_value": 1,
+        "shared_byte_identical": 18777,
+        "stock_rows": 31377,
+        "value_changed": 99
+      },
+      "full_wall_s": 7.4935409580066334,
+      "lost_lines_returned": 0,
+      "name": "fast",
+      "peak_rss_kb": 653664,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_fast.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--fast"
+      ],
+      "subset_md5": "d2c459b32cacab1008403557b7e6e748",
+      "subset_rows": 18997,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 98,
+        "extra": 123,
+        "line_order_only": false,
+        "missing": 12497,
+        "other_rows": 18997,
+        "same_hsp_different_value": 1,
+        "shared_byte_identical": 18775,
+        "stock_rows": 31371,
+        "value_changed": 99
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 1,
+        "line_order_only": false,
+        "missing": 178,
+        "other_rows": 18997,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 18996,
+        "stock_rows": 19174,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.7132782080007019
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--mid-sensitive"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_mid-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--mid-sensitive"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "1a73ffc3d5b449aba2fed973011e7787",
+      "full_rows": 44148,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 311,
+        "extra": 13012,
+        "line_order_only": false,
+        "missing": 241,
+        "other_rows": 44148,
+        "same_hsp_different_value": 3,
+        "shared_byte_identical": 30822,
+        "stock_rows": 31377,
+        "value_changed": 314
+      },
+      "full_wall_s": 31.971317875009845,
+      "lost_lines_returned": 4,
+      "name": "mid-sensitive",
+      "peak_rss_kb": 819664,
+      "returned_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_mid-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--mid-sensitive"
+      ],
+      "subset_md5": "423d60293cab61d19bd3a2ca799ad661",
+      "subset_rows": 33855,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 311,
+        "extra": 2725,
+        "line_order_only": false,
+        "missing": 241,
+        "other_rows": 33855,
+        "same_hsp_different_value": 3,
+        "shared_byte_identical": 30816,
+        "stock_rows": 31371,
+        "value_changed": 314
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 10293,
+        "other_rows": 33855,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 33855,
+        "stock_rows": 44148,
+        "value_changed": 0
+      },
+      "subset_wall_s": 2.3237806249962887
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--sensitive"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--sensitive"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "f59c1bd783b349e36591affed066e4c3",
+      "full_rows": 51532,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 376,
+        "extra": 20158,
+        "line_order_only": false,
+        "missing": 3,
+        "other_rows": 51532,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30993,
+        "stock_rows": 31377,
+        "value_changed": 381
+      },
+      "full_wall_s": 61.31932179100113,
+      "lost_lines_returned": 6,
+      "name": "sensitive",
+      "peak_rss_kb": 658736,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--sensitive"
+      ],
+      "subset_md5": "11baa3153a6ea7ceb2a304493d7f2f8e",
+      "subset_rows": 35242,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 376,
+        "extra": 3874,
+        "line_order_only": false,
+        "missing": 3,
+        "other_rows": 35242,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30987,
+        "stock_rows": 31371,
+        "value_changed": 381
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 16290,
+        "other_rows": 35242,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 35242,
+        "stock_rows": 51532,
+        "value_changed": 0
+      },
+      "subset_wall_s": 4.367503375004162
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--more-sensitive"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_more-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--more-sensitive"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "dd567199d1be7b1a19b691d028257532",
+      "full_rows": 51585,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 407,
+        "extra": 20211,
+        "line_order_only": false,
+        "missing": 3,
+        "other_rows": 51585,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30962,
+        "stock_rows": 31377,
+        "value_changed": 412
+      },
+      "full_wall_s": 63.62923237500945,
+      "lost_lines_returned": 6,
+      "name": "more-sensitive",
+      "peak_rss_kb": 672976,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_more-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--more-sensitive"
+      ],
+      "subset_md5": "463bb83d73f7016f017ebdce20c2add8",
+      "subset_rows": 35244,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 407,
+        "extra": 3876,
+        "line_order_only": false,
+        "missing": 3,
+        "other_rows": 35244,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30956,
+        "stock_rows": 31371,
+        "value_changed": 412
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 16341,
+        "other_rows": 35244,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 35244,
+        "stock_rows": 51585,
+        "value_changed": 0
+      },
+      "subset_wall_s": 5.173108292001416
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--very-sensitive"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_very-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--very-sensitive"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "bcb7228aab1284bb7aa4368b8b3499a1",
+      "full_rows": 55619,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 413,
+        "extra": 24242,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 55619,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30959,
+        "stock_rows": 31377,
+        "value_changed": 418
+      },
+      "full_wall_s": 31.735598083992954,
+      "lost_lines_returned": 6,
+      "name": "very-sensitive",
+      "peak_rss_kb": 1977904,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_very-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--very-sensitive"
+      ],
+      "subset_md5": "c9caae4231b6f459e176e83438114d43",
+      "subset_rows": 35696,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 413,
+        "extra": 4325,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 35696,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30953,
+        "stock_rows": 31371,
+        "value_changed": 418
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 1,
+        "line_order_only": false,
+        "missing": 19924,
+        "other_rows": 35696,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 35695,
+        "stock_rows": 55619,
+        "value_changed": 0
+      },
+      "subset_wall_s": 2.6273364160006167
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--ultra-sensitive"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_ultra-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--ultra-sensitive"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "21c5d885b0a0cd5ec4fe2da46673adf7",
+      "full_rows": 57126,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 421,
+        "extra": 25749,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 57126,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30951,
+        "stock_rows": 31377,
+        "value_changed": 426
+      },
+      "full_wall_s": 116.93388425000012,
+      "lost_lines_returned": 6,
+      "name": "ultra-sensitive",
+      "peak_rss_kb": 1995456,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_ultra-sensitive.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--ultra-sensitive"
+      ],
+      "subset_md5": "50a0832032560306de3d6859b1d288c5",
+      "subset_rows": 35801,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 421,
+        "extra": 4430,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 35801,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 30945,
+        "stock_rows": 31371,
+        "value_changed": 426
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 8,
+        "line_order_only": false,
+        "missing": 21333,
+        "other_rows": 35801,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 35793,
+        "stock_rows": 57126,
+        "value_changed": 0
+      },
+      "subset_wall_s": 8.824180666008033
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--shapes-6x10"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_shapes-6x10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--shapes-6x10"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "2f661c9a55ccbcc3e094b14df3652c2d",
+      "full_rows": 36906,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 158,
+        "extra": 7012,
+        "line_order_only": false,
+        "missing": 1483,
+        "other_rows": 36906,
+        "same_hsp_different_value": 1,
+        "shared_byte_identical": 29735,
+        "stock_rows": 31377,
+        "value_changed": 159
+      },
+      "full_wall_s": 25.484614540997427,
+      "lost_lines_returned": 4,
+      "name": "shapes-6x10",
+      "peak_rss_kb": 835584,
+      "returned_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_shapes-6x10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--shapes-6x10"
+      ],
+      "subset_md5": "c99dd37f517634d57038f28256858916",
+      "subset_rows": 31823,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 158,
+        "extra": 1832,
+        "line_order_only": false,
+        "missing": 1380,
+        "other_rows": 31823,
+        "same_hsp_different_value": 1,
+        "shared_byte_identical": 29832,
+        "stock_rows": 31371,
+        "value_changed": 159
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 106,
+        "line_order_only": false,
+        "missing": 5189,
+        "other_rows": 31823,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31717,
+        "stock_rows": 36906,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.8580345409864094
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--shapes-30x10"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_shapes-30x10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--shapes-30x10"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "83f011fa92f473c71ee051b398f650b2",
+      "full_rows": 42911,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 334,
+        "extra": 13104,
+        "line_order_only": false,
+        "missing": 1570,
+        "other_rows": 42911,
+        "same_hsp_different_value": 2,
+        "shared_byte_identical": 29471,
+        "stock_rows": 31377,
+        "value_changed": 336
+      },
+      "full_wall_s": 113.74316133301181,
+      "lost_lines_returned": 6,
+      "name": "shapes-30x10",
+      "peak_rss_kb": 673712,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_shapes-30x10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--shapes-30x10"
+      ],
+      "subset_md5": "87bd5295ed3dd4fb10d7cc62f5d9fd66",
+      "subset_rows": 34365,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 337,
+        "extra": 3128,
+        "line_order_only": false,
+        "missing": 134,
+        "other_rows": 34365,
+        "same_hsp_different_value": 2,
+        "shared_byte_identical": 30898,
+        "stock_rows": 31371,
+        "value_changed": 339
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 1444,
+        "line_order_only": false,
+        "missing": 9990,
+        "other_rows": 34365,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 32921,
+        "stock_rows": 42911,
+        "value_changed": 0
+      },
+      "subset_wall_s": 6.8670882919977885
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--masking",
+        "none"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_masking-none.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--masking",
+        "none"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "04844875a0310e25ad7c465f3b844e81",
+      "full_rows": 31663,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 315,
+        "extra": 286,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31663,
+        "same_hsp_different_value": 1481,
+        "shared_byte_identical": 29581,
+        "stock_rows": 31377,
+        "value_changed": 1796
+      },
+      "full_wall_s": 8.60756379099621,
+      "lost_lines_returned": 1,
+      "name": "masking-none",
+      "peak_rss_kb": 775072,
+      "returned_keys": [
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_masking-none.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--masking",
+        "none"
+      ],
+      "subset_md5": "3238d6bf8a707e7d0e67cba014a1118a",
+      "subset_rows": 31374,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 315,
+        "extra": 3,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31374,
+        "same_hsp_different_value": 1480,
+        "shared_byte_identical": 29576,
+        "stock_rows": 31371,
+        "value_changed": 1795
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 289,
+        "other_rows": 31374,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31374,
+        "stock_rows": 31663,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.106546791997971
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--masking",
+        "seg"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_masking-seg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--masking",
+        "seg"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "087737730f6f6b3a3df9552118d6f4d6",
+      "full_rows": 31130,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 1741,
+        "extra": 261,
+        "line_order_only": false,
+        "missing": 508,
+        "other_rows": 31130,
+        "same_hsp_different_value": 6141,
+        "shared_byte_identical": 22987,
+        "stock_rows": 31377,
+        "value_changed": 7882
+      },
+      "full_wall_s": 12.662734124998678,
+      "lost_lines_returned": 1,
+      "name": "masking-seg",
+      "peak_rss_kb": 725968,
+      "returned_keys": [
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_masking-seg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--masking",
+        "seg"
+      ],
+      "subset_md5": "ffc4ae5ca589f0468431a0fc8cb73dbb",
+      "subset_rows": 30866,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 1741,
+        "extra": 3,
+        "line_order_only": false,
+        "missing": 508,
+        "other_rows": 30866,
+        "same_hsp_different_value": 6140,
+        "shared_byte_identical": 22982,
+        "stock_rows": 31371,
+        "value_changed": 7881
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 264,
+        "other_rows": 30866,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30866,
+        "stock_rows": 31130,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.1668169170006877
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--masking",
+        "seg-all"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_masking-seg-all.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--masking",
+        "seg-all"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "5127f3c5dccb12ad2ad6993a37e73c0d",
+      "full_rows": 31076,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 2105,
+        "extra": 262,
+        "line_order_only": false,
+        "missing": 563,
+        "other_rows": 31076,
+        "same_hsp_different_value": 7959,
+        "shared_byte_identical": 20750,
+        "stock_rows": 31377,
+        "value_changed": 10064
+      },
+      "full_wall_s": 12.804199458987569,
+      "lost_lines_returned": 1,
+      "name": "masking-seg-all",
+      "peak_rss_kb": 675616,
+      "returned_keys": [
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_masking-seg-all.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--masking",
+        "seg-all"
+      ],
+      "subset_md5": "05cf6b315002e2c0c5bda36857b4ee5f",
+      "subset_rows": 30811,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 2105,
+        "extra": 3,
+        "line_order_only": false,
+        "missing": 563,
+        "other_rows": 30811,
+        "same_hsp_different_value": 7958,
+        "shared_byte_identical": 20745,
+        "stock_rows": 31371,
+        "value_changed": 10063
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 265,
+        "other_rows": 30811,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30811,
+        "stock_rows": 31076,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.207287166005699
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--masking",
+        "tantan"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_masking-tantan.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--masking",
+        "tantan"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "9bb21f2756244304d1849c0f0f0e290a",
+      "full_rows": 31377,
+      "full_vs_default_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31377,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31377,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 11.013026040993282,
+      "lost_lines_returned": 0,
+      "name": "masking-tantan",
+      "peak_rss_kb": 658544,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_masking-tantan.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--masking",
+        "tantan"
+      ],
+      "subset_md5": "fae27d589b85ed19c330a4f9252f4102",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.2649458329979097
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--motif-masking",
+        "1"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_motif-masking-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "1",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "768ad3cb71c5bfab89a815975e7a010b",
+      "full_rows": 25013,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 18,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6364,
+        "other_rows": 25013,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 24995,
+        "stock_rows": 31377,
+        "value_changed": 18
+      },
+      "full_wall_s": 12.254609791998519,
+      "lost_lines_returned": 0,
+      "name": "motif-masking-1",
+      "peak_rss_kb": 751584,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_motif-masking-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "1",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843"
+      ],
+      "subset_md5": "1b635f213ebbfdc8dceaad6aed0bfe1e",
+      "subset_rows": 25007,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 18,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6364,
+        "other_rows": 25007,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 24989,
+        "stock_rows": 31371,
+        "value_changed": 18
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 25007,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 25007,
+        "stock_rows": 25013,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.1071728329989128
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--ext",
+        "banded-fast"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_ext-banded-fast.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--ext",
+        "banded-fast"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "9bb21f2756244304d1849c0f0f0e290a",
+      "full_rows": 31377,
+      "full_vs_default_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31377,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31377,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 11.26676650000445,
+      "lost_lines_returned": 0,
+      "name": "ext-banded-fast",
+      "peak_rss_kb": 663744,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_ext-banded-fast.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--ext",
+        "banded-fast"
+      ],
+      "subset_md5": "fae27d589b85ed19c330a4f9252f4102",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.055461624986492
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--ext",
+        "banded-slow"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_ext-banded-slow.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--ext",
+        "banded-slow"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "e8144e8219abc9682ebcc1dd0ac896b9",
+      "full_rows": 31392,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 115,
+        "extra": 15,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31392,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 31257,
+        "stock_rows": 31377,
+        "value_changed": 120
+      },
+      "full_wall_s": 11.289255042007426,
+      "lost_lines_returned": 0,
+      "name": "ext-banded-slow",
+      "peak_rss_kb": 683328,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_ext-banded-slow.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--ext",
+        "banded-slow"
+      ],
+      "subset_md5": "66f628d95e187b3252fc168be5ad836e",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row"
+        ],
+        "different_hsp": 115,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 5,
+        "shared_byte_identical": 31251,
+        "stock_rows": 31371,
+        "value_changed": 120
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 21,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31392,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.4552359579975018
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--ext",
+        "full"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_ext-full.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--ext",
+        "full"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "bcbccdb39414efd3dd5053233d97fb36",
+      "full_rows": 31420,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 430,
+        "extra": 43,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31420,
+        "same_hsp_different_value": 126,
+        "shared_byte_identical": 30821,
+        "stock_rows": 31377,
+        "value_changed": 556
+      },
+      "full_wall_s": 12.763068999993266,
+      "lost_lines_returned": 0,
+      "name": "ext-full",
+      "peak_rss_kb": 711376,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_ext-full.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--ext",
+        "full"
+      ],
+      "subset_md5": "c701654a73dc7e5510e2f4bbca15ed25",
+      "subset_rows": 31376,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 430,
+        "extra": 5,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31376,
+        "same_hsp_different_value": 126,
+        "shared_byte_identical": 30815,
+        "stock_rows": 31371,
+        "value_changed": 556
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 44,
+        "other_rows": 31376,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31376,
+        "stock_rows": 31420,
+        "value_changed": 0
+      },
+      "subset_wall_s": 2.5037027910002507
+    },
+    {
+      "checked": false,
+      "error": " seeds...  [0s]\nSearching alignments...  [0.008s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 4/4.\nBuilding reference seed array...  [0.713s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.198s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.008s]\nDeallocating memory...  [0s]\nDeallocating buffers...  [0s]\nClearing query masking...  [0s]\nComputing alignments... Error: Traceback error.\nError: Traceback error.\n",
+      "extra": [
+        "--ext",
+        "global"
+      ],
+      "full_vs_default_full": null,
+      "lost_lines_returned": 0,
+      "name": "ext-global",
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_vs_default_subset": null,
+      "subset_vs_full": null
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--ext",
+        "none"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_ext-none.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--ext",
+        "none"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "4be38d064590115590f6082275912ba3",
+      "full_rows": 34955,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 31377,
+        "extra": 3578,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 34955,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 0,
+        "stock_rows": 31377,
+        "value_changed": 31377
+      },
+      "full_wall_s": 10.21867570799077,
+      "lost_lines_returned": 0,
+      "name": "ext-none",
+      "peak_rss_kb": 832784,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_ext-none.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--ext",
+        "none"
+      ],
+      "subset_md5": "1f38272b223d33b817a3caa525f4c6d3",
+      "subset_rows": 31850,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 31371,
+        "extra": 479,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31850,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 0,
+        "stock_rows": 31371,
+        "value_changed": 31371
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 31850,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 3105,
+        "other_rows": 31850,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 0,
+        "stock_rows": 34955,
+        "value_changed": 31850
+      },
+      "subset_wall_s": 0.5867528329981724
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--algo",
+        "0"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_algo-0.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--algo",
+        "0"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "9bb21f2756244304d1849c0f0f0e290a",
+      "full_rows": 31377,
+      "full_vs_default_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31377,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31377,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 10.789053166998201,
+      "lost_lines_returned": 0,
+      "name": "algo-0",
+      "peak_rss_kb": 672304,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_algo-0.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--algo",
+        "0"
+      ],
+      "subset_md5": "fae27d589b85ed19c330a4f9252f4102",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.058686000003945
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--algo",
+        "1"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_algo-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--algo",
+        "1"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Query-indexed"
+      ],
+      "full_md5": "a1d5a35a8db7dc41cd0be62190105460",
+      "full_rows": 31389,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 13,
+        "line_order_only": false,
+        "missing": 1,
+        "other_rows": 31389,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31376,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 2.0218139159987913,
+      "lost_lines_returned": 0,
+      "name": "algo-1",
+      "peak_rss_kb": 534896,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_algo-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--algo",
+        "1"
+      ],
+      "subset_md5": "86684f591f39ed0bafcecf815f1c4997",
+      "subset_rows": 31370,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 1,
+        "other_rows": 31370,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31370,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 19,
+        "other_rows": 31370,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31370,
+        "stock_rows": 31389,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.795997167006135
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--algo",
+        "ctg"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_algo-ctg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--algo",
+        "ctg"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Query-indexed with contiguous seed"
+      ],
+      "full_md5": "466f74a7d7edd5db7e7efc2b0986b413",
+      "full_rows": 46567,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 333,
+        "extra": 15560,
+        "line_order_only": false,
+        "missing": 370,
+        "other_rows": 46567,
+        "same_hsp_different_value": 4,
+        "shared_byte_identical": 30670,
+        "stock_rows": 31377,
+        "value_changed": 337
+      },
+      "full_wall_s": 4.406167166001978,
+      "lost_lines_returned": 6,
+      "name": "algo-ctg",
+      "peak_rss_kb": 1182752,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_algo-ctg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--algo",
+        "ctg"
+      ],
+      "subset_md5": "c29342f6239218ac51f943d167d999d3",
+      "subset_rows": 33920,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 333,
+        "extra": 2918,
+        "line_order_only": false,
+        "missing": 369,
+        "other_rows": 33920,
+        "same_hsp_different_value": 4,
+        "shared_byte_identical": 30665,
+        "stock_rows": 31371,
+        "value_changed": 337
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 1,
+        "line_order_only": false,
+        "missing": 12648,
+        "other_rows": 33920,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 33919,
+        "stock_rows": 46567,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.8932440829958068
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--shapes",
+        "1"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_shapes-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--shapes",
+        "1"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "e659582c44d39da977910718851b4c7e",
+      "full_rows": 28390,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 74,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 2987,
+        "other_rows": 28390,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 28316,
+        "stock_rows": 31377,
+        "value_changed": 74
+      },
+      "full_wall_s": 7.220193750006729,
+      "lost_lines_returned": 0,
+      "name": "shapes-1",
+      "peak_rss_kb": 800848,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_shapes-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--shapes",
+        "1"
+      ],
+      "subset_md5": "48794c0ce69311c1e98d407add147961",
+      "subset_rows": 28386,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 74,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 2985,
+        "other_rows": 28386,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 28312,
+        "stock_rows": 31371,
+        "value_changed": 74
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 4,
+        "other_rows": 28386,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 28386,
+        "stock_rows": 28390,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.8228090839984361
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--seed-cut",
+        "0.9"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_seed-cut-0.9.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--seed-cut",
+        "0.9"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "46ce74698ce760a2837d0b5f24621b42",
+      "full_rows": 31363,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 14,
+        "other_rows": 31363,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31363,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 11.22796020800888,
+      "lost_lines_returned": 0,
+      "name": "seed-cut-0.9",
+      "peak_rss_kb": 711136,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_seed-cut-0.9.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--seed-cut",
+        "0.9"
+      ],
+      "subset_md5": "b054f652e22ff44943f5e6b3cb0aa16a",
+      "subset_rows": 31357,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 14,
+        "other_rows": 31357,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31357,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31357,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31357,
+        "stock_rows": 31363,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.178923790997942
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--freq-masking"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_freq-masking.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--freq-masking"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "5cf03c7e3960a69be8b332e15af2fd5e",
+      "full_rows": 29594,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 39,
+        "extra": 13,
+        "line_order_only": false,
+        "missing": 1796,
+        "other_rows": 29594,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 29542,
+        "stock_rows": 31377,
+        "value_changed": 39
+      },
+      "full_wall_s": 10.96056537500408,
+      "lost_lines_returned": 0,
+      "name": "freq-masking",
+      "peak_rss_kb": 735248,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_freq-masking.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--freq-masking"
+      ],
+      "subset_md5": "45e1f44215f4a428a8d8193831e05fed",
+      "subset_rows": 29575,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 39,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 1796,
+        "other_rows": 29575,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 29536,
+        "stock_rows": 31371,
+        "value_changed": 39
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 19,
+        "other_rows": 29575,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 29575,
+        "stock_rows": 29594,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.1694384169968544
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--freq-masking",
+        "--freq-sd",
+        "10"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_freq-sd-10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--freq-masking",
+        "--freq-sd",
+        "10"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "42fefeba3d6f4cacf2a284623097357f",
+      "full_rows": 27163,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 78,
+        "extra": 3,
+        "line_order_only": false,
+        "missing": 4217,
+        "other_rows": 27163,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 27082,
+        "stock_rows": 31377,
+        "value_changed": 78
+      },
+      "full_wall_s": 11.051850624993676,
+      "lost_lines_returned": 0,
+      "name": "freq-sd-10",
+      "peak_rss_kb": 733488,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_freq-sd-10.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--freq-masking",
+        "--freq-sd",
+        "10"
+      ],
+      "subset_md5": "37bd94e74638b8be7278fae905cf0c47",
+      "subset_rows": 27154,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 78,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 4217,
+        "other_rows": 27154,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 27076,
+        "stock_rows": 31371,
+        "value_changed": 78
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 9,
+        "other_rows": 27154,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 27154,
+        "stock_rows": 27163,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.0171794580091955
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--id2",
+        "0"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_id2-0.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--id2",
+        "0"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "9bb21f2756244304d1849c0f0f0e290a",
+      "full_rows": 31377,
+      "full_vs_default_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31377,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31377,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 11.117229082999984,
+      "lost_lines_returned": 0,
+      "name": "id2-0",
+      "peak_rss_kb": 656992,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_id2-0.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--id2",
+        "0"
+      ],
+      "subset_md5": "fae27d589b85ed19c330a4f9252f4102",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.0591013749944977
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--id2",
+        "1"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_id2-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--id2",
+        "1"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "2ebf7a6f6b6f131685f41808dc1fdf64",
+      "full_rows": 31623,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 1,
+        "extra": 246,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31623,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31376,
+        "stock_rows": 31377,
+        "value_changed": 1
+      },
+      "full_wall_s": 10.815829250001116,
+      "lost_lines_returned": 6,
+      "name": "id2-1",
+      "peak_rss_kb": 722016,
+      "returned_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_id2-1.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--id2",
+        "1"
+      ],
+      "subset_md5": "12ac7f1f2c365e1ad7eedd75c0f18148",
+      "subset_rows": 31410,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "extra"
+        ],
+        "different_hsp": 1,
+        "extra": 39,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31410,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31370,
+        "stock_rows": 31371,
+        "value_changed": 1
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 213,
+        "other_rows": 31410,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31410,
+        "stock_rows": 31623,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.175136082994868
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--approx-id",
+        "50"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_approx-id-50.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--approx-id",
+        "50"
+      ],
+      "full_has_lost_keys": [],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "b3fc5a48f1d048f2f178af83c807250a",
+      "full_rows": 12049,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 1,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 19328,
+        "other_rows": 12049,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 12048,
+        "stock_rows": 31377,
+        "value_changed": 1
+      },
+      "full_wall_s": 10.904053125006612,
+      "lost_lines_returned": 0,
+      "name": "approx-id-50",
+      "peak_rss_kb": 661904,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_approx-id-50.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--approx-id",
+        "50"
+      ],
+      "subset_md5": "b9f54ac8e5b82f223c5258b3701c2709",
+      "subset_rows": 12054,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 1,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 19317,
+        "other_rows": 12054,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 12053,
+        "stock_rows": 31371,
+        "value_changed": 1
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 10,
+        "line_order_only": false,
+        "missing": 5,
+        "other_rows": 12054,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 12044,
+        "stock_rows": 12049,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.9581376669957535
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--hamming-dist-boundary-check"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_hamming-dist-boundary-check.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--hamming-dist-boundary-check"
+      ],
+      "full_has_lost_keys": [],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "564bcd5f69557ea0a04a00c6f4f2e444",
+      "full_rows": 31337,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 40,
+        "other_rows": 31337,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31337,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 11.108238500004518,
+      "lost_lines_returned": 0,
+      "name": "hamming-dist-boundary-check",
+      "peak_rss_kb": 660384,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_hamming-dist-boundary-check.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--hamming-dist-boundary-check"
+      ],
+      "subset_md5": "564bcd5f69557ea0a04a00c6f4f2e444",
+      "subset_rows": 31337,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 34,
+        "other_rows": 31337,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31337,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31337,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31337,
+        "stock_rows": 31337,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.0901592080044793
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--linsearch"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_linsearch.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--linsearch"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed",
+        "Length sorting reference...  [0.103s]"
+      ],
+      "full_md5": "e5795d5297846f80507fbee1ba6019bc",
+      "full_rows": 2833,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 40,
+        "extra": 1,
+        "line_order_only": false,
+        "missing": 28545,
+        "other_rows": 2833,
+        "same_hsp_different_value": 2,
+        "shared_byte_identical": 2790,
+        "stock_rows": 31377,
+        "value_changed": 42
+      },
+      "full_wall_s": 10.492695749999257,
+      "lost_lines_returned": 0,
+      "name": "linsearch",
+      "peak_rss_kb": 689488,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_linsearch.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--linsearch"
+      ],
+      "subset_md5": "77f0fbdebfbcdca107494a7795c5ea33",
+      "subset_rows": 3144,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 45,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 28227,
+        "other_rows": 3144,
+        "same_hsp_different_value": 2,
+        "shared_byte_identical": 3097,
+        "stock_rows": 31371,
+        "value_changed": 47
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 313,
+        "line_order_only": false,
+        "missing": 2,
+        "other_rows": 3144,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 2831,
+        "stock_rows": 2833,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.661994791997131
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--soft-masking",
+        "tantan"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_soft-masking-tantan.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--soft-masking",
+        "tantan"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "9bb21f2756244304d1849c0f0f0e290a",
+      "full_rows": 31377,
+      "full_vs_default_full": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31377,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31377,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 13.599333915990428,
+      "lost_lines_returned": 0,
+      "name": "soft-masking-tantan",
+      "peak_rss_kb": 759520,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_soft-masking-tantan.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--soft-masking",
+        "tantan"
+      ],
+      "subset_md5": "fae27d589b85ed19c330a4f9252f4102",
+      "subset_rows": 31371,
+      "subset_vs_default_subset": {
+        "bodies_equal": true,
+        "content_changed": false,
+        "difference_classes": [],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 0,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 31371,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 31371,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.233518417007872
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--soft-masking",
+        "seg"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_soft-masking-seg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--soft-masking",
+        "seg"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "7e0986f309e2896a910fb04f2388a119",
+      "full_rows": 30889,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 63,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 488,
+        "other_rows": 30889,
+        "same_hsp_different_value": 1108,
+        "shared_byte_identical": 29718,
+        "stock_rows": 31377,
+        "value_changed": 1171
+      },
+      "full_wall_s": 15.287233082999592,
+      "lost_lines_returned": 0,
+      "name": "soft-masking-seg",
+      "peak_rss_kb": 652944,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_soft-masking-seg.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--soft-masking",
+        "seg"
+      ],
+      "subset_md5": "fc532afad3c72956bd73f6d4683eee34",
+      "subset_rows": 30883,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "value-only",
+          "different row",
+          "missing"
+        ],
+        "different_hsp": 63,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 488,
+        "other_rows": 30883,
+        "same_hsp_different_value": 1108,
+        "shared_byte_identical": 29712,
+        "stock_rows": 31371,
+        "value_changed": 1171
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 6,
+        "other_rows": 30883,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30883,
+        "stock_rows": 30889,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.2690068749943748
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--id",
+        "30"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_id-30.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--id",
+        "30"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "c625b471a9523640a7e7dfc1a74e2e79",
+      "full_rows": 26639,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 4738,
+        "other_rows": 26639,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 26639,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 10.826434582995716,
+      "lost_lines_returned": 0,
+      "name": "id-30",
+      "peak_rss_kb": 801840,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_id-30.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--id",
+        "30"
+      ],
+      "subset_md5": "6192d52b782800f5aa85f1ea00ef4d13",
+      "subset_rows": 26634,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 4737,
+        "other_rows": 26634,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 26634,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 5,
+        "other_rows": 26634,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 26634,
+        "stock_rows": 26639,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.086802624995471
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--query-cover",
+        "20"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_query-cover-20.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--query-cover",
+        "20"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Algorithm: Double-indexed"
+      ],
+      "full_md5": "a0b6ac4947d7cdcaf83dccb19981111a",
+      "full_rows": 30602,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 775,
+        "other_rows": 30602,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30602,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 10.773500124996644,
+      "lost_lines_returned": 0,
+      "name": "query-cover-20",
+      "peak_rss_kb": 682064,
+      "returned_keys": [],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_query-cover-20.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--query-cover",
+        "20"
+      ],
+      "subset_md5": "434a6702ba9cda194885c45aa9fa3f74",
+      "subset_rows": 30597,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 774,
+        "other_rows": 30597,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30597,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing"
+        ],
+        "different_hsp": 0,
+        "extra": 0,
+        "line_order_only": false,
+        "missing": 5,
+        "other_rows": 30597,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 30597,
+        "stock_rows": 30602,
+        "value_changed": 0
+      },
+      "subset_wall_s": 1.0600227499962784
+    },
+    {
+      "checked": true,
+      "error": null,
+      "extra": [
+        "--min-len-ratio",
+        "0.9"
+      ],
+      "full_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/full_min-len-ratio-0.9.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--min-len-ratio",
+        "0.9"
+      ],
+      "full_has_lost_keys": [
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "full_log": [
+        "Block size = 2000000000",
+        "Length sorting queries...  [0s]",
+        "Algorithm: Double-indexed",
+        "Length sorting reference...  [0.09s]"
+      ],
+      "full_md5": "d3ad547acf3995b8ad9705e261aafa2c",
+      "full_rows": 19793,
+      "full_vs_default_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 7,
+        "line_order_only": false,
+        "missing": 11591,
+        "other_rows": 19793,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 19786,
+        "stock_rows": 31377,
+        "value_changed": 0
+      },
+      "full_wall_s": 10.806869874999393,
+      "lost_lines_returned": 3,
+      "name": "min-len-ratio-0.9",
+      "peak_rss_kb": 862976,
+      "returned_keys": [
+        [
+          "WP_000137873.1",
+          "sp|Q31S42|RPAA_SYNE7"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|A9BCC5|CH10_PROM4"
+        ],
+        [
+          "WP_001026276.1",
+          "sp|Q5GST6|CH10_WOLTR"
+        ]
+      ],
+      "still_missing_keys": [
+        [
+          "WP_000107384.1",
+          "sp|Q00407|VHUA_METVO"
+        ],
+        [
+          "WP_000256438.1",
+          "sp|Q0WWW9|XYLL3_ARATH"
+        ],
+        [
+          "WP_000493792.1",
+          "sp|Q39QB5|NUOI2_GEOMG"
+        ]
+      ],
+      "subset_argv": [
+        "nice",
+        "-n",
+        "10",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+        "blastp",
+        "--db",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U",
+        "--query",
+        "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+        "--out",
+        "/Users/joshuaterranova/tmp/tare_g/g2/U_min-len-ratio-0.9.m8",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        "2",
+        "--tmpdir",
+        "/Users/joshuaterranova/tmp/tare_g",
+        "--outfmt",
+        "6",
+        "qseqid",
+        "sseqid",
+        "pident",
+        "length",
+        "mismatch",
+        "gapopen",
+        "qstart",
+        "qend",
+        "sstart",
+        "send",
+        "evalue",
+        "bitscore",
+        "--dbsize",
+        "209017843",
+        "--min-len-ratio",
+        "0.9"
+      ],
+      "subset_md5": "45fc73079d53aebd868833dc96dceb42",
+      "subset_rows": 19785,
+      "subset_vs_default_subset": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 3,
+        "line_order_only": false,
+        "missing": 11589,
+        "other_rows": 19785,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 19782,
+        "stock_rows": 31371,
+        "value_changed": 0
+      },
+      "subset_vs_full": {
+        "bodies_equal": false,
+        "content_changed": true,
+        "difference_classes": [
+          "missing",
+          "extra"
+        ],
+        "different_hsp": 0,
+        "extra": 1,
+        "line_order_only": false,
+        "missing": 9,
+        "other_rows": 19785,
+        "same_hsp_different_value": 0,
+        "shared_byte_identical": 19784,
+        "stock_rows": 19793,
+        "value_changed": 0
+      },
+      "subset_wall_s": 0.897581541998079
+    }
+  ],
+  "checked_options": [
+    "faster",
+    "fast",
+    "mid-sensitive",
+    "sensitive",
+    "more-sensitive",
+    "very-sensitive",
+    "ultra-sensitive",
+    "shapes-6x10",
+    "shapes-30x10",
+    "masking-none",
+    "masking-seg",
+    "masking-seg-all",
+    "masking-tantan",
+    "motif-masking-1",
+    "ext-banded-fast",
+    "ext-banded-slow",
+    "ext-full",
+    "ext-none",
+    "algo-0",
+    "algo-1",
+    "algo-ctg",
+    "shapes-1",
+    "seed-cut-0.9",
+    "freq-masking",
+    "freq-sd-10",
+    "id2-0",
+    "id2-1",
+    "approx-id-50",
+    "hamming-dist-boundary-check",
+    "linsearch",
+    "soft-masking-tantan",
+    "soft-masking-seg",
+    "id-30",
+    "query-cover-20",
+    "min-len-ratio-0.9"
+  ],
+  "code_commit": "eaefdf862ee35205f4edaaaa5bb4f0ec9bc4800e",
+  "controls": {
+    "checker_blind": false,
+    "full_search_byte_identical": true,
+    "full_vs_subset": {
+      "bodies_equal": false,
+      "content_changed": true,
+      "difference_classes": [
+        "missing"
+      ],
+      "different_hsp": 0,
+      "extra": 0,
+      "line_order_only": false,
+      "missing": 6,
+      "other_rows": 31371,
+      "same_hsp_different_value": 0,
+      "shared_byte_identical": 31371,
+      "stock_rows": 31377,
+      "value_changed": 0
+    },
+    "id2_1_checker_sees_all_six": true,
+    "id2_1_returned_keys": [
+      [
+        "WP_000107384.1",
+        "sp|Q00407|VHUA_METVO"
+      ],
+      [
+        "WP_000137873.1",
+        "sp|Q31S42|RPAA_SYNE7"
+      ],
+      [
+        "WP_000256438.1",
+        "sp|Q0WWW9|XYLL3_ARATH"
+      ],
+      [
+        "WP_000493792.1",
+        "sp|Q39QB5|NUOI2_GEOMG"
+      ],
+      [
+        "WP_001026276.1",
+        "sp|A9BCC5|CH10_PROM4"
+      ],
+      [
+        "WP_001026276.1",
+        "sp|Q5GST6|CH10_WOLTR"
+      ]
+    ],
+    "ignore_warnings_byte_identical_to_default_subset": true,
+    "ignore_warnings_still_missing": true,
+    "known_bad_reproduced": true,
+    "known_bad_six_absent_from_subset": true,
+    "known_bad_six_present_in_full": true,
+    "subset_search_byte_identical": true
+  },
+  "databases": {
+    "full": {
+      "bytes": 294217644,
+      "md5": "efb59b8bd46494c4c1edf504b6a3bfc5",
+      "path": "/Users/joshuaterranova/tmp/tare_g/g2/full.dmnd"
+    },
+    "subset": {
+      "bytes": 14098392,
+      "md5": "4d8fce71cb486b9dcd54dd6209ee4d46",
+      "path": "/Users/joshuaterranova/tmp/tare_g/g2/U.dmnd"
+    }
+  },
+  "default_full": {
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+      "blastp",
+      "--db",
+      "/Users/joshuaterranova/tmp/tare_g/g2/full",
+      "--query",
+      "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+      "--out",
+      "/Users/joshuaterranova/tmp/tare_g/g2/full_1.m8",
+      "--min-score",
+      "40",
+      "-k",
+      "0",
+      "--motif-masking",
+      "0",
+      "-b",
+      "2.0",
+      "--comp-based-stats",
+      "1",
+      "--threads",
+      "2",
+      "--tmpdir",
+      "/Users/joshuaterranova/tmp/tare_g",
+      "--outfmt",
+      "6",
+      "qseqid",
+      "sseqid",
+      "pident",
+      "length",
+      "mismatch",
+      "gapopen",
+      "qstart",
+      "qend",
+      "sstart",
+      "send",
+      "evalue",
+      "bitscore"
+    ],
+    "log": [
+      "Block size = 2000000000",
+      "Algorithm: Double-indexed"
+    ],
+    "md5": "9bb21f2756244304d1849c0f0f0e290a",
+    "peak_rss_kb": 736144,
+    "rows": 31377,
+    "wall_s": 11.192398957995465
+  },
+  "default_subset": {
+    "argv": [
+      "nice",
+      "-n",
+      "10",
+      "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond",
+      "blastp",
+      "--db",
+      "/Users/joshuaterranova/tmp/tare_g/g2/U",
+      "--query",
+      "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa",
+      "--out",
+      "/Users/joshuaterranova/tmp/tare_g/g2/U_1.m8",
+      "--min-score",
+      "40",
+      "-k",
+      "0",
+      "--motif-masking",
+      "0",
+      "-b",
+      "2.0",
+      "--comp-based-stats",
+      "1",
+      "--threads",
+      "2",
+      "--tmpdir",
+      "/Users/joshuaterranova/tmp/tare_g",
+      "--outfmt",
+      "6",
+      "qseqid",
+      "sseqid",
+      "pident",
+      "length",
+      "mismatch",
+      "gapopen",
+      "qstart",
+      "qend",
+      "sstart",
+      "send",
+      "evalue",
+      "bitscore",
+      "--dbsize",
+      "209017843"
+    ],
+    "log": [
+      "Block size = 2000000000",
+      "Algorithm: Double-indexed"
+    ],
+    "md5": "fae27d589b85ed19c330a4f9252f4102",
+    "peak_rss_kb": 0,
+    "rows": 31371,
+    "wall_s": 1.2216099579964066
+  },
+  "deviations": [
+    "threads 2, dx3 used 8",
+    "--tmpdir set to the scratch directory",
+    "nice -n 10"
+  ],
+  "inputs": {
+    "df": "Filesystem      Size    Used   Avail Capacity iused ifree %iused  Mounted on\n/dev/disk3s5   460Gi   347Gi    72Gi    83%    4.5M  758M    1%   /System/Volumes/Data",
+    "diamond": {
+      "bytes": 22031624,
+      "md5": "711d4c7b29e24c3fd6ec6a288ec1d326",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/builds/diamond-2.2.5/diamond"
+    },
+    "diamond_version": "diamond version 2.2.5",
+    "disk_free_bytes": 77658107904,
+    "provenance_at_start": {
+      "finished_utc": "2026-10-18T07:41:06.079955+00:00",
+      "git": "eaefdf862ee35205f4edaaaa5bb4f0ec9bc4800e",
+      "git_dirty": false,
+      "host": "Joshuas-MacBook-Pro-3.local",
+      "platform": "macOS-27.0-arm64-arm-64bit",
+      "python": "3.11.9",
+      "versions": {
+        "diamond": "diamond version 2.2.5"
+      }
+    },
+    "swissprot_gz": {
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/swissprot/uniprot_sprot_2026_03.fasta.gz"
+    }
+  },
+  "known_bad_keys": [
+    [
+      "WP_000107384.1",
+      "sp|Q00407|VHUA_METVO"
+    ],
+    [
+      "WP_000137873.1",
+      "sp|Q31S42|RPAA_SYNE7"
+    ],
+    [
+      "WP_000256438.1",
+      "sp|Q0WWW9|XYLL3_ARATH"
+    ],
+    [
+      "WP_000493792.1",
+      "sp|Q39QB5|NUOI2_GEOMG"
+    ],
+    [
+      "WP_001026276.1",
+      "sp|A9BCC5|CH10_PROM4"
+    ],
+    [
+      "WP_001026276.1",
+      "sp|Q5GST6|CH10_WOLTR"
+    ]
+  ],
+  "label": "PILOT",
+  "not_a_result": true,
+  "not_checked": [
+    "--ignore-warnings (negative control only)",
+    "--comp-based-stats (dx3_rootcause.json, not re-run)",
+    "--no-ranking (dx3_rootcause.json, not re-run)",
+    "--dbsize (dx3_rootcause.json, not re-run; the subset arm still pins it)",
+    "--swipe (not run; exhaustive alignment can exceed 4 GiB)",
+    "--evalue --matrix --gapopen --gapextend --top --max-hsps --range-culling --global-ranking",
+    "--iterate (the sensitivity modes are separate arms)"
+  ],
+  "options_that_returned_any_lost_line": [
+    {
+      "name": "mid-sensitive",
+      "returned": 4
+    },
+    {
+      "name": "sensitive",
+      "returned": 6
+    },
+    {
+      "name": "more-sensitive",
+      "returned": 6
+    },
+    {
+      "name": "very-sensitive",
+      "returned": 6
+    },
+    {
+      "name": "ultra-sensitive",
+      "returned": 6
+    },
+    {
+      "name": "shapes-6x10",
+      "returned": 4
+    },
+    {
+      "name": "shapes-30x10",
+      "returned": 6
+    },
+    {
+      "name": "masking-none",
+      "returned": 1
+    },
+    {
+      "name": "masking-seg",
+      "returned": 1
+    },
+    {
+      "name": "masking-seg-all",
+      "returned": 1
+    },
+    {
+      "name": "algo-ctg",
+      "returned": 6
+    },
+    {
+      "name": "id2-1",
+      "returned": 6
+    },
+    {
+      "name": "min-len-ratio-0.9",
+      "returned": 3
+    }
+  ],
+  "options_where_subset_matches_full": [
+    "hamming-dist-boundary-check"
+  ],
+  "outcome": "PILOT",
+  "provenance": {
+    "finished_utc": "2026-10-18T07:57:38.163491+00:00",
+    "git": "b8156e4896a6526e23a7bc353503ee11ffc614f6",
+    "git_dirty": false,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {
+      "diamond": "2.2.5"
+    }
+  },
+  "query": {
+    "bytes": 105603,
+    "md5": "3e5efa5cbd22b83c5533d5c0bec6f9e9",
+    "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx2/measured/e1_q.faa"
+  },
+  "semantics": "pipeline/results/diamond_order/g_semantics.md",
+  "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab"
+}
