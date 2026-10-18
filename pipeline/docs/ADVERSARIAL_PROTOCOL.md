@@ -201,3 +201,19 @@ The grid does not estimate a Pfam-scale `q`. `q` is measured on this
 2500-model reference, whose random pad has width `min(max(200, |U|),
 non-candidates)` and `|U| = 1`. It does not say the neighbor pad proves
 entry-locality. It does not retune `s`, the pad count, or the audit.
+
+## Addendum 2026-10-18 — pilot file and measured run
+
+Written after the measured grid. The locked "Measured grid" section is unchanged.
+
+The pilot table above is not what `pipeline/results/adversarial/pilot.json` contains. That file is the in-process pilot: seed 20261111, 360 records, 200 models, three trials each of C0 at k=1 and k=5 and of C3 at distance 1 for the same k. Every C0 trial is `correct_ship` with identical tables. Every distance-1 trial is `true_refusal`, layer `neighbor_pad`. `known_good.ok` and `known_bad.ok` are true. The C1, C2, C3 distance-5, and C4 rows in the table above are not in the file and are not results. Needless refusal and UNSAFE are labeled by `test_classifier_labels_the_four_outcomes`. The measured grid is where the shipped check produced UNSAFE.
+
+The measured command was `python3 pipeline/scripts/run_adversarial.py measured`. It started after commit `200cc7cd4df8e77c56c12ec60ab30548941e10cf` and recorded that head with `git_dirty_tracked` false. 1,400 trials, 28 cells, every cell `status` OK. Clean contract `SHIP`. Oracle mismatches 0. Stock tblout rows 2,000 on every trial.
+
+The audit comparison runs only when the cache reused rows. Each trial used a fresh cache, so `trials[].audit` is null and no layer is `audit`. The layers that ran are the neighbor pad and the three random pads, which is what Eq. 4 describes.
+
+Eq. 4 applies to C2 and C3. Its detection sits inside the cell's Wilson 95% interval in 15 of 16 cells. The exception is `cells["C3/d2/k1"]`: Eq. 4 detection 0.008 is below the interval [0.011, 0.135], so the formula slightly over-predicts misses there. The largest point gap is `cells["C2/k22"]`, 0.140 versus 0.080, and that formula value is still inside the interval. No cell has Eq. 4 above its interval. C1 and C4 are outside the formula: the neighbor pad refused all 200 trials of each.
+
+UNSAFE is 741 trials, all in C2 and the three C3 distances. C0 is 200 correct ships and 0 needless refusals.
+
+The hmmscan arm is `pipeline/results/adversarial/confirm.json`, one trial per form, seeds 20261113–20261117, the first 24 profiles of the read-only Pfam-A file, sequences emitted from `2CompART`. It is not part of the rates. C0 shipped identical to stock. C1 and C4 refused on the neighbor pad. C2 and C3 at distance 2 refused on a random pad.

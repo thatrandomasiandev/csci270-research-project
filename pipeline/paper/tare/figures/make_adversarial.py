@@ -54,9 +54,11 @@ ONE = 3.35
 
 # Empirical series. Eq. 4 is one dashed stock-gray curve per single-entry form.
 SERIES = (
-    ("C1/k{k}", "C1 residues", C["tare"], "o", False),
+    # C4 is drawn before C1. Both sit at detection 1, and the darker
+    # circles stay visible on top of the squares.
     ("C4/k{k}", "C4 whole file", C["tare_light"], "s", False),
-    ("C2/k{k}", "C2 hidden entry", C["ink"], "^", True),
+    ("C1/k{k}", "C1 residues", C["tare"], "o", False),
+    ("C2/k{k}", "C2 hidden entry", C["bad"], "^", True),
     ("C3/d2/k{k}", "C3 distance 2", C["stock"], "D", True),
     ("C3/d5/k{k}", "C3 distance 5", C["n3"], "v", True),
     ("C3/d20/k{k}", "C3 distance 20", C["n2"], "P", True),
@@ -79,8 +81,8 @@ def main() -> None:
             xs.append(k)
             ys.append(rate)
             band = cell["detection_wilson95"] or [rate, rate]
-            lo.append(rate - band[0])
-            hi.append(band[1] - rate)
+            lo.append(max(0.0, rate - band[0]))
+            hi.append(max(0.0, band[1] - rate))
             if show_eq and cell.get("eq4_detection") is not None:
                 eq.append(cell["eq4_detection"])
             else:
@@ -100,10 +102,9 @@ def main() -> None:
     ]
     c0_n = [cells[f"C0/k{k}"]["n_trials"] for k in KS if f"C0/k{k}" in cells]
     if c0_n:
-        ax.text(
-            0.02, 0.02,
+        ax.set_title(
             f"C0 needless refusals {sum(c0_needless)}/{sum(c0_n)}",
-            transform=ax.transAxes, fontsize=6.2, color=C["stock"],
+            loc="left", color=C["stock"], pad=2,
         )
     ax.set_xscale("log")
     ax.set_xticks(list(KS))
@@ -113,7 +114,7 @@ def main() -> None:
     ax.set_xlabel("Affected records k  (n = 2,000)")
     ax.set_ylabel("Detection rate")
     ax.grid(axis="y")
-    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(0.28, 0.42))
+    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(0.22, 0.58))
     fig.tight_layout(pad=0.3)
     fig.savefig(HERE / "adversarial.pdf", bbox_inches="tight", pad_inches=0.02)
     fig.savefig(HERE / "adversarial.png", dpi=220, bbox_inches="tight", pad_inches=0.02)
