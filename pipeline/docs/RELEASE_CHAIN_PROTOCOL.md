@@ -196,13 +196,28 @@ Job `13208152` still had a PENDING task at the one listing
 (`13208152_9 PENDING`; tasks 4–8 RUNNING). No release-chain job is
 submitted while any task of `13208152` is PENDING.
 
+That same listing found no `Pfam-A.hmm.gz` under `/scratch1/jjt_373`.
+Three uncompressed `Pfam-A.hmm` files in the 2026-10-08 and 2026-10-09
+trees (`acts-baselines-20261009`, `acts-hmmscan-stock-20261009`,
+`acts-hmmsearch-stock-20261008`) are not versioned release archives
+and are not inputs.
+
 ## Part 1 — pair census
 
-After the six files are approved and stored read-only, run
-`pipeline/scripts/release_chain_pairs.py` once per consecutive pair.
-The 38.1→38.2 pair is run with `--control` first. Only if it matches
-`reference_kill_r1.json` on every key in `CONTROL_KEYS` does the script
-write the other six pairs into `pipeline/results/release_chain/pairs.json`.
+`pipeline/scripts/release_chain_pairs.py` imports `iter_models` and
+`model_hashes` from `reference_kill_tests.py`. Invoke it with
+`--release VER=PATH` repeated and `--out`. `--control` defaults to
+`reference_kill_r1.json`. The 38.1→38.2 pair must match that file on
+every `CONTROL_KEYS` field before any other pair is trusted. Until the
+six missing releases exist, that one pair is written to
+`pipeline/results/release_chain/control_38.1_38.2.json` and is not
+`pairs.json`. `pairs.json` is written only when all eight releases are
+passed and `complete` is true.
+
+The script also records `hashset_fresh`: new-release strict hashes that
+are absent from the old release's hash set. That is what the shipped
+cache treats as fresh. \(f_\Delta\) stays the r1 ratio. If the two
+counts differ, both are reported and the definition is not switched.
 
 Each result JSON records git head, host, platform, Python, argv, wall
 seconds, and each file's byte size and md5. The wall time of the hash
@@ -231,11 +246,22 @@ Pool: stems of `pipeline/data/recurrence/A/*_protein.faa.gz`, minus
 `pipeline/scripts/headline_carc_measured.py` at this commit. The runner
 stops unless `len(EXCLUDE_REASONS) == 50` and `len(DRAWS) == 10`. The
 ten `DRAWS` are the headline measured sample (array `13208152`) and are
-not reused here. Pilot genome =
-`sorted(random.Random(20261121).sample(sorted(pool), 1))[0]`.
-The job recomputes the draw from the CARC directory and stops if the
-sorted pool or the draw differs. Whole file. No second subsample of
-proteins.
+not reused here. On the laptop copy of `recurrence/A` (100 stems) that
+pool has 40 stems. SHA-256 of the newline-joined sorted stems is
+`40dc92dba7c117e9e9e435f61498fd255a08e6790789d7f861a64aa3a51a456c`.
+Pilot genome =
+`sorted(random.Random(20261121).sample(sorted(pool), 1))[0]`,
+which on that directory is `GCF_057650775.1`.
+The job recomputes the pool hash and the draw from the CARC directory
+and stops if either differs. Whole file. No second subsample of
+proteins. The measured draw is not locked here. On this same directory,
+removing the pilot genome and drawing
+`sorted(random.Random(20261122).sample(reduced, 3))` yields
+`GCF_025259645.1`, `GCF_057098645.1`, and `GCF_900196535.2`
+(reduced-pool sha256
+`3cc3445dbbfd79ea11fa75f306c31e3032bf5b2e4d529b08b1ff7d23667f69e2`).
+Those three names become the measured sample only in the post-pilot
+addendum.
 
 ### Command
 
@@ -448,3 +474,26 @@ for `squeue -j 13208152`. No second ssh followed. No download. No
 - The seven-pair `pairs.json` and `churn_pairs.pdf` / `.png`.
 - The pilot, then the measured-run addendum, then the measured run.
 - `13208152` still had a PENDING task at the one check.
+
+## Addendum 2026-10-18 — 38.1→38.2 control
+
+Written after the run. The rules above are unchanged. This is not the
+seven-pair census and not a speed claim.
+
+Code that produced the file: `d9a0103243dabf0e2eab944b8945cde89b0801fd`.
+Output: `pipeline/results/release_chain/control_38.1_38.2.json`.
+`control_pass` is true. Every `CONTROL_KEYS` field equals
+`reference_kill_r1.json`. `f_delta` is 4052/30134. Edited is 1,378, new
+is 2,674, removed is 21.
+
+On this pair only, the shipped hash-set count equals the accession
+count: `hashset_fresh` is 4,052. The shipped parser's entry count equals
+`z` on both files (27,481 and 30,134), every block magic is `HMMER3/f`,
+and there are no duplicate stems, empty accessions, or duplicate hashes.
+The pin's Z is the r1 model count for these two releases. That equality
+is not assumed for 37.0–38.0.
+
+Both md5s equal the headline pins: 38.1
+`dc814cc181ece09102c09c4e6c19f2fd`, 38.2
+`7ab3c4e215d0daaea3004e37c4e24f8a`. `pairs.json` was not written. The
+figure script was not run.

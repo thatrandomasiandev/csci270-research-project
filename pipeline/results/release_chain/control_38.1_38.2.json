@@ -1,0 +1,79 @@
+{
+  "protocol": "pipeline/docs/RELEASE_CHAIN_PROTOCOL.md",
+  "definition": "reference_kill_tests.iter_models + model_hashes; last ACC stem wins",
+  "git_head": "d9a0103243dabf0e2eab944b8945cde89b0801fd",
+  "finished_utc": "2026-10-18T07:17:58.203001+00:00",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "platform": "macOS-27.0-arm64-arm-64bit",
+  "python": "3.11.9",
+  "argv": [
+    "scripts/release_chain_pairs.py",
+    "--release",
+    "38.1=/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/hmmer/pfam38.1/Pfam-A.hmm.gz",
+    "--release",
+    "38.2=/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/hmmer/Pfam-A.hmm.gz",
+    "--out",
+    "results/release_chain/control_38.1_38.2.json"
+  ],
+  "wall_s": 47.92486733300029,
+  "threads": 1,
+  "releases_present": [
+    "38.1",
+    "38.2"
+  ],
+  "complete": false,
+  "pairs": [
+    {
+      "old_release": "38.1",
+      "new_release": "38.2",
+      "z_old": 27481,
+      "z_new": 30134,
+      "n_blocks_old": 27481,
+      "n_blocks_new": 30134,
+      "added": 2674,
+      "removed": 21,
+      "shared": 27460,
+      "unchanged_strict": 26082,
+      "edited": 1378,
+      "unchanged_body": 26253,
+      "frac_new_unchanged_strict": 0.8655339483639742,
+      "frac_new_unchanged_body": 0.8712086015796111,
+      "f_delta": 0.13446605163602576,
+      "hashset_fresh": 4052,
+      "hashset_f_delta": 0.13446605163602576,
+      "duplicate_acc_stems_old": 0,
+      "duplicate_acc_stems_new": 0,
+      "empty_acc_old": 0,
+      "empty_acc_new": 0,
+      "duplicate_hashes_old": 0,
+      "duplicate_hashes_new": 0,
+      "magics_old": {
+        "HMMER3/f": 27481
+      },
+      "magics_new": {
+        "HMMER3/f": 30134
+      },
+      "old_file": {
+        "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/hmmer/pfam38.1/Pfam-A.hmm.gz",
+        "bytes": 384357362,
+        "md5": "dc814cc181ece09102c09c4e6c19f2fd",
+        "index_wall_s": 22.700313875000575
+      },
+      "new_file": {
+        "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/hmmer/Pfam-A.hmm.gz",
+        "bytes": 418160514,
+        "md5": "7ab3c4e215d0daaea3004e37c4e24f8a",
+        "index_wall_s": 25.166725083006895
+      },
+      "parser_entries_old": 27481,
+      "parser_entries_new": 30134,
+      "parser_duplicate_hashes_old": 0,
+      "parser_duplicate_hashes_new": 0,
+      "parser_matches_r1_z": true,
+      "control": "reference_kill_r1.json",
+      "control_pass": true,
+      "control_mismatches": []
+    }
+  ],
+  "control_38_1_38_2_pass": true
+}
