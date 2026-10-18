@@ -288,3 +288,31 @@ void. Those jobs are not this result. Job `13223561` is the tabular
 rerun: the published lines are present, the joins are nonempty, and
 the confirmation above is that file. The pairwise text is kept only as
 a picture of the two alignments.
+
+## Pilot, 2026-10-18
+
+Pre-registered in `docs/BLAST_PIN_PROTOCOL.md` and run once as job
+`13223656` (host `a03-19`), git
+`f2f1f189e937655a4eb419c6c1af4a06e9d8e497`. Numbers are
+`results/blast_diagnosis/pin_pilot.json`. This is a new sample: 20
+records from `GCF_001513615.1` (4,787 records in the file), seed
+`20261141`, query MD5 `47015881687e95b19dc561c35c043d00`. Swiss-Prot
+2026_03 MD5 `bc9d398533e6df582b563c6c03093bd0`, 575,748 sequences,
+209,017,843 letters. Threads 2. `OLD_FSC` unset.
+
+Stock versus stock on 2026_03 is byte-identical, MD5
+`543e49c6748995b5bf04d47546829d29`, 15,498 lines. The subjects in that
+table (14,955, all present in the parser) searched with
+`-dbsize 209017843` reproduce it: 15,498 lines, zero missing, zero
+extra, zero `different_hsp`. Dropping 748 of those subjects
+(`random.Random(20261142)`, 5%) leaves 14,718 lines and 780 missing
+stock rows, with no extra rows. The negative control fails closed.
+
+The shipped command does not emit SHIP. On both 2026_01 and 2026_03,
+`python3 -m acts run --strategy reference --pin '-dbsize {total_entry_length}' --verify full` returns `REFUSE`, why
+`duplicate rows have no row-index column` (`reference_fit.py`,
+`index_candidates`). The unpinned fit raises before the pin is
+inserted. Outcome key: `PIN_EXACT_GATE_DID_NOT_SHIP`.
+
+The pin is the ship candidate. The current gate does not apply it to
+blastp.

@@ -96,9 +96,13 @@ The script does not edit `acts/`. It does not resubmit if stock versus
 stock fails or the row floor is missed. One pilot. No redesign inside
 this file.
 
-## Addendum 2026-10-18, before the pilot starts
+## Addendum 2026-10-18, after job 13223656
 
-The query writer reads `FastaRec.seq`. A draft of the script used
-`sequence`, which is not a field, and would have exited before any
-search. That line was corrected before this pilot was submitted.
-Seeds, argv, controls, and the pin are unchanged.
+The pilot ran once, at git `f2f1f189e937655a4eb419c6c1af4a06e9d8e497`.
+The result is `results/blast_diagnosis/pin_pilot.json`. Outcome
+`PIN_EXACT_GATE_DID_NOT_SHIP`. Stock versus stock was byte-identical
+(15,498 lines). The candidate subset with `-dbsize 209017843` matched
+that table with zero missing and zero extra. The 5% drop (748
+subjects, seed `20261142`) left 780 stock rows missing. Both shipped
+`acts run` calls returned `REFUSE` because duplicate rows have no
+row-index column. The gate was not changed.

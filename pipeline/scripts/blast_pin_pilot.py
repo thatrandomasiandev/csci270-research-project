@@ -53,7 +53,7 @@ def write_queries(src: Path, dest: Path) -> dict:
     lines = []
     for rec in picked:
         header = rec.name if not rec.description else f"{rec.name} {rec.description}"
-        lines.append(f">{header}\n{rec.seq}\n")
+        lines.append(f">{header}\n{rec.sequence}\n")
     dest.write_text("".join(lines))
     return {
         "source": str(src),
