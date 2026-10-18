@@ -1,0 +1,75 @@
+{
+  "kind": "pilot_summary",
+  "holds": true,
+  "unsafe": [],
+  "rule_change": "scratch is /scratch1; /tmp tmpfs is charged to the cgroup",
+  "pass_rule_unchanged": true,
+  "genomes": [
+    {
+      "accession": "GCF_052510705.1",
+      "group": "archaea",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "stock_pair_byte_equal": true,
+      "update_byte_equal": true,
+      "negative": "pass",
+      "negative_why": "IC2 neighbor tblout: pad_hit",
+      "tbl_lines": 7155,
+      "dom_lines": 6765,
+      "max_domain_of": 6,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "scratch": "/scratch1/jjt_373/tare_div_13225743",
+      "git_head": "6c142b32120d94074da693cc5e70918755bfce22",
+      "host": "a01-17.hpc.usc.edu"
+    },
+    {
+      "accession": "GCF_000226115.1",
+      "group": "eukaryote",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "stock_pair_byte_equal": true,
+      "update_byte_equal": true,
+      "negative": "pass",
+      "negative_why": "IC2 neighbor tblout: pad_hit",
+      "tbl_lines": 14917,
+      "dom_lines": 14426,
+      "max_domain_of": 11,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "scratch": "/tmp/tare_div_13224420",
+      "git_head": "2e0f882e39dbaec6f4e23020af6bdcc55bef0c41",
+      "host": "a02-11.hpc.usc.edu"
+    },
+    {
+      "accession": "GCA_003676205.1",
+      "group": "mag",
+      "outcome": "pass",
+      "decision": "SHIP",
+      "stock_pair_byte_equal": true,
+      "update_byte_equal": true,
+      "negative": "pass",
+      "negative_why": "IC2 neighbor tblout: pad_hit",
+      "tbl_lines": 1282,
+      "dom_lines": 1203,
+      "max_domain_of": 4,
+      "checks": {
+        "audit": "ran",
+        "in_situ": "ran",
+        "neighbor_pad": "ran",
+        "random_pads": "ran"
+      },
+      "scratch": "/tmp/tare_div_13224419",
+      "git_head": "2e0f882e39dbaec6f4e23020af6bdcc55bef0c41",
+      "host": "a01-17.hpc.usc.edu"
+    }
+  ]
+}

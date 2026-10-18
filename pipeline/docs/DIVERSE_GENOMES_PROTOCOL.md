@@ -307,3 +307,31 @@ and one record per genome as above. The draw file is not that run.
 No speedup. No new method. No statement that a query name longer than
 20 characters was found. The prefix maxima above are not file-wide, and
 they are not hmmscan output.
+
+## Addendum 2026-10-18
+
+This is the one rule change the pilot is allowed. The pass rule, the
+commands, the seeds, and the draw are unchanged.
+
+The first archaeon attempt (job `13224419_0`, 16G) put scratch on
+node-local `/tmp`. That mount is tmpfs and is charged to the job
+cgroup. Both pressed Pfam releases lived there. The fill was
+OOM-killed (`oom_kill`, return code -9) after 5153 s. The record is
+`pipeline/results/diverse_genomes/pilot_oom_16g_tmpfs.json`. The same
+genome on `/scratch1` at 16G finished: the stock pair matched, the
+update was `SHIP` and byte-identical, and the injected drop was
+refused. Scratch for every task in this test is `/scratch1/$USER/`,
+including when `/tmp` has 40 GiB free. The 40 GiB floor is checked on
+that directory.
+
+The MAG and the fungus had already passed on `/tmp` (16G and 48G).
+They are scored. They are not rerun.
+
+HMMER 3.4 `hmmpress` rejects a gzipped HMM. Each task gunzips the
+locked file into scratch and presses the plain text. The recorded md5
+is still the gzip. Pressed model counts remain 27,481 and 30,134.
+
+No second change. At the archaeon rate, 1606 s for 4,332 records, one
+stock scan of the human FASTA (136,807 records) is about 14 hours.
+The 12 hour limit stays. If that genome does not finish, it is
+INCONCLUSIVE.
