@@ -95,3 +95,10 @@ order-sensitive; a SHIP from the tool already passed that check.
 The script does not edit `acts/`. It does not resubmit if stock versus
 stock fails or the row floor is missed. One pilot. No redesign inside
 this file.
+
+## Addendum 2026-10-18, before the pilot starts
+
+The query writer reads `FastaRec.seq`. A draft of the script used
+`sequence`, which is not a field, and would have exited before any
+search. That line was corrected before this pilot was submitted.
+Seeds, argv, controls, and the pin are unchanged.
