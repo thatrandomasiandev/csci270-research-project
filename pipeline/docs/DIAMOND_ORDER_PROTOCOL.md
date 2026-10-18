@@ -18,6 +18,8 @@ Draw, in file order:
 2. From what remains, `random.Random(20261162).sample(..., 2000)`, then sort the indices.
 3. Write the query FASTA in that index order. Record its md5. Do not draw again.
 
+The draw was executed once from this procedure, before the measured search, against the genome file above. The resulting query FASTA md5 is `001d44c99ebe6a56ed7aa116648ffc92` (2,000 records, none of them in `query.ids`). The CARC job recomputes that md5 and stops if it differs.
+
 Seed `20261162` is used only for this draw. Shuffle seeds stay `20261163` through `20261167`. They define the same database permutations as the pilot. They are not a new sample. Seeds `20261168` and `20261169` stay unused.
 
 ## Command
@@ -37,7 +39,9 @@ Threads stay at 2 so the measured command is the pilot command. A larger thread 
 
 ## Where it runs
 
-CARC, `ssh discovery` only, `sbatch` only, project `/project2/biyik_1165/jjt_373/csci270-star/`, scratch `/scratch1/$USER/`. A Swiss-Prot copy is under `pipeline-ref-second/data/swissprot/`. Check its md5 against `bc9d398533e6df582b563c6c03093bd0` before building. Non-exclusive. Do not touch jobs 12864756 or 13208152. Do not submit while 13208152 has a PENDING task. Re-check that queue no more often than every 30 minutes.
+CARC, `ssh discovery` only, `sbatch` only, project `/project2/biyik_1165/jjt_373/csci270-star/`, scratch `/scratch1/$USER/`. A Swiss-Prot copy is under `pipeline-ref-second/data/swissprot/`. Check its md5 against `bc9d398533e6df582b563c6c03093bd0` before building. That checksum matched on 2026-10-18. Non-exclusive. Do not touch jobs 12864756 or 13208152. Do not submit while 13208152 has a PENDING task. Re-check that queue no more often than every 30 minutes.
+
+The CARC binary is `pipeline-ref-second/bin/diamond`. Its version string is `diamond version 2.2.5` and its md5 is `7de14b7f9f4c440ddfb5142ad96b1d8b`. It is not the Mac binary named in the command section. The flags, the query draw, and the shuffle seeds are unchanged. The result records this file's bytes and md5. In the 2.2.5 source, the AVX-512, AVX2, SSE, and NEON implementations of `FingerPrint::load` all read 16 bytes before the seed.
 
 The result JSON goes in `pipeline/results/diamond_order/` and carries the git commit, both seeds, the DIAMOND version, the argv, and the md5 of every database file and of the query FASTA.
 
