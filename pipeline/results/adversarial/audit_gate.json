@@ -1,0 +1,56 @@
+{
+  "system": "TARE",
+  "kind": "audit_gate_diagnostic",
+  "not_part_of_detection_rates": true,
+  "why": "Cold exact replay leaves reused_rows at 0, so the audit block in _run_exact is not entered. A second run on the same cache opens the gate.",
+  "git_head": "16e69a8dbf16ecb70f2862664a852874de5068ec",
+  "seed": 20261118,
+  "coupling": "presence",
+  "k": 40,
+  "n_records": 400,
+  "n_models": 500,
+  "python": "3.11.9",
+  "pin": "-Z {entry_count}",
+  "passes": [
+    {
+      "pass": "cold",
+      "decision": "SHIP",
+      "reason": "exact replay under pinned normalizer",
+      "reused_rows": 0,
+      "audit": null,
+      "audit_checked": null,
+      "ic2": "pass",
+      "random_pads": "3 on 50 records, residue fraction 0.125000",
+      "mode": "exact",
+      "replay_vs_stock": "missing",
+      "replay_differs": true
+    },
+    {
+      "pass": "warm",
+      "decision": "REFUSE_AUDIT",
+      "reason": "tblout: audited records differ from a full run",
+      "reused_rows": 800,
+      "audit": "checked 20, residue fraction 0.050000",
+      "audit_checked": 20,
+      "ic2": "pass",
+      "random_pads": "3 on 50 records, residue fraction 0.125000",
+      "mode": "exact"
+    }
+  ],
+  "note": "Cold pass shipped a replay whose tblout and domtblout were class missing versus stock. Warm pass reused 800 rows; the pads passed; the audit refused.",
+  "argv": [
+    "coupling_shim.py",
+    "--cut_ga",
+    "--noali",
+    "--cpu",
+    "1",
+    "--tblout",
+    "{output:tblout}",
+    "--domtblout",
+    "{output:domtblout}",
+    "-o",
+    "/dev/null",
+    "<ref.hmm>",
+    "<q.fa>"
+  ]
+}

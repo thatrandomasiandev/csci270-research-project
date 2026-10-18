@@ -87,9 +87,16 @@ def main() -> None:
                 eq.append(cell["eq4_detection"])
             else:
                 eq.append(None)
+        # C1 and C4 are both detection 1. An open square behind the
+        # circle keeps both markers on the true k.
+        open_square = label.startswith("C4")
         ax.errorbar(
-            xs, ys, yerr=[lo, hi], fmt=marker, color=color, ms=3.4,
-            lw=0.8, capsize=1.6, label=label, zorder=3,
+            xs, ys, yerr=[lo, hi], fmt=marker, color=color,
+            ms=5.4 if open_square else 3.2,
+            lw=0.8, capsize=1.6, label=label,
+            markerfacecolor="none" if open_square else color,
+            markeredgewidth=0.9,
+            zorder=2 if open_square else 4,
         )
         if show_eq and any(value is not None for value in eq):
             ax.plot(
@@ -114,7 +121,7 @@ def main() -> None:
     ax.set_xlabel("Affected records k  (n = 2,000)")
     ax.set_ylabel("Detection rate")
     ax.grid(axis="y")
-    ax.legend(frameon=False, loc="center left", bbox_to_anchor=(0.22, 0.58))
+    ax.legend(frameon=False, loc="upper left", bbox_to_anchor=(0.12, 0.78), borderaxespad=0.0)
     fig.tight_layout(pad=0.3)
     fig.savefig(HERE / "adversarial.pdf", bbox_inches="tight", pad_inches=0.02)
     fig.savefig(HERE / "adversarial.png", dpi=220, bbox_inches="tight", pad_inches=0.02)

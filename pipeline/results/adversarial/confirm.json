@@ -2,8 +2,27 @@
   "system": "TARE",
   "kind": "hmmscan_confirmation",
   "not_part_of_detection_rates": true,
+  "git_head": "16e69a8dbf16ecb70f2862664a852874de5068ec",
   "hmmer": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
   "python": "3.11.9",
+  "pin": "-Z {entry_count}",
+  "argv_shape": [
+    "confirm_hmmscan.py",
+    "-Z",
+    "{entry_count}",
+    "--cut_ga",
+    "--noali",
+    "--cpu",
+    "1",
+    "--tblout",
+    "{output:tblout}",
+    "--domtblout",
+    "{output:domtblout}",
+    "-o",
+    "/dev/null",
+    "<mini.hmm>",
+    "<queries.fa>"
+  ],
   "pfam": {
     "source": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/hmmer/Pfam-A.hmm.gz",
     "n_models": 24,
@@ -40,7 +59,6 @@
     ],
     "emit_seed": 20261113
   },
-  "pin": "-Z {entry_count}",
   "trials": [
     {
       "form": "C0",

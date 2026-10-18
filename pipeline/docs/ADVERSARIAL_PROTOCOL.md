@@ -217,3 +217,13 @@ Eq. 4 applies to C2 and C3. Its detection sits inside the cell's Wilson 95% inte
 UNSAFE is 741 trials, all in C2 and the three C3 distances. C0 is 200 correct ships and 0 needless refusals.
 
 The hmmscan arm is `pipeline/results/adversarial/confirm.json`, one trial per form, seeds 20261113–20261117, the first 24 profiles of the read-only Pfam-A file, sequences emitted from `2CompART`. It is not part of the rates. C0 shipped identical to stock. C1 and C4 refused on the neighbor pad. C2 and C3 at distance 2 refused on a random pad.
+
+## Addendum 2026-10-18 — the audit runs on the next release
+
+The null `audit` fields are the cold cache, not the residue cap. On the 941 trials that finished the pad check, `random_pads` is `3 on 50 records, residue fraction 0.025000`. It is null on the 459 trials that a pad refused before that note was stored. The residue cap did not skip the pads.
+
+`pipeline/results/adversarial/audit_gate.json` is a two-pass diagnostic on one cache. It is not part of the detection rates. Seed `20261118`, presence coupling, `k = 40`, 400 records, 500 models, pin `-Z {entry_count}`, git head `16e69a8dbf16ecb70f2862664a852874de5068ec`.
+
+The cold pass has `reused_rows` 0, `audit` null, and decision `SHIP`. Its replay is class `missing` against stock. The warm pass has `reused_rows` 800. The neighbor pad and the three random pads still pass (`ic2` is `pass`). The audit then checks 20 records, residue fraction 0.05, and the decision is `REFUSE_AUDIT` with reason `tblout: audited records differ from a full run`.
+
+The 741 UNSAFE trials are shipped output from a first exact run. A later run that reuses rows catches this coupling with the audit, after the pads have missed it. The 50-trial grid does not measure that second run.
