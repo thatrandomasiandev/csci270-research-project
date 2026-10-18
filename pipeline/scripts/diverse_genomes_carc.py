@@ -11,6 +11,7 @@ This file does not download proteomes and does not edit the paper.
 from __future__ import annotations
 
 import ast
+import gzip
 import hashlib
 import json
 import os
@@ -387,6 +388,18 @@ def stock_scan(db: Path, queries: Path, tbl: Path, dom: Path) -> dict:
         raise SystemExit(f"hmmscan failed ({proc.returncode}): {(proc.stderr or proc.stdout)[-800:]}")
     log(f"stock {tbl.name} {wall:.1f}s lines={len(read_body(tbl))}")
     return {"wall_s": wall, "argv": cmd, "tbl": str(tbl), "dom": str(dom)}
+
+
+def gunzip_to(src: Path, dest: Path) -> None:
+    """HMMER 3.4 hmmpress rejects a gzipped HMM. The bytes are the locked gz."""
+    if dest.is_file() and dest.stat().st_size > 0:
+        log(f"reuse {dest.name}")
+        return
+    log(f"gunzip {src.name} -> {dest.name}")
+    tmp = dest.with_suffix(dest.suffix + ".partial")
+    with gzip.open(src, "rb") as inp, tmp.open("wb") as out:
+        shutil.copyfileobj(inp, out, length=1 << 20)
+    tmp.replace(dest)
 
 
 def press_models(db: Path) -> int:
@@ -833,6 +846,7 @@ def main() -> None:
         ),
         "cpu": int(CPU),
         "not_a_speedup_claim": True,
+        "hmmpress_input": "gunzip of the locked Pfam gz; HMMER 3.4 hmmpress rejects a gzipped file",
     }
     PAYLOAD = payload
     signal.signal(signal.SIGTERM, _on_term)
@@ -851,14 +865,10 @@ def main() -> None:
             f"Pfam md5 {payload['input_md5']} != {(MD5_OLD, MD5_NEW)}",
             payload,
         )
-    old_db = scratch / "Pfam-A.38.1.hmm.gz"
-    new_db = scratch / "Pfam-A.38.2.hmm.gz"
-    if not old_db.is_file():
-        log(f"copy {old_src.name}")
-        shutil.copy2(old_src, old_db)
-    if not new_db.is_file():
-        log(f"copy {new_src.name}")
-        shutil.copy2(new_src, new_db)
+    old_db = scratch / "Pfam-A.38.1.hmm"
+    new_db = scratch / "Pfam-A.38.2.hmm"
+    gunzip_to(old_src, old_db)
+    gunzip_to(new_src, new_db)
     pressed = {"38.1": press_models(old_db), "38.2": press_models(new_db)}
     payload["pressed_models"] = pressed
     if pressed["38.1"] != Z_OLD or pressed["38.2"] != Z_NEW:
