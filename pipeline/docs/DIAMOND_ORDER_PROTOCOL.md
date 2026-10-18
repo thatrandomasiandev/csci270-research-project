@@ -2,7 +2,7 @@
 
 Pre-registered after the laptop pilot and before the measured run. The pilot is `pipeline/results/diamond_order/g1_pilot.json` (outcome `PILOT`, code commit `eaefdf862ee35205f4edaaaa5bb4f0ec9bc4800e`). It is not this result. Semantics: `pipeline/results/diamond_order/g_semantics.md`.
 
-The measured run has not been started. It runs only on CARC, and only after `ssh -O check discovery` succeeds and `squeue -j 13208152` shows no PENDING task.
+Submitted as Slurm job 13223637 on 2026-10-18, after `ssh -O check discovery` succeeded and `squeue -j 13208152` showed no PENDING task. The job writes `pipeline/results/diamond_order/g1_measured.json` on scratch. That file is not a result until the job finishes and the JSON is committed.
 
 ## What the pilot already showed
 
