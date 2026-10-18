@@ -130,7 +130,9 @@ fi
 awk -v dir="$WORK/batches" -F '\t' '
     { out = dir "/b" $1 ".ids"; print $2 > out }
 ' "$WORK/plan.txt"
-awk -v dir="$WORK/batches" -F '\t' '
+# Default field separator. A tab-only split makes $1 the whole FASTA
+# header, so the query id never matches the plan.
+awk -v dir="$WORK/batches" '
     NR == FNR { batch[$2] = $1; next }
     /^>/ {
         id = substr($1, 2)

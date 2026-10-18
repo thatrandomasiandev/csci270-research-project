@@ -125,7 +125,7 @@ fi
 rm -rf "$WORK/batches"
 mkdir -p "$WORK/batches"
 awk -v dir="$WORK/batches" -F '\t' '{ out = dir "/b" $1 ".ids"; print $2 > out }' "$WORK/plan.txt"
-awk -v dir="$WORK/batches" -F '\t' '
+awk -v dir="$WORK/batches" '
     NR == FNR { batch[$2] = $1; next }
     /^>/ {
         id = substr($1, 2)

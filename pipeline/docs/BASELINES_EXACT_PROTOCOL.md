@@ -326,3 +326,12 @@ raises `ValueError: current limit exceeds maximum limit`. `ulimit -v`
 returns `invalid argument`. The pressed 38.2 indexes are about 2.4 GB,
 so a 3 GB address space could not map the database. Laptop scans stay
 at `--cpu 2` and `nice -n 10`. Laptop walls remain not evidence.
+
+### 2026-10-18 — one expert-script bug fix
+
+The D1 pilot of `expert_update_hmmscan.sh` exited 1 before any body
+comparison. `hmmscan` could not open `batches/b0.faa`. The FASTA
+writer used a tab field separator, so `$1` on a header was the whole
+line and no query id matched the plan. The same writer in the DIAMOND
+script is fixed the same way. This is the one allowed script-bug fix
+(dropped query file). The NAME+CKSUM diff is unchanged.
