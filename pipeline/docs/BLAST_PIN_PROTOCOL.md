@@ -119,14 +119,3 @@ Dropping 748 of those subjects (seed 20261142, 5 percent) returns
 lines. 14,718 + 780 = 15,498.
 
 Outcome recorded by the script: `PIN_EXACT_GATE_DID_NOT_SHIP`.
-
-## Addendum 2026-10-18, after job 13223656
-
-The pilot ran once, at git `f2f1f189e937655a4eb419c6c1af4a06e9d8e497`.
-The result is `results/blast_diagnosis/pin_pilot.json`. Outcome
-`PIN_EXACT_GATE_DID_NOT_SHIP`. Stock versus stock was byte-identical
-(15,498 lines). The candidate subset with `-dbsize 209017843` matched
-that table with zero missing and zero extra. The 5% drop (748
-subjects, seed `20261142`) left 780 stock rows missing. Both shipped
-`acts run` calls returned `REFUSE` because duplicate rows have no
-row-index column. The gate was not changed.
