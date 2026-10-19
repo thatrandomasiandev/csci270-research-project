@@ -1,0 +1,43 @@
+{
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 8",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 8 --tblout --domtblout -o /dev/null",
+  "array_task_id": 0,
+  "claim_class": "INCONCLUSIVE",
+  "cohort": "pilot",
+  "cpu": 8,
+  "crashed": "SystemExit: acts crashed (-9): ",
+  "drop_seed": 20261153,
+  "git_dirty": "0",
+  "git_head": "2e0f882e39dbaec6f4e23020af6bdcc55bef0c41",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "hmmpress_input": "gunzip of the locked Pfam gz; HMMER 3.4 hmmpress rejects a gzipped file",
+  "host": "a01-09.hpc.usc.edu",
+  "input_md5": {
+    "pfam38.1": "dc814cc181ece09102c09c4e6c19f2fd",
+    "pfam38.2": "7ab3c4e215d0daaea3004e37c4e24f8a"
+  },
+  "job_id": "13224419",
+  "not_a_speedup_claim": true,
+  "outcome": "FAIL",
+  "package": "acts",
+  "package_version": "0.2.0",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "pressed_models": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "python": "3.11.9 (main, Jun  4 2024, 14:22:24) [GCC 13.3.0]",
+  "scored": false,
+  "scratch": "/tmp/tare_div_13224421",
+  "scratch_free_bytes_start": 127650516992,
+  "seed": 20261151,
+  "size": "small",
+  "system": "TARE",
+  "task": 0,
+  "test": "diverse-genomes"
+}

@@ -1,0 +1,21 @@
+{
+  "kind": "reference_name_lengths",
+  "not_a_measured_hmmscan_result": true,
+  "file": "pipeline/data/hmmer/Pfam-A.hmm.gz",
+  "note": "Read from the shared checkout. The file is gitignored. Lengths are NAME and ACC lines in the HMM text, not hmmscan output.",
+  "md5": "7ab3c4e215d0daaea3004e37c4e24f8a",
+  "n_name": 30134,
+  "n_acc": 30134,
+  "n_name_longer_than_20": 147,
+  "max_name_length": 30,
+  "max_name": "Bacteriocin_streptolysin_S_pre",
+  "max_acc_length": 10,
+  "max_acc": "PF10417.15",
+  "longest_names": [
+    "Bacteriocin_streptolysin_S_pre",
+    "Exclusion-determining_protein",
+    "RuBisCO_activase_AAA_helical",
+    "Conjugal_tfr_repressor_TrbA",
+    "A6-like_Thioredoxin-like_C"
+  ]
+}
