@@ -1,0 +1,16 @@
+{
+  "dx2": {
+    "arm": "diamond-known-bad-6",
+    "expected": "refuse",
+    "refused": true,
+    "fail_mode": "pad_hit",
+    "wall_s": 1.1385390420000476,
+    "threads": 2,
+    "pad_subjects": 7191,
+    "overlap_removed": 764,
+    "audit_reached": false,
+    "why_audit_not_reached": "neighbor pad refuses before the exact-mode audit",
+    "git_head": "bcca3b47697051857cf0fb61f8e33d504d709fd9",
+    "host": "Joshuas-MacBook-Pro-3.local"
+  }
+}

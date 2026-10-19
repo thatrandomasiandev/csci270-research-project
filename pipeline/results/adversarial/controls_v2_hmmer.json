@@ -1,0 +1,41 @@
+{
+  "arm": "hmmer-GCF_013315695.1",
+  "expected_correct": "pass",
+  "expected_drop": "refuse",
+  "correct_passed": true,
+  "drop_refused": true,
+  "oracle_byte_identical": true,
+  "neighbor_pass": true,
+  "stock_tbl_lines": 9094,
+  "stock_dom_lines": 8812,
+  "dropped_models": 186,
+  "inject_modes": [
+    "pass",
+    "pass",
+    "pad_hit",
+    "pad_hit",
+    "pad_hit",
+    "pad_hit"
+  ],
+  "inject_sample_hits_affected": 3,
+  "good_modes": [
+    "pass",
+    "pass",
+    "pass",
+    "pass",
+    "pass",
+    "pass"
+  ],
+  "good_refused": false,
+  "threads": 1,
+  "cpu": "1",
+  "audit_reached": false,
+  "why_audit_not_reached": "Table 3's HMMER rows are the pad/judge on the stored stock body; judge() returns before the exact-mode audit",
+  "oracle_wall_s": 11.08372595900073,
+  "neighbor_wall_s": 17.015816291999727,
+  "inject_scan_wall_s": 10.246925375000501,
+  "inject_pad_wall_s": 7.585066707999431,
+  "good_pad_wall_s": 7.784320041999308,
+  "git_head": "bcca3b47697051857cf0fb61f8e33d504d709fd9",
+  "host": "Joshuas-MacBook-Pro-3.local"
+}

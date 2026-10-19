@@ -1,0 +1,21 @@
+{
+  "arm": "diamond-22-line",
+  "expected": "refuse",
+  "seed": 20261029,
+  "queries": 2000,
+  "genome": "GCF_001515725.1",
+  "stock_rows": 227223,
+  "replay_rows": 227205,
+  "row_delta": 18,
+  "refused": true,
+  "fail_mode": "pad_hit",
+  "stock_wall_s": 13.575475249999727,
+  "replay_wall_s": 5.9791009170003235,
+  "plus_wall_s": 6.488149165999857,
+  "threads": 2,
+  "audit_reached": false,
+  "why_audit_not_reached": "neighbor pad refuses before the exact-mode audit",
+  "overlap_removed": 10270,
+  "git_head": "bcca3b47697051857cf0fb61f8e33d504d709fd9",
+  "host": "Joshuas-MacBook-Pro-3.local"
+}
