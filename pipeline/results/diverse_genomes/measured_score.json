@@ -1,0 +1,77 @@
+{
+  "N_new": 560127,
+  "by_group": {
+    "archaea": {
+      "INCONCLUSIVE": 0,
+      "UNSAFE": 0,
+      "dom_lines": 50700,
+      "genomes": 14,
+      "indeterminism": 0,
+      "needless_refusal": 1,
+      "pass": 13,
+      "refusal": 0,
+      "tbl_lines": 53950
+    },
+    "bacteria": {
+      "INCONCLUSIVE": 0,
+      "UNSAFE": 0,
+      "dom_lines": 159693,
+      "genomes": 30,
+      "indeterminism": 0,
+      "needless_refusal": 2,
+      "pass": 28,
+      "refusal": 0,
+      "tbl_lines": 167697
+    },
+    "eukaryote": {
+      "INCONCLUSIVE": 0,
+      "UNSAFE": 0,
+      "dom_lines": 95290,
+      "genomes": 2,
+      "indeterminism": 0,
+      "needless_refusal": 1,
+      "pass": 1,
+      "refusal": 0,
+      "tbl_lines": 80516
+    },
+    "mag": {
+      "INCONCLUSIVE": 0,
+      "UNSAFE": 0,
+      "dom_lines": 15772,
+      "genomes": 7,
+      "indeterminism": 0,
+      "needless_refusal": 1,
+      "pass": 6,
+      "refusal": 0,
+      "tbl_lines": 16560
+    }
+  },
+  "cohort": "measured",
+  "n_genomes": 53,
+  "needless_refusals": [
+    {
+      "accession": "GCF_000001215.4",
+      "decision": "REFUSE"
+    },
+    {
+      "accession": "GCF_002078355.1",
+      "decision": "REFUSE"
+    },
+    {
+      "accession": "GCF_000284335.1",
+      "decision": "REFUSE"
+    },
+    {
+      "accession": "GCF_001017655.1",
+      "decision": "REFUSE"
+    },
+    {
+      "accession": "GCA_001817145.1",
+      "decision": "REFUSE"
+    }
+  ],
+  "p_up": 5.3482946947847054e-06,
+  "passed_lines_L": 463225,
+  "pooled": "pass",
+  "unsafe": []
+}

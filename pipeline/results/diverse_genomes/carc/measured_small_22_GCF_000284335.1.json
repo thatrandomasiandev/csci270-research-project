@@ -1,0 +1,207 @@
+{
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 8",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 8 --tblout --domtblout -o /dev/null",
+  "array_task_id": 22,
+  "claim_class": "needless_refusal",
+  "cohort": "measured",
+  "cpu": 8,
+  "drop_seed": null,
+  "finished_utc": "2026-10-18T16:52:23Z",
+  "genome": {
+    "accession": "GCF_000284335.1",
+    "checks": {
+      "audit": "not_reached",
+      "in_situ": "not_reached",
+      "neighbor_pad": "not_reached",
+      "random_pads": "not_reached"
+    },
+    "claim_class": "needless_refusal",
+    "cohort": "measured",
+    "compare": {
+      "byte_equal": true,
+      "classes": [],
+      "dom": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 2752,
+        "lines_stock": 2752,
+        "token_equal": true
+      },
+      "files_present": true,
+      "tbl": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 2917,
+        "lines_stock": 2917,
+        "token_equal": true
+      }
+    },
+    "decision": "REFUSE",
+    "domain_stress": {
+      "max_domain_of": 15,
+      "max_domtblout_coordinate": 3990,
+      "multi_domain_stress_exercised": false,
+      "queries_with_more_than_20_domains": 0
+    },
+    "fill": {
+      "decision": "REFUSE",
+      "parsed": {
+        "decision": "REFUSE",
+        "fallback_full_scan": "True",
+        "n_entries": "27481",
+        "phases": {
+          "parse_s": 45.41897030174732,
+          "prep_s": 4.3120235204696655e-07,
+          "probe_wall_s": 363.9525624620728,
+          "read_output_s": 0.001296201255172491,
+          "subref_build_s": 0.011745635885745287,
+          "tool_s": 771.902230923064,
+          "total_s": 1186.0853873207234
+        },
+        "probe_phases": "{'subref_build_s': 2.8878925228491426, 'prep_s': 38.3605101746507, 'tool_s': 322.6056394954212, 'read_output_s': 0.0023904130794107914}",
+        "reused_rows": "0",
+        "strategy": "reference",
+        "verify": "audit",
+        "why": "duplicate row key ('WP_014453168.1', 'DNA_gyraseA_C', '1.6e-12')"
+      },
+      "returncode": 1,
+      "wall_s": 1186.8721078806557,
+      "why": "duplicate row key ('WP_014453168.1', 'DNA_gyraseA_C', '1.6e-12')"
+    },
+    "finished": true,
+    "group": "bacteria",
+    "headers": {
+      "duplicate_name_count": 0,
+      "duplicate_names": [],
+      "fasta_records": 1500,
+      "file_residue_cap_binds": false,
+      "max_description_len": 122,
+      "max_name_token_len": 14,
+      "max_protein_length": 4108,
+      "residues": 471843
+    },
+    "ncbi_protein_coding_gene_count": 1515,
+    "organism": "Caldisericum exile AZM16c01",
+    "outcome": "needless_refusal",
+    "proteome_bytes": 309202,
+    "proteome_md5": "8992b4a86232d603178bf6e333ee9e15",
+    "role": "measured",
+    "stock": {
+      "argv": [
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "8",
+        "--tblout",
+        "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/stock_a.tbl",
+        "--domtblout",
+        "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/stock_a.dom",
+        "-o",
+        "/dev/null",
+        "/scratch1/jjt_373/tare_div_13226336/Pfam-A.38.2.hmm",
+        "/project2/biyik_1165/jjt_373/csci270-star/diverse_genomes/proteomes/GCF_000284335.1_protein.faa.gz"
+      ],
+      "dom": "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/stock_a.dom",
+      "tbl": "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/stock_a.tbl",
+      "wall_s": 852.3001870028675
+    },
+    "stock_dom_lines": 2752,
+    "stock_tbl_lines": 2917,
+    "tare_scored": true,
+    "update": {
+      "argv": [
+        "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+        "-m",
+        "acts",
+        "run",
+        "--strategy",
+        "reference",
+        "--pin",
+        "-Z {entry_count}",
+        "--verify",
+        "audit",
+        "--prep",
+        "hmmpress -f {reference}",
+        "--input",
+        "/project2/biyik_1165/jjt_373/csci270-star/diverse_genomes/proteomes/GCF_000284335.1_protein.faa.gz",
+        "--reference",
+        "/scratch1/jjt_373/tare_div_13226336/Pfam-A.38.2.hmm",
+        "--cache",
+        "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/cache.sqlite",
+        "-o",
+        "/scratch1/jjt_373/tare_div_13226336/GCF_000284335.1/update",
+        "--",
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "8",
+        "--tblout",
+        "{output:tblout}",
+        "--domtblout",
+        "{output:domtblout}",
+        "-o",
+        "/dev/null",
+        "{reference}",
+        "{input}"
+      ],
+      "decision": "REFUSE",
+      "parsed": {
+        "decision": "REFUSE",
+        "fallback_full_scan": "True",
+        "n_entries": "30134",
+        "phases": {
+          "parse_s": 39.31563313677907,
+          "prep_s": 2.300366759300232e-07,
+          "probe_wall_s": 0.0,
+          "read_output_s": 0.0018267440609633923,
+          "subref_build_s": 0.03086906112730503,
+          "tool_s": 841.1014544912614,
+          "total_s": 880.4629395408556
+        },
+        "probe_phases": "{}",
+        "reused_rows": "0",
+        "strategy": "reference",
+        "verify": "audit",
+        "why": "duplicate row key ('WP_014453168.1', 'DNA_gyraseA_C', '1.6e-12')"
+      },
+      "returncode": 1,
+      "wall_s": 880.8722949060611,
+      "why": "duplicate row key ('WP_014453168.1', 'DNA_gyraseA_C', '1.6e-12')"
+    }
+  },
+  "git_dirty": "0",
+  "git_head": "b2b8c69877c783a7f0e5616c0cdf01da09fc8033",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "hmmpress_input": "gunzip of the locked Pfam gz; HMMER 3.4 hmmpress rejects a gzipped file",
+  "host": "b22-27.hpc.usc.edu",
+  "input_md5": {
+    "pfam38.1": "dc814cc181ece09102c09c4e6c19f2fd",
+    "pfam38.2": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "proteome": "8992b4a86232d603178bf6e333ee9e15"
+  },
+  "job_id": "13226312",
+  "not_a_speedup_claim": true,
+  "outcome": "needless_refusal",
+  "package": "acts",
+  "package_version": "0.2.0",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "pressed_models": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "python": "3.11.9 (main, Jun  4 2024, 14:22:24) [GCC 13.3.0]",
+  "scratch": "/scratch1/jjt_373/tare_div_13226336",
+  "scratch_free_bytes_start": 2792201065070592,
+  "seed": 20261152,
+  "size": "small",
+  "system": "TARE",
+  "task": 22,
+  "test": "diverse-genomes"
+}

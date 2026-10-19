@@ -1,0 +1,207 @@
+{
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 8",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 8 --tblout --domtblout -o /dev/null",
+  "array_task_id": 2,
+  "claim_class": "needless_refusal",
+  "cohort": "measured",
+  "cpu": 8,
+  "drop_seed": null,
+  "finished_utc": "2026-10-19T03:52:08Z",
+  "genome": {
+    "accession": "GCF_000001215.4",
+    "checks": {
+      "audit": "not_reached",
+      "in_situ": "not_reached",
+      "neighbor_pad": "not_reached",
+      "random_pads": "not_reached"
+    },
+    "claim_class": "needless_refusal",
+    "cohort": "measured",
+    "compare": {
+      "byte_equal": true,
+      "classes": [],
+      "dom": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 84423,
+        "lines_stock": 84423,
+        "token_equal": true
+      },
+      "files_present": true,
+      "tbl": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 69320,
+        "lines_stock": 69320,
+        "token_equal": true
+      }
+    },
+    "decision": "REFUSE",
+    "domain_stress": {
+      "max_domain_of": 96,
+      "max_domtblout_coordinate": 21472,
+      "multi_domain_stress_exercised": true,
+      "queries_with_more_than_20_domains": 96
+    },
+    "fill": {
+      "decision": "REFUSE",
+      "parsed": {
+        "decision": "REFUSE",
+        "fallback_full_scan": "True",
+        "n_entries": "27481",
+        "phases": {
+          "parse_s": 32.843550448305905,
+          "prep_s": 3.310851752758026e-07,
+          "probe_wall_s": 241.85820349212736,
+          "read_output_s": 0.4694927358068526,
+          "subref_build_s": 0.09419667674228549,
+          "tool_s": 10821.946319587063,
+          "total_s": 11332.591868467163
+        },
+        "probe_phases": "{'subref_build_s': 2.474763833452016, 'prep_s': 29.03289136616513, 'tool_s': 210.25999097013846, 'read_output_s': 0.003399636596441269}",
+        "reused_rows": "0",
+        "strategy": "reference",
+        "verify": "audit",
+        "why": "tblout: column 18 is mixed numeric and text"
+      },
+      "returncode": 1,
+      "wall_s": 11333.8059603828,
+      "why": "tblout: column 18 is mixed numeric and text"
+    },
+    "finished": true,
+    "group": "eukaryote",
+    "headers": {
+      "duplicate_name_count": 0,
+      "duplicate_names": [],
+      "fasta_records": 30802,
+      "file_residue_cap_binds": false,
+      "max_description_len": 115,
+      "max_name_token_len": 14,
+      "max_protein_length": 22949,
+      "residues": 20379498
+    },
+    "ncbi_protein_coding_gene_count": 13962,
+    "organism": "Drosophila melanogaster",
+    "outcome": "needless_refusal",
+    "proteome_bytes": 9785243,
+    "proteome_md5": "d0a81857fd1aa796ff9236cbd5105ab0",
+    "role": "measured",
+    "stock": {
+      "argv": [
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "8",
+        "--tblout",
+        "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/stock_a.tbl",
+        "--domtblout",
+        "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/stock_a.dom",
+        "-o",
+        "/dev/null",
+        "/scratch1/jjt_373/tare_div_13226367/Pfam-A.38.2.hmm",
+        "/project2/biyik_1165/jjt_373/csci270-star/diverse_genomes/proteomes/GCF_000001215.4_protein.faa.gz"
+      ],
+      "dom": "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/stock_a.dom",
+      "tbl": "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/stock_a.tbl",
+      "wall_s": 15826.607834071387
+    },
+    "stock_dom_lines": 84423,
+    "stock_tbl_lines": 69320,
+    "tare_scored": true,
+    "update": {
+      "argv": [
+        "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+        "-m",
+        "acts",
+        "run",
+        "--strategy",
+        "reference",
+        "--pin",
+        "-Z {entry_count}",
+        "--verify",
+        "audit",
+        "--prep",
+        "hmmpress -f {reference}",
+        "--input",
+        "/project2/biyik_1165/jjt_373/csci270-star/diverse_genomes/proteomes/GCF_000001215.4_protein.faa.gz",
+        "--reference",
+        "/scratch1/jjt_373/tare_div_13226367/Pfam-A.38.2.hmm",
+        "--cache",
+        "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/cache.sqlite",
+        "-o",
+        "/scratch1/jjt_373/tare_div_13226367/GCF_000001215.4/update",
+        "--",
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "8",
+        "--tblout",
+        "{output:tblout}",
+        "--domtblout",
+        "{output:domtblout}",
+        "-o",
+        "/dev/null",
+        "{reference}",
+        "{input}"
+      ],
+      "decision": "REFUSE",
+      "parsed": {
+        "decision": "REFUSE",
+        "fallback_full_scan": "True",
+        "n_entries": "30134",
+        "phases": {
+          "parse_s": 36.314706393983215,
+          "prep_s": 1.7974525690078735e-07,
+          "probe_wall_s": 0.0,
+          "read_output_s": 0.649028757121414,
+          "subref_build_s": 0.09907073993235826,
+          "tool_s": 13260.069625361823,
+          "total_s": 13299.994684674777
+        },
+        "probe_phases": "{}",
+        "reused_rows": "0",
+        "strategy": "reference",
+        "verify": "audit",
+        "why": "tblout: column 18 is mixed numeric and text"
+      },
+      "returncode": 1,
+      "wall_s": 13300.35601157695,
+      "why": "tblout: column 18 is mixed numeric and text"
+    }
+  },
+  "git_dirty": "0",
+  "git_head": "b2b8c69877c783a7f0e5616c0cdf01da09fc8033",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "hmmpress_input": "gunzip of the locked Pfam gz; HMMER 3.4 hmmpress rejects a gzipped file",
+  "host": "b05-03.hpc.usc.edu",
+  "input_md5": {
+    "pfam38.1": "dc814cc181ece09102c09c4e6c19f2fd",
+    "pfam38.2": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "proteome": "d0a81857fd1aa796ff9236cbd5105ab0"
+  },
+  "job_id": "13226313",
+  "not_a_speedup_claim": true,
+  "outcome": "needless_refusal",
+  "package": "acts",
+  "package_version": "0.2.0",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "pressed_models": {
+    "38.1": 27481,
+    "38.2": 30134
+  },
+  "python": "3.11.9 (main, Jun  4 2024, 14:22:24) [GCC 13.3.0]",
+  "scratch": "/scratch1/jjt_373/tare_div_13226367",
+  "scratch_free_bytes_start": 2792017328340992,
+  "seed": 20261152,
+  "size": "large",
+  "system": "TARE",
+  "task": 2,
+  "test": "diverse-genomes"
+}
