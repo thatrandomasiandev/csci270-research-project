@@ -1,6 +1,8 @@
 #!/bin/bash
-# Measured timing. Exclusive epyc-7542. --time is set from the pilot
-# addendum before sbatch and must not exceed 8 hours.
+# Measured timing. Exclusive epyc-7542.
+# --time=00:30:00 was the bare-pin projection. It is withdrawn.
+# Replace it from the declared-pin confirmation wall before sbatch.
+# Do not submit this file until that replacement is in the addendum.
 #SBATCH --job-name=tare-w12b-measured
 #SBATCH --account=biyik_1165
 #SBATCH --partition=main

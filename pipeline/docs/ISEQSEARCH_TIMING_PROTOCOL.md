@@ -310,4 +310,54 @@ The pilot JSON key `exclusive` is the Slurm partition name (`main`).
 Job `13241869` was not exclusive. The driver no longer writes that key.
 A measured run records `exclusive_requested` from `TARE_EXCLUSIVE=1`.
 
+## Addendum 2026-10-19 — declared `--dbsize` pin
+
+The bare `--pin` pilot is a separate arm. Its walls, including the
+29.081 s timed `REFUSE_PIN`, do not enter the measured speed claim.
+`bare_pin_in_speed_claim` is false. The 30 minute measured limit above
+was scaled from that bare-pin pilot. It is withdrawn and is not a
+submit authorization.
+
+The timed TARE arm uses the paper command in
+`pipeline/scripts/exact_replay_dx2.py` `run_cli`:
+
+- `--pin` and `--dbsize {total_entry_length}` as two argv elements
+- `--slack` and `--evalue 0.002` as two argv elements
+- the blastp argv from that file's `tool_argv`, including `--evalue 0.001`
+- the job's thread count in place of that file's `THREADS = "8"`
+
+Stock DIAMOND and iSeqSearch stay on the dx_i argv, which has no
+`--evalue`. The TARE difference class is against a stock blast of the
+declared tool argv, not against the dx_i body. The old-release declared
+fill is untimed. Each timed repeat restores that cache and runs the
+declared command on 2026_03. A speed number exists only if that
+exclusive measured run finishes. `REFUSE_PIN` before replay is not the
+timed outcome this arm is allowed to report as a pass.
+
+### Confirmation, before the exclusive job
+
+One non-exclusive run, 4 threads, seed `20261252`, 50 records drawn
+from the complement of the dx_i 300. It does not reuse the pilot 50
+(seed `20261251`). Name SHA-256
+`c18503df0fcac4afa24ada20fc5125629783ffb750da1961a6b5660025a3d7e4`.
+First index 209, last index 4946.
+
+Pass, all of these:
+
+- `decision` starts with `REFUSE` and is not `REFUSE_PIN`
+- `why` does not contain `no knob`
+- the phase record shows the tool ran before the check refused
+  (`replay_s` > 0, or an `ic2_*` phase > 0)
+- a replay body exists, and its difference class against the declared
+  stock blast is recorded
+
+Fail that rule and the exclusive job stays unsubmitted. The confirmation
+wall is not a speed number. After a pass, this addendum records the
+decision, the why, the phases, and the difference class, and replaces
+the measured `#SBATCH --time` from that wall before the single measured
+`squeue` check. Query-reading DIAMOND steps scale by 300/50. Parse,
+makedb, and the iSeqSearch merge do not. Three alternating repeats, then
+×1.5, rounded up to a minute, and not submitted if that limit exceeds
+8 hours.
+
 

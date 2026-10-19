@@ -10,6 +10,7 @@ Protocol: pipeline/docs/ISEQSEARCH_TIMING_PROTOCOL.md
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 import os
@@ -35,9 +36,12 @@ from exact_replay_diamond import (  # noqa: E402
     correlation,
     write_queries,
 )
+from exact_replay_dx2 import emitted_replay  # noqa: E402
 
 Q300_SEED = 20261017
 PILOT_SEED = 20261251
+CONFIRM_SEED = 20261252
+CONFIRM_NAME_SHA = "c18503df0fcac4afa24ada20fc5125629783ffb750da1961a6b5660025a3d7e4"
 Q300_N = 300
 PILOT_N = 50
 PROTEOME_N = 5117
@@ -267,21 +271,24 @@ def draw_queries(proteome: Path, mode: str, dest: Path) -> dict:
             **found,
         }
     complement = [i for i in range(len(records)) if i not in set(measured_idx)]
-    pilot_idx = sorted(random.Random(PILOT_SEED).sample(complement, PILOT_N))
-    if set(pilot_idx) & set(measured_idx):
-        raise SystemExit("STOP_INPUTS pilot sample intersects the measured 300")
-    pilot_names = [records[i].name for i in pilot_idx]
-    digest = sha256_names(pilot_names)
-    if digest != PILOT_NAME_SHA:
-        raise SystemExit(f"STOP_INPUTS pilot name hash {digest}")
-    chosen = [records[i] for i in pilot_idx]
+    seed = CONFIRM_SEED if mode == "confirm" else PILOT_SEED
+    expect = CONFIRM_NAME_SHA if mode == "confirm" else PILOT_NAME_SHA
+    picked_idx = sorted(random.Random(seed).sample(complement, PILOT_N))
+    if set(picked_idx) & set(measured_idx):
+        raise SystemExit("STOP_INPUTS sample intersects the measured 300")
+    picked_names = [records[i].name for i in picked_idx]
+    digest = sha256_names(picked_names)
+    if digest != expect:
+        raise SystemExit(f"STOP_INPUTS name hash {digest} seed {seed}")
+    chosen = [records[i] for i in picked_idx]
     write_queries(chosen, dest)
     found = file_id(dest)
     return {
         "query_n": PILOT_N,
-        "seed": PILOT_SEED,
+        "seed": seed,
         "name_sha256": digest,
         "disjoint_from_q300": True,
+        "reuses_pilot_queries": False,
         "path": str(dest),
         **found,
     }
@@ -298,7 +305,115 @@ def parse_decision(path: Path) -> dict:
             decision = line.split(":", 1)[1].strip()
         elif line.startswith("why:"):
             why = line.split(":", 1)[1].strip()
-    return {"decision": decision, "why": why, "text": text[-4000:]}
+    return {"decision": decision, "why": why, "text": text if len(text) <= 100000 else text[-20000:]}
+
+
+def declared_tool_argv(diamond: str, threads: str) -> list[str]:
+    """Paper DIAMOND command from exact_replay_dx2.tool_argv, with this job's thread count."""
+    return [
+        diamond,
+        "blastp",
+        "--db",
+        "{reference}",
+        "--query",
+        "{input}",
+        "--out",
+        "{output}",
+        "--min-score",
+        "40",
+        "-k",
+        "0",
+        "--motif-masking",
+        "0",
+        "-b",
+        "2.0",
+        "--comp-based-stats",
+        "1",
+        "--threads",
+        threads,
+        "--evalue",
+        "0.001",
+        "--outfmt",
+        "6",
+        *OUTFMT,
+    ]
+
+
+def tare_declared_cmd(
+    diamond: str,
+    threads: str,
+    queries: Path,
+    reference: Path,
+    cache: Path,
+    out_dir: Path,
+) -> list[str]:
+    """exact_replay_dx2.run_cli: explicit --dbsize pin and --evalue slack."""
+    prep = f"{diamond} makedb --in {{reference}} --db {{reference}} --threads {threads}"
+    return [
+        sys.executable,
+        "-m",
+        "acts",
+        "run",
+        "--strategy",
+        "reference",
+        "--input",
+        str(queries),
+        "--reference",
+        str(reference),
+        "--prep",
+        prep,
+        "--pin",
+        "--dbsize {total_entry_length}",
+        "--slack",
+        "--evalue 0.002",
+        "--cache",
+        str(cache),
+        "--verify",
+        "full",
+        "-o",
+        str(out_dir),
+        "--",
+        *declared_tool_argv(diamond, threads),
+    ]
+
+
+def declared_blast_cmd(diamond: str, db: Path, query: Path, out: Path, threads: str) -> list[str]:
+    repl = {"{reference}": str(db), "{input}": str(query), "{output}": str(out)}
+    return [repl.get(token, token) for token in declared_tool_argv(diamond, threads)]
+
+
+def phases_of(decision_text: str) -> dict:
+    for line in decision_text.splitlines():
+        if not line.startswith("phases:"):
+            continue
+        raw = line.split(":", 1)[1].strip()
+        try:
+            parsed = ast.literal_eval(raw)
+        except (SyntaxError, ValueError):
+            return {}
+        return parsed if isinstance(parsed, dict) else {}
+    return {}
+
+
+def post_replay_refuse(decision: str, why: str, phases: dict) -> bool:
+    replay_s = float(phases.get("replay_s") or 0)
+    ic2_ran = any(
+        str(key).startswith("ic2_") and float(phases.get(key) or 0) > 0
+        for key in phases
+    )
+    return (
+        decision.startswith("REFUSE")
+        and decision != "REFUSE_PIN"
+        and "no knob" not in (why or "")
+        and (replay_s > 0 or ic2_ran)
+    )
+
+
+def acts_env(threads: str) -> dict:
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
+    env["OMP_NUM_THREADS"] = threads
+    return env
 
 
 def tare_cmd(
@@ -453,6 +568,21 @@ def arm_iseq(
     return row
 
 
+def invoke_tare(cmd: list[str], threads: str, out_dir: Path) -> tuple[dict, dict, dict]:
+    started = time.perf_counter()
+    proc = subprocess.run(cmd, check=False, capture_output=True, text=True, env=acts_env(threads))
+    wall = time.perf_counter() - started
+    decision = parse_decision(out_dir / "decision.txt")
+    phases = phases_of(decision["text"])
+    ran = {
+        "wall_s": wall,
+        "returncode": proc.returncode,
+        "stdout_tail": (proc.stdout or "")[-1500:],
+        "stderr_tail": (proc.stderr or "")[-1500:],
+    }
+    return ran, decision, phases
+
+
 def arm_tare(
     diamond: str,
     threads: str,
@@ -462,37 +592,47 @@ def arm_tare(
     work: Path,
     tag: str,
     stock_text: str,
+    *,
+    declared: bool = False,
 ) -> dict:
     cache = work / f"{tag}.sqlite"
     shutil.copy(snapshot, cache)
     out_dir = work / tag
     if out_dir.exists():
         shutil.rmtree(out_dir)
-    cmd = tare_cmd(diamond, threads, queries, reference, cache, out_dir)
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
-    env["OMP_NUM_THREADS"] = threads
-    started = time.perf_counter()
-    proc = subprocess.run(cmd, check=False, capture_output=True, text=True, env=env)
-    wall = time.perf_counter() - started
-    decision = parse_decision(out_dir / "decision.txt")
+    cmd = (
+        tare_declared_cmd(diamond, threads, queries, reference, cache, out_dir)
+        if declared
+        else tare_cmd(diamond, threads, queries, reference, cache, out_dir)
+    )
+    ran, decision, phases = invoke_tare(cmd, threads, out_dir)
     body_path = out_dir / "tables" / "out"
     text = body_file(body_path)
     returned = bool(text) and body_lines(text) == body_lines(stock_text)
-    refused = decision["decision"] == "REFUSE_PIN" or decision["decision"].startswith("REFUSE")
+    replay_text, _ref, _queries = emitted_replay(out_dir)
+    difference = classify_pair(stock_text, replay_text) if replay_text else None
+    if declared:
+        refused = post_replay_refuse(decision["decision"], decision["why"], phases)
+    else:
+        refused = decision["decision"] == "REFUSE_PIN" or decision["decision"].startswith("REFUSE")
     return {
         "arm": "TARE",
+        "command": "declared-dbsize" if declared else "bare-pin",
         "ran": bool(decision["decision"]),
-        "wall_s": wall,
-        "returncode": proc.returncode,
+        "wall_s": ran["wall_s"],
+        "returncode": ran["returncode"],
         "decision": decision["decision"],
         "why": decision["why"],
         "refused": refused,
+        "post_replay_refuse": post_replay_refuse(decision["decision"], decision["why"], phases),
+        "phases": phases,
+        "replay_body": replay_text is not None,
+        "difference_class": difference,
         "returned_stock": returned,
         "body_written": body_path.is_file() and bool(text),
         "body_rows": len(body_lines(text)),
-        "stdout_tail": (proc.stdout or "")[-1500:],
-        "stderr_tail": (proc.stderr or "")[-1500:],
+        "stdout_tail": ran["stdout_tail"],
+        "stderr_tail": ran["stderr_tail"],
         "decision_text": decision["text"],
     }
 
@@ -564,10 +704,79 @@ def reverify_saved(stock: Path, other: Path, dest: Path) -> int:
     return 0 if payload["matches_dx_i_integers"] and payload["known_good_bodies_equal"] and bad["row_missing"] >= 1 and not bad["bodies_equal"] else 1
 
 
+def run_confirmation(
+    diamond: str,
+    threads: str,
+    queries: Path,
+    old_fa: Path,
+    new_fa: Path,
+    work: Path,
+) -> int:
+    """One declared-pin update. Not a speed measurement. Not the bare-pin pilot."""
+    log("declared stock blast for the difference class")
+    declared_stock = run_proc(declared_blast_cmd(diamond, new_fa, queries, work / "declared_stock.m8", threads))
+    stock_text = body_file(work / "declared_stock.m8")
+    if declared_stock["returncode"] != 0 or not stock_text:
+        PAYLOAD["verdict"] = "INCONCLUSIVE"
+        PAYLOAD["why"] = "declared-argv stock blast failed"
+        PAYLOAD["declared_stock_error"] = declared_stock["stderr_tail"]
+        persist()
+        return 2
+    log("declared-pin fill on 2026_01")
+    fill_cache = work / "fill_old.sqlite"
+    fill_dir = work / "fill_old"
+    fill_ran, fill_decision, fill_phases = invoke_tare(
+        tare_declared_cmd(diamond, threads, queries, old_fa, fill_cache, fill_dir),
+        threads,
+        fill_dir,
+    )
+    snapshot = work / "contract.sqlite"
+    if fill_cache.is_file():
+        shutil.copy(fill_cache, snapshot)
+    PAYLOAD["tare_fill_old"] = {
+        "command": "declared-dbsize",
+        "in_speed_claim": False,
+        "wall_s": fill_ran["wall_s"],
+        "returncode": fill_ran["returncode"],
+        "decision": fill_decision["decision"],
+        "why": fill_decision["why"],
+        "phases": fill_phases,
+        "contract_stored": snapshot.is_file(),
+    }
+    persist()
+    if not snapshot.is_file():
+        PAYLOAD["verdict"] = "INCONCLUSIVE"
+        PAYLOAD["why"] = "declared-pin fill did not store a contract"
+        persist()
+        return 2
+    log("declared-pin update on 2026_03")
+    update = arm_tare(
+        diamond, threads, queries, new_fa, snapshot, work, "confirm_new", stock_text, declared=True,
+    )
+    update["in_speed_claim"] = False
+    passed = bool(update.get("post_replay_refuse")) and update.get("replay_body") and update.get("difference_class")
+    PAYLOAD["tare_declared"] = update
+    PAYLOAD["difference_class"] = update.get("difference_class")
+    PAYLOAD["bare_pin_in_speed_claim"] = False
+    PAYLOAD["bare_pin_pilot"] = "pipeline/results/iseqsearch_timing/pilot.json"
+    PAYLOAD["confirmation_pass"] = passed
+    PAYLOAD["verdict"] = "PASS" if passed else "FAIL_CONTROL"
+    PAYLOAD["why"] = (
+        "declared pin replayed and then refused"
+        if passed
+        else "declared pin did not replay and then refuse"
+    )
+    PAYLOAD["partial"] = False
+    PAYLOAD["speed_claim"] = False
+    persist()
+    log(f"confirmation {PAYLOAD['verdict']} decision={update.get('decision')} why={update.get('why')}")
+    return 0 if passed else 1
+
+
 def run_mode(mode: str) -> int:
     global OUT_PATH
     if not os.environ.get("SLURM_JOB_ID"):
-        raise SystemExit("STOP: pilot and measured runs execute only under sbatch")
+        raise SystemExit("STOP: pilot, confirm, and measured runs execute only under sbatch")
     diamond = os.environ["TARE_DIAMOND"]
     old_fa = Path(os.environ["TARE_OLD_FASTA"])
     new_fa = Path(os.environ["TARE_NEW_FASTA"])
@@ -585,7 +794,7 @@ def run_mode(mode: str) -> int:
     if free < 30 * (1024**3):
         raise SystemExit(f"STOP_SCRATCH free bytes {free}")
 
-    repeats = 1 if mode == "pilot" else 3
+    repeats = 1 if mode in {"pilot", "confirm"} else 3
     signal.signal(signal.SIGTERM, on_term)
     identities = {
         "old": require_file(old_fa, EXPECTED["old"], "2026_01"),
@@ -640,6 +849,10 @@ def run_mode(mode: str) -> int:
             "iseq_commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
             "frozen_code_commit": os.environ.get("ACTS_GIT_HASH", ""),
             "s1_argv": s1_placeholders(diamond, threads),
+            "declared_pin": "--dbsize {total_entry_length}",
+            "declared_slack": "--evalue 0.002",
+            "declared_tool_argv": declared_tool_argv(diamond, threads),
+            "bare_pin_in_speed_claim": False,
             "arms": [],
         }
     )
@@ -710,6 +923,8 @@ def run_mode(mode: str) -> int:
         "new_entries": len(new_entries),
     }
     persist()
+    if mode == "confirm":
+        return run_confirmation(diamond, threads, queries, old_fa, new_fa, work)
 
     log("warm 2026_01 search")
     warm = arm_stock(diamond, old_fa, queries, work / "warm_2026_01.m8", threads)
@@ -765,35 +980,60 @@ def run_mode(mode: str) -> int:
         persist()
         return 0
 
-    log("cold TARE")
-    cold_cache = work / "cold.sqlite"
-    cold_dir = work / "tare_cold"
-    cold_cmd = tare_cmd(diamond, threads, queries, new_fa, cold_cache, cold_dir)
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
-    env["OMP_NUM_THREADS"] = threads
-    cold_started = time.perf_counter()
-    cold_proc = subprocess.run(cold_cmd, check=False, capture_output=True, text=True, env=env)
-    cold_wall = time.perf_counter() - cold_started
-    cold_decision = parse_decision(cold_dir / "decision.txt")
+    log("TARE cache fill")
+    fill_cache = work / "fill.sqlite"
+    fill_dir = work / "tare_fill"
+    if mode == "measured":
+        fill_cmd = tare_declared_cmd(diamond, threads, queries, old_fa, fill_cache, fill_dir)
+        fill_command = "declared-dbsize"
+    else:
+        fill_cmd = tare_cmd(diamond, threads, queries, new_fa, fill_cache, fill_dir)
+        fill_command = "bare-pin"
+    fill_ran, fill_decision, fill_phases = invoke_tare(fill_cmd, threads, fill_dir)
     snapshot = work / "contract.sqlite"
-    if cold_cache.is_file():
-        shutil.copy(cold_cache, snapshot)
-    PAYLOAD["tare_cold"] = {
-        "wall_s": cold_wall,
-        "returncode": cold_proc.returncode,
-        "decision": cold_decision["decision"],
-        "why": cold_decision["why"],
+    if fill_cache.is_file():
+        shutil.copy(fill_cache, snapshot)
+    PAYLOAD["tare_fill"] = {
+        "command": fill_command,
+        "reference": "2026_01" if mode == "measured" else "2026_03",
+        "wall_s": fill_ran["wall_s"],
+        "returncode": fill_ran["returncode"],
+        "decision": fill_decision["decision"],
+        "why": fill_decision["why"],
+        "phases": fill_phases,
         "contract_stored": snapshot.is_file(),
-        "stdout_tail": (cold_proc.stdout or "")[-1500:],
-        "stderr_tail": (cold_proc.stderr or "")[-1500:],
+        "stdout_tail": fill_ran["stdout_tail"],
+        "stderr_tail": fill_ran["stderr_tail"],
         "in_alternating_mean": False,
+        "in_speed_claim": False,
     }
+    PAYLOAD["bare_pin_in_speed_claim"] = False
+    PAYLOAD["tare_command"] = fill_command
     persist()
-    if not snapshot.is_file() or not cold_decision["decision"]:
-        PAYLOAD["why"] = "cold TARE did not store a contract"
+    if not snapshot.is_file() or not fill_decision["decision"]:
+        PAYLOAD["why"] = "TARE fill did not store a contract"
         persist()
         return 2
+
+    tare_stock_text = text_a
+    if mode == "measured":
+        log("declared stock blast, untimed, for the TARE difference class")
+        declared_out = work / "declared_stock.m8"
+        declared_proc = run_proc(declared_blast_cmd(diamond, new_fa, queries, declared_out, threads))
+        tare_stock_text = body_file(declared_out)
+        PAYLOAD["declared_stock"] = {
+            "in_speed_claim": False,
+            "argv": "declared tool_argv including --evalue 0.001",
+            "returncode": declared_proc["returncode"],
+            "wall_s": declared_proc["wall_s"],
+            "rows": len(body_lines(tare_stock_text)),
+        }
+        persist()
+        if declared_proc["returncode"] != 0 or not tare_stock_text:
+            PAYLOAD["why"] = "declared-argv stock blast failed"
+            PAYLOAD["declared_stock_error"] = declared_proc["stderr_tail"]
+            persist()
+            return 2
 
     log("alternating")
     alternating_started = time.perf_counter()
@@ -818,7 +1058,10 @@ def run_mode(mode: str) -> int:
                     iseq,
                 )
             else:
-                row = arm_tare(diamond, threads, queries, new_fa, snapshot, work, tag, text_a)
+                row = arm_tare(
+                    diamond, threads, queries, new_fa, snapshot, work, tag, tare_stock_text,
+                    declared=(mode == "measured"),
+                )
             row["repeat"] = repeat
             row["timed"] = True
             arms.append(row)
@@ -880,6 +1123,7 @@ def run_mode(mode: str) -> int:
     else:
         PAYLOAD["verdict"] = "COMPLETE"
         PAYLOAD["why"] = "arms finished and controls passed"
+    PAYLOAD["speed_claim"] = mode == "measured" and PAYLOAD["verdict"] == "COMPLETE"
     PAYLOAD["partial"] = False
     search_s = 0.0
     pass_s = 0.0
@@ -919,7 +1163,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="TARE iSeqSearch timing")
     parser.add_argument(
         "command",
-        choices=("check", "reverify-saved", "pilot", "measured"),
+        choices=("check", "reverify-saved", "pilot", "confirm", "measured"),
     )
     parser.add_argument("--stock", type=Path)
     parser.add_argument("--other", type=Path)
