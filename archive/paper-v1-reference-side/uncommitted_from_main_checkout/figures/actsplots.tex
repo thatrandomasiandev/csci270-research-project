@@ -1,0 +1,51 @@
+% Shared figure style. Input once; a second input is a no-op.
+\ifdefined\actsplotsready
+\else
+  \def\actsplotsready{1}
+  \colorlet{actsteal}{teal!72!black}
+  \colorlet{actstealfaint}{teal!16}
+  \colorlet{actsorange}{orange!88!black}
+  \colorlet{actsink}{black!80}
+  \colorlet{actsghost}{black!45}
+  \colorlet{actsfail}{red!62!black}
+  \colorlet{actsrule}{black!50}
+  \usetikzlibrary{intersections}
+  \usepgfplotslibrary{fillbetween,groupplots}
+  \pgfplotsset{
+    acts/.style={
+      font=\scriptsize\sffamily,
+      tick label style={font=\scriptsize\sffamily},
+      label style={font=\scriptsize\sffamily},
+      legend style={
+        font=\scriptsize\sffamily,
+        draw=none,
+        fill=none,
+        cells={anchor=west},
+        inner sep=1pt,
+        column sep=6pt
+      },
+      legend cell align=left,
+      scale only axis,
+      clip=false,
+      axis line style={actsrule},
+      tick style={actsrule},
+      tick align=outside,
+      axis lines=left,
+      xmajorgrids=true,
+      major grid style={black!7},
+      ymajorgrids=false,
+      every node/.append style={font=\scriptsize\sffamily, inner sep=1.5pt},
+      every axis plot/.append style={line join=round, line cap=round},
+    },
+  }
+  \tikzset{
+    actlab/.style={
+      font=\scriptsize\sffamily,
+      fill=white,
+      fill opacity=0.92,
+      text opacity=1,
+      inner sep=1.35pt,
+      outer sep=0.5pt,
+    },
+  }
+\fi

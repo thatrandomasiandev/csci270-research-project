@@ -1,6 +1,6 @@
 # Artifact evaluation
 
-This directory is the artifact for the paper in `pipeline/paper/main.tex`.
+This directory is the artifact for the TARE paper in `pipeline/paper/tare/main.tex`. The first paper is archived in `archive/paper-v1-reference-side/`; `check_paper_sources.py --v1` still checks it.
 It re-runs small committed fixtures and checks every paper number that carries a `% source:` comment against the committed file named in that comment.
 It does not write `pipeline/results/`, and it does not replace a number in the paper with a freshly measured one.
 
@@ -75,7 +75,7 @@ Paper numbers below are the values stored in the cited file. The printed paper r
 | RQ6 identity-only baseline | `python3 pipeline/artifact/laptop/t3_synthetic.py` (GeStore row) | `REFUSE` on law A | under 1 minute | protocol T3; the timed head-to-head is pending in the paper |
 | RQ7 BLAST+ blastp B1 | checker | `decision=REFUSE`, `blastp` `2.14.1`, `queries.n=20`, `reference.n_entries=575748`, `reference.total_entry_length=209017843`, reason `out: column 2 matches no normalizer` | checker | `pipeline/results/reference_boundary_blast.json` |
 
-`check_paper_sources.py` reads `pipeline/paper/main.tex` and the files named in `% source:` comments. It does not modify them. A comment that states a closed form (`(1-0.01)^n`, `3a+2bn_p`, `(a+bN)/(a+w)`) is recomputed from the cited screen fit, the kill-test counts, and `n_p = 300` in `pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md`.
+`check_paper_sources.py` reads `pipeline/paper/tare/main.tex` (or, with `--v1`, the archived first paper) and the files named in `% source:` comments. It does not modify them. A comment that states a closed form (`(1-0.01)^n`, `3a+2bn_p`, `(a+bN)/(a+w)`) is recomputed from the cited screen fit, the kill-test counts, and `n_p = 300` in `pipeline/docs/REFERENCE_INCREMENTAL_PROTOCOL.md`.
 
 ## Laptop path
 

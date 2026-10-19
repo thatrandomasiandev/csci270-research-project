@@ -1,0 +1,160 @@
+diff --git a/pipeline/paper/tare/figures/exact.pdf b/pipeline/paper/tare/figures/exact.pdf
+index 24f9d16..9561671 100644
+Binary files a/pipeline/paper/tare/figures/exact.pdf and b/pipeline/paper/tare/figures/exact.pdf differ
+diff --git a/pipeline/paper/tare/figures/exact.png b/pipeline/paper/tare/figures/exact.png
+index 11baf90..9a6c39b 100644
+Binary files a/pipeline/paper/tare/figures/exact.png and b/pipeline/paper/tare/figures/exact.png differ
+diff --git a/pipeline/paper/tare/figures/make_figures.py b/pipeline/paper/tare/figures/make_figures.py
+index 3d5b5d2..ddce23a 100644
+--- a/pipeline/paper/tare/figures/make_figures.py
++++ b/pipeline/paper/tare/figures/make_figures.py
+@@ -140,8 +140,11 @@ def fig_exact():
+     ti = load("infernal/test_i.json")
+     rows.append(("Infernal oracle, 10 genomes", ti["rows"]["noclan"], 0, None))
+     rows.append(("Infernal oracle + clans", ti["rows"]["clan"], 0, None))
++    m2 = load("infernal/measured2.json")
++    rows.append(("Infernal update, 10 genomes", m2["summary"]["noclan"]["body_lines"], 0, None))
++    rows.append(("Infernal update + clans", m2["summary"]["clan"]["body_lines"], 0, None))
+ 
+-    fig, ax = plt.subplots(figsize=(ONE, 2.35))
++    fig, ax = plt.subplots(figsize=(ONE, 2.7))
+     y = list(range(len(rows)))
+     for i, (name, t, d, rn) in enumerate(rows):
+         ax.barh(i, t, color=C["tare"], height=0.62)
+@@ -157,7 +160,7 @@ def fig_exact():
+     ax.set_xlabel("output lines compared byte for byte (all identical)")
+     ax.legend(handles=[Patch(color=C["tare"], label="hit table (tblout)"),
+                        Patch(color=C["replay"], label="domain table (domtblout)")],
+-              loc="lower right", frameon=False)
++              loc="lower center", bbox_to_anchor=(0.42, 1.02), ncol=2, frameon=False)
+     ax.grid(axis="x")
+     save(fig, "exact")
+ 
+@@ -249,9 +252,20 @@ def fig_model():
+         ax.text(100 * f + 0.5, 1 / (a * f + c) + 0.15, name, fontsize=5.0, color="#3f6f9f")
+     ax.plot([], [], marker="^", ls="", ms=3.5, color=C["proj"], mec=C["model"], mew=0.4,
+             label="projected, other releases (net additions only)")
+-    # INFERNAL_PROTOCOL.md "Measured 2026-10-14 — removing GlmZ_SraJ": update 666.0 s, stock 328.4 s, 1 of 4,227 families.
++    # INFERNAL_PROTOCOL.md one-family removal, before the residue budget: update 666.0 s, stock 328.4 s.
+     ax.scatter([100 * 1 / 4227], [328.4 / 666.0], marker="x", color=C["warn"], s=18, zorder=5, clip_on=False,
+-               label="measured, Infernal one-family removal (check dominates)")
++               label="measured, Infernal one-family removal (check was a full scan)")
++    m2 = load("infernal/measured2.json")
++    f_inf = 100 * 457 / 4227
++    noclan_s = m2["summary"]["noclan"]["median_s_g"]
++    clan_s = m2["summary"]["clan"]["median_s_g"]
++    ax.scatter([f_inf], [noclan_s], marker="s", s=18, color=C["warn"], zorder=6,
++               label="measured, Infernal ten genomes after the residue budget")
++    ax.scatter([f_inf], [clan_s], marker="s", s=18, facecolors="white", edgecolors=C["warn"],
++               linewidths=0.8, zorder=7)
++    ax.annotate(f"{noclan_s:.2f}$\\times$ no clan, {clan_s:.2f}$\\times$ clans",
++                (f_inf, (noclan_s + clan_s) / 2), xytext=(13.4, 1.15), fontsize=5.4,
++                color=C["warn"], arrowprops=dict(arrowstyle="-", lw=0.4, color=C["warn"]))
+     ax.set_xlim(0, 30)
+     ax.set_ylim(0, 8)
+     ax.set_xlabel("fraction of the reference that changed, $f_\\Delta$ (%)")
+diff --git a/pipeline/paper/tare/figures/model.pdf b/pipeline/paper/tare/figures/model.pdf
+index ba1bb0f..40512f9 100644
+Binary files a/pipeline/paper/tare/figures/model.pdf and b/pipeline/paper/tare/figures/model.pdf differ
+diff --git a/pipeline/paper/tare/figures/model.png b/pipeline/paper/tare/figures/model.png
+index 2b15e63..b46ebb9 100644
+Binary files a/pipeline/paper/tare/figures/model.png and b/pipeline/paper/tare/figures/model.png differ
+diff --git a/pipeline/paper/tare/main.pdf b/pipeline/paper/tare/main.pdf
+index ce24306..c07bee7 100644
+Binary files a/pipeline/paper/tare/main.pdf and b/pipeline/paper/tare/main.pdf differ
+diff --git a/pipeline/paper/tare/main.tex b/pipeline/paper/tare/main.tex
+index ec46afd..b743847 100644
+--- a/pipeline/paper/tare/main.tex
++++ b/pipeline/paper/tare/main.tex
+@@ -78,11 +78,11 @@ program already lets a user set. \sys finds those numbers by experimenting on th
+ fixes (``pins'') them to the new version's values, and reruns the unmodified program only on what can
+ change, so the program itself prints output that is byte-for-byte identical to a full rerun. When a cheap
+ check cannot rule out a hidden dependency, \sys refuses and runs the program in full instead. Across
+-92{,}595 output lines from two programs, every result \sys produced was identical to a full rerun. On a Pfam update, \sys is \pending{X$\times$ (server, median of ten genomes)} faster than a full rerun (3.4$\times$ on a
+-workstation, geometric mean of two genomes),
++101{,}209 output lines from two programs, every result \sys produced was identical to a full rerun. On a Pfam update, \sys is \pending{X$\times$ (server, median of ten genomes)} faster than a full rerun (3.4$\times$ on a
++workstation, geometric mean of two genomes), and on an Rfam update 2.16$\times$ (workstation, median of ten genomes),
+ general-purpose caches reuse nothing, and an existing incremental search tool matched a full run on only
+ 1.3\% of its rows.
+-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024 proteomes.0.stock.wall_s=648.9416185829905 proteomes.0.e2.wall_s=190.69520458299667 proteomes.1.stock.wall_s=693.2145589159918 proteomes.1.e2.wall_s=205.20091079198755; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/reference_diamond/dx.json dx_i.idiamond.shared_byte_identical=407 dx_i.idiamond.shared_rows=31377; DERIVED n_lines=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a+tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock+noclan+shipped_rows; DERIVED s0=proteomes_0_stock_wall_s/proteomes_0_e2_wall_s; DERIVED s1=proteomes_1_stock_wall_s/proteomes_1_e2_wall_s; DERIVED gmean=geomean(s0,s1); DERIVED ident_pct=100*shared_byte_identical/shared_rows
++% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024 proteomes.0.stock.wall_s=648.9416185829905 proteomes.0.e2.wall_s=190.69520458299667 proteomes.1.stock.wall_s=693.2145589159918 proteomes.1.e2.wall_s=205.20091079198755; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/reference_diamond/dx.json dx_i.idiamond.shared_byte_identical=407 dx_i.idiamond.shared_rows=31377; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307 summary.clan.body_lines=4307 summary.noclan.median_s_g=2.1638629318617406; DERIVED n_lines=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a+tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock+noclan+shipped_rows+summary_noclan_body_lines+summary_clan_body_lines; DERIVED s0=proteomes_0_stock_wall_s/proteomes_0_e2_wall_s; DERIVED s1=proteomes_1_stock_wall_s/proteomes_1_e2_wall_s; DERIVED gmean=geomean(s0,s1); DERIVED ident_pct=100*shared_byte_identical/shared_rows
+ \end{abstract}
+ 
+ % =====================================================================
+@@ -616,13 +616,13 @@ a stock run on the new release. Red: in the same experiments, replaying without
+ \end{figure}
+ 
+ \Cref{fig:exact} shows every exactness experiment. In total, \sys's HMMER outputs comprised 44{,}666 hit-table lines and 43{,}253 domain-table lines, and its Infernal outputs
+-4{,}217 lines, the same lines again under clan competition, plus 459 lines from the shipped family removal (4{,}676 distinct lines); not one byte differed from the stock run ($D=0$ over $N = 92{,}595$ lines). By \cref{eq:cp}, a per-line error rate
+-above $3.2\times10^{-5}$ would be unlikely to produce this result (one-sided 95\%). The
++4{,}217 lines, the same lines again under clan competition, plus 459 lines from the shipped family removal, plus 4{,}307 body lines on each variant of the shipped update (13{,}290 lines); not one byte differed from the stock run ($D=0$ over $N = 101{,}209$ lines). By \cref{eq:cp}, a per-line error rate
++above $2.96\times10^{-5}$ would be unlikely to produce this result (one-sided 95\%). The
+ experiments grew in scale: 300 proteins (534 hit lines), then three whole genomes (26{,}127 hit lines), then two more whole
+ genomes through the shipped tool with batching and the check switched on. In every HMMER experiment, the same replay without the pin changed nearly every line: pooled over the three whole genomes,
+ 26{,}094 of 26{,}127 hit lines differed ($d = 99.87\%$, Wilson 95\% CI 99.82--99.91\%), and on 300 proteins all 534 did. The
+ pin is therefore necessary and, with \cutga, sufficient. The server headline adds \pending{ten genomes}.
+-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545 E1.check2_Rn_vs_S.tbl.differing_positions=534; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265 proteomes.0.Rn.vs_stock.tbl.differing_positions=9083 proteomes.0.Rn.vs_stock.tbl.lines_stock=9094 proteomes.1.Rn.vs_stock.tbl.differing_positions=8477 proteomes.1.Rn.vs_stock.tbl.lines_stock=8488 proteomes.2.Rn.vs_stock.tbl.differing_positions=8534 proteomes.2.Rn.vs_stock.tbl.lines_stock=8545; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300; MEASURED pipeline/results/exact_replay/e1scale.json proteomes.0.E2.vs_stock.tbl.differing_positions=0; DERIVED tbl_sum=E1_check1_R_vs_S_tbl_lines_a+tblout_body_lines_total+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock; DERIVED dom_sum=E1_check1_R_vs_S_dom_lines_a+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock; DERIVED inf_sum=noclan+shipped_rows; DERIVED n_lines=tbl_sum+dom_sum+inf_sum; DERIVED pooled_diff=proteomes_0_Rn_vs_stock_tbl_differing_positions+proteomes_1_Rn_vs_stock_tbl_differing_positions+proteomes_2_Rn_vs_stock_tbl_differing_positions; DERIVED pooled_n=proteomes_0_Rn_vs_stock_tbl_lines_stock+proteomes_1_Rn_vs_stock_tbl_lines_stock+proteomes_2_Rn_vs_stock_tbl_lines_stock; DERIVED pooled_pct=100*pooled_diff/pooled_n; DERIVED wlo=100*wilson_lo(pooled_diff,pooled_n); DERIVED whi=100*wilson_hi(pooled_diff,pooled_n); DERIVED p_up=clopper_up(n_lines); NOMINAL ci=95
++% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545 E1.check2_Rn_vs_S.tbl.differing_positions=534; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265 proteomes.0.Rn.vs_stock.tbl.differing_positions=9083 proteomes.0.Rn.vs_stock.tbl.lines_stock=9094 proteomes.1.Rn.vs_stock.tbl.differing_positions=8477 proteomes.1.Rn.vs_stock.tbl.lines_stock=8488 proteomes.2.Rn.vs_stock.tbl.differing_positions=8534 proteomes.2.Rn.vs_stock.tbl.lines_stock=8545; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300; MEASURED pipeline/results/exact_replay/e1scale.json proteomes.0.E2.vs_stock.tbl.differing_positions=0; DERIVED tbl_sum=E1_check1_R_vs_S_tbl_lines_a+tblout_body_lines_total+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock; DERIVED dom_sum=E1_check1_R_vs_S_dom_lines_a+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307 summary.clan.body_lines=4307; DERIVED inf_sum=noclan+shipped_rows+summary_noclan_body_lines+summary_clan_body_lines; DERIVED n_lines=tbl_sum+dom_sum+inf_sum; DERIVED pooled_diff=proteomes_0_Rn_vs_stock_tbl_differing_positions+proteomes_1_Rn_vs_stock_tbl_differing_positions+proteomes_2_Rn_vs_stock_tbl_differing_positions; DERIVED pooled_n=proteomes_0_Rn_vs_stock_tbl_lines_stock+proteomes_1_Rn_vs_stock_tbl_lines_stock+proteomes_2_Rn_vs_stock_tbl_lines_stock; DERIVED pooled_pct=100*pooled_diff/pooled_n; DERIVED wlo=100*wilson_lo(pooled_diff,pooled_n); DERIVED whi=100*wilson_hi(pooled_diff,pooled_n); DERIVED p_up=clopper_up(n_lines); NOMINAL ci=95
+ 
+ \textbf{Where exactness ends.} When HMMER reports hits by E-value threshold instead of \cutga, the replay matched on 300
+ proteins but failed on 1{,}000, differing on 3 hit lines and 5 domain lines. Hits near the threshold move in or out of a
+@@ -636,8 +636,8 @@ byte-identical on ten genomes (4{,}217 lines) with and without clan competition.
+ competing families are marked rather than deleted, so removing a family cannot reveal a hidden hit; removing the family
+ \texttt{GlmZ\_SraJ} from one genome's reference was exact through the shipped tool (459 lines). With the non-default
+ option \texttt{-{}-oskip}, which deletes marked overlaps, the same removal was refused, because fourteen overlap marks depended
+-on families that had no remaining line. The shipped result on ten fresh genomes is \pending{Infernal measured ten}.
+-% source: MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; LEN genomes=10; MEASURED pipeline/results/infernal/family_diff_15.json n_15_1=4227 changed_or_new=457 fraction_changed_or_new=0.10811450201088242; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT update_s=666.0; TEXT stock_s=328.4; TEXT fill_s=1711.6; TEXT reused=459; HAS 15.0; HAS 15.1; DERIVED frac_pct=100*fraction_changed_or_new; DERIVED sg=stock_s/update_s; DERIVED fill_x=fill_s/stock_s
++on families that had no remaining line. The shipped update from Rfam 15.0 to 15.1, on ten fresh genomes, was byte-identical on both variants (4{,}307 body lines each).
++% source: MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; LEN genomes=10; MEASURED pipeline/results/infernal/family_diff_15.json n_15_1=4227 changed_or_new=457 fraction_changed_or_new=0.10811450201088242; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT update_s=666.0; TEXT stock_s=328.4; TEXT fill_s=1711.6; TEXT reused=459; HAS 15.0; HAS 15.1; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; DERIVED frac_pct=100*fraction_changed_or_new; DERIVED sg=stock_s/update_s; DERIVED fill_x=fill_s/stock_s
+ 
+ \subsection{Q2: How Much Faster?}
+ \label{sec:eval-time}
+@@ -665,8 +665,8 @@ confidence interval for them; the server headline repeats each arm three times.
+ \centering
+ \includegraphics[width=\linewidth]{figures/model.pdf}
+ \caption{\textbf{The cost model across release sizes.} Speedup $1/(a f_\Delta + c)$ with $a$ and $c$ the arithmetic means of the values measured on two genomes (blue), its upper bounds (dashed and dotted), the measured Pfam points (green), projections for other Pfam
+-releases from their published family counts (triangles; edits not published, so these are optimistic), and Infernal,
+-where the check dominates (cross).}
++releases from their published family counts (triangles; edits not published, so these are optimistic), and Infernal
++before the residue budget (cross) and after it (squares).}
+ \label{fig:model}
+ \end{figure}
+ 
+@@ -682,13 +682,10 @@ is a conservative case: smaller releases project to $4.4$--$6.1\times$. The cach
+ \pending{X$\times$ (95\% bootstrap CI; geometric mean; range)}, the largest per-arm CV is \pending{}, and the maximum relative error
+ of the pre-registered prediction is \pending{}.
+ 
+-\textbf{When the check dominates.} The speedup does not yet carry over to Infernal. Only 457 of Rfam 15.1's 4{,}227
+-families (10.8\%) changed, yet in the measured single-family removal the update took 666\,s against a 328\,s stock run:
+-exact, but $0.49\times$; the cache fill took $5.2\times$ a stock run. A bacterial genome is one DNA sequence or a handful,
+-so the audit's sample and the random pads cover the entire genome; in the pilot, the audit alone took as long as a stock
+-run. The check is sized by number of records, but its cost is set by sequence length. For inputs with few, long records
+-it must be sized by length instead, which we have not yet done.
+-% source: MEASURED pipeline/results/infernal/family_diff_15.json n_15_1=4227 changed_or_new=457 fraction_changed_or_new=0.10811450201088242; HAS 15.1; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT update_s=666.0; TEXT stock_s=328.4; TEXT fill_s=1711.6; DERIVED frac_pct=100*fraction_changed_or_new; DERIVED sg=stock_s/update_s; DERIVED fill_x=fill_s/stock_s
++\textbf{Infernal.} Only 457 of Rfam 15.1's 4{,}227 families (10.8\%) changed. Before the check accounted for record length, removing one family took 666\,s against a 328\,s stock run: exact, but $0.49\times$, and the cache fill took $5.2\times$ a stock run. A bacterial genome is one sequence or a handful, so the audit and the random pads covered the whole genome, and that audit took as long as a stock run. The shipped check now skips the audit and the random-pad sample when any one record is longer than half the residues. The neighbor pad and the in-situ check still run. A skipped layer misses a dependency the neighbor pad does not cover; on the pilot before this change, the random pads' miss probability was 0.86.
++
++After that change, ten fresh genomes with three alternating runs per arm were exact on both variants (4{,}307 body lines each). The median of $S_g$ was $2.16\times$ without clans (geometric mean $2.07\times$, range $1.41$--$2.37\times$; 95\% bootstrap interval of the median $2.00$--$2.28$, from 10{,}000 resamples) and $2.07\times$ with clans (geometric mean $2.10\times$, range $1.96$--$2.33\times$; interval $1.97$--$2.23$). The pre-registered prediction from one held-out genome was $2.08\times$ and $2.05\times$. The largest relative time error was 32.4\% without clans and 13.6\% with clans. The largest CV was 29.3\%, one stock arm while the laptop was hot. These are workstation timings. On the first update of that run, discovery took 18.7\,s, replay 43.4\,s, and the neighbor pad 71.7\,s.
++% source: MEASURED pipeline/results/infernal/family_diff_15.json n_15_1=4227 changed_or_new=457 fraction_changed_or_new=0.10811450201088242; HAS 15.1; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT update_s=666.0; TEXT stock_s=328.4; TEXT fill_s=1711.6; TEXT pad_miss=0.8600647411932927; DERIVED frac_pct=100*fraction_changed_or_new; DERIVED sg=stock_s/update_s; DERIVED fill_x=fill_s/stock_s; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307 summary.noclan.median_s_g=2.1638629318617406 summary.noclan.geometric_mean_s_g=2.0746823343348684 summary.noclan.range_s_g.0=1.4081305172933147 summary.noclan.range_s_g.1=2.3690598220291075 summary.noclan.bootstrap_median.draws=10000 summary.noclan.bootstrap_median.'p2.5'=2.000405819702528 summary.noclan.bootstrap_median.'p97.5'=2.276632938596895 summary.noclan.predicted_s=2.0826583074972143 summary.noclan.max_relative_error=0.3238782798770758 summary.noclan.max_cv=0.2925797273922244 summary.clan.median_s_g=2.0749531244827883 summary.clan.geometric_mean_s_g=2.1002192657736756 summary.clan.range_s_g.0=1.9633307925565442 summary.clan.range_s_g.1=2.325347155958015 summary.clan.bootstrap_median.'p2.5'=1.974595272065143 summary.clan.bootstrap_median.'p97.5'=2.228284169273086 summary.clan.predicted_s=2.0463526744530274 summary.clan.max_relative_error=0.13633743830572148 genomes.'GCF_002058765.1'.noclan.runs.0.tare.phases.discovery_s=18.701080459002696 genomes.'GCF_002058765.1'.noclan.runs.0.tare.phases.replay_s=43.43846658300026 genomes.'GCF_002058765.1'.noclan.runs.0.tare.phases.ic2_neighbor_s=71.72620524999365; NOMINAL ci=95
+ 
+ \subsection{Q3: Does \sys Refuse When It Should?}
+ \label{sec:eval-safety}
+@@ -846,7 +843,7 @@ research group and share code, so they may share the property that makes replay
+ other groups. We therefore claim that the method works for programs whose coupling lies in settings they expose, and that
+ it detects when coupling lies elsewhere; we do not claim it works for most search programs. \textit{Release choice:} we
+ measure one release pair per database; smaller releases should be faster, as the model projects, but we have not measured
+-them. \textit{Timing:} workstation numbers are single runs on a shared machine; the headline is measured on a dedicated
++them. \textit{Timing:} the HMMER workstation numbers are single runs on a shared machine. The Infernal ten-genome timing alternates three runs per arm on a laptop and is indicative. The headline is measured on a dedicated
+ node with alternating runs. \textit{Check strength:} the random pads are weak (\cref{fig:pmiss}).
+ 
+ \textbf{Anticipated objections.} \textit{``Why not just rescale the cached E-values?''} Rescaling reproduces the program's
+@@ -924,8 +921,8 @@ numbers the program already lets users set, and pinning those numbers lets an un
+ output of a full run while searching only what changed. \sys discovers that coupling, replays exactly where it can, and
+ refuses where it cannot, as it did for DIAMOND, whose filter reads neighboring entries. Every output \sys produced across
+ HMMER and Infernal was identical to a full rerun, and a Pfam update ran \pending{X$\times$} faster than a full rerun on a
+-dedicated server. Extending \sys to InterProScan's member databases, and sizing its check by sequence length rather than
+-record count, are the next steps.
++dedicated server. An Rfam update ran $2.16\times$ faster on a workstation (median of ten genomes). Extending \sys to InterProScan's member databases is the next step. On a genome that is one long record, the audit and the random-pad sample are skipped, so a dependency that is not a file-order neighbor goes unchecked.
++% source: MEASURED pipeline/results/infernal/measured2.json summary.noclan.median_s_g=2.1638629318617406
+ 
+ \section*{Availability}
+ An anonymized artifact accompanies this submission. It contains \sys, every pre-registration and addendum, the result files

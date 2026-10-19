@@ -1,0 +1,449 @@
+{
+  "draw_measured": 57,
+  "files": 54,
+  "absent": [
+    "GCF_000001405.40",
+    "GCF_015220805.1",
+    "GCF_025265405.1"
+  ],
+  "genomes": [
+    {
+      "accession": "GCF_037157775.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 18641,
+      "stock_dom_lines": 18128,
+      "file": "measured_large_00_GCF_037157775.1.json"
+    },
+    {
+      "accession": "GCF_000001215.4",
+      "group": "eukaryote",
+      "claim_class": "needless_refusal",
+      "stock_tbl_lines": 69320,
+      "stock_dom_lines": 84423,
+      "file": "measured_large_02_GCF_000001215.4.json"
+    },
+    {
+      "accession": "GCF_000007225.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 3323,
+      "stock_dom_lines": 3071,
+      "file": "measured_small_00_GCF_000007225.1.json"
+    },
+    {
+      "accession": "GCF_000016385.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 3301,
+      "stock_dom_lines": 3027,
+      "file": "measured_small_01_GCF_000016385.1.json"
+    },
+    {
+      "accession": "GCF_000812185.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2352,
+      "stock_dom_lines": 2177,
+      "file": "measured_small_02_GCF_000812185.1.json"
+    },
+    {
+      "accession": "GCF_002078355.1",
+      "group": "archaea",
+      "claim_class": "needless_refusal",
+      "stock_tbl_lines": 2872,
+      "stock_dom_lines": 2710,
+      "file": "measured_small_03_GCF_002078355.1.json"
+    },
+    {
+      "accession": "GCF_002214165.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1346,
+      "stock_dom_lines": 1269,
+      "file": "measured_small_04_GCF_002214165.1.json"
+    },
+    {
+      "accession": "GCF_002788215.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5430,
+      "stock_dom_lines": 5133,
+      "file": "measured_small_05_GCF_002788215.1.json"
+    },
+    {
+      "accession": "GCF_008000775.2",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5976,
+      "stock_dom_lines": 5676,
+      "file": "measured_small_06_GCF_008000775.2.json"
+    },
+    {
+      "accession": "GCF_013407145.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2643,
+      "stock_dom_lines": 2480,
+      "file": "measured_small_07_GCF_013407145.1.json"
+    },
+    {
+      "accession": "GCF_023169545.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 963,
+      "stock_dom_lines": 890,
+      "file": "measured_small_08_GCF_023169545.1.json"
+    },
+    {
+      "accession": "GCF_025839675.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 7937,
+      "stock_dom_lines": 7431,
+      "file": "measured_small_09_GCF_025839675.1.json"
+    },
+    {
+      "accession": null,
+      "group": null,
+      "claim_class": "INCONCLUSIVE",
+      "stock_tbl_lines": 0,
+      "stock_dom_lines": 0,
+      "file": "measured_small_10_GCF_029207735.1.json"
+    },
+    {
+      "accession": "GCF_029232205.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1665,
+      "stock_dom_lines": 1527,
+      "file": "measured_small_11_GCF_029232205.1.json"
+    },
+    {
+      "accession": "GCF_029338335.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 8938,
+      "stock_dom_lines": 8692,
+      "file": "measured_small_12_GCF_029338335.1.json"
+    },
+    {
+      "accession": "GCF_036967215.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 4426,
+      "stock_dom_lines": 4038,
+      "file": "measured_small_13_GCF_036967215.1.json"
+    },
+    {
+      "accession": "GCF_900083515.1",
+      "group": "archaea",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2778,
+      "stock_dom_lines": 2579,
+      "file": "measured_small_14_GCF_900083515.1.json"
+    },
+    {
+      "accession": "GCF_000014725.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5090,
+      "stock_dom_lines": 4900,
+      "file": "measured_small_15_GCF_000014725.1.json"
+    },
+    {
+      "accession": "GCF_000020645.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5314,
+      "stock_dom_lines": 5186,
+      "file": "measured_small_16_GCF_000020645.1.json"
+    },
+    {
+      "accession": "GCF_000020945.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2670,
+      "stock_dom_lines": 2557,
+      "file": "measured_small_17_GCF_000020945.1.json"
+    },
+    {
+      "accession": "GCF_000024985.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6698,
+      "stock_dom_lines": 6308,
+      "file": "measured_small_18_GCF_000024985.1.json"
+    },
+    {
+      "accession": "GCF_000146505.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 4769,
+      "stock_dom_lines": 4541,
+      "file": "measured_small_19_GCF_000146505.1.json"
+    },
+    {
+      "accession": "GCF_000165505.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5525,
+      "stock_dom_lines": 5245,
+      "file": "measured_small_20_GCF_000165505.1.json"
+    },
+    {
+      "accession": "GCF_000177635.2",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5184,
+      "stock_dom_lines": 4859,
+      "file": "measured_small_21_GCF_000177635.2.json"
+    },
+    {
+      "accession": "GCF_000284335.1",
+      "group": "bacteria",
+      "claim_class": "needless_refusal",
+      "stock_tbl_lines": 2917,
+      "stock_dom_lines": 2752,
+      "file": "measured_small_22_GCF_000284335.1.json"
+    },
+    {
+      "accession": "GCF_000317125.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 11320,
+      "stock_dom_lines": 10668,
+      "file": "measured_small_23_GCF_000317125.1.json"
+    },
+    {
+      "accession": "GCF_001017655.1",
+      "group": "bacteria",
+      "claim_class": "needless_refusal",
+      "stock_tbl_lines": 4592,
+      "stock_dom_lines": 4386,
+      "file": "measured_small_24_GCF_001017655.1.json"
+    },
+    {
+      "accession": "GCF_001027545.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2556,
+      "stock_dom_lines": 2483,
+      "file": "measured_small_25_GCF_001027545.1.json"
+    },
+    {
+      "accession": "GCF_001547735.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 4063,
+      "stock_dom_lines": 3741,
+      "file": "measured_small_26_GCF_001547735.1.json"
+    },
+    {
+      "accession": "GCF_002266435.3",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 11511,
+      "stock_dom_lines": 11212,
+      "file": "measured_small_27_GCF_002266435.3.json"
+    },
+    {
+      "accession": "GCF_002871995.2",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 3223,
+      "stock_dom_lines": 3029,
+      "file": "measured_small_28_GCF_002871995.2.json"
+    },
+    {
+      "accession": "GCF_003722295.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6527,
+      "stock_dom_lines": 6176,
+      "file": "measured_small_29_GCF_003722295.1.json"
+    },
+    {
+      "accession": "GCF_004376055.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6467,
+      "stock_dom_lines": 6142,
+      "file": "measured_small_30_GCF_004376055.1.json"
+    },
+    {
+      "accession": "GCF_005697565.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1215,
+      "stock_dom_lines": 1142,
+      "file": "measured_small_31_GCF_005697565.1.json"
+    },
+    {
+      "accession": "GCF_014701195.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 4225,
+      "stock_dom_lines": 3920,
+      "file": "measured_small_32_GCF_014701195.1.json"
+    },
+    {
+      "accession": "GCF_020886695.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6808,
+      "stock_dom_lines": 6450,
+      "file": "measured_small_33_GCF_020886695.1.json"
+    },
+    {
+      "accession": "GCF_022813675.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 4817,
+      "stock_dom_lines": 4446,
+      "file": "measured_small_34_GCF_022813675.1.json"
+    },
+    {
+      "accession": "GCF_022814725.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5061,
+      "stock_dom_lines": 4770,
+      "file": "measured_small_35_GCF_022814725.1.json"
+    },
+    {
+      "accession": "GCF_025273655.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1544,
+      "stock_dom_lines": 1504,
+      "file": "measured_small_36_GCF_025273655.1.json"
+    },
+    {
+      "accession": "GCF_027923555.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5845,
+      "stock_dom_lines": 5519,
+      "file": "measured_small_37_GCF_027923555.1.json"
+    },
+    {
+      "accession": "GCF_028728065.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 7176,
+      "stock_dom_lines": 6648,
+      "file": "measured_small_38_GCF_028728065.1.json"
+    },
+    {
+      "accession": "GCF_046845665.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6294,
+      "stock_dom_lines": 6113,
+      "file": "measured_small_39_GCF_046845665.1.json"
+    },
+    {
+      "accession": "GCF_055390895.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5672,
+      "stock_dom_lines": 5421,
+      "file": "measured_small_40_GCF_055390895.1.json"
+    },
+    {
+      "accession": "GCF_059995355.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5207,
+      "stock_dom_lines": 4890,
+      "file": "measured_small_41_GCF_059995355.1.json"
+    },
+    {
+      "accession": "GCF_900660515.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1002,
+      "stock_dom_lines": 964,
+      "file": "measured_small_42_GCF_900660515.1.json"
+    },
+    {
+      "accession": "GCF_946900835.1",
+      "group": "bacteria",
+      "claim_class": "pass",
+      "stock_tbl_lines": 5764,
+      "stock_dom_lines": 5593,
+      "file": "measured_small_43_GCF_946900835.1.json"
+    },
+    {
+      "accession": "GCF_000146045.2",
+      "group": "eukaryote",
+      "claim_class": "pass",
+      "stock_tbl_lines": 11196,
+      "stock_dom_lines": 10867,
+      "file": "measured_small_44_GCF_000146045.2.json"
+    },
+    {
+      "accession": "GCA_001817145.1",
+      "group": "mag",
+      "claim_class": "needless_refusal",
+      "stock_tbl_lines": 1513,
+      "stock_dom_lines": 1468,
+      "file": "measured_small_45_GCA_001817145.1.json"
+    },
+    {
+      "accession": "GCA_001824745.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 947,
+      "stock_dom_lines": 924,
+      "file": "measured_small_46_GCA_001824745.1.json"
+    },
+    {
+      "accession": "GCA_002779365.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 1081,
+      "stock_dom_lines": 1029,
+      "file": "measured_small_47_GCA_002779365.1.json"
+    },
+    {
+      "accession": "GCA_002781185.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 887,
+      "stock_dom_lines": 864,
+      "file": "measured_small_48_GCA_002781185.1.json"
+    },
+    {
+      "accession": "GCA_902806385.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 2013,
+      "stock_dom_lines": 1947,
+      "file": "measured_small_49_GCA_902806385.1.json"
+    },
+    {
+      "accession": "GCA_982546495.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 3451,
+      "stock_dom_lines": 3216,
+      "file": "measured_small_50_GCA_982546495.1.json"
+    },
+    {
+      "accession": "GCA_060790075.1",
+      "group": "mag",
+      "claim_class": "pass",
+      "stock_tbl_lines": 6668,
+      "stock_dom_lines": 6324,
+      "file": "measured_small_51_GCA_060790075.1.json"
+    }
+  ],
+  "pass_genomes": 48,
+  "needless_refusal": 5,
+  "other": 1,
+  "pass_lines": 463225,
+  "unsafe": 0,
+  "pooled_floor": 50000
+}

@@ -1,0 +1,61 @@
+{
+  "n_exact": 9,
+  "tbl_lines": 79038,
+  "dom_lines": 76539,
+  "tasks": [
+    {
+      "task": 0,
+      "proteome": "GCF_002302335.1",
+      "tbl": 8933,
+      "dom": 8654
+    },
+    {
+      "task": 1,
+      "proteome": "GCF_009433135.1",
+      "tbl": 9295,
+      "dom": 9020
+    },
+    {
+      "task": 2,
+      "proteome": "GCF_009948655.1",
+      "tbl": 9089,
+      "dom": 8793
+    },
+    {
+      "task": 4,
+      "proteome": "GCF_022559285.1",
+      "tbl": 8758,
+      "dom": 8472
+    },
+    {
+      "task": 5,
+      "proteome": "GCF_030347155.1",
+      "tbl": 9297,
+      "dom": 8985
+    },
+    {
+      "task": 6,
+      "proteome": "GCF_049949335.1",
+      "tbl": 8229,
+      "dom": 7979
+    },
+    {
+      "task": 7,
+      "proteome": "GCF_054388855.1",
+      "tbl": 8507,
+      "dom": 8246
+    },
+    {
+      "task": 8,
+      "proteome": "GCF_055556535.1",
+      "tbl": 8412,
+      "dom": 8137
+    },
+    {
+      "task": 9,
+      "proteome": "GCF_061234675.1",
+      "tbl": 8518,
+      "dom": 8253
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+ M pipeline/paper/tare/figures/exact.pdf
+ M pipeline/paper/tare/figures/exact.png
+ M pipeline/paper/tare/figures/make_figures.py
+ M pipeline/paper/tare/figures/model.pdf
+ M pipeline/paper/tare/figures/model.png
+ M pipeline/paper/tare/main.pdf
+ M pipeline/paper/tare/main.tex

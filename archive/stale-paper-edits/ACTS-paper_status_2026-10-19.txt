@@ -1,0 +1,14 @@
+ M pipeline/paper/tare/main.tex
+?? pipeline/paper/tare/figures/adversarial.pdf
+?? pipeline/paper/tare/figures/adversarial.png
+?? pipeline/paper/tare/figures/churn_pairs.pdf
+?? pipeline/paper/tare/figures/churn_pairs.png
+?? pipeline/paper/tare/figures/make_adversarial.py
+?? pipeline/paper/tare/figures/make_churn_pairs.py
+?? pipeline/results/adversarial/
+?? pipeline/results/baselines_exact/
+?? pipeline/results/blast_diagnosis/
+?? pipeline/results/diamond_order/
+?? pipeline/results/diverse_genomes/
+?? pipeline/results/exact_replay/headline/
+?? pipeline/results/release_chain/

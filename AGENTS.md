@@ -61,6 +61,14 @@ blind to count columns, a gate across independent questions). Do not repeat that
 8. **No third redesign of the same question.** After two locked failures,
    record the limitation and move on.
 
+## Paper ownership (2026-10-19)
+
+The only paper is `pipeline/paper/tare/main.tex` on `main`. Only the hub session edits it.
+Experiment agents never edit `main.tex` and never keep an uncommitted copy of the paper in their worktree.
+They commit results, figure scripts under `pipeline/paper/tare/figures/`, and protocol docs on their own
+branch, and end their report with proposed paper sentences, each with its `% source:` keys. The hub verifies
+those against the result files and integrates them. Archived papers live under `archive/`; do not edit them.
+
 ## Session protocol
 
 1. Read [`STATUS.md`](STATUS.md) and [`star/docs/SCOPE.md`](star/docs/SCOPE.md) (create SCOPE if missing).

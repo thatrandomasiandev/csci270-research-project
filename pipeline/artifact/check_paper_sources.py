@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""Check every ``% source:`` comment in pipeline/paper/main.tex.
+"""Check every ``% source:`` comment in the TARE paper, pipeline/paper/tare/main.tex.
+
+The first paper (archive/paper-v1-reference-side/main.tex) is checked only with --v1.
 
 Read-only. Each displayed number must be the cited file's value at the
 printed precision, or the closed form the comment names. Exit 1 on any
@@ -15,7 +17,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-PAPER = REPO / "pipeline" / "paper" / "main.tex"
+PAPER = REPO / "archive" / "paper-v1-reference-side" / "main.tex"
 
 NUMBER = r"[-+]?(?:\d+\.\d+|\d+)(?:[eE][-+]?\d+)?"
 ASSIGN = re.compile(rf"([A-Za-z_][\w.]*)\s*=\s*({NUMBER})(?![A-Za-z])")
@@ -1326,6 +1328,8 @@ def check_tare(repo: Path) -> int:
 
 
 def main() -> int:
+    if "--v1" not in sys.argv[1:]:
+        return 1 if check_tare(REPO) else 0
     lines = PAPER.read_text().splitlines()
     comments = [index for index, line in enumerate(lines) if "% source:" in line]
     failures = 0
@@ -1339,8 +1343,7 @@ def main() -> int:
     if len(comments) < 180:
         print("FAIL fewer source comments than main.tex is expected to carry")
         return 1
-    tare_failed = check_tare(REPO)
-    return 1 if failures or tare_failed else 0
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

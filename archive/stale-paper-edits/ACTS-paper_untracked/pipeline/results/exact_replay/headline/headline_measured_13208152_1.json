@@ -1,0 +1,901 @@
+{
+  "S_g": 4.231789700624204,
+  "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 4",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 4 --tblout --domtblout",
+  "array_task_id": 1,
+  "break_even_n": 0.25991830789174863,
+  "cache_limit_bytes": 5368709120,
+  "cpu_model": "AMD EPYC 7542 32-Core Processor",
+  "cpu_ratio": 5.214376425327528,
+  "cv": {
+    "A": 0.0026545766356274834,
+    "B": 0.007907813107123475,
+    "estimator": "stdev/mean",
+    "flag_if": "> 0.05",
+    "n": 3
+  },
+  "cv_flag": {
+    "A": false,
+    "B": false
+  },
+  "draws": [
+    "GCF_002302335.1",
+    "GCF_009433135.1",
+    "GCF_009948655.1",
+    "GCF_015290725.1",
+    "GCF_022559285.1",
+    "GCF_030347155.1",
+    "GCF_049949335.1",
+    "GCF_054388855.1",
+    "GCF_055556535.1",
+    "GCF_061234675.1"
+  ],
+  "excluded": [
+    {
+      "accession": "GCF_001513615.1",
+      "reason": "DX3 rate sample"
+    },
+    {
+      "accession": "GCF_001515725.1",
+      "reason": "DX3 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_001650275.1",
+      "reason": "savings A_hmmscan position 3"
+    },
+    {
+      "accession": "GCF_002058765.1",
+      "reason": "savings A_hmmscan position 9"
+    },
+    {
+      "accession": "GCF_002090355.1",
+      "reason": "baselines genome 2, knob queries, savings position 2"
+    },
+    {
+      "accession": "GCF_002180275.1",
+      "reason": "savings A_hmmscan position 17"
+    },
+    {
+      "accession": "GCF_002853805.1",
+      "reason": "E1 queries, baselines genome 1, savings position 1"
+    },
+    {
+      "accession": "GCF_003722195.1",
+      "reason": "Infernal measured draw, interrupted after two genomes"
+    },
+    {
+      "accession": "GCF_003956185.1",
+      "reason": "Infernal Test I timing genome and savings position 10"
+    },
+    {
+      "accession": "GCF_004377995.2",
+      "reason": "savings designated prefix position 27, not scanned"
+    },
+    {
+      "accession": "GCF_005389605.2",
+      "reason": "savings position 15 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_012934475.1",
+      "reason": "savings designated prefix position 25, not scanned"
+    },
+    {
+      "accession": "GCF_013085185.1",
+      "reason": "DIAMOND pilot"
+    },
+    {
+      "accession": "GCF_013168095.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_013201215.1",
+      "reason": "savings A_hmmscan position 7"
+    },
+    {
+      "accession": "GCF_013315695.1",
+      "reason": "E1-scale and HMMER pilots"
+    },
+    {
+      "accession": "GCF_013343615.1",
+      "reason": "savings A_hmmscan position 21"
+    },
+    {
+      "accession": "GCF_015571655.1",
+      "reason": "savings A_hmmscan position 14"
+    },
+    {
+      "accession": "GCF_016659085.1",
+      "reason": "savings A_hmmscan position 5, MATCH failure"
+    },
+    {
+      "accession": "GCF_016806025.1",
+      "reason": "per-record measured replay"
+    },
+    {
+      "accession": "GCF_016904475.1",
+      "reason": "savings A_hmmscan position 13"
+    },
+    {
+      "accession": "GCF_017165095.1",
+      "reason": "per-record measured replay"
+    },
+    {
+      "accession": "GCF_017654165.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_020905655.1",
+      "reason": "savings A_hmmscan position 18"
+    },
+    {
+      "accession": "GCF_022846215.1",
+      "reason": "Infernal Test I and savings designated position 29"
+    },
+    {
+      "accession": "GCF_023657995.1",
+      "reason": "DIAMOND measured sample"
+    },
+    {
+      "accession": "GCF_024298565.1",
+      "reason": "savings designated prefix position 30, not scanned"
+    },
+    {
+      "accession": "GCF_025254305.1",
+      "reason": "savings A_hmmscan position 11"
+    },
+    {
+      "accession": "GCF_028743355.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_030515405.1",
+      "reason": "Infernal Test I and savings position 16"
+    },
+    {
+      "accession": "GCF_030708175.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_030717825.1",
+      "reason": "headline pilot, job 13138266"
+    },
+    {
+      "accession": "GCF_032384295.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_036884535.1",
+      "reason": "savings designated prefix position 24, not scanned"
+    },
+    {
+      "accession": "GCF_037287675.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_041235215.1",
+      "reason": "savings position 12 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_041316645.1",
+      "reason": "savings A_hmmscan position 6"
+    },
+    {
+      "accession": "GCF_046107165.1",
+      "reason": "savings designated prefix position 28, not scanned"
+    },
+    {
+      "accession": "GCF_048568975.1",
+      "reason": "savings position 19 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_049201905.1",
+      "reason": "E1-scale"
+    },
+    {
+      "accession": "GCF_049949635.1",
+      "reason": "Infernal pilot and savings position 22"
+    },
+    {
+      "accession": "GCF_052050745.1",
+      "reason": "savings A_hmmscan position 4"
+    },
+    {
+      "accession": "GCF_052882435.1",
+      "reason": "savings designated prefix position 23, not scanned"
+    },
+    {
+      "accession": "GCF_053102875.1",
+      "reason": "savings A_hmmscan position 20"
+    },
+    {
+      "accession": "GCF_054510725.1",
+      "reason": "Infernal Test I and savings position 8"
+    },
+    {
+      "accession": "GCF_055382035.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_058683675.1",
+      "reason": "Infernal pilot, seed 20261044"
+    },
+    {
+      "accession": "GCF_059131955.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_059615465.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_059719525.1",
+      "reason": "E1-scale and Infernal measured draw"
+    }
+  ],
+  "fail_reasons": [],
+  "fill": {
+    "after": {
+      "load": [
+        1.19,
+        1.38,
+        1.51
+      ],
+      "mem_available_bytes": 239543742464,
+      "mem_free_bytes": 212421414912,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 109616623616
+    },
+    "arm": "B",
+    "before": {
+      "load": [
+        1.82,
+        1.71,
+        2.08
+      ],
+      "mem_available_bytes": 249220263936,
+      "mem_free_bytes": 222097055744,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 119286681600
+    },
+    "cache_bytes": 22261760,
+    "cpu_s": 4510.769695,
+    "cpu_source": "resource.RUSAGE_CHILDREN",
+    "cpu_sys_s": 1201.9477309999997,
+    "cpu_user_s": 3308.821964,
+    "decision": "SHIP",
+    "n_batches": "111",
+    "phases": {
+      "cache_load_s": 0.00033059390261769295,
+      "cache_store_s": 0.3236880348995328,
+      "coverage_read_s": 9.563006460666656e-05,
+      "diff_s": 0.004157625138759613,
+      "discovery_build_s": 0.011745663825422525,
+      "discovery_s": 2280.449874664191,
+      "discovery_scan_s": 2258.4536000909284,
+      "ic2_neighbor_build_s": 20.0566411530599,
+      "ic2_neighbor_s": 44.519318889360875,
+      "ic2_neighbor_scan_s": 22.951860996428877,
+      "ic2_random_20261031_build_s": 4.895493688061833,
+      "ic2_random_20261031_s": 8.080275422427803,
+      "ic2_random_20261031_scan_s": 2.9753446551039815,
+      "ic2_random_20261032_build_s": 4.942797179333866,
+      "ic2_random_20261032_s": 8.186677724123001,
+      "ic2_random_20261032_scan_s": 3.0379512417130172,
+      "ic2_random_20261033_build_s": 4.949216401670128,
+      "ic2_random_20261033_s": 8.19157255999744,
+      "ic2_random_20261033_scan_s": 3.0393686261959374,
+      "merge_rescale_s": 0.21290769008919597,
+      "parse_s": 39.80298010306433,
+      "pin_check_s": 141.1616109907627,
+      "prep_s": 41.60401951055974,
+      "probe_wall_s": 307.4088674299419,
+      "read_output_s": 0.023943293374031782,
+      "render_s": 0.0015561259351670742,
+      "replay_build_s": 7.622144040651619,
+      "replay_plan_s": 0.02084525115787983,
+      "replay_s": 26.49200399965048,
+      "replay_scan_s": 18.417174249421805,
+      "subref_build_s": 1.4997340678237379,
+      "tool_s": 2448.076737378724,
+      "total_s": 2882.71568403719
+    },
+    "repeat": 0,
+    "returncode": 0,
+    "wall_s": 2882.902989509981,
+    "why": "exact replay under pinned normalizer"
+  },
+  "finished_utc": "2026-10-18T06:21:02Z",
+  "first_run_overhead": 1.320843729040477,
+  "flags": [],
+  "git_dirty": "false",
+  "git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "input_md5": {
+    "pfam38.1": "dc814cc181ece09102c09c4e6c19f2fd",
+    "pfam38.2": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "proteome": "dbd6277dc8fb938c53d23b4aeb61429b"
+  },
+  "job_id": "13208152",
+  "mac_shape_s": {
+    "diff": 1.4,
+    "discovery": 91.0,
+    "neighbor": 27.0,
+    "parse": 14.0,
+    "random": 8.0,
+    "replay": 17.0,
+    "verify": 15.0
+  },
+  "median_wall_s": {
+    "A": 2405.430182803888,
+    "B": 568.4191212169826
+  },
+  "meminfo_start": {
+    "MemAvailable": 258310684672,
+    "MemFree": 231189241856,
+    "MemTotal": 269877252096
+  },
+  "notes": [
+    "tmpfs scratch is allowed when this exclusive job has at least 40 GiB free.",
+    "CV is reported and flagged when it exceeds 5%. It is not a stop and not a drop.",
+    "Walltime is 4 h per task."
+  ],
+  "outcome": "EXACT",
+  "pool_n": 50,
+  "pool_sha256": "856a93c152e0e7bfb2715076f3dc872551579301526783da8e83c82f6591b0c2",
+  "press": {
+    "38.1": {
+      "decompress_s": 9.7129510268569,
+      "ends": 27481,
+      "headers": 27481,
+      "hmmpress_s": 34.800178786274046
+    },
+    "38.2": {
+      "decompress_s": 10.506759753916413,
+      "ends": 30134,
+      "headers": 30134,
+      "hmmpress_s": 37.9400545200333
+    }
+  },
+  "press_charged_to_arms": false,
+  "proteome": "GCF_009433135.1",
+  "repeats": [
+    {
+      "after": {
+        "load": [
+          1.59,
+          1.59,
+          1.62
+        ],
+        "mem_available_bytes": 249181999104,
+        "mem_free_bytes": 222060752896,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119235022848
+      },
+      "arm": "A",
+      "before": {
+        "load": [
+          1.19,
+          1.38,
+          1.51
+        ],
+        "mem_available_bytes": 249168543744,
+        "mem_free_bytes": 222047002624,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119238615040
+      },
+      "cpu_s": 3867.8055379999996,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 1007.1711450000003,
+      "cpu_user_s": 2860.6343929999994,
+      "repeat": 1,
+      "wall_s": 2416.2012665136717
+    },
+    {
+      "after": {
+        "load": [
+          1.3,
+          1.35,
+          1.47
+        ],
+        "mem_available_bytes": 243284713472,
+        "mem_free_bytes": 216163733504,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 113363120128
+      },
+      "arm": "B",
+      "before": {
+        "load": [
+          1.59,
+          1.59,
+          1.62
+        ],
+        "mem_available_bytes": 249153589248,
+        "mem_free_bytes": 222032343040,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119212761088
+      },
+      "compare": {
+        "byte_equal": true,
+        "dom": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9020,
+          "lines_stock": 9020,
+          "token_equal": true
+        },
+        "tbl": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9295,
+          "lines_stock": 9295,
+          "token_equal": true
+        }
+      },
+      "cpu_s": 741.7580209999996,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 163.07565799999975,
+      "cpu_user_s": 578.6823629999999,
+      "decision": "SHIP",
+      "n_batches": "111",
+      "phases": {
+        "cache_load_s": 3.6142889061011374,
+        "cache_store_s": 0.06534052081406116,
+        "coverage_read_s": 11.296414692886174,
+        "diff_s": 3.9695532331243157,
+        "discovery_build_s": 4.961729766801,
+        "discovery_s": 325.58058352861553,
+        "discovery_scan_s": 320.44454981479794,
+        "ic2_neighbor_build_s": 20.354738065972924,
+        "ic2_neighbor_s": 45.1096740947105,
+        "ic2_neighbor_scan_s": 23.183441021945328,
+        "ic2_random_20261031_build_s": 4.889453252777457,
+        "ic2_random_20261031_s": 8.284455087967217,
+        "ic2_random_20261031_scan_s": 3.165890771895647,
+        "ic2_random_20261032_build_s": 4.925354950129986,
+        "ic2_random_20261032_s": 8.222008327022195,
+        "ic2_random_20261032_scan_s": 3.0738392039202154,
+        "ic2_random_20261033_build_s": 4.936338511761278,
+        "ic2_random_20261033_s": 8.253662560135126,
+        "ic2_random_20261033_scan_s": 3.0931518231518567,
+        "merge_rescale_s": 3.011454330291599,
+        "parse_s": 48.63789484323934,
+        "prep_s": 46.319992049597204,
+        "probe_wall_s": 0.0,
+        "read_output_s": 0.02211743500083685,
+        "render_s": 0.0016432707197964191,
+        "replay_build_s": 7.78160542761907,
+        "replay_plan_s": 0.02544987667351961,
+        "replay_s": 26.756003012880683,
+        "replay_scan_s": 18.519248724449426,
+        "subref_build_s": 1.5295208781026304,
+        "tool_s": 422.1090319263749,
+        "total_s": 567.7321919761598,
+        "verify_build_s": 0.00029295263811945915,
+        "verify_s": 50.62983609177172,
+        "verify_scan_s": 50.62891056621447
+      },
+      "repeat": 1,
+      "returncode": 0,
+      "shape": {
+        "missing": [],
+        "seconds": {
+          "diff": 3.9695532331243157,
+          "discovery": 325.58058352861553,
+          "neighbor": 45.1096740947105,
+          "parse": 48.63789484323934,
+          "random": 24.760125975124538,
+          "replay": 26.756003012880683,
+          "verify": 50.62983609177172
+        }
+      },
+      "shape_ok": true,
+      "shape_why": "discovery largest, diff smallest, pads present",
+      "wall_s": 568.4191212169826,
+      "why": "exact replay under pinned normalizer"
+    },
+    {
+      "after": {
+        "load": [
+          1.54,
+          1.53,
+          1.54
+        ],
+        "mem_available_bytes": 249149284352,
+        "mem_free_bytes": 222028558336,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119204143104
+      },
+      "arm": "A",
+      "before": {
+        "load": [
+          1.3,
+          1.35,
+          1.47
+        ],
+        "mem_available_bytes": 249125076992,
+        "mem_free_bytes": 222004097024,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119207743488
+      },
+      "cpu_s": 3829.2360810000005,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 991.5872610000001,
+      "cpu_user_s": 2837.6488200000003,
+      "repeat": 2,
+      "wall_s": 2405.430182803888
+    },
+    {
+      "after": {
+        "load": [
+          1.49,
+          1.36,
+          1.44
+        ],
+        "mem_available_bytes": 243258003456,
+        "mem_free_bytes": 216137445376,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 113332244480
+      },
+      "arm": "B",
+      "before": {
+        "load": [
+          1.54,
+          1.53,
+          1.54
+        ],
+        "mem_available_bytes": 249126039552,
+        "mem_free_bytes": 222005313536,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119181881344
+      },
+      "compare": {
+        "byte_equal": true,
+        "dom": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9020,
+          "lines_stock": 9020,
+          "token_equal": true
+        },
+        "tbl": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9295,
+          "lines_stock": 9295,
+          "token_equal": true
+        }
+      },
+      "cpu_s": 736.939738,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 163.5278989999997,
+      "cpu_user_s": 573.4118390000003,
+      "decision": "SHIP",
+      "n_batches": "111",
+      "phases": {
+        "cache_load_s": 3.6206056736409664,
+        "cache_store_s": 0.06571658188477159,
+        "coverage_read_s": 11.331991040147841,
+        "diff_s": 3.9839436588808894,
+        "discovery_build_s": 4.981476888991892,
+        "discovery_s": 332.3059296752326,
+        "discovery_scan_s": 327.14960829913616,
+        "ic2_neighbor_build_s": 20.37851502466947,
+        "ic2_neighbor_s": 45.13272652821615,
+        "ic2_neighbor_scan_s": 23.19061729684472,
+        "ic2_random_20261031_build_s": 4.911173329688609,
+        "ic2_random_20261031_s": 8.262061649002135,
+        "ic2_random_20261031_scan_s": 3.1218551280908287,
+        "ic2_random_20261032_build_s": 4.925734662916511,
+        "ic2_random_20261032_s": 8.287113875616342,
+        "ic2_random_20261032_scan_s": 3.1396420281380415,
+        "ic2_random_20261033_build_s": 4.987916217185557,
+        "ic2_random_20261033_s": 8.33753266511485,
+        "ic2_random_20261033_scan_s": 3.127093902323395,
+        "merge_rescale_s": 2.9593812082894146,
+        "parse_s": 37.641409003175795,
+        "prep_s": 46.411896190140396,
+        "probe_wall_s": 0.0,
+        "read_output_s": 0.02141549624502659,
+        "render_s": 0.0017998358234763145,
+        "replay_build_s": 7.7796947243623435,
+        "replay_plan_s": 0.026105454191565514,
+        "replay_s": 26.738501327112317,
+        "replay_scan_s": 18.510200490243733,
+        "subref_build_s": 1.5529177798889577,
+        "tool_s": 428.0915390700102,
+        "total_s": 562.662525263615,
+        "verify_build_s": 0.00030312221497297287,
+        "verify_s": 49.85348290717229,
+        "verify_scan_s": 49.852521925233305
+      },
+      "repeat": 2,
+      "returncode": 0,
+      "shape": {
+        "missing": [],
+        "seconds": {
+          "diff": 3.9839436588808894,
+          "discovery": 332.3059296752326,
+          "neighbor": 45.13272652821615,
+          "parse": 37.641409003175795,
+          "random": 24.886708189733326,
+          "replay": 26.738501327112317,
+          "verify": 49.85348290717229
+        }
+      },
+      "shape_ok": true,
+      "shape_why": "discovery largest, diff smallest, pads present",
+      "wall_s": 563.3470771959983,
+      "why": "exact replay under pinned normalizer"
+    },
+    {
+      "after": {
+        "load": [
+          1.66,
+          1.68,
+          1.63
+        ],
+        "mem_available_bytes": 249111830528,
+        "mem_free_bytes": 221991755776,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119173271552
+      },
+      "arm": "A",
+      "before": {
+        "load": [
+          1.49,
+          1.36,
+          1.44
+        ],
+        "mem_available_bytes": 249100247040,
+        "mem_free_bytes": 221979709440,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119176867840
+      },
+      "cpu_s": 3869.893416000001,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 1040.9476410000007,
+      "cpu_user_s": 2828.945775,
+      "repeat": 3,
+      "wall_s": 2404.844684992917
+    },
+    {
+      "after": {
+        "load": [
+          1.39,
+          1.39,
+          1.49
+        ],
+        "mem_available_bytes": 243222917120,
+        "mem_free_bytes": 216102985728,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 113301368832
+      },
+      "arm": "B",
+      "before": {
+        "load": [
+          1.66,
+          1.68,
+          1.63
+        ],
+        "mem_available_bytes": 249087516672,
+        "mem_free_bytes": 221967441920,
+        "node": "b22-24.hpc.usc.edu",
+        "scratch_free_bytes": 119151009792
+      },
+      "compare": {
+        "byte_equal": true,
+        "dom": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9020,
+          "lines_stock": 9020,
+          "token_equal": true
+        },
+        "tbl": {
+          "byte_equal": true,
+          "classes": [],
+          "lines_replay": 9295,
+          "lines_stock": 9295,
+          "token_equal": true
+        }
+      },
+      "cpu_s": 747.2653179999998,
+      "cpu_source": "resource.RUSAGE_CHILDREN",
+      "cpu_sys_s": 166.00941799999964,
+      "cpu_user_s": 581.2559000000001,
+      "decision": "SHIP",
+      "n_batches": "111",
+      "phases": {
+        "cache_load_s": 3.5758084058761597,
+        "cache_store_s": 0.0655512330122292,
+        "coverage_read_s": 11.316580904647708,
+        "diff_s": 4.049249862786382,
+        "discovery_build_s": 4.987983380910009,
+        "discovery_s": 336.0005204146728,
+        "discovery_scan_s": 330.8386910604313,
+        "ic2_neighbor_build_s": 20.379120946396142,
+        "ic2_neighbor_s": 45.0975483530201,
+        "ic2_neighbor_scan_s": 23.143364309333265,
+        "ic2_random_20261031_build_s": 4.918898820877075,
+        "ic2_random_20261031_s": 8.270931303035468,
+        "ic2_random_20261031_scan_s": 3.1230446728877723,
+        "ic2_random_20261032_build_s": 4.934946961235255,
+        "ic2_random_20261032_s": 8.271451714914292,
+        "ic2_random_20261032_scan_s": 3.1139939059503376,
+        "ic2_random_20261033_build_s": 4.914164117071778,
+        "ic2_random_20261033_s": 8.269397908821702,
+        "ic2_random_20261033_scan_s": 3.132803115993738,
+        "merge_rescale_s": 2.930427520070225,
+        "parse_s": 41.30017083091661,
+        "prep_s": 46.380365694407374,
+        "probe_wall_s": 0.0,
+        "read_output_s": 0.021502222400158644,
+        "render_s": 0.0016733277589082718,
+        "replay_build_s": 7.792237811721861,
+        "replay_plan_s": 0.026038759853690863,
+        "replay_s": 26.770929800346494,
+        "replay_scan_s": 18.532540453597903,
+        "subref_build_s": 1.5472852173261344,
+        "tool_s": 433.45016602100804,
+        "total_s": 571.5817266521044,
+        "verify_build_s": 0.00029887352138757706,
+        "verify_s": 51.56666842568666,
+        "verify_scan_s": 51.56572850281373
+      },
+      "repeat": 3,
+      "returncode": 0,
+      "shape": {
+        "missing": [],
+        "seconds": {
+          "diff": 4.049249862786382,
+          "discovery": 336.0005204146728,
+          "neighbor": 45.0975483530201,
+          "parse": 41.30017083091661,
+          "random": 24.811780926771462,
+          "replay": 26.770929800346494,
+          "verify": 51.56666842568666
+        }
+      },
+      "shape_ok": true,
+      "shape_why": "discovery largest, diff smallest, pads present",
+      "wall_s": 572.3045659973286,
+      "why": "exact replay under pinned normalizer"
+    }
+  ],
+  "runner_sha256": "3805ba4fcd0fdf4d88d10268baa5e2a432b3e92ad5032f79d9c26e5718b31af8",
+  "scored": {
+    "S_g": 4.231789700624204,
+    "S_pred": 4.0832874372486945,
+    "break_even_n": 0.25991830789174863,
+    "completed": true,
+    "cpu_A_median_s": 3867.8055379999996,
+    "cpu_B_median_s": 741.7580209999996,
+    "cpu_ratio": 5.214376425327528,
+    "cv_A": 0.0026545766356274834,
+    "cv_B": 0.007907813107123475,
+    "cv_flag_A": false,
+    "cv_flag_B": false,
+    "fail_reasons": [],
+    "first_run_overhead": 1.320843729040477,
+    "flags": [],
+    "job_id": "13208152",
+    "outcome": "EXACT",
+    "prediction_error": 0.03509207070323105,
+    "proteome": "GCF_009433135.1",
+    "shape_ok": true,
+    "stock_median_s": 2405.430182803888,
+    "stock_walls_s": [
+      2416.2012665136717,
+      2405.430182803888,
+      2404.844684992917
+    ],
+    "stopped": null,
+    "tare_median_s": 568.4191212169826,
+    "tare_walls_s": [
+      568.4191212169826,
+      563.3470771959983,
+      572.3045659973286
+    ],
+    "task": 1
+  },
+  "scratch": "/tmp/headline_measured_13208152_1",
+  "scratch_free_bytes_start": 128515379200,
+  "scratch_fstype": "tmpfs",
+  "seed": 20261046,
+  "stock_38_1": {
+    "after": {
+      "load": [
+        1.82,
+        1.71,
+        2.08
+      ],
+      "mem_available_bytes": 249221836800,
+      "mem_free_bytes": 222098628608,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 119286681600
+    },
+    "arm": "A",
+    "before": {
+      "load": [
+        1.48,
+        8.0,
+        6.69
+      ],
+      "mem_available_bytes": 249099608064,
+      "mem_free_bytes": 221976399872,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 119290216448
+    },
+    "cpu_s": 3524.912407,
+    "cpu_source": "resource.RUSAGE_CHILDREN",
+    "cpu_sys_s": 962.7131989999999,
+    "cpu_user_s": 2562.199208,
+    "repeat": 0,
+    "wall_s": 2182.6223088512197
+  },
+  "stock_vs_stock_byte_equal": true,
+  "task": 1,
+  "test": "headline-measured",
+  "unpinned": {
+    "after": {
+      "load": [
+        1.22,
+        1.34,
+        1.47
+      ],
+      "mem_available_bytes": 249034891264,
+      "mem_free_bytes": 221914976256,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 119142408192
+    },
+    "before": {
+      "load": [
+        1.33,
+        1.37,
+        1.48
+      ],
+      "mem_available_bytes": 249054527488,
+      "mem_free_bytes": 221934612480,
+      "node": "b22-24.hpc.usc.edu",
+      "scratch_free_bytes": 119145992192
+    },
+    "byte_equal": false,
+    "cpu_s": 26.770903999999973,
+    "cpu_source": "resource.RUSAGE_CHILDREN",
+    "cpu_sys_s": 4.342792000000372,
+    "cpu_user_s": 22.4281119999996,
+    "differs": true,
+    "dom": {
+      "byte_equal": false,
+      "classes": [
+        "value-only"
+      ],
+      "extra_keys": 0,
+      "lines_replay": 9020,
+      "lines_stock": 9020,
+      "missing_keys": 0,
+      "token_equal": false
+    },
+    "n_batches": 111,
+    "n_records": 4659,
+    "pin": false,
+    "tbl": {
+      "byte_equal": false,
+      "classes": [
+        "value-only"
+      ],
+      "extra_keys": 0,
+      "lines_replay": 9295,
+      "lines_stock": 9295,
+      "missing_keys": 0,
+      "token_equal": false
+    },
+    "wall_s": 26.562396754976362
+  }
+}
