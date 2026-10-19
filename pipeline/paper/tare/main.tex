@@ -73,10 +73,12 @@ back entries it left out, and refuses, returning an ordinary full run, if any li
 output line except comment headers is byte\nobreakdash-identical to a full rerun; the assumption that makes this
 possible is tested on every update, not proved.
 
-On Pfam updates, \sys is \pending{X$\times$} faster than a full rerun (median of ten genomes on a dedicated server).
-Across 96{,}902 output lines from HMMER and Infernal replays, not one differed from a full run, and \sys correctly
+On Pfam updates, \sys is $4.24\times$ faster than a full rerun (median of nine genomes on a dedicated server, 95\%
+CI 4.17--4.68).
+% source: MEASURED pipeline/results/exact_replay/headline_carc.json headline_median=4.243202948728078 bootstrap_ci95.low=4.172363531540619 bootstrap_ci95.high=4.683831507831228 n_speedups=9; NOMINAL ci=95
+Across 715{,}704 output lines from HMMER and Infernal, not one differed from a full run, and \sys correctly
 refused DIAMOND, whose first filter reads bytes of the neighboring database entry, and BLAST+.
-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; DERIVED n_lines=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a+tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock+noclan+shipped_rows+summary_noclan_body_lines
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json total_lines=715704 p_up=4.185705269055262e-06
 \end{abstract}
 
 % =====================================================================
@@ -108,7 +110,8 @@ significant amount of computing resources''~\cite{li2021refseq}, and JGI states 
 \caption{\textbf{Reference databases change often, but mostly stay the same.} (a) Pfam grew from 21{,}979 to
 30{,}134 families over eight releases; blue segments show the net families each release added. (b) Comparing
 every model of Pfam 38.2 with 38.1 byte for byte: 86.6\% are identical. Only 13.4\% (new or edited) can produce
-new results, yet a conventional update recomputes 100\%. Blue marks what \sys reruns.}
+new results, yet a conventional update recomputes 100\%. Blue marks what \sys reruns. Panel (b) is the pair we time;
+\cref{fig:pairs} measures the six neighboring releases the same way.}
 % source: CITED pipeline/docs/MOTIVATION_EVIDENCE.md; TEXT fam_37_0=21979; TEXT fam_38_2=30134; HAS 38.1; HAS 38.2; MEASURED pipeline/results/reference_kill_r1.json z_new=30134 unchanged_strict=26082; DERIVED identical_pct=100*unchanged_strict/z_new; DERIVED changed=z_new-unchanged_strict; DERIVED changed_pct=100*changed/z_new; DERIVED full_pct=100*z_new/z_new
 \label{fig:churn}
 \end{figure*}
@@ -125,7 +128,7 @@ maintained by others; we cannot change their code. Third, an approximately corre
 pipelines that track provenance must reproduce a full run exactly, because ``pipeline differences can lead to
 annotation discrepancies''~\cite{chen2021img}.
 
-Existing tools fall short in two ways. General-purpose caches, such as build systems and workflow
+Existing tools fall short in two ways. General\nobreakdash-purpose caches, such as build systems and workflow
 managers~\cite{curtsinger2022riker,xie2026incr,shiptoski2023processcache,ditommaso2017nextflow,molder2021snakemake},
 remember whole commands keyed by the bytes they read. A new release changes the database file, so they rerun the
 search in full. Specialized incremental search tools such as iBLAST and iSeqSearch~\cite{dash2021iblast,yoo2025iseqsearch}
@@ -159,16 +162,16 @@ correctly refuses (DIAMOND and BLAST+). On Infernal, updates ran about twice as 
 a few long DNA sequences, \sys skips two of its sampled checks and relies on the remaining two (\cref{sec:eval-time}).
 Our contributions are:
 \begin{enumerate}
-  \item \textbf{Exact replay across releases with check-or-refuse.} Release-diff discovery and candidate-only, batched,
-  pinned replay that makes an unmodified program print byte\nobreakdash-identical output, guarded by a check and a
-  probe-based gate that refuse whenever the replay could differ (\cref{sec:design}).
+  \item \textbf{Exact replay across releases with check\nobreakdash-or\nobreakdash-refuse.} Release\nobreakdash-diff discovery and candidate\nobreakdash-only, batched,
+  pinned replay that makes an unmodified program print byte\nobreakdash-identical output, guarded by a
+  probe\nobreakdash-based gate and a check, either of which refuses whenever the replay could differ (\cref{sec:design}).
   \item \textbf{A root cause for a refusal.} Investigating a failure of our first check revealed why DIAMOND cannot be
   replayed exactly: its first filter reads bytes belonging to the neighboring database entry, so its results depend
   on database order (\cref{sec:eval-safety}).
-  \item \textbf{A pre-registered evaluation.} Exactness over 96{,}902 output lines, speedups with their run-to-run
-  variation, known-bad controls that must refuse, and comparisons with general-purpose caches and approximate
+  \item \textbf{A pre-registered evaluation.} Exactness over 715{,}704 output lines, speedups with their run-to-run
+  variation, known-bad controls that must refuse, and comparisons with general\nobreakdash-purpose caches and approximate
   incremental search, from experiments whose design and pass/fail
-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; DERIVED n_lines=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a+tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock+noclan+shipped_rows+summary_noclan_body_lines
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json total_lines=715704 p_up=4.185705269055262e-06
   rules were committed before they ran (\cref{sec:eval}).
 \end{enumerate}
 
@@ -307,8 +310,8 @@ full stock run.
 \centering
 \begin{tikzpicture}[
   font=\scriptsize,
-  stage/.style={draw=cTare!80!black, rounded corners=2pt, fill=cTare!7, minimum height=1.55cm, text width=2.45cm, align=center, inner sep=2pt},
-  gate/.style={draw=cGrey, rounded corners=2pt, fill=gray!10, minimum height=1.55cm, text width=2.45cm, align=center, inner sep=2pt},
+  stage/.style={draw=cTare!80!black, rounded corners=2pt, fill=cTare!7, minimum height=0.95cm, text width=2.45cm, align=center, inner sep=2pt},
+  gate/.style={draw=cGrey, rounded corners=2pt, fill=gray!10, minimum height=0.95cm, text width=2.45cm, align=center, inner sep=2pt},
   store/.style={draw=gray, fill=gray!8, cylinder, shape border rotate=90, aspect=0.18, minimum height=0.85cm, minimum width=1.55cm, align=center, inner sep=1pt},
   io/.style={draw, rounded corners=2pt, minimum height=0.7cm, text width=2.2cm, align=center, inner sep=2pt},
   arr/.style={-{Stealth[length=1.8mm]}, thick, cTare!80!black},
@@ -316,13 +319,13 @@ full stock run.
   lab/.style={font=\tiny, fill=white, inner sep=1pt},
   node distance=0.5cm and 0.62cm]
 % lanes
-\node[stage] (s1) at (0,0) {\textbf{1. Entry diff}\\[1pt] hash every entry of both releases;\\ split $R'$ into stable $S$ and changed $\Delta$};
-\node[stage, right=of s1] (s2) {\textbf{2. Contract inference}\\[1pt] run on halves of the reference; fit how each output column depends on it};
-\node[gate, right=of s2] (s3) {\textbf{3. Coupling gate}\\[1pt] pin $Z$ / no pin / rewrite side files / invalidate groups};
+\node[stage] (s1) at (0,0) {\textbf{1. Entry diff}\\ split $R'$ into stable $S$, changed $\Delta$};
+\node[stage, right=of s1] (s2) {\textbf{2. Contract inference}\\ probe halves, fit each column};
+\node[gate, right=of s2] (s3) {\textbf{3. Coupling gate}\\ pin, side files, groups};
 \node[io, fill=cBad!8, draw=cBad, right=0.9cm of s3] (refuse) {\textbf{Refuse}\\ run the stock program in full};
-\node[stage, below=1.25cm of s3] (s4) {\textbf{4. Discovery}\\[1pt] run all records against $\Delta$ only, pinned;\\ new hits $\rightarrow$ candidates $C_q$};
-\node[stage, left=of s4] (s5) {\textbf{5. Batched replay}\\[1pt] each batch of records vs.\ only its candidates, pinned; merge in order};
-\node[gate, left=of s5] (s6) {\textbf{6. Check or refuse}\\[1pt] add neighbor and random pads; audit a sample against stock};
+\node[stage, below=1.25cm of s3] (s4) {\textbf{4. Discovery}\\ all records vs.\ $\Delta$ $\rightarrow$ $C_q$};
+\node[stage, left=of s4] (s5) {\textbf{5. Batched replay}\\ batches vs.\ their candidates};
+\node[gate, left=of s5] (s6) {\textbf{6. Check or refuse}\\ pads, then a sampled audit};
 \node[io, fill=cTare!12, draw=cTare, left=0.75cm of s6] (ship) {\textbf{Ship}\\ output byte\nobreakdash-identical to a full run};
 \node[store, above=0.75cm of s1] (cache) {cache\\ $f(Q,R)$\\[-1pt]{\tiny (also read by 4, 5)}};
 \node[store, above=0.75cm of s2] (contract) {contract\\ (per argv)};
@@ -360,11 +363,13 @@ always receives the program's own output.}
 
 \subsection{Stage 1: Entry Diff}
 
-\sys splits both releases into entries and computes a strict hash of each entry's scoring content, ignoring
-metadata such as dates and comments. Entries of the new release whose hash appears in the old one are stable; all
+\sys splits both releases into entries and computes a \textit{strict hash} of each: SHA-256 over the entry's full
+text, including its name, accession, description, length, Pfam's curated thresholds (GA, TC, NC), and every model line,
+after dropping only lines tagged DATE (build date), BM and SM (the commands that built and calibrated the model), or COM
+(comments). A renamed or re\nobreakdash-thresholded family therefore counts as changed. Entries of the new release whose hash appears in the old one are stable; all
 others are changed. A cache keyed on the whole database file would miss on every entry after a release; a cache keyed
 on entry hashes keeps every stable entry, 86.6\% of Pfam for 38.1$\rightarrow$38.2.
-% source: MEASURED pipeline/results/reference_kill_r1.json unchanged_strict=26082 z_new=30134; HAS 38.1; HAS 38.2; DERIVED identical_pct=100*unchanged_strict/z_new
+% source: MEASURED pipeline/results/reference_kill_r1.json unchanged_strict=26082 z_new=30134; HAS 38.1; HAS 38.2; DERIVED identical_pct=100*unchanged_strict/z_new; NOMINAL sha=256
 
 \subsection{Stage 2: Contract Inference}
 \label{sec:contract}
@@ -481,7 +486,7 @@ P_{\text{miss}} \approx h + (1-h)(1-q)^3, \qquad h = \binom{n-k}{s}\Big/\binom{n
 % source: MEASURED pipeline/results/reference_diamond/dx3.json; LEN pad_seeds=3; NOMINAL one=1
 where $h$ is the chance that the protein sample contains no affected protein. The approximation treats each pad as a
 single detection event; when several affected proteins fall in the sample, each pad has more chances to detect, so the
-true miss probability is lower. The neighbor pad needs no such formula: it contains every candidate's file-order
+true miss probability is lower. The neighbor pad needs no such formula: it contains every candidate's file\nobreakdash-order
 neighbor by construction. The check is a test, not a proof. As a final safeguard, an audit reruns the stock program on a
 random sample of proteins, each included with probability 0.02 and at least 20 in total, and refuses if any line
 differs (R6).
@@ -514,15 +519,14 @@ groups, and reporting thresholds as data. The cache is a SQLite file keyed by en
 invocation wraps the normal command shown below. The cache is namespaced by a hash of the command line with the
 reference path removed, so changing any option, including the thread count, starts a new cache and a new contract.
 This is conservative: repeated stock runs were byte\nobreakdash-identical in every timed experiment. The
-namespace does not yet include a hash of the program binary, so upgrading a program in place requires clearing the
-cache; the record-side cache already hashes it, and we will extend this to the reference side.
+namespace also includes a SHA-256 of the program binary, so upgrading a program in place starts a new cache.
 \begin{lstlisting}
 tare run --strategy reference --pin '-Z {entry_count}' \
   --cache cache.sqlite -- hmmscan --cut_ga --noali --cpu 4 \
   --tblout {output:tblout} --domtblout {output:domtblout} \
   {reference} {input}
 \end{lstlisting}
-% source: MEASURED pipeline/results/exact_replay/e1scale.json cpu=4
+% source: MEASURED pipeline/results/exact_replay/e1scale.json cpu=4; NOMINAL sha=256
 
 % =====================================================================
 \section{Evaluation}
@@ -550,8 +554,8 @@ are indicative only.
 \label{sec:metrics}
 
 \textbf{Exactness.} A run is \dec{exact} if its body lines equal the stock run's as byte sequences; otherwise we count
-and classify the differing lines. Over $N$ compared lines with none differing, the one-sided 95\% Clopper--Pearson upper
-bound on the per-line error rate is
+and classify the differing lines. Over $N$ compared lines with none differing, the one\nobreakdash-sided 95\% Clopper--Pearson upper
+bound on the per\nobreakdash-line error rate is
 \begin{equation}
 p_{\text{up}} = 1 - 0.05^{1/N}.
 \label{eq:cp}
@@ -582,8 +586,12 @@ HMMER replay, 300 proteins & 1{,}079 & 0 & 534 of 534 \\
 % source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545 E1.check2_Rn_vs_S.tbl.differing_positions=534; DERIVED n=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a; NOMINAL zero=0; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300
 HMMER replay, 3 genomes & 51{,}406 & 0 & 26{,}094 of 26{,}127 \\
 % source: MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265 proteomes.0.Rn.vs_stock.tbl.differing_positions=9083 proteomes.1.Rn.vs_stock.tbl.differing_positions=8477 proteomes.2.Rn.vs_stock.tbl.differing_positions=8534; DERIVED n=tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines; DERIVED d=proteomes_0_Rn_vs_stock_tbl_differing_positions+proteomes_1_Rn_vs_stock_tbl_differing_positions+proteomes_2_Rn_vs_stock_tbl_differing_positions; LEN proteomes=3; NOMINAL zero=0
-HMMER tool, 2 genomes & 35{,}434 & 0 & not run \\
+HMMER tool, 2 genomes (laptop) & 35{,}434 & 0 & not run \\
 % source: MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; DERIVED n=proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock; LEN proteomes=2; NOMINAL zero=0
+HMMER tool, 9 genomes (server) & 155{,}577 & 0 & not run \\
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json rows.hmmer_tool_server_genomes=155577 n_server_exact_genomes=9; NOMINAL zero=0
+HMMER tool, 48 diverse genomes & 463{,}225 & 0 & not run \\
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json rows.hmmer_tool_diverse_genomes=463225 n_diverse_passed_genomes=48; NOMINAL zero=0
 Infernal replay, 10 genomes & 4{,}217 & 0 & no pin needed \\
 % source: MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; NOMINAL ten=10; NOMINAL zero=0
 Infernal tool, 1 family removed & 459 & 0 & no pin needed \\
@@ -591,21 +599,27 @@ Infernal tool, 1 family removed & 459 & 0 & no pin needed \\
 Infernal tool, 10 new genomes & 4{,}307 & 0 & no pin needed \\
 % source: MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; LEN order=10; NOMINAL zero=0
 \midrule
-Total & 96{,}902 & 0 & \\
+Total & 715{,}704 & 0 & \\
 \bottomrule
 \end{tabular}
 \end{table}
-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; DERIVED n_lines=E1_check1_R_vs_S_tbl_lines_a+E1_check1_R_vs_S_dom_lines_a+tblout_body_lines_total+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock+noclan+shipped_rows+summary_noclan_body_lines; NOMINAL zero=0
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json total_lines=715704 p_up=4.185705269055262e-06; NOMINAL zero=0
 
-\Cref{tab:exact} lists every exactness experiment. In total, \sys's HMMER outputs comprised 44{,}666 hit-table lines and 43{,}253 domain-table lines, and its Infernal outputs
-4{,}217 replay lines, 459 lines from the shipped family removal, and 4{,}307 lines from the shipped tool on ten
-further genomes (each Infernal set repeated under clan competition; 8{,}983 distinct lines); not one byte differed from the
-stock run ($D=0$ over $N = 96{,}902$ lines). By \cref{eq:cp}, a per-line error rate above $3.1\times10^{-5}$ would be unlikely to produce this result (one-sided 95\%). The
-experiments grew in scale: 300 proteins (534 hit lines), then three whole genomes (26{,}127 hit lines), then two more whole
-genomes through the shipped tool with batching and the check switched on. In every HMMER experiment, the same replay without the pin changed nearly every line: pooled over the three whole genomes,
-26{,}094 of 26{,}127 hit lines differed ($d = 99.87\%$, Wilson 95\% CI 99.82--99.91\%), and on 300 proteins all 534 did. The
-pin is therefore necessary and, with \cutga, sufficient. The server headline adds \pending{ten HMMER genomes}.
-% source: MEASURED pipeline/results/exact_replay/e1_e2.json E1.check1_R_vs_S.tbl.lines_a=534 E1.check1_R_vs_S.dom.lines_a=545 E1.check2_Rn_vs_S.tbl.differing_positions=534; MEASURED pipeline/results/exact_replay/e1scale.json tblout_body_lines_total=26127 proteomes.0.domtblout_body_lines=8812 proteomes.1.domtblout_body_lines=8202 proteomes.2.domtblout_body_lines=8265 proteomes.0.Rn.vs_stock.tbl.differing_positions=9083 proteomes.0.Rn.vs_stock.tbl.lines_stock=9094 proteomes.1.Rn.vs_stock.tbl.differing_positions=8477 proteomes.1.Rn.vs_stock.tbl.lines_stock=8488 proteomes.2.Rn.vs_stock.tbl.differing_positions=8534 proteomes.2.Rn.vs_stock.tbl.lines_stock=8545; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.e2.tbl.lines_stock=8714 proteomes.1.e2.tbl.lines_stock=9291 proteomes.0.e2.dom.lines_stock=8405 proteomes.1.e2.dom.lines_stock=9024; MEASURED pipeline/results/infernal/test_i.json rows.noclan=4217; MEASURED pipeline/docs/INFERNAL_PROTOCOL.md; TEXT shipped_rows=459; MEASURED pipeline/results/infernal/measured2.json summary.noclan.body_lines=4307; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300; MEASURED pipeline/results/exact_replay/e1scale.json proteomes.0.E2.vs_stock.tbl.differing_positions=0; DERIVED tbl_sum=E1_check1_R_vs_S_tbl_lines_a+tblout_body_lines_total+proteomes_0_e2_tbl_lines_stock+proteomes_1_e2_tbl_lines_stock; DERIVED dom_sum=E1_check1_R_vs_S_dom_lines_a+proteomes_0_domtblout_body_lines+proteomes_1_domtblout_body_lines+proteomes_2_domtblout_body_lines+proteomes_0_e2_dom_lines_stock+proteomes_1_e2_dom_lines_stock; DERIVED inf_sum=noclan+shipped_rows+summary_noclan_body_lines; DERIVED n_lines=tbl_sum+dom_sum+inf_sum; DERIVED pooled_diff=proteomes_0_Rn_vs_stock_tbl_differing_positions+proteomes_1_Rn_vs_stock_tbl_differing_positions+proteomes_2_Rn_vs_stock_tbl_differing_positions; DERIVED pooled_n=proteomes_0_Rn_vs_stock_tbl_lines_stock+proteomes_1_Rn_vs_stock_tbl_lines_stock+proteomes_2_Rn_vs_stock_tbl_lines_stock; DERIVED pooled_pct=100*pooled_diff/pooled_n; DERIVED wlo=100*wilson_lo(pooled_diff,pooled_n); DERIVED whi=100*wilson_hi(pooled_diff,pooled_n); DERIVED p_up=clopper_up(n_lines); NOMINAL ci=95
+Across the eight experiments in \cref{tab:exact}, not one of 715{,}704 lines differed from the stock run, so by
+\cref{eq:cp} a per\nobreakdash-line error rate above $4.2\times10^{-6}$ would be unlikely to produce this result (one\nobreakdash-sided 95\%).
+% source: MEASURED pipeline/results/exact_replay/exactness_totals.json total_lines=715704 p_up=4.185705269055262e-06; NOMINAL ci=95
+Without the pin, nearly every line differed: 26{,}094 of 26{,}127 hit lines on three genomes ($d = 99.87\%$, Wilson 95\%
+CI 99.82--99.91\%) and all 534 on 300 proteins. The pin is therefore necessary and, with \cutga, sufficient.
+% source: MEASURED pipeline/results/exact_replay/e1scale.json proteomes.0.Rn.vs_stock.tbl.differing_positions=9083 proteomes.0.Rn.vs_stock.tbl.lines_stock=9094 proteomes.1.Rn.vs_stock.tbl.differing_positions=8477 proteomes.1.Rn.vs_stock.tbl.lines_stock=8488 proteomes.2.Rn.vs_stock.tbl.differing_positions=8534 proteomes.2.Rn.vs_stock.tbl.lines_stock=8545; DERIVED pooled_diff=proteomes_0_Rn_vs_stock_tbl_differing_positions+proteomes_1_Rn_vs_stock_tbl_differing_positions+proteomes_2_Rn_vs_stock_tbl_differing_positions; DERIVED pooled_n=proteomes_0_Rn_vs_stock_tbl_lines_stock+proteomes_1_Rn_vs_stock_tbl_lines_stock+proteomes_2_Rn_vs_stock_tbl_lines_stock; DERIVED pooled_pct=100*pooled_diff/pooled_n; DERIVED wlo=100*wilson_lo(pooled_diff,pooled_n); DERIVED whi=100*wilson_hi(pooled_diff,pooled_n); MEASURED pipeline/results/exact_replay/e1_e2.json E1.check2_Rn_vs_S.tbl.differing_positions=534; LEN proteomes=3; NOMINAL ci=95; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300
+
+\textbf{Diverse genomes and needless refusals.} On 53 further genomes (14 archaea, 30 bacteria, 2 eukaryotes, and 7
+metagenome\nobreakdash-assembled genomes), \sys shipped 48 updates, all byte\nobreakdash-identical, and produced no unsafe result. It
+refused the other 5 although their replays matched stock: 3 because two domain\nobreakdash-table rows of one protein shared the key
+(protein, family, E-value), and 2 because a text column held some values that parse as numbers. The \textit{Drosophila}
+proteome, with 96 proteins of more than 20 domains, was one of the latter; three further eukaryotes did not finish within
+12 hours and one bacterial job crashed on a storage error, so neither is counted. The duplicate\nobreakdash-key rule also refused
+one of the ten server genomes below. These refusals cost speed, not correctness, and both are parser rules we can fix.
+% source: MEASURED pipeline/results/diverse_genomes/measured_score.json n_genomes=53 by_group.archaea.genomes=14 by_group.bacteria.genomes=30 by_group.eukaryote.genomes=2 by_group.mag.genomes=7 by_group.archaea.pass=13 by_group.bacteria.pass=28 by_group.eukaryote.pass=1 by_group.mag.pass=6 by_group.archaea.UNSAFE=0; DERIVED passed=by_group_archaea_pass+by_group_bacteria_pass+by_group_eukaryote_pass+by_group_mag_pass; DERIVED refused=n_genomes-passed; MEASURED pipeline/results/diverse_genomes/carc/measured_large_02_GCF_000001215.4.json genome.domain_stress.queries_with_more_than_20_domains=96; NOMINAL dup=3; NOMINAL mixed=2; NOMINAL twenty=20; NOMINAL hours=12; NOMINAL one=1; NOMINAL ten=10
 
 \textbf{Where exactness ends.} When HMMER reports hits by E-value threshold instead of \cutga, the replay matched on 300
 proteins but failed on 1{,}000, differing on 3 hit lines and 5 domain lines. Hits near the threshold move in or out of a
@@ -617,7 +631,7 @@ pass on 300 proteins is why we require a minimum number of lines before acceptin
 recommended command every numeric column fits identity, so no pin is needed. Replaying each genome's hits was
 byte\nobreakdash-identical on ten genomes (4{,}217 lines) with and without clan competition. In that command, overlapping hits of
 competing families are marked rather than deleted, so removing a family cannot reveal a hidden hit; removing the family
-\texttt{GlmZ\_SraJ} from one genome's reference was exact through the shipped tool (459 lines). With the non-default
+\texttt{GlmZ\_SraJ} from one genome's reference was exact through the shipped tool (459 lines). With the non\nobreakdash-default
 option \texttt{-{}-oskip}, which deletes marked overlaps, the same removal was refused, because fourteen overlap marks depended
 on families that had no remaining line. Through the shipped tool on ten further genomes (Rfam 15.0$\rightarrow$15.1, three alternating runs per arm), every one of the
 60 updates was byte\nobreakdash-identical to its paired stock run in both variants, with 4{,}307 body lines per variant against a
@@ -650,9 +664,9 @@ confidence interval for them; the server headline repeats each arm three times.
 \centering
 \includegraphics[width=\linewidth]{figures/model.pdf}
 \caption{\textbf{The cost model across release sizes.} Speedup $1/(a f_\Delta + c)$, with $a$ and $c$ measured on each
-program. (a) HMMER: the two measured Pfam 38.1$\rightarrow$38.2 updates (circles), projections for earlier releases from
-their published family counts (triangles; edits are not published, so these are optimistic), the bound $1/f_\Delta$
-(dashed), and the overhead ceiling $1/c$ (dotted). (b) Infernal, with its own larger overhead: the first version (cross)
+program. (a) HMMER, with $a$ and $c$ from the two laptop updates: those updates (filled circles), the server median of nine
+genomes with its 95\% CI (open diamond), the model at the measured $f_\Delta$ of the six other Pfam pairs (ticks), the
+bound $1/f_\Delta$ (dashed), and the overhead ceiling $1/c$ (dotted). (b) Infernal, with its own larger overhead: the first version (cross)
 and the shipped tool, medians of ten genomes with 95\% bootstrap CIs.}
 % source: MEASURED pipeline/results/infernal/measured2.json summary.noclan.c=0.4189125397333216; NOMINAL ci=95; NOMINAL one=1; LEN order=10; MEASURED pipeline/results/reference_kill_r1.json; HAS 38.1; HAS 38.2
 \label{fig:model}
@@ -661,18 +675,41 @@ and the shipped tool, medians of ten genomes with 95\% bootstrap CIs.}
 \textbf{The cost model.} With $f_\Delta = 0.134$, the discovery term predicts 87\,s and 93\,s on those genomes; discovery measured 91\,s and 100\,s, a
 relative error of 4.3\% and 7.1\%. The remaining costs, as a fraction of each stock run, average $c = 0.152$ (arithmetic mean of 0.153 and 0.151), so even a release that changed
 nothing could be at most $6.6\times$ faster with today's overheads (\cref{fig:model}); the check, audit, and parsing are
-therefore the next targets. Pfam 38.1$\rightarrow$38.2 added more families than any release in \cref{fig:churn}, so it
-is a conservative case: smaller releases project to $4.4$--$6.1\times$. The cache fill took 871\,s and 852\,s (single runs),
+therefore the next targets. The cache fill took 871\,s and 852\,s (single runs),
 1.2--1.3$\times$ a stock run, so \sys pays for itself from the first update (projected from these indicative times).
 % source: MEASURED pipeline/results/reference_kill_r1.json frac_new_unchanged_strict=0.8655339483639742; HAS 38.1; HAS 38.2; DERIVED fdelta=1-frac_new_unchanged_strict; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.stock.wall_s=648.9416185829905 proteomes.1.stock.wall_s=693.2145589159918 proteomes.0.e2.phases.discovery_s=91.15112141700229 proteomes.1.e2.phases.discovery_s=100.30562595801894 proteomes.0.e2.wall_s=190.69520458299667 proteomes.1.e2.wall_s=205.20091079198755 proteomes.0.fill.wall_s=871.4492247089511 proteomes.1.fill.wall_s=852.365418625006; DERIVED pred0=fdelta*proteomes_0_stock_wall_s; DERIVED pred1=fdelta*proteomes_1_stock_wall_s; DERIVED err0=abs(proteomes_0_e2_phases_discovery_s-pred0)/proteomes_0_e2_phases_discovery_s; DERIVED err1=abs(proteomes_1_e2_phases_discovery_s-pred1)/proteomes_1_e2_phases_discovery_s; DERIVED c0=(proteomes_0_e2_wall_s-proteomes_0_e2_phases_discovery_s)/proteomes_0_stock_wall_s; DERIVED c1=(proteomes_1_e2_wall_s-proteomes_1_e2_phases_discovery_s)/proteomes_1_stock_wall_s; DERIVED cbar=(c0+c1)/2; DERIVED ceil=1/cbar; DERIVED a0=proteomes_0_e2_phases_discovery_s/proteomes_0_stock_wall_s/fdelta; DERIVED a1=proteomes_1_e2_phases_discovery_s/proteomes_1_stock_wall_s/fdelta; DERIVED abar=(a0+a1)/2; DERIVED fill0=proteomes_0_fill_wall_s/proteomes_0_stock_wall_s; DERIVED fill1=proteomes_1_fill_wall_s/proteomes_1_stock_wall_s; MEASURED pipeline/docs/MOTIVATION_EVIDENCE.md; TEXT fam372=24076; TEXT fam371=23794; TEXT fam374=24736; TEXT fam373=24424; TEXT fam380=25545; TEXT fam381=27481; DERIVED s_hi=1/(abar*((fam372-fam371)/fam372)+cbar); DERIVED s_lo=1/(abar*((fam381-(fam380))/fam381)+cbar)
 
-\textbf{Server headline.} On a dedicated node, across \pending{ten} fresh genomes with three alternating stock and \sys runs each, the median of $S_g$ is
-\pending{X$\times$ (95\% bootstrap CI; geometric mean; range)}, the largest per-arm CV is \pending{}, and the maximum relative error
-of the pre-registered prediction is \pending{}.
+\textbf{Other releases.} Strict hashes of all seven consecutive Pfam pairs (\cref{fig:pairs}) put the changed fraction
+between 2.0\% and 93.1\%. At those measured values the model predicts $3.5$--$5.8\times$ for the four other pairs that
+changed at most 12.2\%, $1.8\times$ for 37.0$\rightarrow$37.1 (39.3\%), and $0.88\times$ for 37.4$\rightarrow$38.0, which rewrote
+93.1\% of Pfam's models. For a release like that, a full run is cheaper, and \sys does not yet decide this on its own.
+We have timed only the 38.1$\rightarrow$38.2 pair; a cache carried across several releases is not yet measured.
+% source: MEASURED pipeline/results/release_chain/pairs.json pairs.0.f_delta=0.3926620156341935 pairs.1.f_delta=0.041368998172453895 pairs.3.f_delta=0.020132600258732213 pairs.4.f_delta=0.9311802701115678 pairs.5.f_delta=0.1221935155198137 pairs.6.f_delta=0.13446605163602576; MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.stock.wall_s=648.9416185829905 proteomes.1.stock.wall_s=693.2145589159918 proteomes.0.e2.phases.discovery_s=91.15112141700229 proteomes.1.e2.phases.discovery_s=100.30562595801894 proteomes.0.e2.wall_s=190.69520458299667 proteomes.1.e2.wall_s=205.20091079198755; DERIVED fm=pairs_6_f_delta; DERIVED a0=proteomes_0_e2_phases_discovery_s/proteomes_0_stock_wall_s/fm; DERIVED a1=proteomes_1_e2_phases_discovery_s/proteomes_1_stock_wall_s/fm; DERIVED abar=(a0+a1)/2; DERIVED c0=(proteomes_0_e2_wall_s-proteomes_0_e2_phases_discovery_s)/proteomes_0_stock_wall_s; DERIVED c1=(proteomes_1_e2_wall_s-proteomes_1_e2_phases_discovery_s)/proteomes_1_stock_wall_s; DERIVED cbar=(c0+c1)/2; DERIVED s_small=1/(abar*pairs_3_f_delta+cbar); DERIVED s_mid=1/(abar*pairs_5_f_delta+cbar); DERIVED s_371=1/(abar*pairs_0_f_delta+cbar); DERIVED s_380=1/(abar*pairs_4_f_delta+cbar); DERIVED p_small=100*pairs_3_f_delta; DERIVED p_big=100*pairs_4_f_delta; DERIVED p_371=100*pairs_0_f_delta; DERIVED p_mid=100*pairs_5_f_delta; HAS 37.0; HAS 37.1; HAS 37.4; HAS 38.0; HAS 38.1; HAS 38.2; NOMINAL four=4
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/churn_pairs.pdf}
+\caption{\textbf{Edits, not just new families, decide how much an update reruns.} Strict hashes of seven consecutive
+Pfam releases. Gray is unchanged. Light blue is edited and dark blue is new; both are what \sys reruns. The label is
+$f_\Delta = (\text{edited} + \text{new}) / Z_{\text{new}}$. Pfam 37.4$\rightarrow$38.0 reruns 93.1\% of the new release: 22{,}965 edited and 822 new, with 1{,}758 unchanged, of 25{,}545.
+Pfam 38.1$\rightarrow$38.2 reruns 13.4\%: 1{,}378 edited and 2{,}674 new, with 26{,}082 unchanged, of 30{,}134, the same pair as
+\cref{fig:churn}. The smallest change is 37.3$\rightarrow$37.4, at 2.0\%.}
+% source: MEASURED pipeline/results/release_chain/pairs.json pairs.4.f_delta=0.9311802701115678 pairs.4.edited=22965 pairs.4.unchanged_strict=1758 pairs.4.z_new=25545 pairs.6.f_delta=0.13446605163602576 pairs.6.edited=1378 pairs.6.unchanged_strict=26082 pairs.6.z_new=30134 pairs.3.f_delta=0.020132600258732213; HAS 37.4; HAS 38.0; HAS 38.1; HAS 38.2; HAS 37.3; DERIVED big=100*pairs_4_f_delta; DERIVED timed=100*pairs_6_f_delta; DERIVED small=100*pairs_3_f_delta; DERIVED new4=pairs_4_z_new-pairs_4_unchanged_strict-pairs_4_edited; DERIVED new6=pairs_6_z_new-pairs_6_unchanged_strict-pairs_6_edited
+\label{fig:pairs}
+\end{figure*}
+
+\textbf{Server headline.} On a dedicated node, across nine fresh genomes with three alternating stock and \sys runs
+each, the median of $S_g$ is $4.24\times$ (95\% percentile bootstrap CI 4.17--4.68; geometric mean $4.39\times$; range
+4.13--5.07$\times$), and every update was byte\nobreakdash-identical. The pre-registered draw had ten genomes: one refused at
+cache fill (the duplicate\nobreakdash-key rule above) and is listed, not imputed, and three that hit the 4-hour job limit were rerun
+unchanged with 8 hours, a deviation we recorded before the rerun. The largest per\nobreakdash-arm CV was 22.1\% (flagged, not dropped,
+as pre-registered), and the pre-registered prediction of $4.08\times$ was within 19.4\% of every genome. Filling the cache
+took a median $1.32\times$ a stock run, so \sys pays for itself on the first update.
+% source: MEASURED pipeline/results/exact_replay/headline_carc.json headline_median=4.243202948728078 bootstrap_ci95.low=4.172363531540619 bootstrap_ci95.high=4.683831507831228 geometric_mean=4.391739465271877 n_speedups=9 n_files=10 S_pred=4.0832874372486945 max_prediction_error=0.1938641754229989 first_run_overhead_median=1.320843729040477 genomes.7.S_g=4.133848860006259 genomes.6.S_g=5.065259864107012; MEASURED pipeline/results/exact_replay/exactness_totals.json headline_max_cv=0.22130600233609538; DERIVED cv=100*headline_max_cv; DERIVED err=100*max_prediction_error; NOMINAL ci=95; NOMINAL three=3; NOMINAL four=4; NOMINAL eight=8; NOMINAL one=1
 
 \textbf{Infernal, with a reduced check.} On Infernal, \sys ships with two of its four safety layers skipped on most
 inputs, and readers should weigh its Infernal speedups accordingly. The speedup did not at first carry over: only 457 of
-Rfam 15.1's 4{,}227 families (10.8\%) changed, yet in the measured single-family removal the update took 666\,s against a
+Rfam 15.1's 4{,}227 families (10.8\%) changed, yet in the measured single\nobreakdash-family removal the update took 666\,s against a
 328\,s stock run, exact but $0.49\times$. A bacterial genome is one DNA sequence or a handful, so the audit's record
 sample and the random pads covered the entire genome, and an audit of a whole genome \textit{is} a stock run. We
 therefore budget the audit and the random-pad sample by residues: when a single record holds more than half of the
@@ -684,7 +721,7 @@ still refused.
 With this change, Infernal updates on ten fresh genomes ran a median $S_g = 2.16\times$ faster than stock without clan
 competition (95\% bootstrap CI 2.00--2.28; geometric mean $2.07\times$; range 1.41--2.37) and $2.07\times$ with it (CI
 1.97--2.23; geometric mean $2.10\times$; range 1.96--2.33), against cost-model predictions of $2.08\times$ and $2.05\times$.
-These are laptop timings with three alternating runs per arm: the largest per-arm CV was 29\% (flagged, not dropped, as
+These are laptop timings with three alternating runs per arm: the largest per\nobreakdash-arm CV was 29\% (flagged, not dropped, as
 pre-registered), and the largest per-genome prediction error was 32\%.
 % source: MEASURED pipeline/results/infernal/measured2.json summary.noclan.median_s_g=2.1638629318617406 summary.noclan.bootstrap_median.'p2.5'=2.000405819702528 summary.noclan.bootstrap_median.'p97.5'=2.276632938596895 summary.noclan.geometric_mean_s_g=2.0746823343348684 summary.noclan.range_s_g.0=1.4081305172933147 summary.noclan.range_s_g.1=2.3690598220291075 summary.clan.median_s_g=2.0749531244827883 summary.clan.bootstrap_median.'p2.5'=1.974595272065143 summary.clan.bootstrap_median.'p97.5'=2.228284169273086 summary.clan.geometric_mean_s_g=2.1002192657736756 summary.clan.range_s_g.0=1.9633307925565442 summary.clan.range_s_g.1=2.325347155958015 summary.noclan.predicted_s=2.0826583074972143 summary.clan.predicted_s=2.0463526744530274 summary.noclan.max_cv=0.2925797273922244 summary.noclan.max_relative_error=0.3238782798770758; LEN genomes=10; NOMINAL ci=95; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT repeats=3; DERIVED cv_pct=100*summary_noclan_max_cv; DERIVED err_pct=100*summary_noclan_max_relative_error
 
@@ -728,7 +765,7 @@ genomes are re-annotated across several releases; cutting the fill is the main r
 single byte. Its first filter examines a window of 16 bytes before and 32 after each short matching ``seed'' without
 stopping at the entry boundary (DIAMOND 2.2.5, \texttt{finger\_print.h}). A seed near the start of entry B therefore
 reads the end of whichever entry precedes B. Removing that neighbor from the database changes the window and can drop
-B's hit. The neighbor pad adds A back, the file-order neighbor of every candidate; B's line then reappears, the check
+B's hit. The neighbor pad adds A back, the file\nobreakdash-order neighbor of every candidate; B's line then reappears, the check
 sees a line change, and \sys refuses (R5). Each of the six lines DIAMOND lost was restored by exactly one such neighbor.}
 % source: MEASURED pipeline/results/reference_diamond/dx3_rootcause.md; TEXT before=16; TEXT after=32; MEASURED pipeline/results/reference_diamond/dx.json; HAS 2.2.5
 \label{fig:diamond}
@@ -740,17 +777,17 @@ and no run produced wrong output.}
 \label{tab:safety}
 \centering\small
 \setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.7cm}ll@{}}
+\begin{tabular}{@{}lll@{}}
 \toprule
 Control & Expected & Result \\
 \midrule
-DIAMOND known-bad (6 lines missing)   & refuse & \dec{refuse} \\
-DIAMOND regenerated (22 lines differ) & refuse & \dec{refuse} \\
-Injected 5\% candidate drop           & refuse & \dec{refuse} \\
-HMMER whole genome (correct)          & pass   & pass, exact \\
+DIAMOND, 6 lines lost & refuse & \dec{refuse} \\
+DIAMOND, 22 lines differ & refuse & \dec{refuse} \\
+5\% candidates dropped & refuse & \dec{refuse} \\
+HMMER genome (correct) & pass   & pass, exact \\
 % source: MEASURED pipeline/results/reference_diamond/dx3.json cases=22; MEASURED pipeline/results/reference_diamond/dx3_rootcause.json reproduction.row_missing=6; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT drop_pct=5
-Fresh DIAMOND sample                  & no wrong output & \dec{safe-refuse} \\
-BLAST+ boundary                       & refuse & \dec{refuse} (R1) \\
+DIAMOND, fresh sample & no wrong output & \dec{safe-refuse} \\
+BLAST+ boundary & refuse & \dec{refuse} (R1) \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -761,22 +798,39 @@ was byte\nobreakdash-identical, and our first check, which used only random pads
 an \dec{unsafe} result and invalidated that check. To find the cause, we added left-out entries back in halves until each
 missing line returned. Every one of the six lines was restored by exactly one entry: the candidate's neighbor in the
 database file. \Cref{fig:diamond} shows the mechanism in DIAMOND's source: its first filter reads bytes across the
-boundary into the preceding entry. DIAMOND's results therefore depend on the order of the database, and we found no
-option that makes a subset replay exact. A random pad contains one particular neighbor with probability 0.049, so three random pads miss it
+boundary into the preceding entry. DIAMOND's results therefore depend on the order of the database. A random pad contains one particular neighbor with probability 0.049, so three random pads miss it
 86\% of the time, which is why the first check passed.
 % source: MEASURED pipeline/results/reference_diamond/dx2.json classification.row_missing=6 classification.stock_rows=31377 candidate_entries=26797; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT q300=300; MEASURED pipeline/results/reference_diamond/dx3_rootcause.json; HAS 548951; DERIVED qn=candidate_entries/has_548951; DERIVED miss3=100*(1-qn)**3
 
+Rebuilding the full Swiss-Prot database in five other orders, and searching the same 2{,}000 queries, changed that
+table. Across the five orders, 173 lines disappeared, 148 appeared, and 1 line reported a different alignment, out of
+210{,}460 stock lines. Of the 322 changed rows, 321 had an alignment inside the filter's window of the entry boundary.
+We have not shown that a command-line option removes this dependence.
+% source: MEASURED pipeline/results/diamond_order/g1_measured.json query.n=2000 original_search.rows=210460 shuffles.0.comparison.missing=37 shuffles.1.comparison.missing=26 shuffles.2.comparison.missing=40 shuffles.3.comparison.missing=37 shuffles.4.comparison.missing=33 shuffles.0.comparison.extra=23 shuffles.1.comparison.extra=26 shuffles.2.comparison.extra=37 shuffles.3.comparison.extra=29 shuffles.4.comparison.extra=33 shuffles.0.comparison.value_changed=0 shuffles.1.comparison.value_changed=0 shuffles.2.comparison.value_changed=0 shuffles.3.comparison.value_changed=1 shuffles.4.comparison.value_changed=0 shuffles.0.changed_rows_alignment_near_boundary=60 shuffles.1.changed_rows_alignment_near_boundary=52 shuffles.2.changed_rows_alignment_near_boundary=76 shuffles.3.changed_rows_alignment_near_boundary=67 shuffles.4.changed_rows_alignment_near_boundary=66 shuffles.0.changed_row_count=60 shuffles.1.changed_row_count=52 shuffles.2.changed_row_count=77 shuffles.3.changed_row_count=67 shuffles.4.changed_row_count=66; DERIVED miss=shuffles_0_comparison_missing+shuffles_1_comparison_missing+shuffles_2_comparison_missing+shuffles_3_comparison_missing+shuffles_4_comparison_missing; DERIVED extra=shuffles_0_comparison_extra+shuffles_1_comparison_extra+shuffles_2_comparison_extra+shuffles_3_comparison_extra+shuffles_4_comparison_extra; DERIVED val=shuffles_0_comparison_value_changed+shuffles_1_comparison_value_changed+shuffles_2_comparison_value_changed+shuffles_3_comparison_value_changed+shuffles_4_comparison_value_changed; DERIVED near=shuffles_0_changed_rows_alignment_near_boundary+shuffles_1_changed_rows_alignment_near_boundary+shuffles_2_changed_rows_alignment_near_boundary+shuffles_3_changed_rows_alignment_near_boundary+shuffles_4_changed_rows_alignment_near_boundary; DERIVED changed=shuffles_0_changed_row_count+shuffles_1_changed_row_count+shuffles_2_changed_row_count+shuffles_3_changed_row_count+shuffles_4_changed_row_count
+
 \textbf{The shipped check.} Adding the neighbor pad closed this gap (\cref{tab:safety}). On a fresh sample of 2{,}000
 proteins, the replay differed from stock in 22 of 227{,}223 lines (20 missing, 2 extra), (0.0097\% of lines), and the check failed on all five pads: a true \dec{safe-refuse}. A second fresh DIAMOND sample was also refused. BLAST+ was refused earlier, at contract
-inference: one of 15{,}125 aligned lines has a percent identity (column 2) that matches no normalizer, so R1 fired. We have not
-diagnosed that line; it differs in identity, E-value, and score together, which suggests a different alignment was
-reported, plausibly because the search-space size changed. The correct HMMER case passed with no needless refusal.
+inference: one of 15{,}125 aligned lines has a percent identity (column 2) that matches no normalizer, so R1 fired. That line is a different alignment, measured below. The correct HMMER case passed with no needless refusal.
 % source: MEASURED pipeline/results/reference_diamond/dx3.json queries=2000 cases=22 classification.stock_rows=227223 classification.row_missing=20 classification.row_extra=2; DERIVED line_pct=100*cases/stock_rows; MEASURED pipeline/results/reference_boundary_blast.json; HAS 15125; HAS 15124; HAS 2.14.1
 
-\textbf{Limits.} For dependencies other than file-order neighbors, the random pads are weak: with 22 affected proteins of
+The mismatched BLAST line is a different alignment: the whole\nobreakdash-database row prints identity 33.333 and the half\nobreakdash-database row prints 21.875 for the same query and subject. Pinning \texttt{blastp} with \texttt{-dbsize} set to the letters in the new database makes both halves byte\nobreakdash-identical to the rows the whole database produced for those subjects, 7{,}498 lines and 7{,}627 lines, together the 15{,}125-line table. A pilot of that pin was byte\nobreakdash-identical to stock on 15{,}498 lines, and dropping 748 subjects removed 780 stock rows. The shipped command still refuses, because duplicate rows have no row-index column, so BLAST is not a program \sys ships.
+% source: MEASURED pipeline/results/blast_diagnosis/rootcause.json stock_vs_stock.n_lines=15125 full_probe_confirmation.parts.0.n_part_lines=7498 full_probe_confirmation.parts.1.n_part_lines=7627; HAS 33.333; HAS 21.875; DERIVED halves=full_probe_confirmation_parts_0_n_part_lines+full_probe_confirmation_parts_1_n_part_lines; MEASURED pipeline/results/blast_diagnosis/pin_pilot.json controls.positive.n_lines=15498 controls.negative.dropped=748 controls.negative.vs_stock.missing=780
+
+\textbf{Limits.} For dependencies other than file\nobreakdash-order neighbors, the random pads are weak: with 22 affected proteins of
 2{,}000, the shipped sample of 50 misses with probability 0.71 by \cref{eq:miss}. Our safety claim therefore rests on the
 neighbor pad, the in-situ check, and the audit, together with zero wrong outputs across all controls.
 % source: MEASURED pipeline/results/reference_diamond/dx3.json cases=22 queries=2000 q_one_neighbor=0.31252137200279034; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT sample_s=50; DERIVED h=comb(queries-cases,sample_s)/comb(queries,sample_s); DERIVED pmiss=h+(1-h)*(1-q_one_neighbor)**3
+
+We measured that weakness by injecting coupling into a stand-in of HMMER: 1{,}400 trials on 2{,}000 records and 2{,}500 models (\cref{fig:adversarial}). With no injected coupling, all 200 trials shipped. When the printed note depended on the whole searched file, a length sum or a hash of every model, the neighbor pad refused all 200 trials of each form. When a hit depended on one hidden model that is not a file\nobreakdash-order neighbor, or on a model 2, 5, or 20 positions away, the check missed the fault on 741 of 800 trials and refused 59. In the distance-2 cell with $k = 1$, the miss formula's detection is 0.008, below the Wilson 95\% interval's lower bound of 0.011. One real \texttt{hmmscan} run of each form, not part of these rates, shipped the clean case and refused the four coupled cases.
+% source: MEASURED pipeline/results/adversarial/measured.json n_records=2000 n_models=2500 cells.'C0/k1'.correct_ship=50 cells.'C0/k5'.correct_ship=50 cells.'C0/k22'.correct_ship=50 cells.'C0/k100'.correct_ship=50 cells.'C0/k1'.n_trials=50 cells.'C1/k1'.true_refusal=50 cells.'C1/k5'.true_refusal=50 cells.'C1/k22'.true_refusal=50 cells.'C1/k100'.true_refusal=50 cells.'C4/k1'.true_refusal=50 cells.'C4/k5'.true_refusal=50 cells.'C4/k22'.true_refusal=50 cells.'C4/k100'.true_refusal=50 cells.'C2/k1'.UNSAFE=49 cells.'C2/k5'.UNSAFE=48 cells.'C2/k22'.UNSAFE=43 cells.'C2/k100'.UNSAFE=38 cells.'C3/d2/k1'.UNSAFE=48 cells.'C3/d2/k5'.UNSAFE=49 cells.'C3/d2/k22'.UNSAFE=48 cells.'C3/d2/k100'.UNSAFE=44 cells.'C3/d5/k1'.UNSAFE=50 cells.'C3/d5/k5'.UNSAFE=49 cells.'C3/d5/k22'.UNSAFE=46 cells.'C3/d5/k100'.UNSAFE=41 cells.'C3/d20/k1'.UNSAFE=49 cells.'C3/d20/k5'.UNSAFE=49 cells.'C3/d20/k22'.UNSAFE=48 cells.'C3/d20/k100'.UNSAFE=42 cells.'C2/k1'.true_refusal=1 cells.'C2/k5'.true_refusal=2 cells.'C2/k22'.true_refusal=7 cells.'C2/k100'.true_refusal=12 cells.'C3/d2/k1'.true_refusal=2 cells.'C3/d2/k5'.true_refusal=1 cells.'C3/d2/k22'.true_refusal=2 cells.'C3/d2/k100'.true_refusal=6 cells.'C3/d5/k1'.true_refusal=0 cells.'C3/d5/k5'.true_refusal=1 cells.'C3/d5/k22'.true_refusal=4 cells.'C3/d5/k100'.true_refusal=9 cells.'C3/d20/k1'.true_refusal=1 cells.'C3/d20/k5'.true_refusal=1 cells.'C3/d20/k22'.true_refusal=2 cells.'C3/d20/k100'.true_refusal=8 cells.'C3/d2/k1'.distance=2 cells.'C3/d5/k1'.distance=5 cells.'C3/d20/k1'.distance=20 cells.'C3/d2/k1'.k=1 cells.'C3/d2/k1'.eq4_detection=0.008347474074074102 cells.'C3/d2/k1'.detection_wilson95.0=0.011038884327619805; LEN cells=28; DERIVED n_all=cells*cells_C0_k1_n_trials; DERIVED c0=cells_C0_k1_correct_ship+cells_C0_k5_correct_ship+cells_C0_k22_correct_ship+cells_C0_k100_correct_ship; DERIVED c1=cells_C1_k1_true_refusal+cells_C1_k5_true_refusal+cells_C1_k22_true_refusal+cells_C1_k100_true_refusal; DERIVED unsafe=cells_C2_k1_UNSAFE+cells_C2_k5_UNSAFE+cells_C2_k22_UNSAFE+cells_C2_k100_UNSAFE+cells_C3_d2_k1_UNSAFE+cells_C3_d2_k5_UNSAFE+cells_C3_d2_k22_UNSAFE+cells_C3_d2_k100_UNSAFE+cells_C3_d5_k1_UNSAFE+cells_C3_d5_k5_UNSAFE+cells_C3_d5_k22_UNSAFE+cells_C3_d5_k100_UNSAFE+cells_C3_d20_k1_UNSAFE+cells_C3_d20_k5_UNSAFE+cells_C3_d20_k22_UNSAFE+cells_C3_d20_k100_UNSAFE; DERIVED refused=cells_C2_k1_true_refusal+cells_C2_k5_true_refusal+cells_C2_k22_true_refusal+cells_C2_k100_true_refusal+cells_C3_d2_k1_true_refusal+cells_C3_d2_k5_true_refusal+cells_C3_d2_k22_true_refusal+cells_C3_d2_k100_true_refusal+cells_C3_d5_k1_true_refusal+cells_C3_d5_k5_true_refusal+cells_C3_d5_k22_true_refusal+cells_C3_d5_k100_true_refusal+cells_C3_d20_k1_true_refusal+cells_C3_d20_k5_true_refusal+cells_C3_d20_k22_true_refusal+cells_C3_d20_k100_true_refusal; DERIVED hidden_n=(cells-4-4-4)*cells_C0_k1_n_trials; NOMINAL ci=95; MEASURED pipeline/results/adversarial/confirm.json trials.0.seed=20261113 trials.1.seed=20261114 trials.2.seed=20261115 trials.3.seed=20261116 trials.4.seed=20261117
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/adversarial.pdf}
+\caption{\textbf{The random pads miss coupling that is not a file\nobreakdash-order neighbor.} Each point is the fraction of trials the check refused, with a Wilson 95\% interval. Dashed curves are the random-pad formula (\cref{eq:miss}) for the forms it describes. File-wide coupling sits at the top of the plot; hidden and distant coupling does not.}
+% source: MEASURED pipeline/results/adversarial/measured.json; NOMINAL ci=95
+\label{fig:adversarial}
+\end{figure}
 
 \textbf{A disclosed change.} During the measured run of the sampled check, we changed one rule so that a candidate of one
 protein that is also a neighbor of another counts as a candidate rather than a pad hit, after it caused a needless
@@ -791,15 +845,15 @@ because a missing pin is a refusal (R2).
 \label{sec:eval-baselines}
 
 \begin{table}[t]
-\caption{General-purpose caches on HMMER. ``New input'': behavior when the query or database changes. First-run overhead: arithmetic mean of $n=4$ paired time ratios against stock, with 95\% $t$-interval, in a uniform container
+\caption{General\nobreakdash-purpose caches on HMMER: what each does on new input, and its first\nobreakdash-run overhead against stock
+(mean, 95\% $t$-interval).}
 % source: NOMINAL ci=95; MEASURED pipeline/results/baseline_overhead.json modes.hmmscan.riker.n_valid=4 workload.n_proteins=500 workload.n_models=30134
-(500 proteins, all 30{,}134 families); \sys's is its HMMER cache fill on the laptop (two single runs). ProcessCache builds only for x86 processors, so it has no overhead number in the uniform ARM container; its rerun behavior was observed on the x86 server.}
 % source: MEASURED pipeline/results/baseline_overhead.json modes.hmmscan.riker.n_valid=4 workload.n_proteins=500 workload.n_models=30134
 \label{tab:baselines}
 \centering\small
 \begin{tabular}{@{}lcc@{}}
 \toprule
-System & New input & First-run overhead \\
+System & New input & First\nobreakdash-run overhead \\
 \midrule
 Riker~\cite{curtsinger2022riker}               & reruns & $1.62\times$ [1.53, 1.71] \\
 INCR~\cite{xie2026incr}                        & reruns & $2.24\times$ [2.06, 2.43] \\
@@ -810,12 +864,16 @@ ProcessCache~\cite{shiptoski2023processcache}  & reruns & not built (x86 only) \
 \end{tabular}
 \end{table}
 
-\textbf{General-purpose caches.} Riker, INCR, and ProcessCache all re-executed HMMER on a new genome, as their designs
+\textbf{General\nobreakdash-purpose caches.} Riker, INCR, and ProcessCache all re-executed HMMER on a new genome, as their designs
 require, because the input bytes changed (\cref{tab:baselines}). Riker skipped an identical rerun in the same container;
 INCR re-executed even an identical rerun, because it records the command's output file as a dependency that does not yet
-exist and rejects it once the file exists. Tracing also costs time on the first run ($n=4$ paired runs each): Riker took $1.62\times$ the stock time
-(95\% CI 1.53--1.71) and INCR $2.24\times$ (95\% CI 2.06--2.43); both intervals lie above the stock time. These systems are correct for what they are designed to do; a database release is simply outside it.
-% source: MEASURED pipeline/results/baseline_overhead.json modes.hmmscan.riker.n_valid=4 modes.hmmscan.riker.paired_ratio_vs_stock.0=1.5464069019112173 modes.hmmscan.riker.paired_ratio_vs_stock.1=1.6056444407150765 modes.hmmscan.riker.paired_ratio_vs_stock.2=1.659961327464189 modes.hmmscan.riker.paired_ratio_vs_stock.3=1.6651450473191905 modes.hmmscan.incr_default.paired_ratio_vs_stock.0=2.074144393774768 modes.hmmscan.incr_default.paired_ratio_vs_stock.1=2.283669082264801 modes.hmmscan.incr_default.paired_ratio_vs_stock.2=2.29949518146858 modes.hmmscan.incr_default.paired_ratio_vs_stock.3=2.322268000685936; DERIVED rmean=mean(modes_hmmscan_riker_paired_ratio_vs_stock_0,modes_hmmscan_riker_paired_ratio_vs_stock_1,modes_hmmscan_riker_paired_ratio_vs_stock_2,modes_hmmscan_riker_paired_ratio_vs_stock_3); DERIVED rsd=stdev(modes_hmmscan_riker_paired_ratio_vs_stock_0,modes_hmmscan_riker_paired_ratio_vs_stock_1,modes_hmmscan_riker_paired_ratio_vs_stock_2,modes_hmmscan_riker_paired_ratio_vs_stock_3); DERIVED rlo=rmean-t975_df3*rsd/sqrt(4); DERIVED rhi=rmean+t975_df3*rsd/sqrt(4); DERIVED imean=mean(modes_hmmscan_incr_default_paired_ratio_vs_stock_0,modes_hmmscan_incr_default_paired_ratio_vs_stock_1,modes_hmmscan_incr_default_paired_ratio_vs_stock_2,modes_hmmscan_incr_default_paired_ratio_vs_stock_3); DERIVED isd=stdev(modes_hmmscan_incr_default_paired_ratio_vs_stock_0,modes_hmmscan_incr_default_paired_ratio_vs_stock_1,modes_hmmscan_incr_default_paired_ratio_vs_stock_2,modes_hmmscan_incr_default_paired_ratio_vs_stock_3); DERIVED ilo=imean-t975_df3*isd/sqrt(4); DERIVED ihi=imean+t975_df3*isd/sqrt(4); NOMINAL ci=95
+exist and rejects it once the file exists. Tracing also costs time on the first run. We measured it as the arithmetic
+mean of $n=4$ paired time ratios against stock in one uniform container (500 proteins, all 30{,}134 families): Riker took $1.62\times$ the stock time
+(95\% CI 1.53--1.71) and INCR $2.24\times$ (95\% CI 2.06--2.43); both intervals lie above the stock time. \sys's first\nobreakdash-run cost in \cref{tab:baselines} is its HMMER cache fill on the laptop (two single runs; on the server, a
+median $1.32\times$). ProcessCache builds only for x86 processors, so it has no overhead number in that ARM container; its
+rerun behavior was observed on the x86 server. These systems are correct for what they are designed to do; a database
+release is simply outside it.
+% source: MEASURED pipeline/results/baseline_overhead.json modes.hmmscan.riker.n_valid=4 modes.hmmscan.riker.paired_ratio_vs_stock.0=1.5464069019112173 modes.hmmscan.riker.paired_ratio_vs_stock.1=1.6056444407150765 modes.hmmscan.riker.paired_ratio_vs_stock.2=1.659961327464189 modes.hmmscan.riker.paired_ratio_vs_stock.3=1.6651450473191905 modes.hmmscan.incr_default.paired_ratio_vs_stock.0=2.074144393774768 modes.hmmscan.incr_default.paired_ratio_vs_stock.1=2.283669082264801 modes.hmmscan.incr_default.paired_ratio_vs_stock.2=2.29949518146858 modes.hmmscan.incr_default.paired_ratio_vs_stock.3=2.322268000685936; DERIVED rmean=mean(modes_hmmscan_riker_paired_ratio_vs_stock_0,modes_hmmscan_riker_paired_ratio_vs_stock_1,modes_hmmscan_riker_paired_ratio_vs_stock_2,modes_hmmscan_riker_paired_ratio_vs_stock_3); DERIVED rsd=stdev(modes_hmmscan_riker_paired_ratio_vs_stock_0,modes_hmmscan_riker_paired_ratio_vs_stock_1,modes_hmmscan_riker_paired_ratio_vs_stock_2,modes_hmmscan_riker_paired_ratio_vs_stock_3); DERIVED rlo=rmean-t975_df3*rsd/sqrt(4); DERIVED rhi=rmean+t975_df3*rsd/sqrt(4); DERIVED imean=mean(modes_hmmscan_incr_default_paired_ratio_vs_stock_0,modes_hmmscan_incr_default_paired_ratio_vs_stock_1,modes_hmmscan_incr_default_paired_ratio_vs_stock_2,modes_hmmscan_incr_default_paired_ratio_vs_stock_3); DERIVED isd=stdev(modes_hmmscan_incr_default_paired_ratio_vs_stock_0,modes_hmmscan_incr_default_paired_ratio_vs_stock_1,modes_hmmscan_incr_default_paired_ratio_vs_stock_2,modes_hmmscan_incr_default_paired_ratio_vs_stock_3); DERIVED ilo=imean-t975_df3*isd/sqrt(4); DERIVED ihi=imean+t975_df3*isd/sqrt(4); NOMINAL ci=95; MEASURED pipeline/results/baseline_overhead.json workload.n_proteins=500 workload.n_models=30134; MEASURED pipeline/results/exact_replay/headline_carc.json first_run_overhead_median=1.320843729040477
 
 \begin{figure}[t]
 \centering
@@ -845,11 +903,9 @@ refuses this program and returns the full run, so it gives no speedup here; wher
 \textbf{Threats to validity.} \textit{Generality:} the two programs \sys replays exactly, HMMER and Infernal, come from one
 research group and share code, so they may share the property that makes replay work; the two refused programs come from
 other groups. We therefore claim that the method works for programs whose coupling lies in settings they expose, and that
-it detects when coupling lies elsewhere; we do not claim it works for most search programs, and an exactly replayed
-program from an unrelated codebase is the most important missing experiment. \textit{Release choice:} we
-measure one release pair per database; smaller releases should be faster, as the model projects, but we have not measured
-them. \textit{Timing:} laptop numbers are indicative runs on a shared machine; the headline is measured on a dedicated
-node with alternating runs. \textit{Check strength:} the random pads are weak (\cref{sec:eval-safety}).
+it detects when coupling lies elsewhere; we do not claim it works for most search programs. BLAST's size pin reproduces a whole\nobreakdash-database table and the shipped gate still refuses it, so BLAST is not a second shipped program, and an exactly replayed program from an unrelated codebase remains open. \textit{Release choice:} \cref{fig:pairs} measures seven consecutive Pfam pairs. The fraction that must be rerun ranges from 2.0\% (37.3$\rightarrow$37.4) to 93.1\% (37.4$\rightarrow$38.0). We have timed only 38.1$\rightarrow$38.2, where that fraction is 13.4\%. \textit{Timing:} laptop numbers are indicative runs on a shared machine; the headline is measured on a dedicated
+node with alternating runs. \textit{Check strength:} random pads miss hidden coupling, and on that grid most trials shipped a wrong replay (\cref{sec:eval-safety}).
+% source: MEASURED pipeline/results/release_chain/pairs.json pairs.3.f_delta=0.020132600258732213 pairs.4.f_delta=0.9311802701115678 pairs.6.f_delta=0.13446605163602576; HAS 37.3; HAS 37.4; HAS 38.0; HAS 38.1; HAS 38.2; DERIVED small=100*pairs_3_f_delta; DERIVED big=100*pairs_4_f_delta; DERIVED timed=100*pairs_6_f_delta
 
 \textbf{Anticipated objections.} \textit{``An expert could write this in a few lines of shell: run the changed families
 with \texttt{-Z}, then rerun each protein's candidates.''} For HMMER with \cutga, yes, and that script is \sys without its
@@ -860,6 +916,9 @@ same script silently drops hits, which is the case \sys refuses. \textit{``Why n
 Rescaling reproduces the program's arithmetic but not its rounding, and it must be written for each program and column;
 pinning lets the program print its own numbers.
 % source: MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.stock.wall_s=648.9416185829905 proteomes.0.e2.wall_s=190.69520458299667 proteomes.0.e2.phases.verify_s=14.613079834030941 proteomes.0.e2.phases.ic2_neighbor_s=26.63462533301208 proteomes.0.e2.phases.ic2_random_20261031_s=2.6919128749868833 proteomes.0.e2.phases.ic2_random_20261032_s=2.5677419590065256 proteomes.0.e2.phases.ic2_random_20261033_s=2.719902084034402; DERIVED guard=ic2_neighbor_s+ic2_random_20261031_s+ic2_random_20261032_s+ic2_random_20261033_s+verify_s; DERIVED guard_pct=100*guard/proteomes_0_stock_wall_s; DERIVED s_script=proteomes_0_stock_wall_s/(proteomes_0_e2_wall_s-guard); DERIVED s_tare=proteomes_0_stock_wall_s/proteomes_0_e2_wall_s
+
+Rescaling the cached E-values on the five HMMER proteomes in the exactness experiments matched 25{,}597 of 44{,}132 hit lines (58.0\%, Wilson 95\% CI 57.5--58.5\%). No line was missing or extra. The mismatches are value-only: 10{,}926 full-sequence E-values and 10{,}878 best-domain E-values. Across the three cutoffs we checked, 0, 2, and 5 lines would flip. We then ran the expert script itself. On the two HMMER genomes in \cref{tab:exact} its tables were byte\nobreakdash-identical: 8{,}714 and 9{,}291 hit lines, and 8{,}405 and 9{,}024 domain lines. On the 2{,}000-protein DIAMOND sample it silently dropped 68 of 227{,}223 stock lines, added 2, and changed 1 alignment. The speedup estimated by dropping the check and the audit remains an estimate from those stages; these runs were not timed on the server.
+% source: MEASURED pipeline/results/baselines_exact/rescale.json pooled.tbl.stock_lines=44132 pooled.tbl.byte_identical=25597 pooled.tbl.byte_identical_over_stock=0.5800099700897308 pooled.tbl.wilson95.low=0.5753984254071175 pooled.tbl.wilson95.high=0.5846075870893007 pooled.tbl.missing=0 pooled.tbl.extra=0 pooled.tbl.value_only_by_column.full_sequence_E=10926 pooled.tbl.value_only_by_column.best_domain_E=10878 pooled.tbl.cutoffs_full_sequence_E.'1e-03'.flip=0 pooled.tbl.cutoffs_full_sequence_E.'1e-05'.flip=2 pooled.tbl.cutoffs_full_sequence_E.'1e-10'.flip=5; NOMINAL ci=95; DERIVED ident_pct=100*pooled_tbl_byte_identical/pooled_tbl_stock_lines; DERIVED wlo=100*pooled_tbl_wilson95_low; DERIVED whi=100*pooled_tbl_wilson95_high; MEASURED pipeline/results/baselines_exact/expert_laptop.json proteomes.0.tbl.stock_lines=8714 proteomes.1.tbl.stock_lines=9291 proteomes.0.dom.stock_lines=8405 proteomes.1.dom.stock_lines=9024 proteomes.0.tbl.byte_identical=8714 proteomes.1.tbl.byte_identical=9291 proteomes.0.dom.byte_identical=8405 proteomes.1.dom.byte_identical=9024; MEASURED pipeline/results/baselines_exact/expert_diamond.json queries=2000 classification.stock_lines=227223 classification.missing=68 classification.extra=2 classification.different_row=1
 \textit{``InterProScan already reuses precomputed results.''} Its lookup is keyed by the protein sequence for
 a fixed database version; it answers ``has this protein been seen?'' rather than ``what changed in the database?''
 \textit{``Use a faster or GPU search program.''} That is complementary: it shrinks $T_{\text{stock}}$, and \sys's savings
@@ -878,7 +937,8 @@ that step is not covered by our HMMER results.
 \begin{table*}[t]
 \caption{Prior work on the problem of updating annotations after a database release. ``Unmodified'': runs the program as
 is. ``Release-aware'': reuses work when the database changes. ``Identical'': output equals a full run byte for byte.
-``Per-tool code'': requires code or formulas written for each program.}
+``Per-tool code'': requires code or formulas written for each program. $^\dagger$\sys's pins, side files, groups, and
+reporting thresholds are declared as data on the command line; its core has no program-specific code.}
 \label{tab:prior}
 \centering\footnotesize
 \setlength{\tabcolsep}{3.5pt}
@@ -895,12 +955,13 @@ GeStore~\cite{pedersen2014gestore} & plugin & yes & yes & rescaled & yes & admin
 Precomputed lookups~\cite{jones2014interproscan,cantalapiedra2021eggnog} & query sequence & yes & no & yes & no & keyed by query, fixed release \\
 KumQuat~\cite{shen2022kumquat} & input stream & yes & no & yes & no & no database argument \\
 IVM, self-adjusting~\cite{blakeley1986views,acar2003selective} & operator & no & yes & yes & n/a & computation must be rewritten \\
-\textbf{\sys} & \textbf{record $\times$ entry} & \textbf{yes} & \textbf{yes} & \textbf{yes} & \textbf{no} & \textbf{refuses programs with hidden coupling} \\
+mpiBLAST~\cite{darling2003mpiblast} & database segment & yes & no & yes & yes & parallel search of one release \\
+\textbf{\sys} & \textbf{record $\times$ entry} & \textbf{yes} & \textbf{yes} & \textbf{yes} & \textbf{no}$^\dagger$ & \textbf{refuses programs with hidden coupling} \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-\textbf{General-purpose incremental execution.} Build systems and workflow managers avoid repeated work by keying a command
+\textbf{General\nobreakdash-purpose incremental execution.} Build systems and workflow managers avoid repeated work by keying a command
 on the bytes it reads (\cref{tab:prior}). Riker traces system calls to rerun only commands whose inputs
 changed~\cite{curtsinger2022riker}; ProcessCache caches process executions~\cite{shiptoski2023processcache}; INCR memoizes
 shell command effects and can split inputs into annotated chunks~\cite{xie2026incr}; Nextflow, Snakemake, and Cromwell hash
@@ -913,7 +974,7 @@ derived for BLAST~\cite{dash2021iblast}. iSeqSearch applies that correction to o
 including DIAMOND~\cite{yoo2025iseqsearch}. GeStore runs unmodified BLAST and HMMER through administrator-written plugins
 that rewrite inputs and merge outputs~\cite{pedersen2014gestore}. MMseqs2 supports incremental
 clustering~\cite{steinegger2017mmseqs2}. mpiBLAST splits a database across machines and fixes the global database
-size so that every piece prints the E-values of a whole-database search~\cite{darling2003mpiblast}; \sys borrows that
+size so that every piece prints the E-values of a whole\nobreakdash-database search~\cite{darling2003mpiblast}; \sys borrows that
 pinning and contributes what surrounds it: deciding which entries to rerun after a release, rerunning each record only on
 its candidates, and refusing when a check finds coupling the pin does not cover. InterProScan and eggNOG-mapper reuse precomputed matches keyed by protein
 sequence~\cite{jones2014interproscan,cantalapiedra2021eggnog}. These approaches are hand-built for one program, approximate
@@ -937,10 +998,8 @@ Reference databases change every few weeks to months, and the programs that sear
 showed that for programs whose cross-entry coupling lies in settings they already expose, this is unnecessary: pinning
 those settings lets an unmodified program reprint, byte for byte, the output of a full run while searching only what
 changed, and a check that adds back left-out entries catches coupling the pin does not cover, as it did for DIAMOND,
-whose filter reads neighboring entries. Every replayed line across HMMER and Infernal was identical to a full rerun, a
-Pfam update ran \pending{X$\times$} faster than a full rerun on a dedicated server, and an Infernal update ran about twice
-as fast with a reduced check. The next steps are an exactly replayed program from an unrelated codebase, a cheaper cache
-fill for Infernal, and a deployment inside InterProScan.
+whose filter reads neighboring entries. The same check misses most couplings that are not file\nobreakdash-order neighbors. Every replayed line across HMMER and Infernal in \cref{tab:exact} was identical to a full rerun. Across seven Pfam releases the fraction that must be rerun ranges from 2.0\% to 93.1\%; we have timed the 13.4\% pair, and that update ran $4.24\times$ faster than a full rerun on a dedicated server (median of nine genomes). An Infernal update ran about twice as fast with a reduced check. The next steps are the other releases in \cref{fig:pairs}, the diverse-genome draw once it meets its line floor, an unrelated program, a cheaper cache fill for Infernal, and a deployment inside InterProScan.
+% source: MEASURED pipeline/results/release_chain/pairs.json pairs.3.f_delta=0.020132600258732213 pairs.4.f_delta=0.9311802701115678 pairs.6.f_delta=0.13446605163602576; DERIVED small=100*pairs_3_f_delta; DERIVED big=100*pairs_4_f_delta; DERIVED timed=100*pairs_6_f_delta; MEASURED pipeline/results/exact_replay/headline_carc.json headline_median=4.243202948728078 n_speedups=9
 
 \section*{Availability}
 An anonymized artifact accompanies this submission. It contains \sys, every pre-registration and addendum, the result files

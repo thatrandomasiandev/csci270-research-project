@@ -1,0 +1,17 @@
+{
+  "rows": {
+    "hmmer_replay_300": 1079,
+    "hmmer_replay_3_genomes": 51406,
+    "hmmer_tool_2_laptop": 35434,
+    "hmmer_tool_server_genomes": 155577,
+    "hmmer_tool_diverse_genomes": 463225,
+    "infernal_replay_10": 4217,
+    "infernal_tool_family_removal": 459,
+    "infernal_tool_10_genomes": 4307
+  },
+  "n_server_exact_genomes": 9,
+  "n_diverse_passed_genomes": 48,
+  "total_lines": 715704,
+  "p_up": 4.185705269055262e-06,
+  "headline_max_cv": 0.22130600233609538
+}

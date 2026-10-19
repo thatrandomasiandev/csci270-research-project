@@ -177,28 +177,36 @@ def fig_model():
         pts.append(stock / wall)
     a = sum(a_vals) / len(a_vals)
     c = sum(c_vals) / len(c_vals)
-    fs = [0.004 + i * 0.001 for i in range(0, 300)]
+    fs = [0.004 + i * 0.001 for i in range(0, 997)]
 
-    fig, (ax, bx) = plt.subplots(1, 2, figsize=(ONE, 2.05), sharey=True, gridspec_kw={"width_ratios": [1.5, 1]})
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(ONE, 2.45), sharey=True, gridspec_kw={"width_ratios": [1.6, 1]})
     ax.plot([100 * f for f in fs], [1 / f for f in fs], ls="--", color=C["n3"], lw=0.8)
-    ax.text(22.5, 4.75, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
+    ax.text(30, 3.6, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
     ax.plot([100 * f for f in fs], [1 / (a * f + c) for f in fs], color=C["tare"], lw=1.4)
     ax.axhline(1 / c, color=C["tare"], lw=0.5, ls=":")
     ax.text(1.0, 1 / c + 0.25, f"1/c = {1 / c:.1f}$\\times$", ha="left", fontsize=FS, color=C["tare"])
     ax.axhline(1, color=C["stock"], lw=0.6)
     ax.scatter([100 * f_meas] * len(pts), pts, color=C["tare"], edgecolor=C["ink"], lw=0.4, zorder=5, s=16,
-               label="measured, 38.1$\\rightarrow$38.2")
-    proj = [282 / 24076, 312 / 24736, 809 / 25545, 1936 / 27481]
-    ax.plot([100 * f for f in proj], [1 / (a * f + c) for f in proj], ls="", marker="^", ms=3.5,
-            color="white", mec=C["tare"], mew=0.7, label="projected, earlier releases")
-    ax.set_xlim(0, 30)
+               label="laptop, 38.1$\\rightarrow$38.2")
+    pairs = load("release_chain/pairs.json")["pairs"]
+    other = [p for p in pairs if not (p["old_release"] == "38.1" and p["new_release"] == "38.2")]
+    ax.plot([100 * p["f_delta"] for p in other], [1 / (a * p["f_delta"] + c) for p in other], ls="", marker="|",
+            ms=9, mew=1.4, color=C["stock"], label="model at measured $f_\\Delta$, other pairs")
+    for p in other:
+        if p["f_delta"] > 0.3:
+            ax.annotate(f"{p['old_release']}$\\rightarrow${p['new_release']}", (100 * p["f_delta"], 1 / (a * p["f_delta"] + c)),
+                        xytext=(-4, 10), textcoords="offset points", ha="right" if p["f_delta"] > 0.8 else "left", fontsize=FS)
+    head = load("exact_replay/headline_carc.json")
+    ci = head["bootstrap_ci95"]
+    ax.errorbar([100 * f_meas], [head["headline_median"]], yerr=[[head["headline_median"] - ci["low"]], [ci["high"] - head["headline_median"]]],
+                fmt="D", ms=3.6, color=C["tare"], mfc="white", mec=C["tare"], mew=0.9, capsize=1.5, lw=0.7, zorder=6,
+                label="server, median of 9 (95% CI)")
+    ax.set_xlim(0, 100)
     ax.set_ylim(0, 8)
     ax.set_xlabel("changed fraction $f_\\Delta$ (%)")
     ax.set_ylabel("speedup over a full rerun")
     ax.set_title(f"(a) HMMER ($a$={a:.2f}, $c$={c:.3f})", loc="left")
     ax.grid()
-    ax.legend(loc="lower left", frameon=False)
-
     m2 = load("infernal/measured2.json")["summary"]
     ai, ci = m2["noclan"]["a"], m2["noclan"]["c"]
     fi = [0.002 + i * 0.001 for i in range(0, 200)]
@@ -218,7 +226,9 @@ def fig_model():
     bx.set_title(f"(b) Infernal ($c$={ci:.2f})", loc="left")
     bx.grid()
     bx.legend(loc="upper right", frameon=False, handletextpad=0.3, borderaxespad=0.2)
-    fig.tight_layout(w_pad=0.8)
+    fig.tight_layout(w_pad=0.8, rect=(0, 0, 1, 0.88))
+    h, l = ax.get_legend_handles_labels()
+    fig.legend(h, l, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.0), handletextpad=0.4, columnspacing=1.0)
     save(fig, "model")
 
 
