@@ -1040,3 +1040,16 @@ The reference-strategy namespace (`argv_namespace` in `acts/reference_cache.py`)
 The namespace now also hashes the SHA-256 of `shutil.which(argv[0])`. That is the digest the record cache already keys as its `binary` component (`acts/cache.py`). When `argv[0]` does not resolve to a file, the fixed marker `unresolved` is hashed instead, so the namespace stays deterministic. A changed binary is then not detected. `decision.txt` has a `program_binary:` line. It gives the resolved path and digest, or says the marker was used.
 
 An identical binary gives the same namespace on every run. A cache filled before this change misses once and refills. This changes no measured result: the measured runs used fresh caches, so no measured run read a row or contract under the old key. `tests/test_reference_namespace_binary.py` checks that the same argv with different binary bytes gives a different namespace, that the same binary gives the same one, and that the unresolved marker is deterministic and reported.
+
+## Addendum 2026-10-19 — default audit becomes the bounded audit
+
+Decision (Josh, 2026-10-19) after the W10 grid (`results/adversarial/measured_v2.json`): the CLI
+default for `run --strategy reference` is now the bounded audit, `s = ceil(ln(0.05)/ln(1 - 0.01)) = 299`
+records (capped at the record count), so that hidden coupling reaching at least 1% of records ships
+with probability at most 0.05. `--no-audit-bound` restores the earlier Bernoulli audit (p = 0.02,
+floor 20). First-use verification (`--first-use`, K = 2) stays opt-in: with one cache per genome it
+would make a genome's first two updates full stock comparisons.
+
+Every measured result committed before this addendum ran with the Bernoulli audit and keeps its
+recorded commit. The headline (array 13208152 / 13227819, `acts_commit = d125151`) is not changed by
+this; a re-timing under the new default is a separate, pre-registered run (W13).

@@ -332,11 +332,13 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument("--audit-seed", type=int, default=20260927, dest="audit_seed")
     rn.add_argument(
         "--audit-bound",
-        action="store_true",
+        action=argparse.BooleanOptionalAction,
+        default=True,
         help=(
             "size the audit sample so that a fraction audit-k-fraction of records "
             "is missed with probability at most audit-epsilon: "
-            "s = ceil(ln(epsilon) / ln(1 - fraction))"
+            "s = ceil(ln(epsilon) / ln(1 - fraction)). On by default since 2026-10-19; "
+            "--no-audit-bound restores the Bernoulli p=0.02 audit with a floor of 20"
         ),
     )
     rn.add_argument("--audit-epsilon", type=float, default=0.05, dest="audit_epsilon")
