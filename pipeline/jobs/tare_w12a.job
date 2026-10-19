@@ -1,0 +1,98 @@
+#!/bin/bash
+# W12a timing. Exclusive EPYC 7542, r=3 alternating stock / TARE / expert.
+# Job name on the command line must start with tare-w12a.
+# SBATCH opens the log path before the script runs; the log directory
+# must already exist. Scratch is /scratch1, never node /tmp (tmpfs is
+# charged to the job memory).
+#SBATCH --job-name=tare-w12a
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=0
+#SBATCH --time=18:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w12a/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w12a/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/tare-w12a/checkout}"
+OLD_HMM="${ACTS_PFAM_OLD:-/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/data/pfam38.1/Pfam-A.hmm.gz}"
+NEW_HMM="${ACTS_PFAM_NEW:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz}"
+GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
+STAGE="${ACTS_STAGE:-pilot}"
+SCRATCH="/scratch1/${USER}/tare-w12a/${SLURM_JOB_ID}"
+HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+TARBALL="/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz"
+
+if [[ "${STAGE}" == "pilot" ]]; then
+  OUT_NAME="server_pilot.json"
+elif [[ "${STAGE}" == "measured" ]]; then
+  OUT_NAME="server.json"
+else
+  echo "STOP: stage ${STAGE}" >&2
+  exit 2
+fi
+
+export PYTHONPATH="${ROOT}/pipeline"
+export PYTHONUNBUFFERED=1
+export ACTS_CARC=1
+export ACTS_CODE_ROOT="${ROOT}"
+export ACTS_PFAM_OLD="${OLD_HMM}"
+export ACTS_PFAM_NEW="${NEW_HMM}"
+export ACTS_GENOMES="${GENOMES}"
+export ACTS_SCRATCH="${SCRATCH}"
+export ACTS_STAGE="${STAGE}"
+export ACTS_OUT="${ROOT}/pipeline/results/baselines_exact/${OUT_NAME}"
+if [[ -z "${ACTS_GIT_HEAD:-}" && -f /project2/biyik_1165/jjt_373/csci270-star/tare-w12a/GIT_HEAD ]]; then
+  ACTS_GIT_HEAD="$(tr -d '[:space:]' < /project2/biyik_1165/jjt_373/csci270-star/tare-w12a/GIT_HEAD)"
+fi
+export ACTS_GIT_HEAD
+export ACTS_HMMER_SHA256="${HMMER_SHA256}"
+export ACTS_HMMER_TARBALL="${TARBALL}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9
+
+mkdir -p "${SCRATCH}" "${ROOT}/pipeline/results/baselines_exact" "$(dirname "${ACTS_OUT}")"
+echo "=== host ==="
+hostname
+date -Is
+nproc
+echo "SLURM_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK:-}"
+python3 --version
+python3 -c 'import sys; assert sys.version_info[:2] >= (3, 11), sys.version'
+lscpu | grep -E 'Model name|CPU\(s\)|Thread' || true
+echo "SCRATCH=${SCRATCH} STAGE=${STAGE}"
+df -h "${SCRATCH}" || true
+grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
+
+echo "=== build HMMER 3.4 from the pinned tarball ==="
+if [[ ! -f "${TARBALL}" ]]; then
+  echo "STOP: pinned HMMER tarball is not at ${TARBALL}. No download from this job." >&2
+  exit 2
+fi
+echo "tarball=${TARBALL}"
+sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
+got="$(awk '{print $1}' "${SCRATCH}/hmmer.sha256")"
+if [[ "${got}" != "${HMMER_SHA256}" ]]; then
+  echo "STOP: HMMER tarball sha256 ${got} != ${HMMER_SHA256}" >&2
+  exit 2
+fi
+tar -C "${SCRATCH}" -xf "${TARBALL}"
+cd "${SCRATCH}/hmmer-3.4"
+./configure --prefix="${SCRATCH}/hmmer"
+make -j"${SLURM_CPUS_PER_TASK:-8}"
+make install
+export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+command -v hmmscan
+hmmscan -h | head -n 3 || true
+
+cd "${ROOT}/pipeline"
+python3 scripts/baselines_exact_w12a.py
+echo TARE_W12A_DONE

@@ -63,20 +63,11 @@ df -h "${SCRATCH}" || true
 grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
 
 echo "=== build HMMER 3.4 from the pinned tarball ==="
-TARBALL=""
-for candidate in \
-  "${ROOT}/hmmer-3.4.tar.gz" \
-  /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
-  /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz \
-  /project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz
-do
-  if [[ -f "${candidate}" ]]; then
-    TARBALL="${candidate}"
-    break
-  fi
-done
-if [[ -z "${TARBALL}" ]]; then
-  echo "STOP: pinned HMMER tarball is not on the project. No download from this job." >&2
+# Job 13224392 exited 2 in 4s: none of the searched paths existed at
+# 03:27 PT on 2026-10-19. The checksum-matched copy is this file.
+TARBALL="/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz"
+if [[ ! -f "${TARBALL}" ]]; then
+  echo "STOP: pinned HMMER tarball is not at ${TARBALL}. No download from this job." >&2
   exit 2
 fi
 echo "tarball=${TARBALL}"

@@ -338,3 +338,142 @@ script is fixed the same way. This is the one allowed script-bug fix
 refuses to overwrite `Pfam-A.hmm.h3m.ssi`, while the guard only looked
 for a `.ssi` suffix. An existing `.ssi` or `.h3m.ssi` is now left in
 place. The NAME+CKSUM diff is unchanged.
+
+### 2026-10-19 — W12a server timing (pre-registered, pilot not yet run)
+
+Workstream W12a. The system name in this addendum is TARE. The Python
+package remains `acts`. This addendum does not edit the locked text
+above. Job `13224392` (`baselines_exact`) exited 2 after 4 seconds on
+2026-10-19 03:27 PT. Its log says the pinned HMMER tarball was not on
+any path the job searched. The checksum-matched copy is
+`/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz`,
+sha256 `ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3`,
+verified from the login node before this text. `jobs/baselines_exact_carc.job`
+now uses that path only. W12a does not resubmit that job name. The run
+is `jobs/tare_w12a.job` and `scripts/baselines_exact_w12a.py`.
+
+#### Semantics (no scan in this step)
+
+The D2 semantics above still apply. Additional behaviors for this run:
+
+1. Body identity is `headline_carc_measured.read_body`: non-empty lines
+   that do not start with `#`. Stock `#` footers (date, paths) are not
+   compared. TARE writes `out/tables/tblout` and `out/tables/domtblout`,
+   meta lines included. The expert script writes body lines only.
+2. Difference classes are `headline_carc_measured.classify`:
+   `whitespace-only`, `value-only`, `missing`, `extra`, `order`, plus
+   `different-row` when a table has both missing and extra keys, plus
+   `missing-file` when the output is absent. tblout key is (target,
+   query). domtblout key is (target, query, hmm from, hmm to, ali from,
+   ali to). Up to three example keys are stored.
+3. TARE exit 1 is a `REFUSE` (or other non-SHIP) decision, not a crash.
+   A missing decision file is `missing-file`.
+4. `EXPERT_OMIT_Z=1` drops `-Z`. It is the known-bad control. It is
+   untimed and runs on the pilot genome only, after the timed reps.
+5. Three stock bodies on Pfam 38.2 are the known-good control. They are
+   compared to the first stock body.
+6. The expert script stays on NAME+CKSUM. The 2026-10-18 CKSUM addendum
+   already says a body difference is a result. This run does not patch
+   the script again.
+7. All three arms use `--cpu` equal to `SLURM_CPUS_PER_TASK`, locked at
+   32. The exclusive node may expose more hardware threads. They are
+   not used.
+8. Outside every \(S\): HMMER build, full-database decompress and
+   `hmmpress`, the 38.1 cache fill, and the 38.1 stock table the script
+   reads. Inside the TARE timer: the published CLI, including its prep
+   `hmmpress`. Inside the expert timer: the shell script, including its
+   `hmmfetch` index, discovery scan, and per-batch `hmmpress`.
+9. Scratch is `/scratch1/$USER/tare-w12a/<jobid>`. Node `/tmp` is not
+   used. A signal writes the partial JSON and exits. Laptop walls are
+   not evidence.
+
+#### Pool
+
+Directory `pipeline/data/recurrence/A`, 100 `*_protein.faa.gz` stems on
+CARC. SHA-256 of the newline-joined sorted stems is
+`bf703062fb6adad0cbfd3335a7dfb7279bacff18a20a48e0aa95b2cb5ae5034d`.
+The job recomputes it and stops on a mismatch.
+
+Removed, in order:
+
+- `EXCLUDE_REASONS` (50) and `DRAWS` (10) in
+  `scripts/headline_carc_measured.py`, the headline addendum of
+  `docs/EXACT_REPLAY_PROTOCOL.md` and the headline draw.
+- Every `GCA_`/`GCF_` accession in
+  `results/diverse_genomes/draw.json`. On this directory that set adds
+  no stem beyond the headline lists.
+- Accessions named by the committed W8 protocol
+  (`docs/RELEASE_CHAIN_PROTOCOL.md`): `GCF_057650775.1` (seed 20261121),
+  `GCF_025259645.1`, `GCF_057098645.1`, `GCF_900196535.2` (seed 20261122).
+  W8's seed `20261222` is not committed. It is not simulated into the
+  exclusion set. The runner still evaluates that seed on the committed
+  W8 pool rule for \(n=3\), \(n=5\), and \(n=3\) after a seed-`20261221`
+  pilot, and stops if any of those names hits the locked draw.
+- Already designated by D2 and not in the lists above:
+  `GCF_024585005.1` (D1 pilot, seed 20261133) and
+  `GCF_977065495.1` (D2b locked measured name, seed 20261132).
+
+Pool size 34. SHA-256 of the newline-joined sorted stems is
+`199fc50c099f1e09ce443d8f03335a5a037bae22205933c3177be3476b60ca04`.
+
+Pilot seed `20261241`, one stem,
+`sorted(random.Random(20261241).sample(pool, 1))`:
+
+- `GCF_003018855.1`
+
+Measured seed `20261242`, five stems from the pool minus the pilot,
+`sorted(random.Random(20261242).sample(rest, 5))`. Locked before the
+pilot runs. The pilot does not choose them:
+
+- `GCF_018415995.1`
+- `GCF_019969525.1`
+- `GCF_037231045.1`
+- `GCF_040271735.2`
+- `GCF_055807995.1`
+
+Files are `<stem>_protein.faa.gz`. A recomputed draw that differs stops
+the job. Bootstrap seed `20261249` (10,000 resamples, linear percentile,
+one fresh `random.Random` per summary). Seeds `20261243`–`20261248` are
+unused.
+
+#### Arms and summaries
+
+`r = 3`. For genome index \(g\) and replicate \(i\), arm order is a
+rotation of `(stock, tare, expert)` by \((g+i) \bmod 3\). The same cache
+snapshot is restored before every TARE replicate. \(S_g\) is the median
+stock wall divided by the median arm wall. Across scored genomes, report
+the median of \(S_g\), the geometric mean, the range, and the 95%
+percentile bootstrap interval, for TARE and for the expert script.
+\(R_g = S_{g,\mathrm{TARE}} / S_{g,\mathrm{expert}}\), summarized the
+same way. The laptop 4.6× figure is not an input.
+
+A genome is speed-scored only when all three arms have three positive
+walls, the three stock bodies match on both tables, both tables have at
+least 1,000 body lines, and every TARE decision is `SHIP`. Fewer than
+five scored genomes makes the file `inconclusive`. Walls from a scored
+genome stay in the file. They are not the locked five-genome claim.
+CV above 0.05 is recorded and does not drop a genome.
+
+#### Pilot gate
+
+Pilot file: `results/baselines_exact/server_pilot.json`, `"pilot": true`,
+`walls_are_evidence: false`. One genome, `r = 3`, same flags as the
+measured run. Pass, and only then may the measured job be submitted:
+
+- both tables have at least 1,000 body lines, else `inconclusive`;
+- the three stock bodies are byte-identical, else `inconclusive`;
+- `EXPERT_OMIT_Z=1` writes both tables and is not byte-identical to
+  stock, else `control_fail`;
+- all nine timed commands finish.
+
+TARE and expert byte identity are reported. They are not this gate.
+A missing output path or a crash is a harness failure. One such fix is
+allowed and has to be a dated addendum. A second failure is the result.
+The measured job is not submitted from a `control_fail`, `inconclusive`,
+or partial pilot. Its time limit is \(1.5\) times the pilot elapsed
+time times five genomes, capped at 47 hours. Above that, the five
+genomes split across two `tare-w12a` jobs, at most two exclusive nodes.
+
+Measured file: `results/baselines_exact/server.json`. This paragraph
+does not contain a wall. The pilot had not been submitted when this
+addendum was written.
