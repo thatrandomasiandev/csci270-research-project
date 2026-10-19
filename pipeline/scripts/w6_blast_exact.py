@@ -43,6 +43,9 @@ DROP_SEED = 20261203
 PILOT_N = 300
 MEASURED_N = 2000
 MIN_ROWS = 1000
+# Raised after the pilot (addendum 2026-10-19, post-pilot). Not applied to the
+# pilot, which already cleared 297,810 rows against the original floor.
+MEASURED_MIN_ROWS = 100_000
 PIN = "-dbsize {total_entry_length}"
 OUTFMT = "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
 PAYLOAD: dict | None = None
@@ -286,6 +289,7 @@ def main() -> int:
     os.environ["ACTS_OUT"] = str(args.out)
     seed = PILOT_SEED if args.mode == "pilot" else MEASURED_SEED
     n_queries = PILOT_N if args.mode == "pilot" else MEASURED_N
+    row_floor = MIN_ROWS if args.mode == "pilot" else MEASURED_MIN_ROWS
     if args.mode == "measured":
         pilot_path = args.pilot_json
         if pilot_path is None or not pilot_path.is_file():
@@ -310,7 +314,7 @@ def main() -> int:
         "seed": seed,
         "n_queries": n_queries,
         "drop_seed": DROP_SEED,
-        "min_rows": MIN_ROWS,
+        "min_rows": row_floor,
         "pin": PIN,
         "frozen_code_commit": os.environ.get("ACTS_COMMIT", ""),
         "starting_commit": os.environ.get("ACTS_START_COMMIT", ""),
@@ -373,9 +377,9 @@ def main() -> int:
     if not identical or not report["stock_vs_stock"]["ordered_body_equal"]:
         report["outcome"] = "STOP_STOCK"
         return finish(report, args.out)
-    if len(stock_lines) < MIN_ROWS:
+    if len(stock_lines) < row_floor:
         report["outcome"] = "INCONCLUSIVE"
-        report["why"] = f"{len(stock_lines)} rows, floor is {MIN_ROWS}"
+        report["why"] = f"{len(stock_lines)} rows, floor is {row_floor}"
         return finish(report, args.out)
 
     cache = work / "cache.sqlite"

@@ -202,3 +202,42 @@ counts are all zero and the ordered lines still differ, the class is
 One pilot (`scripts/w6_blast_exact.py --mode pilot`). No third redesign.
 The measured mode refuses to start unless the pilot JSON exists and
 records a finished pilot that was not `STOP_STOCK` or `INCONCLUSIVE`.
+
+## Addendum 2026-10-19 — post-pilot, before the measured run
+
+Pilot job `13241903` on `a03-08`, frozen code
+`1c62ab90044de3d16cedf578f6a2851600ad954f`, seed `20261201`, 300 queries.
+Result: `pipeline/results/w6_followup/blast_pilot.json`.
+
+What the pilot showed:
+
+- Stock versus stock on 2026_03: ordered bodies equal, 297,810 data rows,
+  MD5 `30fb3f478b88414cae107e54765304e8`. Above the 1,000-row floor.
+- Both releases: decision `REFUSE`, reason
+  `out: column 2 matches no normalizer`. Column 2 is `pident` in the locked
+  outfmt. The fallback full-scan body was ordered-equal to that release's
+  stock body (2026_03: 297,810 lines; 2026_01: 297,699 lines).
+- Unpinned candidate database differed from stock
+  (`ordered_body_equal` false; `missing` 295,757; `extra` 407,738;
+  `same_interval_different_score` 279,694; `different_hsp` 116).
+- The 5% drop (seed `20261203`, 9,730 subjects) differed and had missing
+  rows (`missing` 15,024, `extra` 0). `body_pass` is true.
+- The shipped neighbor check did not run, because the 2026_03 decision was
+  not `SHIP`. `negative.pass` is therefore false. The outcome rule still
+  records `NOT_SHIP`, not `CONTROL_FAILED`, when the drop body passes and
+  the unpinned body differs. That is the rule the measured run uses.
+- `pilot_complete` is true. Outcome `NOT_SHIP`.
+
+The row-occurrence change removed the earlier
+`duplicate rows have no row-index column` refusal. The fit then refused
+`pident`. This note does not change the fitter and does not change the
+pass rule.
+
+Measured floor, raised and not lowered: 100,000 data rows on the 2026_03
+stock body. The pilot's 297,810 rows on 300 queries is why 1,000 is no
+longer the power check for the fresh sample.
+
+Time limit for the measured job: the pilot wall was 1:00:21. Scaled by
+2,000/300 and by 1.5, that is about 10.1 h. The job asks for 12 h.
+Threads stay 2. The code under test stays
+`1c62ab90044de3d16cedf578f6a2851600ad954f`.

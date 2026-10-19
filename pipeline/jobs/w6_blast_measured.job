@@ -1,0 +1,67 @@
+#!/bin/bash
+# TARE W6 BLAST+ shipped exactness, measured sample. Non-exclusive.
+# Pre-registered after the pilot in BLAST_PIN_PROTOCOL.md (addendum 2026-10-19).
+# Time is the pilot wall (1:00:21) times 2000/300 times 1.5, rounded up to 12 h.
+#SBATCH --job-name=tare-w6-blast
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=64G
+#SBATCH --time=12:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w6/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w6/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT=/project2/biyik_1165/jjt_373/csci270-star/tare-w6
+PIPE="${ROOT}/pipeline"
+DATA=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot
+QUERIES=/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A/GCF_001513615.1_protein.faa.gz
+OUT="${ROOT}/results/blast_measured.json"
+PILOT="${ROOT}/results/blast_pilot.json"
+WORK=/scratch1/${USER}/tare-w6/blast_measured
+
+mkdir -p "${ROOT}/logs" "${ROOT}/results" "${WORK}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || true
+module load python/3.11.9
+module load blast-plus/2.14.1
+
+export PYTHONPATH="${PIPE}"
+export PYTHONUNBUFFERED=1
+export ACTS_COMMIT
+ACTS_COMMIT="$(tr -d '[:space:]' < "${ROOT}/ACTS_COMMIT")"
+export ACTS_GIT_HASH="${ACTS_COMMIT}"
+export ACTS_GIT_HASH_FILE="${ROOT}/GIT_HASH"
+export ACTS_START_COMMIT
+ACTS_START_COMMIT="$(tr -d '[:space:]' < "${ROOT}/START_COMMIT")"
+export OMP_NUM_THREADS=2
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+unset OLD_FSC || true
+
+echo "=== TARE W6 BLAST measured ==="
+hostname
+date -Is
+command -v blastp
+blastp -version
+echo "GIT_HASH=$(tr -d '[:space:]' < "${ROOT}/GIT_HASH")"
+test -f "${PILOT}"
+
+python3 "${PIPE}/scripts/w6_blast_exact.py" \
+  --mode measured \
+  --pilot-json "${PILOT}" \
+  --queries-src "${QUERIES}" \
+  --release-old "${DATA}/uniprot_sprot_2026_01.fasta.gz" \
+  --release-new "${DATA}/uniprot_sprot_2026_03.fasta.gz" \
+  --blastp "$(command -v blastp)" \
+  --makeblastdb "$(command -v makeblastdb)" \
+  --work "${WORK}" \
+  --out "${OUT}" \
+  --pipe "${PIPE}"
+
+echo TARE_W6_BLAST_MEASURED_DONE
