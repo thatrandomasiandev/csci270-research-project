@@ -41,5 +41,6 @@ export TARE_ISEQ=/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/i
 export TARE_SCRATCH=/scratch1/jjt_373/tare-w12b/measured
 export TARE_OUT="${ROOT}/pipeline/results/iseqsearch_timing/measured.json"
 export TARE_THREADS=32
+export TARE_EXCLUSIVE=1
 
 python3 "${ROOT}/pipeline/scripts/iseqsearch_timing.py" measured

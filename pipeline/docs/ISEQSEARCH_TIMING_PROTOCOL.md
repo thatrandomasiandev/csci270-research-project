@@ -306,3 +306,8 @@ stock-vs-stock, and cold: 124.817 - 26.596 - 3.943 - 5.094 - 17.513 -
 job asks for 30 minutes. That is above 1531 s and below the 8 hour
 cap. The job still exits when the run finishes.
 
+The pilot JSON key `exclusive` is the Slurm partition name (`main`).
+Job `13241869` was not exclusive. The driver no longer writes that key.
+A measured run records `exclusive_requested` from `TARE_EXCLUSIVE=1`.
+
+
