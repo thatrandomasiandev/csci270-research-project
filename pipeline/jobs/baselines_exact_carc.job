@@ -1,0 +1,100 @@
+#!/bin/bash
+# D2b timing. Exclusive EPYC 7542, r=3 alternating stock / TARE / expert.
+# Do not submit until job 13208152 has no PENDING task.
+# SBATCH opens the log path before the script runs; the log directory
+# must already exist.
+#SBATCH --job-name=baselines_exact
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=0
+#SBATCH --time=16:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/baselines_exact/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/baselines_exact/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/baselines_exact/checkout}"
+OLD_HMM="${ACTS_PFAM_OLD:-/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/data/pfam38.1/Pfam-A.hmm.gz}"
+NEW_HMM="${ACTS_PFAM_NEW:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz}"
+GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
+STAGE="${ACTS_STAGE:-measured}"
+TMP_FREE_KB="$(df -Pk /tmp | awk 'NR==2{print $4}')"
+if [[ "${TMP_FREE_KB}" -ge $((40*1024*1024)) ]]; then
+  SCRATCH="/tmp/baselines_exact_${SLURM_JOB_ID}"
+else
+  SCRATCH="/scratch1/${USER}/baselines_exact_${SLURM_JOB_ID}"
+  echo "NOTE: /tmp has ${TMP_FREE_KB} KB free; using ${SCRATCH}"
+fi
+HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+
+export PYTHONPATH="${ROOT}/pipeline"
+export PYTHONUNBUFFERED=1
+export ACTS_CARC=1
+export ACTS_CODE_ROOT="${ROOT}"
+export ACTS_PFAM_OLD="${OLD_HMM}"
+export ACTS_PFAM_NEW="${NEW_HMM}"
+export ACTS_GENOMES="${GENOMES}"
+export ACTS_SCRATCH="${SCRATCH}"
+export ACTS_STAGE="${STAGE}"
+export ACTS_OUT="${ROOT}/pipeline/results/baselines_exact/carc_${STAGE}_${SLURM_JOB_ID}.json"
+export ACTS_GIT_HEAD="${ACTS_GIT_HEAD:-}"
+export ACTS_HMMER_SHA256="${HMMER_SHA256}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+mkdir -p "${SCRATCH}" "${ROOT}/pipeline/results/baselines_exact" "$(dirname "${ACTS_OUT}")"
+echo "=== host ==="
+hostname
+date -Is
+nproc
+python3 --version
+lscpu | grep -E 'Model name|CPU\(s\)' || true
+echo "SCRATCH=${SCRATCH} STAGE=${STAGE}"
+df -h /tmp || true
+df -h "${SCRATCH}" || true
+grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
+
+echo "=== build HMMER 3.4 from the pinned tarball ==="
+TARBALL=""
+for candidate in \
+  "${ROOT}/hmmer-3.4.tar.gz" \
+  /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz
+do
+  if [[ -f "${candidate}" ]]; then
+    TARBALL="${candidate}"
+    break
+  fi
+done
+if [[ -z "${TARBALL}" ]]; then
+  echo "STOP: pinned HMMER tarball is not on the project. No download from this job." >&2
+  exit 2
+fi
+echo "tarball=${TARBALL}"
+sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
+got="$(awk '{print $1}' "${SCRATCH}/hmmer.sha256")"
+if [[ "${got}" != "${HMMER_SHA256}" ]]; then
+  echo "STOP: HMMER tarball sha256 ${got} != ${HMMER_SHA256}" >&2
+  exit 2
+fi
+tar -C "${SCRATCH}" -xf "${TARBALL}"
+cd "${SCRATCH}/hmmer-3.4"
+./configure --prefix="${SCRATCH}/hmmer"
+make -j"${SLURM_CPUS_PER_TASK:-8}"
+make install
+export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+command -v hmmscan
+hmmscan -h | head -n 3 || true
+
+cd "${ROOT}/pipeline"
+python3 scripts/baseline_carc.py
+echo BASELINES_EXACT_DONE

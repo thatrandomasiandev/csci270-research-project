@@ -1,0 +1,611 @@
+{
+  "pilot": false,
+  "protocol": "docs/BASELINES_EXACT_PROTOCOL.md",
+  "git_head": "db6a2f0893d72a7f59e61791086d6df12f86862f",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 2,
+  "z_new": 30134,
+  "z_old": 27481,
+  "z_factor": "30134/27481",
+  "walls_are_evidence": false,
+  "power_floor": 5000,
+  "tblout_body_lines_total": 44132,
+  "label": "MEASURED",
+  "pooled": {
+    "tbl": {
+      "stock_lines": 44132,
+      "rescaler_lines": 44132,
+      "byte_identical": 25597,
+      "token_identical": 25597,
+      "padding_only": 0,
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "byte_identical_over_stock": 0.5800099700897308,
+      "wilson95": {
+        "low": 0.5753984254071175,
+        "high": 0.5846075870893007
+      },
+      "value_only_by_column": {
+        "full_sequence_E": 10926,
+        "best_domain_E": 10878
+      },
+      "order_only": false,
+      "difference_classes": [
+        "value-only"
+      ],
+      "cutoffs_full_sequence_E": {
+        "1e-03": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-05": {
+          "flip": 2,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-10": {
+          "flip": 5,
+          "lost": 0,
+          "gained": 0
+        }
+      }
+    },
+    "dom": {
+      "stock_lines": 42708,
+      "rescaler_lines": 42708,
+      "byte_identical": 24279,
+      "token_identical": 24279,
+      "padding_only": 0,
+      "different_row": 0,
+      "missing": 0,
+      "extra": 0,
+      "byte_identical_over_stock": 0.5684883394211857,
+      "wilson95": {
+        "low": 0.5637850627917587,
+        "high": 0.5731792965098672
+      },
+      "value_only_by_column": {
+        "full_sequence_E": 10542,
+        "i_Evalue": 10506,
+        "c_Evalue": 715
+      },
+      "order_only": false,
+      "difference_classes": [
+        "value-only"
+      ],
+      "cutoffs_full_sequence_E": {
+        "1e-03": {
+          "flip": 0,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-05": {
+          "flip": 2,
+          "lost": 0,
+          "gained": 0
+        },
+        "1e-10": {
+          "flip": 5,
+          "lost": 0,
+          "gained": 0
+        }
+      }
+    }
+  },
+  "families": {
+    "z_old": 27481,
+    "z_new": 30134,
+    "stable": 26082,
+    "changed": 4052,
+    "removed": 165,
+    "cksum_stable": 26193,
+    "strict_stable_cksum_differs": 0,
+    "cksum_stable_strict_differs": 111
+  },
+  "proteomes": [
+    {
+      "queries": "queries.faa",
+      "n_records": 4927,
+      "positive_control": true,
+      "negative_control_differs": true,
+      "discovery_wall_s": 105.8400791669992,
+      "walls_are_evidence": false,
+      "tbl": {
+        "stock_lines": 9094,
+        "rescaler_lines": 9094,
+        "byte_identical": 5397,
+        "byte_identical_over_stock": 0.5934682208049263,
+        "token_identical": 5397,
+        "wilson95": {
+          "low": 0.5833355703963614,
+          "high": 0.6035219394530532
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2158,
+          "best_domain_E": 2205
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "dom": {
+        "stock_lines": 8812,
+        "rescaler_lines": 8812,
+        "byte_identical": 5117,
+        "byte_identical_over_stock": 0.5806854289605083,
+        "token_identical": 5117,
+        "wilson95": {
+          "low": 0.5703497500515261,
+          "high": 0.5909507913252947
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2094,
+          "i_Evalue": 2138,
+          "c_Evalue": 144
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "cutoffs_full_sequence_E": {
+        "tbl": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        },
+        "dom": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        }
+      },
+      "stock_body_sha256": {
+        "tbl": "680fe58382668b3f6cb6d8404660dbf33a9633b597958ffbe35f707a0e66ced2",
+        "dom": "b30d539b0c08ac541947180be45f678a6e855d5e80ba89dc6a6322d9021111d6"
+      },
+      "proteome": "GCF_013315695.1",
+      "source": "e1scale_reuse",
+      "stock_vs_stock": true
+    },
+    {
+      "queries": "queries.faa",
+      "n_records": 4290,
+      "positive_control": true,
+      "negative_control_differs": true,
+      "discovery_wall_s": 89.99697224999545,
+      "walls_are_evidence": false,
+      "tbl": {
+        "stock_lines": 8488,
+        "rescaler_lines": 8488,
+        "byte_identical": 4867,
+        "byte_identical_over_stock": 0.5733977379830348,
+        "token_identical": 4867,
+        "wilson95": {
+          "low": 0.5628451856113644,
+          "high": 0.5838838844074531
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2150,
+          "best_domain_E": 2118
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "dom": {
+        "stock_lines": 8202,
+        "rescaler_lines": 8202,
+        "byte_identical": 4621,
+        "byte_identical_over_stock": 0.5633991709339186,
+        "token_identical": 4621,
+        "wilson95": {
+          "low": 0.5526385315549914,
+          "high": 0.5741004513048437
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2053,
+          "i_Evalue": 2038,
+          "c_Evalue": 143
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "cutoffs_full_sequence_E": {
+        "tbl": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        },
+        "dom": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        }
+      },
+      "stock_body_sha256": {
+        "tbl": "9ca1d23e12a7d3489f64ea9827bd685de46bee42fb9296a8798819027112c5ba",
+        "dom": "ff00c41a1dbc05d2b5401e27c429788f003dffa8707eb0f10cc4a4203eb34844"
+      },
+      "proteome": "GCF_049201905.1",
+      "source": "e1scale_reuse",
+      "stock_vs_stock": false
+    },
+    {
+      "queries": "queries.faa",
+      "n_records": 4374,
+      "positive_control": true,
+      "negative_control_differs": true,
+      "discovery_wall_s": 97.19821995800885,
+      "walls_are_evidence": false,
+      "tbl": {
+        "stock_lines": 8545,
+        "rescaler_lines": 8545,
+        "byte_identical": 4888,
+        "byte_identical_over_stock": 0.5720304271503803,
+        "token_identical": 4888,
+        "wilson95": {
+          "low": 0.5615095803342276,
+          "high": 0.5824865395996441
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2179,
+          "best_domain_E": 2126
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "dom": {
+        "stock_lines": 8265,
+        "rescaler_lines": 8265,
+        "byte_identical": 4626,
+        "byte_identical_over_stock": 0.5597096188747731,
+        "token_identical": 4626,
+        "wilson95": {
+          "low": 0.5489820169251685,
+          "high": 0.5703817421836881
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2103,
+          "i_Evalue": 2065,
+          "c_Evalue": 131
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "cutoffs_full_sequence_E": {
+        "tbl": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        },
+        "dom": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        }
+      },
+      "stock_body_sha256": {
+        "tbl": "fec8235bbb33435c87390b1d4c160a2967cc9f004430c2f491c560abec13220e",
+        "dom": "98c41e306942e815239766233f4521ed56ca8846bc49d99e3f77f49a0de6de33"
+      },
+      "proteome": "GCF_059719525.1",
+      "source": "e1scale_reuse",
+      "stock_vs_stock": false
+    },
+    {
+      "queries": "queries.faa",
+      "n_records": 4583,
+      "positive_control": true,
+      "negative_control_differs": true,
+      "discovery_wall_s": 109.64878324999881,
+      "walls_are_evidence": false,
+      "tbl": {
+        "stock_lines": 8714,
+        "rescaler_lines": 8714,
+        "byte_identical": 5016,
+        "byte_identical_over_stock": 0.5756254303419784,
+        "token_identical": 5016,
+        "wilson95": {
+          "low": 0.5652170490650213,
+          "high": 0.5859671639337652
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2184,
+          "best_domain_E": 2156
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "dom": {
+        "stock_lines": 8405,
+        "rescaler_lines": 8405,
+        "byte_identical": 4763,
+        "byte_identical_over_stock": 0.5666864961332541,
+        "token_identical": 4763,
+        "wilson95": {
+          "low": 0.5560646074866171,
+          "high": 0.5772474552380399
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2103,
+          "i_Evalue": 2055,
+          "c_Evalue": 123
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "cutoffs_full_sequence_E": {
+        "tbl": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        },
+        "dom": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        }
+      },
+      "stock_body_sha256": {
+        "tbl": "bafb02d801f7022f81c658858a6e0c9a24d330761979f3494b4d3ac4860db9d0",
+        "dom": "0971fba6c1aabae09d66583fde6a7e6d1b219dad60815bf03159e31e41291c8c"
+      },
+      "proteome": "GCF_016806025.1",
+      "source": "rerun",
+      "stock_vs_stock": true
+    },
+    {
+      "queries": "queries.faa",
+      "n_records": 5019,
+      "positive_control": true,
+      "negative_control_differs": true,
+      "discovery_wall_s": 107.33216033299686,
+      "walls_are_evidence": false,
+      "tbl": {
+        "stock_lines": 9291,
+        "rescaler_lines": 9291,
+        "byte_identical": 5429,
+        "byte_identical_over_stock": 0.5843289204606609,
+        "token_identical": 5429,
+        "wilson95": {
+          "low": 0.574274861875827,
+          "high": 0.594313274559027
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2255,
+          "best_domain_E": 2273
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "dom": {
+        "stock_lines": 9024,
+        "rescaler_lines": 9024,
+        "byte_identical": 5152,
+        "byte_identical_over_stock": 0.5709219858156028,
+        "token_identical": 5152,
+        "wilson95": {
+          "low": 0.5606820709502797,
+          "high": 0.5811015443068723
+        },
+        "padding_only": 0,
+        "value_only_by_column": {
+          "full_sequence_E": 2189,
+          "i_Evalue": 2210,
+          "c_Evalue": 174
+        },
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": false,
+        "difference_classes": [
+          "value-only"
+        ]
+      },
+      "cutoffs_full_sequence_E": {
+        "tbl": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        },
+        "dom": {
+          "1e-03": {
+            "flip": 0,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-05": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          },
+          "1e-10": {
+            "flip": 1,
+            "lost": 0,
+            "gained": 0
+          }
+        }
+      },
+      "stock_body_sha256": {
+        "tbl": "1d5f0d5fd95ce3b4669be1f20cc1e68785c3ce855ca7dfa693712e6ed7805be1",
+        "dom": "36a9ccb968755647592b908294177318799eb256940bbf626c9fe871b6b496af"
+      },
+      "proteome": "GCF_017165095.1",
+      "source": "rerun",
+      "stock_vs_stock": false
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "mode": "measured",
+  "pilot": false,
+  "proteomes_named": [
+    "GCF_016806025.1",
+    "GCF_017165095.1"
+  ],
+  "git_head": "6256e8e128bc57d172b457c6eca44c0334851c43",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "python": "3.11.9",
+  "hmmscan": "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+  "cpu": 2,
+  "walls_are_evidence": false,
+  "script_lines": {
+    "expert_update_hmmscan.sh": 190,
+    "expert_batch.awk": 121,
+    "expert_update_diamond.sh": 166
+  },
+  "label": "EXACT",
+  "proteomes": [
+    {
+      "run": {
+        "argv": [
+          "/Users/joshuaterranova/Desktop/CSCI270/ACTS-exp-d/pipeline/scripts/expert_update_hmmscan.sh",
+          "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.1.hmm",
+          "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.2.hmm",
+          "/Users/joshuaterranova/tmp/tare_d/measured/GCF_016806025.1/S381.tbl",
+          "/Users/joshuaterranova/tmp/tare_d/measured/GCF_016806025.1/queries.faa",
+          "/Users/joshuaterranova/tmp/tare_d/expert_measured/GCF_016806025.1/out"
+        ],
+        "returncode": 0,
+        "killed_over_rss": false,
+        "peak_rss_bytes": 195756032,
+        "log": "/Users/joshuaterranova/tmp/tare_d/expert_measured/GCF_016806025.1/work.log",
+        "wall_s": 283.0787029579951
+      },
+      "tbl": {
+        "stock_lines": 8714,
+        "rescaler_lines": 8714,
+        "byte_identical": 8714,
+        "byte_identical_over_stock": 1.0,
+        "token_identical": 8714,
+        "wilson95": {
+          "low": 0.9995593566551032,
+          "high": 1.0
+        },
+        "padding_only": 0,
+        "value_only_by_column": {},
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": true,
+        "difference_classes": [],
+        "expert_lines": 8714
+      },
+      "dom": {
+        "stock_lines": 8405,
+        "rescaler_lines": 8405,
+        "byte_identical": 8405,
+        "byte_identical_over_stock": 1.0,
+        "token_identical": 8405,
+        "wilson95": {
+          "low": 0.9995431643182351,
+          "high": 1.0000000000000002
+        },
+        "padding_only": 0,
+        "value_only_by_column": {},
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": true,
+        "difference_classes": [],
+        "expert_lines": 8405
+      },
+      "bodies_equal": true,
+      "proteome": "GCF_016806025.1"
+    },
+    {
+      "run": {
+        "argv": [
+          "/Users/joshuaterranova/Desktop/CSCI270/ACTS-exp-d/pipeline/scripts/expert_update_hmmscan.sh",
+          "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.1.hmm",
+          "/Users/joshuaterranova/tmp/tare_d/hmm/pfam38.2.hmm",
+          "/Users/joshuaterranova/tmp/tare_d/measured/GCF_017165095.1/S381.tbl",
+          "/Users/joshuaterranova/tmp/tare_d/measured/GCF_017165095.1/queries.faa",
+          "/Users/joshuaterranova/tmp/tare_d/expert_measured/GCF_017165095.1/out"
+        ],
+        "returncode": 0,
+        "killed_over_rss": false,
+        "peak_rss_bytes": 215367680,
+        "log": "/Users/joshuaterranova/tmp/tare_d/expert_measured/GCF_017165095.1/work.log",
+        "wall_s": 291.73038695899595
+      },
+      "tbl": {
+        "stock_lines": 9291,
+        "rescaler_lines": 9291,
+        "byte_identical": 9291,
+        "byte_identical_over_stock": 1.0,
+        "token_identical": 9291,
+        "wilson95": {
+          "low": 0.999586710667663,
+          "high": 1.0
+        },
+        "padding_only": 0,
+        "value_only_by_column": {},
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": true,
+        "difference_classes": [],
+        "expert_lines": 9291
+      },
+      "dom": {
+        "stock_lines": 9024,
+        "rescaler_lines": 9024,
+        "byte_identical": 9024,
+        "byte_identical_over_stock": 1.0,
+        "token_identical": 9024,
+        "wilson95": {
+          "low": 0.9995744875629223,
+          "high": 1.0000000000000002
+        },
+        "padding_only": 0,
+        "value_only_by_column": {},
+        "different_row": 0,
+        "missing": 0,
+        "extra": 0,
+        "order_only": false,
+        "bodies_equal": true,
+        "difference_classes": [],
+        "expert_lines": 9024
+      },
+      "bodies_equal": true,
+      "proteome": "GCF_017165095.1"
+    }
+  ]
+}
