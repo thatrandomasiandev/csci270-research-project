@@ -1,0 +1,41 @@
+{
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 4",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 4 --tblout --domtblout",
+  "cache_limit_bytes": 5368709120,
+  "cpu_model": "AMD EPYC 7542 32-Core Processor",
+  "draw_index": 47,
+  "excluded": [
+    "GCF_002853805.1",
+    "GCF_002090355.1",
+    "GCF_013315695.1",
+    "GCF_049201905.1",
+    "GCF_059719525.1",
+    "GCF_016806025.1",
+    "GCF_017165095.1",
+    "GCF_001515725.1",
+    "GCF_023657995.1"
+  ],
+  "expected_proteome": "GCF_030717825.1",
+  "git_dirty": "true",
+  "git_head": "ffb9891b7e56be5177466f3fe6fe18ff2832eb48",
+  "job_id": "13087966",
+  "mac_shape_s": {
+    "diff": 1.4,
+    "discovery": 91.0,
+    "neighbor": 27.0,
+    "parse": 14.0,
+    "random": 8.0,
+    "replay": 17.0,
+    "verify": 15.0
+  },
+  "pilot_pass": false,
+  "pool_n": 91,
+  "pool_sha256": "2f1ea0794c93f09e13f116597e67c56833e23fbaae2043b89c7a96b2066175cf",
+  "press_charged_to_arms": false,
+  "runner_sha256": "ce8c4eaf757bf00939ac8815bdc92d21f6ff3aa139b0064e54142927ce06f894",
+  "seed": 20261035,
+  "stopped": "/tmp is tmpfs",
+  "test": "headline-pilot",
+  "tmp_free_bytes_start": 128519204864,
+  "tmp_fstype": "tmpfs"
+}

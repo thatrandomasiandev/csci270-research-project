@@ -1,0 +1,360 @@
+{
+  "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+  "argv_acts": "python3 -m acts run --strategy reference --pin '-Z {entry_count}' --verify audit --prep 'hmmpress -f {reference}' -- hmmscan --cut_ga --noali --cpu 4",
+  "argv_stock": "hmmscan --cut_ga --noali --cpu 4 --tblout --domtblout",
+  "array_task_id": 3,
+  "cache_limit_bytes": 5368709120,
+  "cpu_model": "AMD EPYC 7542 32-Core Processor",
+  "draws": [
+    "GCF_002302335.1",
+    "GCF_009433135.1",
+    "GCF_009948655.1",
+    "GCF_015290725.1",
+    "GCF_022559285.1",
+    "GCF_030347155.1",
+    "GCF_049949335.1",
+    "GCF_054388855.1",
+    "GCF_055556535.1",
+    "GCF_061234675.1"
+  ],
+  "excluded": [
+    {
+      "accession": "GCF_001513615.1",
+      "reason": "DX3 rate sample"
+    },
+    {
+      "accession": "GCF_001515725.1",
+      "reason": "DX3 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_001650275.1",
+      "reason": "savings A_hmmscan position 3"
+    },
+    {
+      "accession": "GCF_002058765.1",
+      "reason": "savings A_hmmscan position 9"
+    },
+    {
+      "accession": "GCF_002090355.1",
+      "reason": "baselines genome 2, knob queries, savings position 2"
+    },
+    {
+      "accession": "GCF_002180275.1",
+      "reason": "savings A_hmmscan position 17"
+    },
+    {
+      "accession": "GCF_002853805.1",
+      "reason": "E1 queries, baselines genome 1, savings position 1"
+    },
+    {
+      "accession": "GCF_003722195.1",
+      "reason": "Infernal measured draw, interrupted after two genomes"
+    },
+    {
+      "accession": "GCF_003956185.1",
+      "reason": "Infernal Test I timing genome and savings position 10"
+    },
+    {
+      "accession": "GCF_004377995.2",
+      "reason": "savings designated prefix position 27, not scanned"
+    },
+    {
+      "accession": "GCF_005389605.2",
+      "reason": "savings position 15 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_012934475.1",
+      "reason": "savings designated prefix position 25, not scanned"
+    },
+    {
+      "accession": "GCF_013085185.1",
+      "reason": "DIAMOND pilot"
+    },
+    {
+      "accession": "GCF_013168095.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_013201215.1",
+      "reason": "savings A_hmmscan position 7"
+    },
+    {
+      "accession": "GCF_013315695.1",
+      "reason": "E1-scale and HMMER pilots"
+    },
+    {
+      "accession": "GCF_013343615.1",
+      "reason": "savings A_hmmscan position 21"
+    },
+    {
+      "accession": "GCF_015571655.1",
+      "reason": "savings A_hmmscan position 14"
+    },
+    {
+      "accession": "GCF_016659085.1",
+      "reason": "savings A_hmmscan position 5, MATCH failure"
+    },
+    {
+      "accession": "GCF_016806025.1",
+      "reason": "per-record measured replay"
+    },
+    {
+      "accession": "GCF_016904475.1",
+      "reason": "savings A_hmmscan position 13"
+    },
+    {
+      "accession": "GCF_017165095.1",
+      "reason": "per-record measured replay"
+    },
+    {
+      "accession": "GCF_017654165.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_020905655.1",
+      "reason": "savings A_hmmscan position 18"
+    },
+    {
+      "accession": "GCF_022846215.1",
+      "reason": "Infernal Test I and savings designated position 29"
+    },
+    {
+      "accession": "GCF_023657995.1",
+      "reason": "DIAMOND measured sample"
+    },
+    {
+      "accession": "GCF_024298565.1",
+      "reason": "savings designated prefix position 30, not scanned"
+    },
+    {
+      "accession": "GCF_025254305.1",
+      "reason": "savings A_hmmscan position 11"
+    },
+    {
+      "accession": "GCF_028743355.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_030515405.1",
+      "reason": "Infernal Test I and savings position 16"
+    },
+    {
+      "accession": "GCF_030708175.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_030717825.1",
+      "reason": "headline pilot, job 13138266"
+    },
+    {
+      "accession": "GCF_032384295.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_036884535.1",
+      "reason": "savings designated prefix position 24, not scanned"
+    },
+    {
+      "accession": "GCF_037287675.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_041235215.1",
+      "reason": "savings position 12 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_041316645.1",
+      "reason": "savings A_hmmscan position 6"
+    },
+    {
+      "accession": "GCF_046107165.1",
+      "reason": "savings designated prefix position 28, not scanned"
+    },
+    {
+      "accession": "GCF_048568975.1",
+      "reason": "savings position 19 and Infernal measured draw"
+    },
+    {
+      "accession": "GCF_049201905.1",
+      "reason": "E1-scale"
+    },
+    {
+      "accession": "GCF_049949635.1",
+      "reason": "Infernal pilot and savings position 22"
+    },
+    {
+      "accession": "GCF_052050745.1",
+      "reason": "savings A_hmmscan position 4"
+    },
+    {
+      "accession": "GCF_052882435.1",
+      "reason": "savings designated prefix position 23, not scanned"
+    },
+    {
+      "accession": "GCF_053102875.1",
+      "reason": "savings A_hmmscan position 20"
+    },
+    {
+      "accession": "GCF_054510725.1",
+      "reason": "Infernal Test I and savings position 8"
+    },
+    {
+      "accession": "GCF_055382035.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_058683675.1",
+      "reason": "Infernal pilot, seed 20261044"
+    },
+    {
+      "accession": "GCF_059131955.1",
+      "reason": "Infernal measured draw"
+    },
+    {
+      "accession": "GCF_059615465.1",
+      "reason": "Infernal Test I"
+    },
+    {
+      "accession": "GCF_059719525.1",
+      "reason": "E1-scale and Infernal measured draw"
+    }
+  ],
+  "fill": {
+    "after": {
+      "load": [
+        1.46,
+        1.47,
+        1.55
+      ],
+      "mem_available_bytes": 244599689216,
+      "mem_free_bytes": 216329584640,
+      "node": "b22-17.hpc.usc.edu",
+      "scratch_free_bytes": 114858504192
+    },
+    "arm": "B",
+    "before": {
+      "load": [
+        1.62,
+        1.56,
+        2.73
+      ],
+      "mem_available_bytes": 248996499456,
+      "mem_free_bytes": 220727259136,
+      "node": "b22-17.hpc.usc.edu",
+      "scratch_free_bytes": 119286169600
+    },
+    "cache_bytes": 86016,
+    "cpu_s": 4595.416090000001,
+    "cpu_source": "resource.RUSAGE_CHILDREN",
+    "cpu_sys_s": 1233.30677,
+    "cpu_user_s": 3362.1093200000005,
+    "decision": "REFUSE",
+    "n_batches": null,
+    "phases": {
+      "parse_s": 40.5867541260086,
+      "prep_s": 3.0081719160079956e-07,
+      "probe_wall_s": 306.1800880669616,
+      "read_output_s": 0.0013620099052786827,
+      "subref_build_s": 0.008737800177186728,
+      "tool_s": 2670.5424003410153,
+      "total_s": 3017.3400898184627
+    },
+    "repeat": 0,
+    "returncode": 1,
+    "wall_s": 3017.533301272895,
+    "why": "duplicate row key ('WP_000726974.1', 'Gly-zipper_OmpA', '1.2e-06')"
+  },
+  "first_run_overhead": 0.982218839167561,
+  "git_dirty": "false",
+  "git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "input_md5": {
+    "pfam38.1": "dc814cc181ece09102c09c4e6c19f2fd",
+    "pfam38.2": "7ab3c4e215d0daaea3004e37c4e24f8a",
+    "proteome": "c878c7a14801d4587dd930b34d3e5fe7"
+  },
+  "job_id": "13208152",
+  "mac_shape_s": {
+    "diff": 1.4,
+    "discovery": 91.0,
+    "neighbor": 27.0,
+    "parse": 14.0,
+    "random": 8.0,
+    "replay": 17.0,
+    "verify": 15.0
+  },
+  "meminfo_start": {
+    "MemAvailable": 258155704320,
+    "MemFree": 230689931264,
+    "MemTotal": 269877284864
+  },
+  "notes": [
+    "tmpfs scratch is allowed when this exclusive job has at least 40 GiB free.",
+    "CV is reported and flagged when it exceeds 5%. It is not a stop and not a drop.",
+    "Walltime is 4 h per task."
+  ],
+  "outcome": "FAIL",
+  "pool_n": 50,
+  "pool_sha256": "856a93c152e0e7bfb2715076f3dc872551579301526783da8e83c82f6591b0c2",
+  "press": {
+    "38.1": {
+      "decompress_s": 9.827417542226613,
+      "ends": 27481,
+      "headers": 27481,
+      "hmmpress_s": 34.754623136948794
+    },
+    "38.2": {
+      "decompress_s": 10.614404374733567,
+      "ends": 30134,
+      "headers": 30134,
+      "hmmpress_s": 37.795768620911986
+    }
+  },
+  "press_charged_to_arms": false,
+  "proteome": "GCF_015290725.1",
+  "runner_sha256": "3805ba4fcd0fdf4d88d10268baa5e2a432b3e92ad5032f79d9c26e5718b31af8",
+  "scored": false,
+  "scratch": "/tmp/headline_measured_13208152_3",
+  "scratch_free_bytes_start": 128514560000,
+  "scratch_fstype": "tmpfs",
+  "seed": 20261046,
+  "stock_38_1": {
+    "after": {
+      "load": [
+        1.62,
+        1.56,
+        2.73
+      ],
+      "mem_available_bytes": 248999100416,
+      "mem_free_bytes": 220729860096,
+      "node": "b22-17.hpc.usc.edu",
+      "scratch_free_bytes": 119286169600
+    },
+    "arm": "A",
+    "before": {
+      "load": [
+        2.28,
+        20.16,
+        35.07
+      ],
+      "mem_available_bytes": 248940204032,
+      "mem_free_bytes": 220670550016,
+      "node": "b22-17.hpc.usc.edu",
+      "scratch_free_bytes": 119289507840
+    },
+    "cpu_s": 4633.050207,
+    "cpu_source": "resource.RUSAGE_CHILDREN",
+    "cpu_sys_s": 1247.130845,
+    "cpu_user_s": 3385.919362,
+    "repeat": 0,
+    "wall_s": 3072.1598700247705
+  },
+  "stopped": "fill decision REFUSE: duplicate row key ('WP_000726974.1', 'Gly-zipper_OmpA', '1.2e-06')",
+  "task": 3,
+  "test": "headline-measured"
+}

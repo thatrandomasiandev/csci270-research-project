@@ -1019,3 +1019,17 @@ pre-registration and is out of scope for this headline.
 
 Consequence: the headline is reported over the genomes that finish (at most 9);
 it is not the locked G = 10 figure, and the paper says so.
+
+## Addendum 2026-10-19 — headline outcome (results; rules unchanged)
+
+Scored by `scripts/headline_analysis.py` on the ten task files: tasks 0, 1, 3, 6–9
+from array 13208152 and tasks 2, 4, 5 from the time-limit rerun 13227819
+(`results/exact_replay/headline_measured/`, scored output
+`results/exact_replay/headline_carc.json`). Nine genomes are EXACT. Task 3
+(`GCF_015290725.1`) refused at cache fill and has no arms; the scorer lists it as
+FAIL with reasons that follow from having no runs, and it is not imputed. The
+headline is therefore over nine genomes, not the locked ten: median S_g 4.24,
+95% percentile bootstrap 4.17–4.68 (seed 20261047, 10,000 resamples), geometric
+mean 4.39, range 4.13–5.07. Maximum prediction error 0.194 against S_pred 4.08.
+Median first-run overhead 1.32; median break-even 0.26 updates. At least one arm
+is CV-flagged; flags are not failures, as locked.
