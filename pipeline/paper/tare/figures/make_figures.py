@@ -184,7 +184,7 @@ def fig_model():
     ax.text(30, 3.6, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
     ax.plot([100 * f for f in fs], [1 / (a * f + c) for f in fs], color=C["tare"], lw=1.4)
     ax.axhline(1 / c, color=C["tare"], lw=0.5, ls=":")
-    ax.text(1.0, 1 / c + 0.25, f"1/c = {1 / c:.1f}$\\times$", ha="left", fontsize=FS, color=C["tare"])
+    ax.text(99, 1 / c + 0.25, f"1/c = {1 / c:.1f}$\\times$", ha="right", fontsize=FS, color=C["tare"])
     ax.axhline(1, color=C["stock"], lw=0.6)
     ax.scatter([100 * f_meas] * len(pts), pts, color=C["tare"], edgecolor=C["ink"], lw=0.4, zorder=5, s=16,
                label="laptop, 38.1$\\rightarrow$38.2")

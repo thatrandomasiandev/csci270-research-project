@@ -87,11 +87,11 @@ def main() -> None:
                 eq.append(cell["eq4_detection"])
             else:
                 eq.append(None)
-        # C1 and C4 are both detection 1. An open square behind the
-        # circle keeps both markers on the true k.
+        # C1 and C4 are both detection 1. C4's open square is offset slightly right of k
+        # so both markers stay visible.
         open_square = label.startswith("C4")
         ax.errorbar(
-            xs, ys, yerr=[lo, hi], fmt=marker, color=color,
+            [x * (1.12 if open_square else 1.0) for x in xs], ys, yerr=[lo, hi], fmt=marker, color=color,
             ms=5.4 if open_square else 3.2,
             lw=0.8, capsize=1.6, label=label,
             markerfacecolor="none" if open_square else color,
@@ -109,10 +109,7 @@ def main() -> None:
     ]
     c0_n = [cells[f"C0/k{k}"]["n_trials"] for k in KS if f"C0/k{k}" in cells]
     if c0_n:
-        ax.set_title(
-            f"C0 needless refusals {sum(c0_needless)}/{sum(c0_n)}",
-            loc="left", color=C["stock"], pad=2,
-        )
+        pass  # C0 (no coupling) is reported in the caption: needless refusals over trials.
     ax.set_xscale("log")
     ax.set_xticks(list(KS))
     ax.set_xticklabels([str(k) for k in KS])

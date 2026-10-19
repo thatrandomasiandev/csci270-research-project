@@ -1,0 +1,181 @@
+{
+ "old": "/Users/joshuaterranova/tmp/tare_c/Pfam37.4/Pfam-A.hmm.gz",
+ "new": "/Users/joshuaterranova/tmp/tare_c/Pfam38.0/Pfam-A.hmm.gz",
+ "n_edited": 22965,
+ "entries_with_tag_changed": {
+  "ACC": 22925,
+  "CKSUM": 20758,
+  "MODEL": 19976,
+  "COMPO": 12074,
+  "STATS LOCAL": 11700,
+  "EFFN": 11423,
+  "NSEQ": 11087,
+  "TC": 10600,
+  "NC": 10522,
+  "CS": 5421,
+  "LENG": 2764,
+  "LINE_COUNT": 2764,
+  "DESC": 635,
+  "GA": 229,
+  "NAME": 130,
+  "RF": 3
+ },
+ "top_tag_sets": [
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "COMPO",
+    "EFFN",
+    "MODEL",
+    "NC",
+    "NSEQ",
+    "STATS LOCAL",
+    "TC"
+   ],
+   3764
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "MODEL"
+   ],
+   3239
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "COMPO",
+    "EFFN",
+    "MODEL",
+    "NSEQ",
+    "STATS LOCAL"
+   ],
+   1632
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "CS",
+    "MODEL"
+   ],
+   1517
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "COMPO",
+    "EFFN",
+    "LENG",
+    "LINE_COUNT",
+    "MODEL",
+    "NC",
+    "NSEQ",
+    "STATS LOCAL",
+    "TC"
+   ],
+   1282
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM"
+   ],
+   831
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "COMPO",
+    "CS",
+    "EFFN",
+    "MODEL",
+    "NC",
+    "NSEQ",
+    "STATS LOCAL",
+    "TC"
+   ],
+   769
+  ],
+  [
+   [
+    "ACC",
+    "CKSUM",
+    "COMPO",
+    "CS",
+    "EFFN",
+    "MODEL",
+    "NSEQ",
+    "STATS LOCAL"
+   ],
+   760
+  ]
+ ],
+ "example_line": {
+  "ACC": [
+   "ACC   PF10417.14",
+   "ACC   PF10417.15"
+  ],
+  "CS": [
+   "CS    yes",
+   "CS    no"
+  ],
+  "CKSUM": [
+   "CKSUM 976910065",
+   "CKSUM 1452945845"
+  ],
+  "MODEL": [
+   "      1   0.32482  6.00141  6.59672  6.58185  6.87107  2.23382  7.03985  6.37523",
+   "      1   0.32482  6.00141  6.59672  6.58185  6.87107  2.23382  7.03985  6.37523"
+  ],
+  "NSEQ": [
+   "NSEQ  14",
+   "NSEQ  13"
+  ],
+  "EFFN": [
+   "EFFN  1.623535",
+   "EFFN  1.615479"
+  ],
+  "TC": [
+   "TC    28 28.3;",
+   "TC    27.2 72.6;"
+  ],
+  "NC": [
+   "NC    25.4 22.6;",
+   "NC    24.7 22.2;"
+  ],
+  "STATS LOCAL": [
+   "STATS LOCAL MSV      -11.4755  0.70023",
+   "STATS LOCAL MSV      -11.4475  0.70022"
+  ],
+  "COMPO": [
+   "  COMPO   2.62496  4.68044  2.89342  2.70594  2.94514  2.90008  3.81680  2.82404",
+   "  COMPO   2.62706  4.68260  2.89640  2.70021  2.94892  2.90113  3.81214  2.82311"
+  ],
+  "LENG": [
+   "LENG  240",
+   "LENG  235"
+  ],
+  "DESC": [
+   "DESC  3-keto-disaccharide hydrolase",
+   "DESC  3-keto-alpha-glucoside-1,2-lyase-like domain"
+  ],
+  "GA": [
+   "GA    27 27;",
+   "GA    26.6 26.6;"
+  ],
+  "NAME": [
+   "NAME  Kelch_6",
+   "NAME  Beta-prop_Calicin"
+  ],
+  "RF": [
+   "RF    yes",
+   "RF    no"
+  ]
+ }
+}

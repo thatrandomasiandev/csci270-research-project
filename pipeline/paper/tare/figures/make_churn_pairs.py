@@ -101,20 +101,18 @@ def main() -> None:
     ax.bar(x, new, bottom=bottom_new, color=TARE, width=0.72, label="new (TARE reruns)")
     for i, frac in enumerate(f_delta):
         ax.text(i, 1.02, f"{100 * frac:.1f}%", ha="center", va="bottom", fontsize=6.8, color=TARE)
-        ax.text(i, -0.08, f"\u2212{removed[i]}", ha="center", va="top", fontsize=6.8, color=INK)
     ax.set_xticks(x)
-    ax.set_xticklabels(labels)
+    ax.set_xticklabels([f"{lab}\n\u2212{removed[i]} removed" for i, lab in enumerate(labels)])
     ax.set_xlim(-0.6, len(rows) - 0.4)
     ax.set_ylim(0, 1.14)
     ax.set_ylabel("fraction of the new release")
-    ax.set_title("What TARE reruns, by consecutive Pfam release", loc="left")
+    
     ax.grid(axis="y")
-    ax.legend(loc="upper left", ncol=3, frameon=False)
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.08), ncol=3, frameon=False)
     ax.text(
         0.0,
-        -0.22,
-        "Percentages are f\u0394 = (edited + new) / models in the new release. "
-        "The number under each bar is families removed, which are not in that denominator.",
+        -0.42,
+        "Percentages are f\u0394 = (edited + new) / models in the new release; removed families are not in that denominator.",
         transform=ax.transAxes,
         fontsize=6.8,
         color=INK,

@@ -1,0 +1,185 @@
+{
+  "cells": [
+    {
+      "cell": "C2/k1",
+      "detected": 1,
+      "trials": 50,
+      "measured": 0.02,
+      "eq4": 0.008347474074074102,
+      "wilson_lo": 0.003539259271646236,
+      "wilson_hi": 0.10495443589637815,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C2/k100",
+      "detected": 12,
+      "trials": 50,
+      "measured": 0.24,
+      "eq4": 0.23571558683794358,
+      "wilson_lo": 0.1429739139699173,
+      "wilson_hi": 0.3741268375794292,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C2/k22",
+      "detected": 7,
+      "trials": 50,
+      "measured": 0.14,
+      "eq4": 0.0801653526806787,
+      "wilson_lo": 0.06950833427016294,
+      "wilson_hi": 0.2618619371058554,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C2/k5",
+      "detected": 2,
+      "trials": 50,
+      "measured": 0.04,
+      "eq4": 0.03225372414466898,
+      "wilson_lo": 0.011038884327619805,
+      "wilson_hi": 0.1346009068750702,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C3/d2/k1",
+      "detected": 2,
+      "trials": 50,
+      "measured": 0.04,
+      "eq4": 0.008347474074074102,
+      "wilson_lo": 0.011038884327619805,
+      "wilson_hi": 0.1346009068750702,
+      "below": false,
+      "inside": false
+    },
+    {
+      "cell": "C3/d2/k100",
+      "detected": 6,
+      "trials": 50,
+      "measured": 0.12,
+      "eq4": 0.10668114108102622,
+      "wilson_lo": 0.05617600150932274,
+      "wilson_hi": 0.23804817383202992,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C3/d2/k22",
+      "detected": 2,
+      "trials": 50,
+      "measured": 0.04,
+      "eq4": 0.07264162470745772,
+      "wilson_lo": 0.011038884327619805,
+      "wilson_hi": 0.1346009068750702,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d2/k5",
+      "detected": 1,
+      "trials": 50,
+      "measured": 0.02,
+      "eq4": 0.030311324385628335,
+      "wilson_lo": 0.003539259271646236,
+      "wilson_hi": 0.10495443589637815,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d20/k1",
+      "detected": 1,
+      "trials": 50,
+      "measured": 0.02,
+      "eq4": 0.006366992592592546,
+      "wilson_lo": 0.003539259271646236,
+      "wilson_hi": 0.10495443589637815,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C3/d20/k100",
+      "detected": 8,
+      "trials": 50,
+      "measured": 0.16,
+      "eq4": 0.18905122596391644,
+      "wilson_lo": 0.08337420678033404,
+      "wilson_hi": 0.2851421606303499,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d20/k22",
+      "detected": 2,
+      "trials": 50,
+      "measured": 0.04,
+      "eq4": 0.05727096645163421,
+      "wilson_lo": 0.011038884327619805,
+      "wilson_hi": 0.1346009068750702,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d20/k5",
+      "detected": 1,
+      "trials": 50,
+      "measured": 0.02,
+      "eq4": 0.030311324385628335,
+      "wilson_lo": 0.003539259271646236,
+      "wilson_hi": 0.10495443589637815,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d5/k1",
+      "detected": 0,
+      "trials": 50,
+      "measured": 0.0,
+      "eq4": 0.003339207407407452,
+      "wilson_lo": 6.938893903907228e-18,
+      "wilson_hi": 0.07134759913335872,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d5/k100",
+      "detected": 9,
+      "trials": 50,
+      "measured": 0.18,
+      "eq4": 0.15680084152365992,
+      "wilson_lo": 0.09770192670234178,
+      "wilson_hi": 0.30796053674300783,
+      "below": false,
+      "inside": true
+    },
+    {
+      "cell": "C3/d5/k22",
+      "detected": 4,
+      "trials": 50,
+      "measured": 0.08,
+      "eq4": 0.12309332733898404,
+      "wilson_lo": 0.03154951408859298,
+      "wilson_hi": 0.18838246918342838,
+      "below": true,
+      "inside": true
+    },
+    {
+      "cell": "C3/d5/k5",
+      "detected": 1,
+      "trials": 50,
+      "measured": 0.02,
+      "eq4": 0.022251851781097343,
+      "wilson_lo": 0.003539259271646236,
+      "wilson_hi": 0.10495443589637815,
+      "below": true,
+      "inside": true
+    }
+  ],
+  "n_cells": 16,
+  "n_below": 8,
+  "n_outside_interval": 1,
+  "audit_ran_in_grid": false,
+  "audit_note": "Each grid trial used a cold cache, so no cached rows were reused and the audit (R6) block was not entered; see audit_gate.json."
+}
