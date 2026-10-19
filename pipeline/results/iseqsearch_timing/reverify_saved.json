@@ -1,0 +1,50 @@
+{
+  "classification": {
+    "bodies_equal": false,
+    "different_hsp": 2,
+    "evalue_kendall_tau": 0.9999939628622326,
+    "evalue_pearson": 0.9999991687962789,
+    "line_order_only": false,
+    "n_correlation": 31377,
+    "n_duplicate_pairs_skipped": 0,
+    "only_other": 133,
+    "only_stock": 0,
+    "other_rows": 31510,
+    "row_extra": 133,
+    "row_missing": 0,
+    "same_hsp_different_value": 30968,
+    "shared_byte_fraction": 0.012971284698983331,
+    "shared_byte_identical": 407,
+    "shared_rows": 31377,
+    "stock_rows": 31377
+  },
+  "git_head": "",
+  "host": "Joshuas-MacBook-Pro-3.local",
+  "known_bad_bodies_equal": false,
+  "known_bad_row_missing": 1,
+  "known_good_bodies_equal": true,
+  "laptop_wall_is_speed_evidence": false,
+  "matches_dx_i_integers": true,
+  "other": {
+    "bytes": 2871025,
+    "md5": "918c591c71adecde00e9e86e6c76d001",
+    "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx/idiamond.m8"
+  },
+  "protocol": "pipeline/docs/ISEQSEARCH_TIMING_PROTOCOL.md",
+  "provenance": {
+    "finished_utc": "2026-10-19T19:57:30.280550+00:00",
+    "git": "1c65571538afcc139af560156147e4276905f9b4",
+    "git_dirty": true,
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "versions": {}
+  },
+  "stock": {
+    "bytes": 2414904,
+    "md5": "9bb21f2756244304d1849c0f0f0e290a",
+    "path": "/Users/joshuaterranova/Desktop/CSCI270/ACTS/pipeline/data/reference_diamond_dx/stock_2026_03.m8"
+  },
+  "system": "TARE",
+  "test": "iseqsearch-reverify-saved"
+}
