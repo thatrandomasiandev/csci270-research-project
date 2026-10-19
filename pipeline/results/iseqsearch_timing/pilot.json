@@ -1,0 +1,291 @@
+{
+  "arms": [
+    {
+      "arm": "stock",
+      "output": "/scratch1/jjt_373/tare-w12b/pilot/pilot/r1_stock.m8",
+      "ran": true,
+      "repeat": 1,
+      "returncode": 0,
+      "rows": 3962,
+      "stderr_tail": "[0.595s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.098s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 2/4.\nBuilding reference seed array...  [0.595s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.1s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 3/4.\nBuilding reference seed array...  [0.593s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.105s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 4/4.\nBuilding reference seed array...  [0.593s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.101s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nDeallocating buffers...  [0s]\nClearing query masking...  [0s]\nComputing alignments...  [0.11s]\nDeallocating reference...  [0.001s]\nLoading reference sequences...  [0s]\nDeallocating buffers...  [0s]\nDeallocating queries...  [0s]\nLoading query sequences...  [0s]\nClosing the input file...  [0s]\nClosing the output file...  [0s]\nClosing the database...  [0s]\nCleaning up...  [0s]\nTotal time = 8.726s\nReported 3962 pairwise alignments, 3962 HSPs.\n43 queries aligned.\n",
+      "timed": true,
+      "wall_s": 8.7345275497064
+    },
+    {
+      "arm": "TARE",
+      "body_rows": 0,
+      "body_written": false,
+      "decision": "REFUSE_PIN",
+      "decision_text": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      total_entry_length: no knob\nverify: full\nmode: exact\nreused_rows: 0\nn_entries: 575748\nphases: {'parse_s': 13.214339455589652, 'subref_build_s': 0.26011950010433793, 'prep_s': 1.4221850256435573, 'tool_s': 13.313895268831402, 'read_output_s': 0.0006431648507714272, 'total_s': 28.78306191600859, 'probe_wall_s': 0.0}\nprobe_phases: {}\nprogram_binary: /project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond sha256:ce135922ed34cc14cbd764ff7d18138ef8b5d0d97fed8f5929495576e42a7688\n",
+      "ran": true,
+      "refused": true,
+      "repeat": 1,
+      "returncode": 1,
+      "returned_stock": false,
+      "stderr_tail": "",
+      "stdout_tail": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      total_entry_length: no knob\nwrote /scratch1/jjt_373/tare-w12b/pilot/pilot/r1_TARE/decision.txt\n",
+      "timed": true,
+      "wall_s": 29.08084595296532,
+      "why": "total_entry_length: no knob"
+    },
+    {
+      "arm": "iSeqSearch",
+      "commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
+      "dbinfo_s": 0.0028151068836450577,
+      "l_delta": 4056372,
+      "l_old": 208482574,
+      "l_sum": 212538946,
+      "makedb_s": 0.06573035288602114,
+      "merge_returncode": 0,
+      "merge_s": 0.5203676410019398,
+      "output": "/scratch1/jjt_373/tare-w12b/pilot/pilot/r1_iSeqSearch_merged.m8",
+      "ran": true,
+      "repeat": 1,
+      "rows": 3982,
+      "search_returncode": 0,
+      "search_s": 0.21750926924869418,
+      "timed": true,
+      "wall_s": 0.8067104513756931
+    }
+  ],
+  "biopython": "1.85",
+  "classification": [
+    {
+      "bodies_equal": false,
+      "different_hsp": 0,
+      "evalue_kendall_tau": 0.99999221933575,
+      "evalue_pearson": 0.9999979867626922,
+      "line_order_only": false,
+      "n_correlation": 3962,
+      "n_duplicate_pairs_skipped": 0,
+      "only_other": 20,
+      "only_stock": 0,
+      "other_rows": 3982,
+      "row_extra": 20,
+      "row_missing": 0,
+      "same_hsp_different_value": 3925,
+      "shared_byte_fraction": 0.00933871781928319,
+      "shared_byte_identical": 37,
+      "shared_rows": 3962,
+      "stock_rows": 3962,
+      "which": 1
+    }
+  ],
+  "constraint": "",
+  "controls": {
+    "iseq_not_byte_identical": true,
+    "known_bad": true,
+    "known_good": true,
+    "power": true,
+    "stock_vs_stock": true,
+    "tare_refused": true,
+    "tare_returned_stock": [
+      false
+    ]
+  },
+  "cpu_model": "AMD EPYC 7513 32-Core Processor",
+  "diamond": {
+    "bytes": 28553136,
+    "md5": "7de14b7f9f4c440ddfb5142ad96b1d8b",
+    "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond"
+  },
+  "diamond_version": "diamond version 2.2.5",
+  "exclusive": "main",
+  "frozen_code_commit": "cefc427dfc6fb27cfdcd0bfa22cca4653e158666",
+  "host": "a03-17.hpc.usc.edu",
+  "inputs": {
+    "iseq_main": {
+      "bytes": 2477,
+      "md5": "2c0762059f0229add06bf351edb2f979",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/iseq/Incremental-Protein-Search/source/main.py"
+    },
+    "new": {
+      "bytes": 93801562,
+      "md5": "bc9d398533e6df582b563c6c03093bd0",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_03.fasta.gz"
+    },
+    "old": {
+      "bytes": 93457057,
+      "md5": "5245b19456d9a063b13c46602269bc5f",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/data/swissprot/uniprot_sprot_2026_01.fasta.gz"
+    },
+    "queries": {
+      "bytes": 1074926,
+      "md5": "b170d133266427c46d87d99284e1fda3",
+      "path": "/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A/GCF_002853805.1_protein.faa.gz"
+    }
+  },
+  "iseq_commit": "7e862bf3afa52b65b3cca4255de66ab4cb764fe3",
+  "job_id": "13241869",
+  "known_bad": {
+    "bodies_equal": false,
+    "passed": true,
+    "row_missing": 1
+  },
+  "laptop_wall_is_speed_evidence": false,
+  "measured_limit_s": 562.4457828341983,
+  "mode": "pilot",
+  "partial": false,
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "prep": {
+    "delta": {
+      "bytes": 5543148,
+      "md5": "6d9202d47413f295fcc15b7159f2bd1e",
+      "path": "/scratch1/jjt_373/tare-w12b/pilot/pilot/delta.faa"
+    },
+    "delta_entries": 10239,
+    "diff_wall_s": 26.596103376243263,
+    "l_old": 208482574,
+    "new_entries": 575748,
+    "new_makedb_s": 3.9433400500565767,
+    "old_entries": 574627,
+    "old_makedb_s": 5.094075797125697,
+    "stock_vs_stock_wall_s": 17.51250321418047
+  },
+  "protocol": "pipeline/docs/ISEQSEARCH_TIMING_PROTOCOL.md",
+  "provenance": {
+    "finished_utc": "2026-10-19T20:09:16.105685+00:00",
+    "git": "cefc427dfc6fb27cfdcd0bfa22cca4653e158666",
+    "git_dirty": false,
+    "host": "a03-17.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "versions": {
+      "diamond": "diamond version 2.2.5"
+    }
+  },
+  "python": "3.11.9",
+  "queries": {
+    "bytes": 18400,
+    "disjoint_from_q300": true,
+    "md5": "e60be4a63896a62f32aa12e0feecffd6",
+    "name_sha256": "6d9cb4d8937d5b395b316175f16f996357b912f83e5625745db9f160467ad633",
+    "path": "/scratch1/jjt_373/tare-w12b/pilot/pilot/queries.faa",
+    "query_n": 50,
+    "seed": 20261251
+  },
+  "ratios_of_means": {
+    "stock_over_iseq": 10.827339022088166,
+    "stock_over_tare": 0.30035328283893187
+  },
+  "repeats_requested": 1,
+  "s1_argv": [
+    "/project2/biyik_1165/jjt_373/csci270-star/pipeline-ref-second/bin/diamond",
+    "blastp",
+    "--db",
+    "{reference}",
+    "--query",
+    "{input}",
+    "--out",
+    "{output}",
+    "--min-score",
+    "40",
+    "-k",
+    "0",
+    "--motif-masking",
+    "0",
+    "-b",
+    "2.0",
+    "--comp-based-stats",
+    "1",
+    "--threads",
+    "4",
+    "--outfmt",
+    "6",
+    "qseqid",
+    "sseqid",
+    "pident",
+    "length",
+    "mismatch",
+    "gapopen",
+    "qstart",
+    "qend",
+    "sstart",
+    "send",
+    "evalue",
+    "bitscore"
+  ],
+  "scratch": "/scratch1/jjt_373/tare-w12b/pilot",
+  "scratch_free_bytes_start": 2780891340341248,
+  "scratch_fstype": "lustre",
+  "slurm_cpus": "4",
+  "speed_claim": false,
+  "stock_vs_stock": {
+    "a_rows": 3962,
+    "a_wall_s": 8.788690802175552,
+    "b_rows": 3962,
+    "b_wall_s": 8.723812412004918,
+    "classes": {
+      "bodies_equal": true,
+      "different_hsp": 0,
+      "line_order_only": false,
+      "row_extra": 0,
+      "row_missing": 0,
+      "same_hsp_different_value": 0,
+      "shared_rows": 3962
+    },
+    "identical": true,
+    "known_good": true
+  },
+  "summary": {
+    "TARE": {
+      "cv": null,
+      "mean_s": 29.08084595296532,
+      "median_s": 29.08084595296532,
+      "n": 1,
+      "walls_s": [
+        29.08084595296532
+      ]
+    },
+    "iSeqSearch": {
+      "cv": null,
+      "mean_s": 0.8067104513756931,
+      "median_s": 0.8067104513756931,
+      "n": 1,
+      "walls_s": [
+        0.8067104513756931
+      ]
+    },
+    "stock": {
+      "cv": null,
+      "mean_s": 8.7345275497064,
+      "median_s": 8.7345275497064,
+      "n": 1,
+      "walls_s": [
+        8.7345275497064
+      ]
+    }
+  },
+  "system": "TARE",
+  "tare_cold": {
+    "contract_stored": true,
+    "decision": "REFUSE_PIN",
+    "in_alternating_mean": false,
+    "returncode": 1,
+    "stderr_tail": "",
+    "stdout_tail": "strategy: reference\ndecision: REFUSE_PIN\nwhy:      total_entry_length: no knob\nwrote /scratch1/jjt_373/tare-w12b/pilot/pilot/tare_cold/decision.txt\n",
+    "wall_s": 62.30933992983773,
+    "why": "total_entry_length: no knob"
+  },
+  "test": "iseqsearch-timing-pilot",
+  "threads": "4",
+  "timing_split": {
+    "in_alternating_mean": false,
+    "once_s": 124.81705107633024,
+    "pass_s": 38.62208395404741,
+    "search_s": 8.952036818955094
+  },
+  "tqdm": "4.67.1",
+  "verdict": "COMPLETE",
+  "warm_old": {
+    "arm": "stock",
+    "output": "/scratch1/jjt_373/tare-w12b/pilot/pilot/warm_2026_01.m8",
+    "ran": true,
+    "returncode": 0,
+    "rows": 3957,
+    "stderr_tail": "592s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.099s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 2/4.\nBuilding reference seed array...  [0.596s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.099s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 3/4.\nBuilding reference seed array...  [0.596s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.105s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nProcessing query block 1, reference block 1/1, shape 2/2, index chunk 4/4.\nBuilding reference seed array...  [0.594s]\nBuilding query seed array...  [0s]\nComputing hash join...  [0.101s]\nMasking low complexity seeds...  [0s]\nSearching alignments...  [0.001s]\nDeallocating memory...  [0s]\nDeallocating buffers...  [0s]\nClearing query masking...  [0s]\nComputing alignments...  [0.337s]\nDeallocating reference...  [0.001s]\nLoading reference sequences...  [0s]\nDeallocating buffers...  [0s]\nDeallocating queries...  [0s]\nLoading query sequences...  [0s]\nClosing the input file...  [0s]\nClosing the output file...  [0s]\nClosing the database...  [0s]\nCleaning up...  [0s]\nTotal time = 9.281s\nReported 3957 pairwise alignments, 3957 HSPs.\n43 queries aligned.\n",
+    "timed": false,
+    "wall_s": 9.287582327146083
+  },
+  "why": "arms finished and controls passed"
+}

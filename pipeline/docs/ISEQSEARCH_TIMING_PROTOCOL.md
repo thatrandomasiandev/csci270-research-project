@@ -254,3 +254,55 @@ pilot is not exclusive. Job `12864756` is never touched.
 A speedup, a reproduction of 407 on a freshly searched server output,
 or that TARE returns a stock body. Those are outputs of the run, or
 they are absent.
+
+## Addendum 2026-10-19 — pilot outcome, before the measured job
+
+Pilot job `13241869` on `a03-17` (AMD EPYC 7513, not the measured
+constraint), 4 CPUs, 32 GB, non-exclusive, code
+`cefc427dfc6fb27cfdcd0bfa22cca4653e158666`. Elapsed 2 min 45 s. File
+`pipeline/results/iseqsearch_timing/pilot.json`. Verdict `COMPLETE`.
+These walls are not a speed claim.
+
+The first submission, job `13241864`, used `--nice=10000` and sat at
+priority 1. It was cancelled before it started and resubmitted without
+that nice. No pilot wall comes from `13241864`.
+
+What the pilot observed:
+
+- Delta FASTA 10239 entries, MD5 `6d9202d47413f295fcc15b7159f2bd1e`,
+  the same file as the laptop dx_i delta. `l_old` 208482574. `l_delta`
+  4056372. `l_sum` 212538946.
+- Query name hash matches the locked pilot draw. 50 queries, disjoint
+  from the 300.
+- Stock vs stock: 3962 body rows, identical. Known-good passed.
+- iSeqSearch fresh merge: 3982 rows, not body-identical. 37 of 3962
+  shared rows byte-identical, 3925 same HSP with a different value, 0
+  different HSP, 20 extra rows. Known-bad (drop last line) passed.
+  This is the 50-query pilot, not the figure's 407 of 31377.
+- Cold TARE and the timed TARE arm both returned `REFUSE_PIN`, reason
+  `total_entry_length: no knob`. `returned_stock` is false. No body
+  file was written. The timed arm's phase clock is parse 13.21 s,
+  prep 1.42 s, tool 13.31 s, probe 0 s.
+
+The locked limit treated only the stock blast and the iSeqSearch delta
+blast as query-scaled. The pilot shows TARE's `tool_s` is also a
+DIAMOND search of the query file, and the cold invocation (62.31 s) is
+inside `once_s`. Scaling those as well, and scaling the warm search
+and the stock-vs-stock pair, gives
+
+```
+once = 26.596 + 3.943 + 5.094
+     + 6 * (warm + 17.513 + 62.309)
+pass = 6 * 8.735
+     + (0.807 - 0.218 + 6 * 0.218)
+     + (29.081 - 13.314 + 6 * 13.314)
+limit_s = 1.5 * (once + 3 * pass)
+```
+
+`warm` is the residual of `once_s` after diff, both full builds,
+stock-vs-stock, and cold: 124.817 - 26.596 - 3.943 - 5.094 - 17.513 -
+62.309 = 9.362. Then `once` = 570.8 s, one scaled pass = 149.9 s,
+`limit_s` = 1531 s. Slurm's time unit is one minute, so the measured
+job asks for 30 minutes. That is above 1531 s and below the 8 hour
+cap. The job still exits when the run finishes.
+

@@ -10,7 +10,7 @@
 #SBATCH --exclusive
 #SBATCH --mem=0
 #SBATCH --constraint=epyc-7542
-#SBATCH --time=08:00:00
+#SBATCH --time=00:30:00
 #SBATCH --output=/scratch1/jjt_373/tare-w12b/logs/%x-%j.out
 #SBATCH --error=/scratch1/jjt_373/tare-w12b/logs/%x-%j.err
 
