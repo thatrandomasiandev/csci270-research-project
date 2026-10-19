@@ -1,0 +1,542 @@
+{
+  "decision": "SHIP_CANDIDATE",
+  "full_probe_confirmation": {
+    "extra": [
+      "-dbsize",
+      "209017843"
+    ],
+    "name": "dbsize",
+    "parts": [
+      {
+        "byte_identical": true,
+        "different_hsp": 0,
+        "examples": [],
+        "extra": 0,
+        "missing": 0,
+        "n_part_lines": 7498,
+        "n_whole_rows_in_part": 7498,
+        "part": 0,
+        "same_interval_different_score": 0,
+        "value_only": 0,
+        "wall_s": 6.089424473233521
+      },
+      {
+        "byte_identical": true,
+        "different_hsp": 0,
+        "examples": [],
+        "extra": 0,
+        "missing": 0,
+        "n_part_lines": 7627,
+        "n_whole_rows_in_part": 7627,
+        "part": 1,
+        "same_interval_different_score": 0,
+        "value_only": 0,
+        "wall_s": 6.642493142746389
+      }
+    ],
+    "pin": "-dbsize {total_entry_length}",
+    "reproduces_whole": true,
+    "tare_placeholder": true
+  },
+  "one_query_candidates": [
+    {
+      "name": "dbsize",
+      "reason": "half plus the whole-reference letter count reproduces the unpinned whole line",
+      "tare_pin": true,
+      "template": "-dbsize {total_entry_length}",
+      "value": 209017843
+    }
+  ],
+  "one_query_matches_probe": true,
+  "part_runs": [
+    {
+      "md5": "adabc538931109f5194717986c520e33",
+      "n_lines": 14463,
+      "wall_s": 9.773301225621253
+    },
+    {
+      "md5": "90a23e26fd98c2ff05fb2c91c370b354",
+      "n_lines": 14474,
+      "wall_s": 9.596038691699505
+    }
+  ],
+  "pins": [
+    {
+      "extra": [],
+      "label": "one_half_unpinned",
+      "matches_probe_part": true,
+      "matches_unpinned_whole": false,
+      "n_lines": 874,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+      ],
+      "threads": "4",
+      "wall_s": 0.671352761797607
+    },
+    {
+      "extra": [],
+      "label": "one_whole_unpinned",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 1.018868783954531
+    },
+    {
+      "extra": [],
+      "label": "half_unpinned",
+      "matches_probe_part": true,
+      "matches_unpinned_whole": false,
+      "n_lines": 874,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+      ],
+      "threads": "4",
+      "wall_s": 0.6529294061474502
+    },
+    {
+      "extra": [],
+      "label": "whole_unpinned_one",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.830603783018887
+    },
+    {
+      "extra": [
+        "-dbsize",
+        "209017843"
+      ],
+      "label": "half_dbsize",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 428,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.5298698181286454
+    },
+    {
+      "extra": [
+        "-dbsize",
+        "209017843"
+      ],
+      "label": "whole_dbsize",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.8376560597680509
+    },
+    {
+      "extra": [
+        "-searchsp",
+        "5214656096"
+      ],
+      "label": "half_searchsp",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 408,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t161\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.4540740121155977
+    },
+    {
+      "extra": [
+        "-searchsp",
+        "5214656096"
+      ],
+      "label": "whole_searchsp",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 818,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t161\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.680997128598392
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "0"
+      ],
+      "label": "half_cbs_0",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 614,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t242\t23.9"
+      ],
+      "threads": "4",
+      "wall_s": 0.44697985611855984
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "0"
+      ],
+      "label": "whole_cbs_0",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 580,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t485\t23.9"
+      ],
+      "threads": "4",
+      "wall_s": 0.6218640920706093
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "1"
+      ],
+      "label": "half_cbs_1",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 456,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t152\t24.6"
+      ],
+      "threads": "4",
+      "wall_s": 0.45159509498625994
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "1"
+      ],
+      "label": "whole_cbs_1",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 431,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t304\t24.6"
+      ],
+      "threads": "4",
+      "wall_s": 0.6179346209391952
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "2"
+      ],
+      "label": "half_cbs_2",
+      "matches_probe_part": true,
+      "matches_unpinned_whole": false,
+      "n_lines": 874,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+      ],
+      "threads": "4",
+      "wall_s": 0.6532362722791731
+    },
+    {
+      "extra": [
+        "-comp_based_stats",
+        "2"
+      ],
+      "label": "whole_cbs_2",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.8256544261239469
+    },
+    {
+      "extra": [
+        "-max_hsps",
+        "1"
+      ],
+      "label": "half_max_hsps_1",
+      "matches_probe_part": true,
+      "matches_unpinned_whole": false,
+      "n_lines": 874,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+      ],
+      "threads": "4",
+      "wall_s": 0.6368570951744914
+    },
+    {
+      "extra": [
+        "-max_hsps",
+        "1"
+      ],
+      "label": "whole_max_hsps_1",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "4",
+      "wall_s": 0.7824137308634818
+    },
+    {
+      "extra": [
+        "-ungapped",
+        "-comp_based_stats",
+        "0"
+      ],
+      "label": "half_ungapped",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 1146,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [],
+      "threads": "4",
+      "wall_s": 0.421560968272388
+    },
+    {
+      "extra": [
+        "-ungapped",
+        "-comp_based_stats",
+        "0"
+      ],
+      "label": "whole_ungapped",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": false,
+      "n_lines": 1252,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [],
+      "threads": "4",
+      "wall_s": 0.5694642029702663
+    },
+    {
+      "extra": [],
+      "label": "half_threads_1",
+      "matches_probe_part": true,
+      "matches_unpinned_whole": false,
+      "n_lines": 874,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+      ],
+      "threads": "1",
+      "wall_s": 1.5312887830659747
+    },
+    {
+      "extra": [],
+      "label": "whole_threads_1",
+      "matches_probe_part": false,
+      "matches_unpinned_whole": true,
+      "n_lines": 853,
+      "query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+      "target_lines": [
+        "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+      ],
+      "threads": "1",
+      "wall_s": 2.0995352189056575
+    }
+  ],
+  "provenance": {
+    "finished_utc": "2026-10-18T07:57:37.223185+00:00",
+    "git": "10c3c81acf67eca1d427ea9afc04cec9d170b646",
+    "git_dirty": false,
+    "host": "b09-03.hpc.usc.edu",
+    "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+    "python": "3.11.9",
+    "versions": {
+      "blastp": "blastp: 2.14.1+\n Package: blast 2.14.1, build Jan 15 2025 18:49:12",
+      "makeblastdb": "makeblastdb: 2.14.1+\n Package: blast 2.14.1, build Jan 15 2025 18:49:12"
+    }
+  },
+  "report_stats": {
+    "effective_search_space": 5214656096,
+    "lines": [
+      "575,748 sequences; 209,017,843 total letters",
+      "Effective search space used: 5214656096"
+    ],
+    "n_sequences_printed": 575748,
+    "total_letters_printed": 209017843
+  },
+  "reproduction": {
+    "classification": "different_hsp",
+    "key_sets": {
+      "aligned": 15125,
+      "in_two_parts": 0,
+      "only_union": 13812,
+      "only_whole": 0,
+      "union": 28937,
+      "whole": 15125
+    },
+    "matches_published_part": true,
+    "matches_published_whole": true,
+    "n_query_lines": 853,
+    "other_part_lines": [],
+    "part_lines": [
+      "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t21.875\t128\t72\t5\t3\t105\t1\t125\t180\t24.3"
+    ],
+    "sample_query_lines": [
+      "WP_000153074.1\tsp|P64534|RCNB_ECOLI\t99.107\t112\t1\t0\t1\t112\t1\t112\t7.05e-80\t232",
+      "WP_000153074.1\tsp|P64535|RCNB_ECOL6\t99.107\t112\t1\t0\t1\t112\t1\t112\t7.05e-80\t232",
+      "WP_000153074.1\tsp|Q5N9X2|LAC4_ORYSJ\t33.846\t65\t34\t2\t21\t78\t297\t359\t0.63\t32.3"
+    ],
+    "subject_part": 0,
+    "whole_lines": [
+      "WP_000153074.1\tsp|A0KJE6|LOLA_AERHH\t33.333\t36\t23\t1\t3\t37\t1\t36\t205\t25.0"
+    ]
+  },
+  "self_check": {
+    "identical_control": "same_line",
+    "published_pair": "different_hsp",
+    "report_parser": "ok"
+  },
+  "setup": {
+    "b1_argv": [
+      "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/blast-plus-2.14.1-tdum24r/bin/blastp",
+      "-query",
+      "{input}",
+      "-db",
+      "{reference}",
+      "-out",
+      "{output}",
+      "-outfmt",
+      "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore",
+      "-max_target_seqs",
+      "100000",
+      "-evalue",
+      "1000",
+      "-num_threads",
+      "4"
+    ],
+    "help_lines": [
+      "[-dbsize num_letters] [-gilist filename] [-seqidlist filename]",
+      "[-out output_file] [-evalue evalue] [-word_size int_value]",
+      "[-qcov_hsp_perc float_value] [-max_hsps int_value]",
+      "[-xdrop_ungap float_value] [-xdrop_gap float_value]",
+      "[-xdrop_gap_final float_value] [-searchsp int_value] [-seg SEG_options]",
+      "[-threshold float_value] [-culling_limit int_value]",
+      "[-sorthsps sort_hsps] [-max_target_seqs num_sequences]",
+      "[-num_threads int_value] [-mt_mode int_value] [-ungapped] [-remote]",
+      "[-comp_based_stats compo] [-use_sw_tback] [-version]",
+      "-evalue <Real>",
+      "-comp_based_stats <String>",
+      "evalue means Expect value",
+      "evalue bitscore', which is equivalent to the keyword 'std'",
+      "* Incompatible with:  max_target_seqs",
+      "* Incompatible with:  max_target_seqs",
+      "0 = Sort by evalue,",
+      "0 = Sort by hsp evalue,",
+      "-max_hsps <Integer, >=1>",
+      "-culling_limit <Integer, >=0>",
+      "* Incompatible with:  culling_limit",
+      "* Incompatible with:  culling_limit",
+      "-max_target_seqs <Integer, >=1>",
+      "-dbsize <Int8>",
+      "-searchsp <Int8, >=0>",
+      "-xdrop_ungap <Real>",
+      "X-dropoff value (in bits) for ungapped extensions",
+      "-xdrop_gap <Real>",
+      "-xdrop_gap_final <Real>",
+      "-ungapped",
+      "Perform ungapped alignment only?",
+      "-num_threads <Integer, >=1>",
+      "* Requires:  num_threads",
+      "subject_loc, num_threads"
+    ],
+    "n_entries": 575748,
+    "part_counts": [
+      287874,
+      287874
+    ],
+    "part_lengths": [
+      104399849,
+      104617994
+    ],
+    "partition_matches_b1": true,
+    "queries_md5": "b170d133266427c46d87d99284e1fda3",
+    "query_ids": [
+      "WP_000020880.1",
+      "WP_000066560.1",
+      "WP_000149991.1",
+      "WP_000153074.1",
+      "WP_000211501.1",
+      "WP_000230277.1",
+      "WP_000551020.1",
+      "WP_000679812.1",
+      "WP_000687768.1",
+      "WP_000763311.1",
+      "WP_000833470.1",
+      "WP_000839596.1",
+      "WP_001287378.1",
+      "WP_001297409.1",
+      "WP_001303782.1",
+      "WP_001324445.1",
+      "WP_001324556.1",
+      "WP_001425728.1",
+      "WP_029396194.1",
+      "WP_071448054.1"
+    ],
+    "query_ids_match_b1": true,
+    "reference_md5": "bc9d398533e6df582b563c6c03093bd0",
+    "subject_index": 229251,
+    "subject_part": 0,
+    "total_entry_length": 209017843
+  },
+  "ship": {
+    "candidate": true,
+    "pin": "-dbsize {total_entry_length}",
+    "value": 209017843
+  },
+  "starting_commit": "507c45fcd2eb3c3e7850791cb2daf5e84400ffab",
+  "stats_wall_s": 0.5414835698902607,
+  "stock_vs_stock": {
+    "byte_identical": true,
+    "md5_a": "e1792cd30e1b67f1c9a0227f31a24f19",
+    "md5_b": "e1792cd30e1b67f1c9a0227f31a24f19",
+    "multiset_identical": true,
+    "multiset_md5": "0b6168ff07baea8e73e64f0d2a5e3a67",
+    "n_lines": 15125,
+    "wall_a_s": 11.147202054969966,
+    "wall_b_s": 11.12066189898178
+  },
+  "sweep_query": "/scratch1/jjt_373/tare_e/blast_diagnosis/one.faa",
+  "whole_prep": {
+    "argv": [
+      "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/blast-plus-2.14.1-tdum24r/bin/makeblastdb",
+      "-in",
+      "/scratch1/jjt_373/tare_e/blast_diagnosis/whole.faa",
+      "-dbtype",
+      "prot",
+      "-out",
+      "/scratch1/jjt_373/tare_e/blast_diagnosis/db/whole"
+    ],
+    "stderr_tail": "",
+    "stdout_tail": "\n\nBuilding a new DB, current time: 10/18/2026 00:55:30\nNew DB name:   /scratch1/jjt_373/tare_e/blast_diagnosis/db/whole\nNew DB title:  /scratch1/jjt_373/tare_e/blast_diagnosis/whole.faa\nSequence type: Protein\nKeep MBits: T\nMaximum file size: 3000000000B\nAdding sequences from FASTA; added 575748 sequences in 10.7093 seconds.\n\n\n",
+    "wall_s": 20.541035816073418
+  }
+}
