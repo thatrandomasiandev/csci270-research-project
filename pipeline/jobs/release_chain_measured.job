@@ -1,8 +1,9 @@
 #!/bin/bash
-# TARE release-chain measured run. One proteome per array task, exclusive EPYC.
-# Scratch floor and HMMER sha256 stop are the headline pilot's.
+# TARE W8 release-chain measured run. One proteome per array task.
+# Do not sbatch until the post-pilot addendum sets --time from the pilot wall.
+# Exclusive EPYC 7542, --mem=0. Scratch is /scratch1. Node /tmp is not used.
 # A crash in the runner writes a partial JSON and exits 2. A scored FAIL exits 0.
-#SBATCH --job-name=tare_chain_measured
+#SBATCH --job-name=tare-w8-measured
 #SBATCH --account=biyik_1165
 #SBATCH --partition=main
 #SBATCH --constraint=epyc-7542
@@ -13,34 +14,28 @@
 #SBATCH --mem=0
 #SBATCH --time=24:00:00
 #SBATCH --array=0-2
-#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/release_chain/logs/%x-%A_%a.out
-#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/release_chain/logs/%x-%A_%a.err
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%A_%a.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%A_%a.err
 
 set -euo pipefail
 
-ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/release_chain}"
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/tare-w8}"
 GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
-# Scratch: node-local /tmp (tmpfs on these nodes) when it has room, else /scratch1.
-# The job holds the whole node's memory (--mem=0), so tmpfs cannot starve the arms.
-TMP_FREE_KB="$(df -Pk /tmp | awk 'NR==2{print $4}')"
-if [[ "${TMP_FREE_KB}" -ge $((40*1024*1024)) ]]; then
-  SCRATCH="/tmp/release_chain_measured_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
-else
-  SCRATCH="/scratch1/${USER}/release_chain_measured_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
-  echo "NOTE: /tmp has ${TMP_FREE_KB} KB free; using ${SCRATCH}"
-fi
+DATA="${ACTS_RELEASE_DIR:-/scratch1/${USER}/tare-w8/data}"
+SCRATCH="/scratch1/${USER}/tare-w8/work/measured_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
-NAMES=(GCF_025259645.1 GCF_057098645.1 GCF_900196535.2)
+NAMES=(GCF_014295275.1 GCF_024585005.1 GCF_057098645.1)
 PROTEOME="${NAMES[${SLURM_ARRAY_TASK_ID}]}"
 
-export PYTHONPATH="${ROOT}"
+export PYTHONPATH="${ROOT}:${ROOT}/scripts"
 export PYTHONUNBUFFERED=1
 export ACTS_CODE_ROOT="${ROOT}"
 export ACTS_GENOMES="${GENOMES}"
-export ACTS_RELEASE_DIR="${ROOT}/data"
+export ACTS_RELEASE_DIR="${DATA}"
+export ACTS_DIVERSE_DRAW="${ROOT}/diverse_draw.json"
 export ACTS_PAIRS="${ROOT}/pairs.json"
 export ACTS_SCRATCH="${SCRATCH}"
-export ACTS_OUT="${ROOT}/results/measured_20261122_${PROTEOME}.json"
+export ACTS_OUT="${ROOT}/results/measured_20261222_${PROTEOME}.json"
 export ACTS_MODE="measured"
 export ACTS_GIT_HEAD="${ACTS_GIT_HEAD:-}"
 export ACTS_GIT_DIRTY="${ACTS_GIT_DIRTY:-}"
@@ -60,17 +55,17 @@ nproc
 python3 --version
 lscpu | grep -E 'Model name|CPU\(s\)' || true
 echo "SCRATCH=${SCRATCH} PROTEOME=${PROTEOME}"
-df -h /tmp || true
+echo "DATA=${DATA}"
 df -h "${SCRATCH}" || true
+df -h "${DATA}" || true
 grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
 module list 2>&1 || true
 gcc --version | head -n 1 || true
-findmnt -T /tmp || true
-awk '$2=="/tmp"{print}' /proc/mounts || true
 
-echo "=== build HMMER 3.4 from the pinned tarball ==="
+echo "=== HMMER 3.4 from the pinned tarball already on the project ==="
 TARBALL=""
 for candidate in \
+  /project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz \
   "${ROOT}/hmmer-3.4.tar.gz" \
   /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
   /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz
@@ -81,9 +76,8 @@ do
   fi
 done
 if [[ -z "${TARBALL}" ]]; then
-  TARBALL="${SCRATCH}/hmmer-3.4.tar.gz"
-  curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz \
-    || curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer3/3.4/hmmer-3.4.tar.gz
+  echo "STOP: pinned HMMER tarball is not on the project; not downloading" >&2
+  exit 2
 fi
 echo "tarball=${TARBALL}"
 sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
