@@ -14,9 +14,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 from pathlib import Path
 
-from acts.cache import _connect
+from acts.cache import UNREADABLE, FingerprintMemo, _connect
+
+# Marker hashed in place of a digest when argv[0] does not resolve to a file
+# on PATH (for example an in-process runner in tests). It is constant, so the
+# namespace stays deterministic.
+UNRESOLVED_BINARY = "unresolved"
+
+_BINARY_MEMO = FingerprintMemo(None)
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS contracts (
@@ -64,8 +72,30 @@ def recset_id(record_keys) -> str:
     return hashlib.sha256(blob.encode()).hexdigest()[:24]
 
 
+def program_binary(argv: list[str]) -> dict:
+    """Resolved argv[0] and its content digest, as the record cache keys it.
+
+    A different binary at the same path (a tool upgrade) gets a different
+    digest, so cached rows and the stored contract are not reused for it.
+    """
+    exe = shutil.which(argv[0]) if argv else None
+    if not exe:
+        return {"path": argv[0] if argv else "", "digest": UNRESOLVED_BINARY}
+    path = Path(exe)
+    try:
+        resolved = str(path.resolve())
+    except OSError:
+        resolved = str(path)
+    try:
+        digest = _BINARY_MEMO.file_digest(path)
+    except OSError:
+        digest = UNREADABLE
+    return {"path": resolved, "digest": digest}
+
+
 def argv_namespace(argv: list[str], reference: Path | None, baseline: str | None) -> str:
-    """Hash argv with the reference path removed. The baseline mode is part of the key."""
+    """Hash argv with the reference path removed. The baseline mode and the
+    program binary's content digest are part of the key."""
     ref = None
     if reference is not None:
         try:
@@ -80,6 +110,7 @@ def argv_namespace(argv: list[str], reference: Path | None, baseline: str | None
             continue
         kept.append(token)
     blob = "\0".join(kept) + "\0baseline:" + (baseline or "fit")
+    blob += "\0binary:" + program_binary(argv)["digest"]
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
 
