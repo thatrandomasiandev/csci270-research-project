@@ -64,6 +64,14 @@ CREATE TABLE IF NOT EXISTS entry_group (
   group_id TEXT NOT NULL,
   PRIMARY KEY (ns, entry_hash, group_id)
 );
+CREATE TABLE IF NOT EXISTS cost_history (
+  ns TEXT NOT NULL,
+  kind TEXT NOT NULL,
+  f_delta REAL NOT NULL,
+  stock_s REAL NOT NULL,
+  tare_s REAL NOT NULL,
+  discovery_s REAL NOT NULL
+);
 """
 
 
@@ -317,6 +325,50 @@ class ReferenceCache:
                     "INSERT OR IGNORE INTO entry_group (ns, entry_hash, group_id) VALUES (?, ?, ?)",
                     [(ns, entry_hash, group_id) for group_id in recorded],
                 )
+
+
+    def add_cost_observation(
+        self,
+        ns: str,
+        *,
+        kind: str,
+        f_delta: float,
+        stock_s: float,
+        tare_s: float,
+        discovery_s: float,
+    ) -> None:
+        """One measured fill or update: changed fraction, stock wall, TARE wall, discovery wall."""
+        with self._conn:
+            self._conn.execute(
+                """INSERT INTO cost_history
+                   (ns, kind, f_delta, stock_s, tare_s, discovery_s)
+                   VALUES (?, ?, ?, ?, ?, ?)""",
+                (ns, kind, float(f_delta), float(stock_s), float(tare_s), float(discovery_s)),
+            )
+
+    def cost_fit(self, ns: str) -> dict | None:
+        """Mean a, c for this namespace. a = discovery/(f·stock), c = (TARE−discovery)/stock.
+
+        Rows with a non-positive changed fraction or stock wall are ignored.
+        No usable row means the caller keeps the documented default threshold.
+        """
+        a_vals: list[float] = []
+        c_vals: list[float] = []
+        for f_delta, stock_s, tare_s, discovery_s in self._conn.execute(
+            "SELECT f_delta, stock_s, tare_s, discovery_s FROM cost_history WHERE ns = ?",
+            (ns,),
+        ):
+            if f_delta <= 0 or stock_s <= 0:
+                continue
+            a_vals.append(discovery_s / (f_delta * stock_s))
+            c_vals.append((tare_s - discovery_s) / stock_s)
+        if not a_vals:
+            return None
+        return {
+            "a": sum(a_vals) / len(a_vals),
+            "c": sum(c_vals) / len(c_vals),
+            "n": len(a_vals),
+        }
 
 
 def connect_cache(path: Path) -> ReferenceCache:
