@@ -227,3 +227,84 @@ The null `audit` fields are the cold cache, not the residue cap. On the 941 tria
 The cold pass has `reused_rows` 0, `audit` null, and decision `SHIP`. Its replay is class `missing` against stock. The warm pass has `reused_rows` 800. The neighbor pad and the three random pads still pass (`ic2` is `pass`). The audit then checks 20 records, residue fraction 0.05, and the decision is `REFUSE_AUDIT` with reason `tblout: audited records differ from a full run`.
 
 The 741 UNSAFE trials are shipped output from a first exact run. A later run that reuses rows catches this coupling with the audit, after the pads have missed it. The 50-trial grid does not measure that second run.
+
+## Addendum 2026-10-19 — cold audit, bounded sample, measured grid v2
+
+Written after the pilot in `pipeline/results/adversarial/pilot_v2.json` and before the measured grid. The locked "Measured grid" section above is unchanged. This addendum locks the v2 run.
+
+### What changed in the check
+
+The exact-mode audit in `acts/reference_run.py` (`_run_exact`) used to run only when `reused_rows > 0`. A cold cache therefore shipped without an audit. The audit now runs on every exact replay that reaches it, including a cold cache. The residue cap is unchanged: one record longer than half the residues still skips the sample. The non-exact incremental path is unchanged; it is not a candidate-subset replay.
+
+Two modes sit on that gate. Neither is a new detection theory.
+
+1. **Shipped sample.** Bernoulli inclusion 0.02, then a floor of 20, seed `20260927`. This is the Dune cache-check probability at record granularity, already the shipped default.
+2. **Bounded sample.** Choose `s` so that if at least a fraction `k_min/n` of records are affected, the with-replacement miss probability is at most `epsilon`:
+
+   `s = ceil(ln(epsilon) / ln(1 - k_min/n))`
+
+   Defaults `epsilon = 0.05` and `k_min/n = 0.01` give `s = 299` (capped at `n`). This is the classical binomial audit-sample size for a sample in which no misstatement is expected. A without-replacement draw of that size has hypergeometric miss probability at most the binomial value, so the formula is the conservative one. The draw itself is without replacement. `--audit-size` overrides `s`. The grid does not override it.
+
+First-use verification is a third mode, off in this grid. When enabled, the first `K` updates of a `(program binary digest, argv namespace)` run a full stock comparison and only then switch to the sample. The default `K` when the flag is passed is 2. The constructor default is off (`K = 0`). Each grid trial uses a fresh cache, so leaving the mode on would turn every trial into a full comparison and would not measure the sample. That is a disclosed choice, not a retune of `s`.
+
+### Semantics (no new tool behavior beyond the gate)
+
+The shim, the pin, the probe complement, the residue cap, the classifier, and the difference classes are the ones in the locked section. The audit compares the pinned replay, restricted to the sampled records, with one unpinned call on those records and the full reference. That is the comparison the warm-cache diagnostic already used. A cold cache now reaches it.
+
+A SHIP whose `audit` field is null is a return of the gate bug. It is recorded as a deviation. It is not repaired by changing `s` after the rates are in.
+
+### Pilot, seed 20261231 (not a result)
+
+Host: this laptop. `n = 400` records, `500` models. Code was the uncommitted tree on `1c65571538afcc139af560156147e4276905f9b4` (`git_dirty_tracked` true). The measured run uses the commit that contains that code and this addendum, with a clean tracked tree. File: `pipeline/results/adversarial/pilot_v2.json`.
+
+Clean contract: `SHIP`. Oracle mismatches: 0. Stock tblout rows: 400 on every trial. Every trial has `reused_rows` 0.
+
+| Arm | Cell | Trials | Outcome | Layer | Audit |
+|---|---|---:|---|---|---|
+| shipped | C0 k=5 | 3 | correct_ship | none | `checked 20`, cold |
+| shipped | C3 d=1 k=5 | 3 | true_refusal | neighbor_pad | not reached |
+| shipped | C2 k=80 | 3 | true_refusal | random_pad, random_pad, audit | the audit trial is `REFUSE_AUDIT` on a cold cache |
+| bounded | C0 k=5 | 2 | correct_ship | none | `checked 299`, cold |
+| bounded | C2 k=80 | 2 | true_refusal | audit | `REFUSE_AUDIT`, cold |
+
+Known-good: C0 shipped, replay identical to stock, audit ran with `reused_rows` 0.
+Known-bad neighbor: distance 1 refused on the neighbor pad.
+Known-bad hidden: one shipped trial and both bounded trials refused on the audit after the pads had not refused that trial. The unit test `test_cold_cache_audit_refuses_a_far_model_the_pads_do_not_see` is the same observation on a record that is outside the probe and outside the size-50 pad sample.
+
+No redesign. The measured grid uses this check and the locked classifier.
+
+### Measured grid v2 (locked)
+
+Seed base `20261232`. Trial seeds use the same packing as the locked grid. Records 2000. Models 2500. Trials 50 per cell. `k` in {1, 5, 22, 100}. Cell order is the locked list (C0, C1, C2, C3 at distances 2, 5, and 20, C4).
+
+Two arms, same cells, same seeds:
+
+1. **shipped** — Bernoulli 0.02, floor 20, cold audit on, first-use off.
+2. **bounded** — `epsilon = 0.05`, `k_min/n = 0.01`, `s = 299`.
+
+Output: `pipeline/results/adversarial/measured_v2.json`. It records `git_head`, `code_commit`, the seed, per-trial decision, layer, outcome, difference class, `reused_rows`, `audit`, `audit_checked`, per-cell Wilson 95% intervals, and the audit-only prediction. Laptop wall times are `indicative_wall_s` and are not evidence.
+
+Detection is true refusals divided by trials whose replay differed from stock. Wilson intervals use that denominator. C0 is the correct-ship count and the needless-refusal count.
+
+The audit-only prediction at a cell's `k` is reported three ways, and it is not a pass/fail rule:
+
+- with-replacement: `1 - (1 - k/n)^s`
+- hypergeometric: `1 - C(n-k, s) / C(n, s)`
+- shim: the affected set is drawn from the non-probe complement, so the miss probability is `C(E - a, k) / C(E, k)` where `E` is the complement and `a` is how many audited records lie in it
+
+The sizing guarantee is `P(miss) <= 0.05` when `k/n >= 0.01`. For `n = 2000` that starts at `k = 20`. Cells with `k` in {1, 5} are below the guarantee. The prediction is audit-only: a pad refusal raises detection and is not a failure of the bound.
+
+Positive control: C0, every k, on both arms. A needless refusal is reported.
+Negative control: the pilot's distance-1 neighbor refusal, and the pilot's cold `REFUSE_AUDIT`. They are not repeated inside the 50-trial grid.
+
+Stop conditions, which are not a third redesign: clean contract not `SHIP`; oracle mismatch; a trial throws. UNSAFE counts are kept. A cell with fewer than 2000 stock tblout rows is INCONCLUSIVE.
+
+The server cost of the sample is taken from the committed headline phase files under `pipeline/results/exact_replay/headline_measured/`. `verify_s` on arm B is the shipped audit. The bounded fraction is that measurement times `s_bounded / s_shipped`. No new exclusive timing job is launched for this fraction. Laptop times are not that fraction.
+
+### hmmscan confirmation
+
+One real `hmmscan` per form, not part of the rates. Sequences are emitted from the same 24-profile Pfam prefix, with emit seed `20261238`. Trial seeds are `20261233` (C0), `20261234` (C1), `20261235` (C2), `20261236` (C3, distance 2), `20261237` (C4). Output is recorded beside the grid and cited from the v2 result. `--cpu 1`. If the process does not fit in 3 GB it is not forced; a non-exclusive CARC job is the fallback, and a missing run is reported as missing.
+
+### Not claimed
+
+The bound does not promise to catch a single affected record out of 2000. It does not estimate a Pfam-scale `q`. It does not retune `epsilon` or `k_min` after the grid. First-use is implemented and tested; this grid does not measure it.

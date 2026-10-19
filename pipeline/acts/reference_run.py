@@ -27,7 +27,17 @@ import time
 from pathlib import Path
 from collections.abc import Callable, Sequence
 
-from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit, residue_cap_binds
+from acts.audit import (
+    AUDIT_EPSILON,
+    AUDIT_FLOOR,
+    AUDIT_K_MIN_FRACTION,
+    AUDIT_P,
+    AUDIT_SEED,
+    bounded_audit_size,
+    pick_audit,
+    residue_cap_binds,
+    sample_fixed,
+)
 from acts.replay_batch import merge_bodies, plan_batches
 from acts.infer_knobs import capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
@@ -1020,6 +1030,11 @@ class ReferenceIncremental(Strategy):
         verify: str = "audit",
         audit_p: float | None = None,
         audit_seed: int = AUDIT_SEED,
+        audit_bound: bool = False,
+        audit_epsilon: float = AUDIT_EPSILON,
+        audit_k_fraction: float = AUDIT_K_MIN_FRACTION,
+        audit_size: int | None = None,
+        first_use_k: int = 0,
         primary_parts: list[list[int]] | None = None,
         sample: bool = True,
         runner: Invoke | None = None,
@@ -1041,6 +1056,13 @@ class ReferenceIncremental(Strategy):
         self.verify = verify if verify in {"audit", "full"} else "audit"
         self.audit_p = AUDIT_P if audit_p is None and self.verify == "audit" else (audit_p or 0.0)
         self.audit_seed = audit_seed
+        self.audit_bound = bool(audit_bound) or audit_size is not None
+        self.audit_epsilon = float(audit_epsilon)
+        self.audit_k_fraction = float(audit_k_fraction)
+        self.audit_size = audit_size
+        if first_use_k < 0:
+            raise RunError("first-use window cannot be negative")
+        self.first_use_k = int(first_use_k)
         self.primary_parts = primary_parts
         self.sample = sample
         self.runner = runner
@@ -1510,40 +1532,109 @@ class ReferenceIncremental(Strategy):
                 text = "\n".join(table.meta) + ("\n" if table.meta else "")
             (dest / table.name).write_text(text)
         _clock_add(self.clock, "render_s", time.perf_counter() - started)
-        if self.verify == "full":
+        window = self._first_use_window(ns, stored)
+        if window is not None:
+            extra["first_use"] = window
+        full_compare = self.verify == "full" or (window is not None and window["mode"] == "full")
+        if full_compare:
             started_phase = time.perf_counter()
             before_phase = dict(self.clock)
             stock = invoke(records, entries)
             _phase_from(self.clock, before_phase, "verify", started_phase)
+            if window is not None:
+                stored = self._first_use_commit(cache, ns, stored, window)
             for table in tables:
                 if body_lines(stock.get(table.name, "")) != body_lines(texts.get(table.name, "")):
                     return done("REFUSE_MATCH", f"{table.name}: body differs from a full run", extra)
-        elif self.verify == "audit" and reused:
+        elif self.verify == "audit":
+            # The audit runs on every exact replay that reaches this point,
+            # including a cold cache whose reused-row count is zero. The
+            # replay is still a candidate-subset search. Skipping it on the
+            # first run is what let a pad miss ship.
             keys = [rec.key for rec in rep_records]
             lengths = [len(rec.sequence) for rec in rep_records]
-            if self.audit_p > 0 and residue_cap_binds(lengths):
-                chosen = set()
+            active = self.audit_p > 0 or self.audit_bound
+            if active and residue_cap_binds(lengths):
                 extra["audit"] = "skipped, input below record granularity"
+                extra["audit_checked"] = 0
+                extra["audit_mode"] = "bounded" if self.audit_bound else "bernoulli"
             else:
-                chosen = set(pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed)))
-                if self.audit_p > 0:
+                chosen_list, info = self._audit_draw(keys)
+                chosen = set(chosen_list)
+                extra.update(info)
+                if active:
                     total = sum(lengths)
                     got = sum(length for rec, length in zip(rep_records, lengths) if rec.key in chosen)
                     share = (got / total) if total else 0.0
                     extra["audit"] = f"checked {len(chosen)}, residue fraction {share:.6f}"
-            extra["audit_checked"] = len(chosen)
-            if chosen:
-                started_phase = time.perf_counter()
-                before_phase = dict(self.clock)
-                stock = invoke([rec for rec in records if rec.key in chosen], entries)
-                _phase_from(self.clock, before_phase, "verify", started_phase)
-                for table in tables:
-                    a = _body_record_filter(stock.get(table.name, ""), table.record_col, chosen)
-                    b = _body_record_filter(texts.get(table.name, ""), table.record_col, chosen)
-                    if a != b:
-                        return done("REFUSE_AUDIT", f"{table.name}: audited records differ from a full run", extra)
+                extra["audit_checked"] = len(chosen)
+                if chosen:
+                    started_phase = time.perf_counter()
+                    before_phase = dict(self.clock)
+                    stock = invoke([rec for rec in records if rec.key in chosen], entries)
+                    _phase_from(self.clock, before_phase, "verify", started_phase)
+                    if window is not None:
+                        stored = self._first_use_commit(cache, ns, stored, window)
+                    for table in tables:
+                        a = _body_record_filter(stock.get(table.name, ""), table.record_col, chosen)
+                        b = _body_record_filter(texts.get(table.name, ""), table.record_col, chosen)
+                        if a != b:
+                            return done(
+                                "REFUSE_AUDIT",
+                                f"{table.name}: audited records differ from a full run",
+                                extra,
+                            )
         why = "exact replay under pinned normalizer" if self.pin else "exact replay under identity normalizer"
         return done("SHIP", why, extra)
+
+    def _audit_draw(self, keys: list[str]) -> tuple[list[str], dict]:
+        """Bernoulli-plus-floor draw, or a fixed sample sized by the miss bound."""
+        if self.audit_bound:
+            target = (
+                self.audit_size
+                if self.audit_size is not None
+                else bounded_audit_size(len(keys), epsilon=self.audit_epsilon, fraction=self.audit_k_fraction)
+            )
+            chosen = sample_fixed(keys, target, random.Random(self.audit_seed))
+            return chosen, {
+                "audit_mode": "bounded",
+                "audit_s_target": target,
+                "audit_epsilon": self.audit_epsilon,
+                "audit_k_min_fraction": self.audit_k_fraction,
+                "audit_sizing": "with-replacement",
+            }
+        chosen = pick_audit(keys, p=self.audit_p, floor=AUDIT_FLOOR, rng=random.Random(self.audit_seed))
+        return chosen, {
+            "audit_mode": "bernoulli",
+            "audit_p": self.audit_p,
+            "audit_floor": AUDIT_FLOOR,
+        }
+
+    def _first_use_window(self, ns: str, stored: dict) -> dict | None:
+        """Full comparison for the first K updates of a new binary and namespace.
+
+        The namespace already hashes the program binary's content and the
+        argv. A new binary or a new argv starts the window over. The mode
+        is off when ``first_use_k`` is 0, which is the constructor default.
+        """
+        if self.first_use_k <= 0 or self.verify != "audit":
+            return None
+        seen = int(stored.get("first_use_updates") or 0)
+        binary = program_binary(self.argv)
+        return {
+            "k": self.first_use_k,
+            "index": seen,
+            "mode": "full" if seen < self.first_use_k else "sampled",
+            "binary_digest": binary["digest"],
+            "namespace": ns,
+        }
+
+    def _first_use_commit(self, cache, ns: str, stored: dict, window: dict) -> dict:
+        stored = dict(stored)
+        stored["first_use_updates"] = int(stored.get("first_use_updates") or 0) + 1
+        stored["first_use_binary"] = window["binary_digest"]
+        cache.save_contract(ns, stored)
+        return stored
 
     def _ic2(self, pinned, entries, rep_records, texts, tables, cand: dict[str, set[str]]) -> str | None:
         """Neighbor pad on every replayed record; random pads on a sample.

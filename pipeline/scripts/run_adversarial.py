@@ -14,6 +14,7 @@ import json
 import math
 import os
 import platform
+import random
 import shutil
 import subprocess
 import sys
@@ -26,7 +27,18 @@ sys.path.insert(0, str(PIPELINE))
 sys.path.insert(0, str(PIPELINE / "scripts"))
 
 import coupling_shim as shim  # noqa: E402
-from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit  # noqa: E402
+from acts.audit import (  # noqa: E402
+    AUDIT_EPSILON,
+    AUDIT_FLOOR,
+    AUDIT_K_MIN_FRACTION,
+    AUDIT_P,
+    AUDIT_SEED,
+    audit_miss_probability,
+    bounded_audit_size,
+    pick_audit,
+    sample_fixed,
+    with_replacement_miss,
+)
 from acts.exact_certificate import SEEDS, neighbor_ids, pad_indices, pad_miss_probability, sample_keys  # noqa: E402
 from acts.reference_run import (  # noqa: E402
     IC2_SAMPLE_SEED,
@@ -37,6 +49,7 @@ from acts.reference_run import (  # noqa: E402
 import acts.reference_run as reference_run  # noqa: E402
 
 SCRATCH = Path.home() / "tmp" / "tare_b"
+SCRATCH_V2 = Path.home() / "tmp" / "tare_w10"
 OUT_DIR = PIPELINE / "results" / "adversarial"
 PIN = "-Z {entry_count}"
 HMMER = "/opt/homebrew/bin/hmmscan"
@@ -209,6 +222,10 @@ def run_trial(
     queries: list[dict],
     spec: dict,
     trial_dir: Path,
+    audit_bound: bool = False,
+    audit_epsilon: float = AUDIT_EPSILON,
+    audit_k_fraction: float = AUDIT_K_MIN_FRACTION,
+    audit_size: int | None = None,
 ) -> dict:
     apply_env(spec)
     plan = shim.trial_plan(
@@ -241,6 +258,11 @@ def run_trial(
             cache_path=trial_dir / "cache.sqlite",
             verify="audit",
             pin=PIN,
+            audit_bound=audit_bound,
+            audit_epsilon=audit_epsilon,
+            audit_k_fraction=audit_k_fraction,
+            audit_size=audit_size,
+            first_use_k=0,
         ).run()
     finally:
         reference_run._batched_replay = original
@@ -287,6 +309,10 @@ def run_trial(
         "pad_width": geo["pad_width"],
         "random_pads": extra.get("random_pads"),
         "audit": extra.get("audit"),
+        "audit_checked": extra.get("audit_checked"),
+        "audit_mode": extra.get("audit_mode"),
+        "audit_s_target": extra.get("audit_s_target"),
+        "reused_rows": extra.get("reused_rows"),
         "ic2": extra.get("ic2"),
         "indicative_wall_s": round(elapsed, 3),
     }
@@ -369,6 +395,162 @@ def prepare_inputs(root: Path, n_records: int, n_models: int) -> tuple[Path, Pat
     return hmm, fasta, models, queries
 
 
+def audit_plan(
+    n_records: int,
+    *,
+    bound: bool,
+    epsilon: float,
+    fraction: float,
+    size: int | None,
+) -> dict:
+    """The draw _run_exact will make when every record is replayed."""
+    keys = [shim.record_name(i) for i in range(n_records)]
+    probe = shim.probe_indices(n_records)
+    if bound:
+        target = size if size is not None else bounded_audit_size(n_records, epsilon=epsilon, fraction=fraction)
+        chosen = sample_fixed(keys, target, random.Random(AUDIT_SEED))
+        mode = "bounded"
+    else:
+        chosen = pick_audit(keys, p=AUDIT_P, floor=AUDIT_FLOOR, rng=random.Random(AUDIT_SEED))
+        target = len(chosen)
+        mode = "bernoulli"
+    eligible = sum(1 for key in chosen if int(key[1:]) not in probe)
+    return {
+        "mode": mode,
+        "s": len(chosen),
+        "s_target": target,
+        "eligible_in_audit": eligible,
+        "eligible_records": n_records - len(probe),
+        "epsilon": epsilon,
+        "k_min_fraction": fraction,
+        "sizing": "s = ceil(ln(epsilon) / ln(1 - k_min/n)); with-replacement upper bound",
+    }
+
+
+def bound_prediction(n_records: int, k: int, plan: dict) -> dict:
+    """Audit-only miss bound. Pads can only raise detection above this."""
+    size = int(plan["s"])
+    fraction = k / n_records if n_records else 0.0
+    if k <= 0 or size <= 0 or n_records <= 0:
+        wr = hyp = shim_p = None
+    else:
+        draw = min(size, n_records)
+        wr = with_replacement_miss(fraction=fraction, size=draw)
+        hyp = audit_miss_probability(n=n_records, k=k, s=draw, skipped=False)
+        eligible = int(plan["eligible_records"])
+        audited = int(plan["eligible_in_audit"])
+        if 0 < k <= eligible and 0 <= audited <= eligible:
+            left = eligible - audited
+            shim_p = 0.0 if left < k else math.comb(left, k) / math.comb(eligible, k)
+        else:
+            shim_p = None
+    def one_minus(value: float | None) -> float | None:
+        return None if value is None else 1.0 - value
+
+    return {
+        "s": size,
+        "k_over_n": fraction if n_records else None,
+        "meets_k_min": bool(n_records and fraction + 1e-15 >= plan["k_min_fraction"] and k > 0),
+        "epsilon": plan["epsilon"],
+        "k_min_fraction": plan["k_min_fraction"],
+        "p_miss_with_replacement": wr,
+        "detection_with_replacement": one_minus(wr),
+        "p_miss_hypergeometric": hyp,
+        "detection_hypergeometric": one_minus(hyp),
+        "p_miss_shim": shim_p,
+        "detection_shim": one_minus(shim_p),
+        "note": "Audit-only. A pad refusal is extra detection, not a failure of the bound.",
+    }
+
+
+def server_audit_cost(root: Path | None = None) -> dict:
+    """Audit time as a fraction of a stock run, from committed headline phases.
+
+    No new timing job. verify_s on arm B is the shipped Bernoulli audit.
+    The bounded fraction scales that measurement by s_bounded / s_shipped,
+    which assumes the audit scan grows with the number of records it reruns.
+    """
+    base = root or (PIPELINE / "results" / "exact_replay" / "headline_measured")
+    rows = []
+    for path in sorted(base.glob("headline_measured_*.json")):
+        try:
+            data = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        scored = data.get("scored") or {}
+        stock = scored.get("stock_median_s")
+        verifies = []
+
+        def walk(node) -> None:
+            if isinstance(node, dict):
+                phases = node.get("phases")
+                if node.get("arm") == "B" and isinstance(phases, dict) and "verify_s" in phases:
+                    verifies.append(float(phases["verify_s"]))
+                for value in node.values():
+                    walk(value)
+            elif isinstance(node, list):
+                for value in node:
+                    walk(value)
+
+        walk(data)
+        n_records = None
+        for value in _iter_dicts(data):
+            if "n_records" in value and isinstance(value["n_records"], int):
+                n_records = value["n_records"]
+                break
+        if not verifies or not stock or not n_records:
+            continue
+        verifies.sort()
+        mid = verifies[len(verifies) // 2]
+        shipped_s = len(pick_audit(
+            [str(i) for i in range(n_records)],
+            p=AUDIT_P,
+            floor=AUDIT_FLOOR,
+            rng=random.Random(AUDIT_SEED),
+        ))
+        bounded_s = bounded_audit_size(n_records, epsilon=AUDIT_EPSILON, fraction=AUDIT_K_MIN_FRACTION)
+        shipped_frac = mid / float(stock)
+        rows.append({
+            "file": str(path.relative_to(PIPELINE)),
+            "proteome": scored.get("proteome") or data.get("proteome"),
+            "n_records": n_records,
+            "stock_median_s": stock,
+            "verify_s_median": mid,
+            "n_updates": len(verifies),
+            "shipped_audit_s": shipped_s,
+            "bounded_audit_s": bounded_s,
+            "shipped_fraction_of_stock": shipped_frac,
+            "bounded_fraction_of_stock": shipped_frac * (bounded_s / shipped_s) if shipped_s else None,
+        })
+    def median(values: list[float]) -> float | None:
+        if not values:
+            return None
+        ordered = sorted(values)
+        return ordered[len(ordered) // 2]
+
+    return {
+        "source": "pipeline/results/exact_replay/headline_measured/headline_measured_*.json",
+        "assumption": "bounded cost = shipped verify_s * (s_bounded / s_shipped); verify_s is the Bernoulli audit",
+        "not_a_new_timing_job": True,
+        "n_genomes": len(rows),
+        "shipped_fraction_of_stock_median": median([row["shipped_fraction_of_stock"] for row in rows]),
+        "bounded_fraction_of_stock_median": median(
+            [row["bounded_fraction_of_stock"] for row in rows if row["bounded_fraction_of_stock"] is not None]
+        ),
+        "genomes": rows,
+    }
+
+
+def _iter_dicts(node):
+    if isinstance(node, dict):
+        yield node
+        for value in node.values():
+            yield from _iter_dicts(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from _iter_dicts(value)
+
+
 def run_grid(
     *,
     mode: str,
@@ -376,10 +558,22 @@ def run_grid(
     n_records: int,
     n_models: int,
     cells: list[tuple[str, str, int, int, int]],
+    scratch_root: Path | None = None,
+    audit_bound: bool = False,
+    audit_epsilon: float = AUDIT_EPSILON,
+    audit_k_fraction: float = AUDIT_K_MIN_FRACTION,
+    audit_size: int | None = None,
 ) -> dict:
     script = PIPELINE / "scripts" / "coupling_shim.py"
-    scratch = SCRATCH / mode
-    checkpoint = SCRATCH / f"{mode}.checkpoint.json"
+    scratch = (scratch_root or SCRATCH) / mode
+    plan = audit_plan(
+        n_records,
+        bound=audit_bound,
+        epsilon=audit_epsilon,
+        fraction=audit_k_fraction,
+        size=audit_size,
+    )
+    checkpoint = (scratch_root or SCRATCH) / f"{mode}.checkpoint.json"
     if scratch.exists():
         shutil.rmtree(scratch)
     hmm, fasta, models, queries = prepare_inputs(scratch, n_records, n_models)
@@ -442,6 +636,10 @@ def run_grid(
                 queries=queries,
                 spec=spec,
                 trial_dir=scratch / "trial",
+                audit_bound=audit_bound,
+                audit_epsilon=audit_epsilon,
+                audit_k_fraction=audit_k_fraction,
+                audit_size=audit_size,
             )
             payload.update({"form": form, "coupling": coupling, "distance": distance, "k": k, "cell": key})
             grouped[key].append(payload)
@@ -462,6 +660,7 @@ def run_grid(
             "distance": rows[0]["distance"],
             "k": k,
             **summarize_cell(rows, n_records=n_records, k=k, coupling=coupling),
+            "audit_bound": bound_prediction(n_records, k, plan),
         }
     payload = {
         "system": "TARE",
@@ -483,6 +682,9 @@ def run_grid(
             "audit_p": AUDIT_P,
             "audit_floor": AUDIT_FLOOR,
             "audit_seed": AUDIT_SEED,
+            "audit_runs_on_cold_cache": True,
+            "first_use_k": 0,
+            "audit_plan": plan,
             "probe_n": shim.PROBE_N,
             "probe_seed": shim.PROBE_SEED,
             **overlap,
@@ -505,6 +707,27 @@ def pilot_cells() -> list[tuple[str, str, int, int, int]]:
         ("C2", "presence", 0, 5, 2),
         ("C3", "order", 5, 5, 1),
         ("C4", "global", 0, 5, 1),
+    ]
+
+
+def pilot_v2_cells() -> list[tuple[str, str, int, int, int]]:
+    """Disjoint from the measured grid. Seed base 20261231.
+
+    C0 is the known-good ship. C3 at distance 1 is the known-bad neighbor
+    catch. C2 at k=80 is large enough that a cold audit should be able to
+    see a hidden model; the pilot records which layer actually fired.
+    """
+    return [
+        ("C0", "none", 0, 5, 3),
+        ("C3", "order", 1, 5, 3),
+        ("C2", "presence", 0, 80, 3),
+    ]
+
+
+def pilot_v2_bounded_cells() -> list[tuple[str, str, int, int, int]]:
+    return [
+        ("C0", "none", 0, 5, 2),
+        ("C2", "presence", 0, 80, 2),
     ]
 
 
@@ -548,6 +771,68 @@ def main(argv: list[str]) -> int:
         )
         write_result(OUT_DIR / "measured.json", payload)
         return 0
+    if mode == "pilot-v2":
+        payload = run_grid(
+            mode="pilot-v2",
+            base_seed=20261231,
+            n_records=400,
+            n_models=500,
+            cells=pilot_v2_cells(),
+            scratch_root=SCRATCH_V2,
+            audit_bound=False,
+        )
+        bounded = run_grid(
+            mode="pilot-v2-bounded",
+            base_seed=20261231,
+            n_records=400,
+            n_models=500,
+            cells=pilot_v2_bounded_cells(),
+            scratch_root=SCRATCH_V2,
+            audit_bound=True,
+        )
+        combined = {
+            "system": "TARE",
+            "kind": "pilot",
+            "not_a_result": True,
+            "seed": 20261231,
+            "shipped": payload,
+            "bounded": bounded,
+        }
+        write_result(OUT_DIR / "pilot_v2.json", combined)
+        return 0
+    if mode == "measured-v2":
+        shipped = run_grid(
+            mode="measured-v2-shipped",
+            base_seed=20261232,
+            n_records=2000,
+            n_models=2500,
+            cells=measured_cells(),
+            scratch_root=SCRATCH_V2,
+            audit_bound=False,
+        )
+        bounded = run_grid(
+            mode="measured-v2-bounded",
+            base_seed=20261232,
+            n_records=2000,
+            n_models=2500,
+            cells=measured_cells(),
+            scratch_root=SCRATCH_V2,
+            audit_bound=True,
+        )
+        combined = {
+            "system": "TARE",
+            "kind": "measured_v2",
+            "git_head": git_head(),
+            "git_dirty_tracked": git_dirty_tracked(),
+            "code_commit": git_head(),
+            "seed": 20261232,
+            "first_use_k": 0,
+            "server_audit_cost": server_audit_cost(),
+            "shipped": shipped,
+            "bounded": bounded,
+        }
+        write_result(OUT_DIR / "measured_v2.json", combined)
+        return 0
     if mode == "smoke":
         payload = run_grid(
             mode="smoke",
@@ -561,7 +846,7 @@ def main(argv: list[str]) -> int:
         )
         print(json.dumps(payload["cells"], indent=2, sort_keys=True))
         return 0
-    print("usage: run_adversarial.py pilot|measured|smoke", file=sys.stderr)
+    print("usage: run_adversarial.py pilot|measured|pilot-v2|measured-v2|smoke", file=sys.stderr)
     return 2
 
 

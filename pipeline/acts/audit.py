@@ -26,6 +26,17 @@ AUDIT_FLOOR = 20
 RESIDUE_FRACTION = AUDIT_P
 RESIDUE_FLOOR = AUDIT_FLOOR
 RESIDUE_CAP_FRACTION = 0.5
+# Bounded audit: binomial (with-replacement) sample size for zero expected
+# misses. If at least ``fraction`` of the records are affected,
+# ``(1 - fraction) ** s <= epsilon``. This is the classical audit-sample
+# size for a zero-error sample; the hypergeometric miss probability of a
+# without-replacement draw is at most this value. Not a new bound.
+# epsilon = 0.05 and fraction = 0.01 give s = 299.
+AUDIT_EPSILON = 0.05
+AUDIT_K_MIN_FRACTION = 0.01
+# First-use window. Off unless the caller sets it. When on, the default
+# length of the full-comparison window is 2 updates.
+FIRST_USE_K = 2
 
 T = TypeVar("T")
 
@@ -72,6 +83,65 @@ def pick_audit(
         rng.shuffle(extra)
         chosen.extend(extra[:need])
     return chosen
+
+
+def bounded_audit_size(
+    n: int,
+    *,
+    epsilon: float = AUDIT_EPSILON,
+    fraction: float = AUDIT_K_MIN_FRACTION,
+) -> int:
+    """Smallest ``s`` with ``(1 - fraction) ** s <= epsilon``, capped at ``n``.
+
+    ``fraction`` is ``k_min / n``. The formula is the with-replacement
+    (binomial) upper bound used in classical audit sampling when no
+    misstatement is expected in the sample:
+
+        s = ceil(ln(epsilon) / ln(1 - fraction))
+
+    A without-replacement draw of that size has hypergeometric miss
+    probability at most ``epsilon`` whenever at least ``fraction`` of the
+    ``n`` records are affected. ``s`` is capped at ``n``.
+    """
+    if n < 0:
+        raise ValueError("n must be non-negative")
+    if n == 0:
+        return 0
+    if not 0.0 < epsilon < 1.0:
+        raise ValueError("epsilon must lie in (0, 1)")
+    if not 0.0 < fraction < 1.0:
+        raise ValueError("fraction must lie in (0, 1)")
+    raw = math.log(epsilon) / math.log(1.0 - fraction)
+    # Subtract a tiny tolerance so a value that is an integer in exact
+    # arithmetic is not ceiled up by floating-point noise.
+    size = int(math.ceil(raw - 1e-12))
+    if size < 1:
+        size = 1
+    return min(size, n)
+
+
+def sample_fixed(
+    hits: Sequence[T],
+    size: int,
+    rng: random.Random,
+) -> list[T]:
+    """Simple random sample of ``size`` hits, without replacement."""
+    if size < 0:
+        raise ValueError("sample size must be non-negative")
+    if not hits or size == 0:
+        return []
+    if size >= len(hits):
+        return list(hits)
+    return rng.sample(list(hits), size)
+
+
+def with_replacement_miss(*, fraction: float, size: int) -> float:
+    """``(1 - fraction) ** size``. One when the sample is empty."""
+    if size <= 0 or fraction <= 0:
+        return 1.0
+    if fraction >= 1:
+        return 0.0
+    return (1.0 - fraction) ** size
 
 
 def residue_cap_binds(lengths: Sequence[int], cap_fraction: float = RESIDUE_CAP_FRACTION) -> bool:

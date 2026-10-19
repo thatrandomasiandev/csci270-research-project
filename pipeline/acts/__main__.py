@@ -191,6 +191,11 @@ def cmd_run(args: argparse.Namespace) -> int:
                 verify=args.verify,
                 audit_p=args.audit_p,
                 audit_seed=args.audit_seed,
+                audit_bound=args.audit_bound,
+                audit_epsilon=args.audit_epsilon,
+                audit_k_fraction=args.audit_k_fraction,
+                audit_size=args.audit_size,
+                first_use_k=args.first_use,
                 pin=args.pin,
                 slack=args.slack,
                 subset_aux=args.subset_aux,
@@ -325,6 +330,43 @@ def main(argv: list[str] | None = None) -> int:
     rn.add_argument("--verify", choices=("audit", "full"), default="audit")
     rn.add_argument("--audit-p", type=float, default=None, dest="audit_p")
     rn.add_argument("--audit-seed", type=int, default=20260927, dest="audit_seed")
+    rn.add_argument(
+        "--audit-bound",
+        action="store_true",
+        help=(
+            "size the audit sample so that a fraction audit-k-fraction of records "
+            "is missed with probability at most audit-epsilon: "
+            "s = ceil(ln(epsilon) / ln(1 - fraction))"
+        ),
+    )
+    rn.add_argument("--audit-epsilon", type=float, default=0.05, dest="audit_epsilon")
+    rn.add_argument(
+        "--audit-k-fraction",
+        type=float,
+        default=0.01,
+        dest="audit_k_fraction",
+        help="k_min/n for --audit-bound (default 0.01)",
+    )
+    rn.add_argument(
+        "--audit-size",
+        type=int,
+        default=None,
+        dest="audit_size",
+        help="override the bounded audit sample size",
+    )
+    rn.add_argument(
+        "--first-use",
+        nargs="?",
+        const=2,
+        type=int,
+        default=0,
+        dest="first_use",
+        help=(
+            "full stock comparison for the first K updates of a new program "
+            "binary and argv namespace, then sampled checks. "
+            "Passing the flag alone uses K=2. Omitting it leaves the mode off."
+        ),
+    )
     rn.add_argument("--probe-n", type=int, default=500, dest="probe_n")
     rn.add_argument("--probe-seed", type=int, default=20260927, dest="probe_seed")
     rn.add_argument("tool", nargs=argparse.REMAINDER)

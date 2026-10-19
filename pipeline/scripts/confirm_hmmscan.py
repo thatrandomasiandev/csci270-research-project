@@ -92,7 +92,7 @@ def extract_profiles(src: Path, n_models: int) -> tuple[str, list[str]]:
     return text, names
 
 
-def build(dest: Path, n_records: int = N_RECORDS) -> None:
+def build(dest: Path, n_records: int = N_RECORDS, emit_seed: int = EMIT_SEED) -> None:
     dest.mkdir(parents=True, exist_ok=True)
     text, names = extract_profiles(PFAM, N_MODELS)
     hmm = dest / "mini.hmm"
@@ -103,7 +103,7 @@ def build(dest: Path, n_records: int = N_RECORDS) -> None:
     anchor_path.write_text(anchor_block)
     emitted = dest / "emitted.fa"
     proc = subprocess.run(
-        [HMMEMIT, "--seed", str(EMIT_SEED), "-N", str(n_records), "-o", str(emitted), str(anchor_path)],
+        [HMMEMIT, "--seed", str(emit_seed), "-N", str(n_records), "-o", str(emitted), str(anchor_path)],
         check=False,
         capture_output=True,
         text=True,
@@ -127,7 +127,7 @@ def build(dest: Path, n_records: int = N_RECORDS) -> None:
         "presence_index": PRESENCE_INDEX,
         "presence_model": names[PRESENCE_INDEX],
         "names": names,
-        "emit_seed": EMIT_SEED,
+        "emit_seed": emit_seed,
     }
     (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(f"wrote {hmm} anchor={anchor} and {n_records} queries")
@@ -248,7 +248,14 @@ def _hmmer_version() -> str:
     return proc.stdout.splitlines()[0] if proc.stdout else ""
 
 
-def run_confirmations(dest: Path) -> None:
+def run_confirmations(
+    dest: Path,
+    *,
+    forms: tuple | None = None,
+    out_path: Path | None = None,
+    emit_seed: int = EMIT_SEED,
+    cpu: str = "1",
+) -> None:
     """One TARE trial per form. Not part of the 50-trial rates."""
     from acts.reference_run import ReferenceIncremental
     import acts.reference_run as reference_run
@@ -258,7 +265,11 @@ def run_confirmations(dest: Path) -> None:
     except OSError:
         pass
     if not (dest / "mini.hmm").is_file() or not (dest / "manifest.json").is_file():
-        build(dest)
+        build(dest, emit_seed=emit_seed)
+    elif emit_seed != EMIT_SEED:
+        manifest_seed = json.loads((dest / "manifest.json").read_text()).get("emit_seed")
+        if manifest_seed != emit_seed:
+            build(dest, emit_seed=emit_seed)
     manifest = json.loads((dest / "manifest.json").read_text())
     hmm = dest / "mini.hmm"
     fasta = dest / "queries.fa"
@@ -268,13 +279,14 @@ def run_confirmations(dest: Path) -> None:
     # One trial per form. C3 uses distance 2, the nearest distance on the
     # measured grid. Seeds are inside 20261113–20261117; each draw meets the
     # locked size-50 sample, so a single trial can see the random pad.
-    forms = (
-        ("C0", "none", 1, 0, 20261113),
-        ("C1", "residues", 1, 20, 20261114),
-        ("C2", "presence", 1, 20, 20261115),
-        ("C3", "order", 2, 20, 20261116),
-        ("C4", "global", 1, 20, 20261117),
-    )
+    if forms is None:
+        forms = (
+            ("C0", "none", 1, 0, 20261113),
+            ("C1", "residues", 1, 20, 20261114),
+            ("C2", "presence", 1, 20, 20261115),
+            ("C3", "order", 2, 20, 20261116),
+            ("C4", "global", 1, 20, 20261117),
+        )
     rows = []
     for form, coupling, distance, k, seed in forms:
         os.environ.update(
@@ -313,7 +325,7 @@ def run_confirmations(dest: Path) -> None:
                     "--cut_ga",
                     "--noali",
                     "--cpu",
-                    "1",
+                    cpu,
                     "--tblout",
                     "{output:tblout}",
                     "--domtblout",
@@ -341,7 +353,7 @@ def run_confirmations(dest: Path) -> None:
                 "--cut_ga",
                 "--noali",
                 "--cpu",
-                "1",
+                cpu,
                 "--tblout",
                 str(stock_tbl),
                 "--domtblout",
@@ -395,6 +407,9 @@ def run_confirmations(dest: Path) -> None:
                 "stock_rows": len(_body(stock_tbl.read_text())),
                 "affected_n": len(plan.affected),
                 "replay_captured": bool(captured),
+                "reused_rows": (result.extra or {}).get("reused_rows"),
+                "audit": (result.extra or {}).get("audit"),
+                "audit_checked": (result.extra or {}).get("audit_checked"),
             }
         )
         print(
@@ -411,9 +426,10 @@ def run_confirmations(dest: Path) -> None:
         "python": platform.python_version(),
         "pfam": manifest,
         "pin": "-Z {entry_count}",
+        "cpu": cpu,
         "trials": rows,
     }
-    out = _PIPELINE / "results" / "adversarial" / "confirm.json"
+    out = out_path or (_PIPELINE / "results" / "adversarial" / "confirm.json")
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2) + "\n")
     print(f"wrote {out}")
