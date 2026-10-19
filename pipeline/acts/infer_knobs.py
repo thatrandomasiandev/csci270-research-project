@@ -12,7 +12,7 @@ import subprocess
 from collections import Counter
 from collections.abc import Callable, Sequence
 
-from acts.reference_fit import ColumnReport, TableReport, parse_finite, parse_table_text, row_key
+from acts.reference_fit import ColumnReport, TableReport, index_rows, parse_finite, parse_table_text
 from acts.reference_formats import Entry, RecordItem
 
 SIZE_MEMBERS = ("entry_count", "total_entry_length")
@@ -419,13 +419,12 @@ def _option_argv(option: str, value: float) -> list[str]:
 
 def _index_table(table: TableReport, text: str) -> dict[tuple[str, str, str], tuple[list[str], str]]:
     parsed = parse_table_text(table.name, text)
-    indexed: dict[tuple[str, str, str], tuple[list[str], str]] = {}
-    for cells, raw in zip(parsed.rows, parsed.raw_lines):
-        key = row_key(cells, table.record_col, table.entry_col, table.index_col)
-        if key in indexed:
-            raise ValueError(f"duplicate row key {key}")
-        indexed[key] = (cells, raw)
-    return indexed
+    order = index_rows(parsed.rows, table.record_col, table.entry_col, table.index_col)
+    # index_rows keeps file order, which is the order of raw_lines.
+    return {
+        key: (cells, raw)
+        for (key, cells), raw in zip(order.items(), parsed.raw_lines, strict=True)
+    }
 
 
 def _shared_keys(

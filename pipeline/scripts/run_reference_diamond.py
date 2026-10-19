@@ -248,18 +248,24 @@ def index_out_file(
     index_col: int | None,
 ) -> dict[tuple[str, str, str], list[str]]:
     """Index an m8 one line at a time. The file text is not retained."""
-    from acts.reference_fit import row_key
+    from collections import Counter
+
+    from acts.reference_fit import row_key, with_occurrence
 
     indexed: dict[tuple[str, str, str], list[str]] = {}
+    seen: Counter[tuple[str, str, str]] = Counter()
     with path.open("rt") as handle:
         for line_no, line in enumerate(handle, start=1):
             if not line.strip() or line.startswith("#"):
                 continue
             cells = line.split()
             try:
-                key = row_key(cells, record_col, entry_col, index_col)
+                base = row_key(cells, record_col, entry_col, index_col)
             except IndexError as exc:
                 raise ValueError(f"{path}:{line_no} has too few columns") from exc
+            occurrence = int(seen[base])
+            seen[base] = occurrence + 1
+            key = with_occurrence(base, occurrence)
             if key in indexed:
                 raise ValueError(f"duplicate row key {key}")
             indexed[key] = cells
