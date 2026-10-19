@@ -1,0 +1,102 @@
+#!/bin/bash
+# TARE release-chain pilot. One proteome, exclusive EPYC.
+# Scratch floor and HMMER sha256 stop are the headline pilot's.
+# A crash in the runner writes a partial JSON and exits 2.
+#SBATCH --job-name=tare_chain_pilot
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=0
+#SBATCH --time=12:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/release_chain/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/release_chain/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/release_chain}"
+GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
+# Scratch: node-local /tmp (tmpfs on these nodes) when it has room, else /scratch1.
+# The job holds the whole node's memory (--mem=0), so tmpfs cannot starve the arms.
+TMP_FREE_KB="$(df -Pk /tmp | awk 'NR==2{print $4}')"
+if [[ "${TMP_FREE_KB}" -ge $((40*1024*1024)) ]]; then
+  SCRATCH="/tmp/release_chain_pilot_${SLURM_JOB_ID}"
+else
+  SCRATCH="/scratch1/${USER}/release_chain_pilot_${SLURM_JOB_ID}"
+  echo "NOTE: /tmp has ${TMP_FREE_KB} KB free; using ${SCRATCH}"
+fi
+HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+
+export PYTHONPATH="${ROOT}"
+export PYTHONUNBUFFERED=1
+export ACTS_CODE_ROOT="${ROOT}"
+export ACTS_GENOMES="${GENOMES}"
+export ACTS_RELEASE_DIR="${ROOT}/data"
+export ACTS_PAIRS="${ROOT}/pairs.json"
+export ACTS_SCRATCH="${SCRATCH}"
+export ACTS_OUT="${ROOT}/results/pilot_20261121.json"
+export ACTS_MODE="pilot"
+export ACTS_GIT_HEAD="${ACTS_GIT_HEAD:-}"
+export ACTS_GIT_DIRTY="${ACTS_GIT_DIRTY:-}"
+export ACTS_HMMER_SHA256="${HMMER_SHA256}"
+export OMP_NUM_THREADS=1
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+mkdir -p "${SCRATCH}" "${ROOT}/results" "${ROOT}/logs"
+echo "=== host ==="
+hostname
+date -Is
+nproc
+python3 --version
+lscpu | grep -E 'Model name|CPU\(s\)' || true
+echo "SCRATCH=${SCRATCH}"
+df -h /tmp || true
+df -h "${SCRATCH}" || true
+grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
+module list 2>&1 || true
+gcc --version | head -n 1 || true
+findmnt -T /tmp || true
+awk '$2=="/tmp"{print}' /proc/mounts || true
+
+echo "=== build HMMER 3.4 from the pinned tarball ==="
+TARBALL=""
+for candidate in \
+  "${ROOT}/hmmer-3.4.tar.gz" \
+  /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz
+do
+  if [[ -f "${candidate}" ]]; then
+    TARBALL="${candidate}"
+    break
+  fi
+done
+if [[ -z "${TARBALL}" ]]; then
+  TARBALL="${SCRATCH}/hmmer-3.4.tar.gz"
+  curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz \
+    || curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer3/3.4/hmmer-3.4.tar.gz
+fi
+echo "tarball=${TARBALL}"
+sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
+got="$(awk '{print $1}' "${SCRATCH}/hmmer.sha256")"
+if [[ "${got}" != "${HMMER_SHA256}" ]]; then
+  echo "STOP: HMMER tarball sha256 ${got} != ${HMMER_SHA256}" >&2
+  exit 2
+fi
+tar -C "${SCRATCH}" -xf "${TARBALL}"
+cd "${SCRATCH}/hmmer-3.4"
+./configure --prefix="${SCRATCH}/hmmer"
+make -j"${SLURM_CPUS_PER_TASK:-8}"
+make install
+export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+command -v hmmscan
+hmmscan -h | head -n 3 || true
+
+python3 "${ROOT}/scripts/release_chain_carc.py"
+echo RELEASE_CHAIN_PILOT_DONE
