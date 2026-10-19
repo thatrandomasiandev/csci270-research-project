@@ -580,8 +580,14 @@ project files named above. Working scratch is
 
 ### Pilot procedure
 
-Non-exclusive, `--constraint=epyc-7542`, 8 CPUs, 64G, 16 h, job name
-`tare-w8-pilot`. One genome. r = 1. Two stock scans at 37.3, then one
+Non-exclusive, `--constraint=epyc-7542`, 4 CPUs, 24G, 16 h, job name
+`tare-w8-pilot`. The first submit asked for 8 CPUs and 64G (job
+`13241855`). Headline batch MaxRSS on the same `hmmscan` was about
+9.1 GiB (`sacct` `13208152`, step MaxRSS 9525556K). Mixed EPYC 7542
+nodes had idle CPUs but not 64G of unallocated memory. The pending
+job was updated in place to 4 CPUs and 24G. The runner commit did
+not change. `hmmscan --cpu 4` matches the allocation. The HMMER
+build uses that same width. One genome. r = 1. Two stock scans at 37.3, then one
 fill, then each later release is one stock scan and one TARE update.
 Byte identity and `SHIP` are the pass, with the 1000-line floor. Stock
 disagreement is INCONCLUSIVE. Press is not charged. Laptop times are

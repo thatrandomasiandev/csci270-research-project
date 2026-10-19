@@ -9,8 +9,8 @@
 #SBATCH --constraint=epyc-7542
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=64G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=24G
 #SBATCH --time=16:00:00
 #SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%j.out
 #SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%j.err
