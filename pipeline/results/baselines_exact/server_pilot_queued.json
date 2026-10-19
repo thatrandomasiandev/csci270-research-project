@@ -1,0 +1,38 @@
+{
+  "status": "queued",
+  "label": "INCONCLUSIVE",
+  "pilot": true,
+  "not_a_measurement": true,
+  "walls_are_evidence": false,
+  "locked_claim": false,
+  "system_name": "TARE",
+  "package": "acts",
+  "protocol": "docs/BASELINES_EXACT_PROTOCOL.md#2026-10-19-w12a",
+  "worktree_start": "1c65571538afcc139af560156147e4276905f9b4",
+  "git_head": "893b067f1975da20b41076e530e6135eb93a9a0c",
+  "slurm_job_id": "13241867",
+  "job_name": "tare-w12a-pilot",
+  "job_state_at_record": "PENDING",
+  "job_reason_at_record": "Priority",
+  "recorded_at": "2026-10-19T15:57:42-07:00",
+  "time_limit": "18:00:00",
+  "reason": "Slurm job 13241867 was still PENDING (Priority) at 2026-10-19T15:57:42-07:00. No HMMER build and no hmmscan had started. This file has no wall and no byte-identity count. The measured job was not submitted.",
+  "hmmer_tarball": "/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz",
+  "hmmer_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_sha256_checked": true,
+  "pilot_stem": "GCF_003018855.1",
+  "measured_stems_locked_not_run": [
+    "GCF_018415995.1",
+    "GCF_019969525.1",
+    "GCF_037231045.1",
+    "GCF_040271735.2",
+    "GCF_055807995.1"
+  ],
+  "seeds": {
+    "pilot_draw": 20261241,
+    "measured_draw": 20261242,
+    "bootstrap": 20261249
+  },
+  "carc_result_path_when_the_job_runs": "/project2/biyik_1165/jjt_373/csci270-star/tare-w12a/checkout/pipeline/results/baselines_exact/server_pilot.json",
+  "server_json_written": false
+}

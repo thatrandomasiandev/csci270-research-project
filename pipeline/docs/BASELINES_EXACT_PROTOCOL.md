@@ -477,3 +477,16 @@ genomes split across two `tare-w12a` jobs, at most two exclusive nodes.
 Measured file: `results/baselines_exact/server.json`. This paragraph
 does not contain a wall. The pilot had not been submitted when this
 addendum was written.
+
+### 2026-10-19 — pilot submitted, still queued, measured not started
+
+Job `13241867` (`tare-w12a-pilot`) was submitted after the login-node
+dry run (`python/3.11.9`, `selftest` and `drawcheck` both passed on the
+staged tree). At 2026-10-19T15:57:42-07:00 the job was still `PENDING`
+with reason `Priority`. No log existed. No scan ran. The measured job
+was not submitted, and its time limit was not set, because there is no
+pilot elapsed time. `results/baselines_exact/server_pilot_queued.json`
+records that state. It is not a pilot result. The harness, when the
+job runs, writes `server_pilot.json` on the staged CARC tree. That file
+was not present. `server.json` was not written. No wall in this
+addendum is a measurement, because there is no wall.
