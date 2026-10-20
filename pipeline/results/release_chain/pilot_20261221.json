@@ -1,0 +1,1399 @@
+{
+  "addendum": "2026-10-19 W8",
+  "argv": [
+    "/project2/biyik_1165/jjt_373/csci270-star/tare-w8/scripts/release_chain_carc.py"
+  ],
+  "array_task_id": null,
+  "chain": [
+    "37.3",
+    "37.4",
+    "38.0",
+    "38.1",
+    "38.2"
+  ],
+  "cpu_model": "AMD EPYC 7542 32-Core Processor",
+  "current_step": {
+    "cache_bytes": 22593536,
+    "decision": "SHIP",
+    "f_delta": 0.9311802701115678,
+    "kind": "update",
+    "new_release": "38.0",
+    "old_release": "37.4",
+    "outcome": "PASS",
+    "phases": {
+      "cache_load_s": 0.053913640789687634,
+      "cache_store_s": 8.728049591649324,
+      "coverage_read_s": 45.24722269596532,
+      "diff_s": 0.2680826401337981,
+      "discovery_build_s": 33.53874621912837,
+      "discovery_s": 1507.6028171638027,
+      "discovery_scan_s": 1439.8226552130654,
+      "ic2_neighbor_build_s": 22.362362769432366,
+      "ic2_neighbor_s": 44.67285653622821,
+      "ic2_neighbor_scan_s": 21.10771204670891,
+      "ic2_random_20261031_build_s": 5.028853981290013,
+      "ic2_random_20261031_s": 7.356441888958216,
+      "ic2_random_20261031_scan_s": 2.115182519890368,
+      "ic2_random_20261032_build_s": 5.221357669681311,
+      "ic2_random_20261032_s": 7.58161647291854,
+      "ic2_random_20261032_scan_s": 2.145853833761066,
+      "ic2_random_20261033_build_s": 5.09282108116895,
+      "ic2_random_20261033_s": 7.407841043081135,
+      "ic2_random_20261033_scan_s": 2.0929546849802136,
+      "merge_rescale_s": 2.604463584255427,
+      "parse_s": 35.39616682101041,
+      "prep_s": 80.87633577967063,
+      "probe_wall_s": 0.0,
+      "read_output_s": 0.15266895480453968,
+      "render_s": 0.005217541940510273,
+      "replay_build_s": 15.084850917570293,
+      "replay_plan_s": 0.02605670178309083,
+      "replay_s": 32.447128681931645,
+      "replay_scan_s": 16.87220237450674,
+      "subref_build_s": 5.454524177592248,
+      "tool_s": 1524.2400676580146,
+      "total_s": 1764.3429440460168,
+      "verify_build_s": 0.0018673189915716648,
+      "verify_s": 40.08718513837084,
+      "verify_scan_s": 40.08350698510185
+    },
+    "press": {
+      "decompress_s": 10.178910589311272,
+      "ends": 25545,
+      "headers": 25545,
+      "hmmpress_s": 33.771964407060295,
+      "inconclusive": false,
+      "md5": "a7a33bf0ba5e17a0aea4cf9841cf45d1",
+      "press_charged": false,
+      "reasons": [],
+      "z": 25545
+    },
+    "release": "38.0",
+    "repeats": [
+      {
+        "after": {
+          "load": [
+            27.06,
+            27.65,
+            27.68
+          ],
+          "mem_available_bytes": 225717837824,
+          "mem_free_bytes": 118318551040,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2780261541478400
+        },
+        "argv": [
+          "hmmscan",
+          "--cut_ga",
+          "--noali",
+          "--cpu",
+          "4",
+          "--tblout",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.tbl",
+          "--domtblout",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.dom",
+          "-o",
+          "/dev/null",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam38.0.hmm",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+        ],
+        "arm": "A",
+        "before": {
+          "load": [
+            27.95,
+            23.76,
+            23.45
+          ],
+          "mem_available_bytes": 216199671808,
+          "mem_free_bytes": 112033517568,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2780571633713152
+        },
+        "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.dom",
+        "pin_z": null,
+        "repeat": 1,
+        "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.tbl",
+        "wall_s": 1796.040879894048
+      },
+      {
+        "after": {
+          "load": [
+            27.65,
+            27.54,
+            27.71
+          ],
+          "mem_available_bytes": 212394778624,
+          "mem_free_bytes": 106768789504,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2779805723394048
+        },
+        "argv": [
+          "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+          "-m",
+          "acts",
+          "run",
+          "--strategy",
+          "reference",
+          "--pin",
+          "-Z {entry_count}",
+          "--verify",
+          "audit",
+          "--prep",
+          "hmmpress -f {reference}",
+          "--input",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa",
+          "--reference",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam38.0.hmm",
+          "--cache",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/cache_38.0_B1.sqlite",
+          "-o",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1",
+          "--",
+          "hmmscan",
+          "--cut_ga",
+          "--noali",
+          "--cpu",
+          "4",
+          "--tblout",
+          "{output:tblout}",
+          "--domtblout",
+          "{output:domtblout}",
+          "-o",
+          "/dev/null",
+          "{reference}",
+          "{input}"
+        ],
+        "arm": "B",
+        "before": {
+          "load": [
+            27.06,
+            27.65,
+            27.68
+          ],
+          "mem_available_bytes": 225717485568,
+          "mem_free_bytes": 118274236416,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2780261541478400
+        },
+        "cache_bytes": 22593536,
+        "compare": {
+          "byte_equal": true,
+          "dom": {
+            "byte_equal": true,
+            "classes": [],
+            "lines_replay": 9098,
+            "lines_stock": 9098,
+            "token_equal": true
+          },
+          "tbl": {
+            "byte_equal": true,
+            "classes": [],
+            "lines_replay": 9347,
+            "lines_stock": 9347,
+            "token_equal": true
+          }
+        },
+        "decision": "SHIP",
+        "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/tables/domtblout",
+        "n_batches": "114",
+        "outcome": "PASS",
+        "phases": {
+          "cache_load_s": 0.053913640789687634,
+          "cache_store_s": 8.728049591649324,
+          "coverage_read_s": 45.24722269596532,
+          "diff_s": 0.2680826401337981,
+          "discovery_build_s": 33.53874621912837,
+          "discovery_s": 1507.6028171638027,
+          "discovery_scan_s": 1439.8226552130654,
+          "ic2_neighbor_build_s": 22.362362769432366,
+          "ic2_neighbor_s": 44.67285653622821,
+          "ic2_neighbor_scan_s": 21.10771204670891,
+          "ic2_random_20261031_build_s": 5.028853981290013,
+          "ic2_random_20261031_s": 7.356441888958216,
+          "ic2_random_20261031_scan_s": 2.115182519890368,
+          "ic2_random_20261032_build_s": 5.221357669681311,
+          "ic2_random_20261032_s": 7.58161647291854,
+          "ic2_random_20261032_scan_s": 2.145853833761066,
+          "ic2_random_20261033_build_s": 5.09282108116895,
+          "ic2_random_20261033_s": 7.407841043081135,
+          "ic2_random_20261033_scan_s": 2.0929546849802136,
+          "merge_rescale_s": 2.604463584255427,
+          "parse_s": 35.39616682101041,
+          "prep_s": 80.87633577967063,
+          "probe_wall_s": 0.0,
+          "read_output_s": 0.15266895480453968,
+          "render_s": 0.005217541940510273,
+          "replay_build_s": 15.084850917570293,
+          "replay_plan_s": 0.02605670178309083,
+          "replay_s": 32.447128681931645,
+          "replay_scan_s": 16.87220237450674,
+          "subref_build_s": 5.454524177592248,
+          "tool_s": 1524.2400676580146,
+          "total_s": 1764.3429440460168,
+          "verify_build_s": 0.0018673189915716648,
+          "verify_s": 40.08718513837084,
+          "verify_scan_s": 40.08350698510185
+        },
+        "reason": null,
+        "repeat": 1,
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nwrote /scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/decision.txt\n",
+        "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/tables/tblout",
+        "wall_s": 1764.9287939332426,
+        "why": "exact replay under pinned normalizer"
+      }
+    ],
+    "replay_forced": true,
+    "w7_fallback": {
+      "code_imported": false,
+      "comparison": "f_delta > threshold",
+      "executed": "replay",
+      "f_delta": 0.9311802701115678,
+      "note": "Current TARE always replays this step. The threshold rule is recorded and is not executed.",
+      "threshold": 0.8,
+      "would": "stock"
+    }
+  },
+  "fill": {
+    "after": {
+      "load": [
+        18.75,
+        19.55,
+        26.99
+      ],
+      "mem_available_bytes": 229959049216,
+      "mem_free_bytes": 143508807680,
+      "node": "b22-21.hpc.usc.edu",
+      "scratch_free_bytes": 2780485303402496
+    },
+    "argv": [
+      "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+      "-m",
+      "acts",
+      "run",
+      "--strategy",
+      "reference",
+      "--pin",
+      "-Z {entry_count}",
+      "--verify",
+      "audit",
+      "--prep",
+      "hmmpress -f {reference}",
+      "--input",
+      "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa",
+      "--reference",
+      "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+      "--cache",
+      "/scratch1/jjt_373/tare-w8/work/pilot_13241855/cache_fill.sqlite",
+      "-o",
+      "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill",
+      "--",
+      "hmmscan",
+      "--cut_ga",
+      "--noali",
+      "--cpu",
+      "4",
+      "--tblout",
+      "{output:tblout}",
+      "--domtblout",
+      "{output:domtblout}",
+      "-o",
+      "/dev/null",
+      "{reference}",
+      "{input}"
+    ],
+    "arm": "B",
+    "before": {
+      "load": [
+        55.05,
+        59.16,
+        65.82
+      ],
+      "mem_available_bytes": 230966394880,
+      "mem_free_bytes": 126830059520,
+      "node": "b22-21.hpc.usc.edu",
+      "scratch_free_bytes": 2780382268227584
+    },
+    "cache_bytes": 21745664,
+    "compare": {
+      "byte_equal": true,
+      "dom": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 9027,
+        "lines_stock": 9027,
+        "token_equal": true
+      },
+      "tbl": {
+        "byte_equal": true,
+        "classes": [],
+        "lines_replay": 9294,
+        "lines_stock": 9294,
+        "token_equal": true
+      }
+    },
+    "decision": "SHIP",
+    "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/tables/domtblout",
+    "n_batches": "103",
+    "phases": {
+      "cache_load_s": 0.0005675139836966991,
+      "cache_store_s": 1.721275927964598,
+      "coverage_read_s": 0.000552264042198658,
+      "diff_s": 0.003536599688231945,
+      "discovery_build_s": 0.015107335988432169,
+      "discovery_s": 1737.8450678540394,
+      "discovery_scan_s": 1707.4159906790592,
+      "ic2_neighbor_build_s": 22.445842355955392,
+      "ic2_neighbor_s": 44.41238340595737,
+      "ic2_neighbor_scan_s": 20.813780512660742,
+      "ic2_random_20261031_build_s": 5.094989454839379,
+      "ic2_random_20261031_s": 7.440832655411214,
+      "ic2_random_20261031_scan_s": 2.1352799236774445,
+      "ic2_random_20261032_build_s": 5.0975522683002055,
+      "ic2_random_20261032_s": 7.418168192263693,
+      "ic2_random_20261032_scan_s": 2.1097006741911173,
+      "ic2_random_20261033_build_s": 5.085577141027898,
+      "ic2_random_20261033_s": 7.413749753963202,
+      "ic2_random_20261033_scan_s": 2.11947650462389,
+      "merge_rescale_s": 0.2078146911226213,
+      "parse_s": 38.04460196197033,
+      "pin_check_s": 95.02318331319839,
+      "prep_s": 44.27493806183338,
+      "probe_wall_s": 338.13273917417973,
+      "read_output_s": 0.15104263462126255,
+      "render_s": 0.004949350841343403,
+      "replay_build_s": 8.734103600960225,
+      "replay_plan_s": 0.025727725122123957,
+      "replay_s": 26.075064787175506,
+      "replay_scan_s": 16.890471764840186,
+      "subref_build_s": 2.94229242997244,
+      "tool_s": 1843.7889178898185,
+      "total_s": 2327.872367242817
+    },
+    "repeat": 1,
+    "returncode": 0,
+    "stderr_tail": "",
+    "stdout_tail": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nwrote /scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/decision.txt\n",
+    "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/tables/tblout",
+    "wall_s": 2328.486763869878,
+    "why": "exact replay under pinned normalizer"
+  },
+  "fill_stocks": [
+    {
+      "after": {
+        "load": [
+          77.37,
+          77.79,
+          77.31
+        ],
+        "mem_available_bytes": 230778118144,
+        "mem_free_bytes": 132904534016,
+        "node": "b22-21.hpc.usc.edu",
+        "scratch_free_bytes": 2780266063986688
+      },
+      "argv": [
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "4",
+        "--tblout",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.tbl",
+        "--domtblout",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.dom",
+        "-o",
+        "/dev/null",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+      ],
+      "arm": "A",
+      "before": {
+        "load": [
+          77.96,
+          76.19,
+          73.44
+        ],
+        "mem_available_bytes": 231547244544,
+        "mem_free_bytes": 139326251008,
+        "node": "b22-21.hpc.usc.edu",
+        "scratch_free_bytes": 2780610996207616
+      },
+      "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.dom",
+      "pin_z": null,
+      "repeat": 1,
+      "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.tbl",
+      "wall_s": 1657.926735362038
+    },
+    {
+      "after": {
+        "load": [
+          55.05,
+          59.16,
+          65.82
+        ],
+        "mem_available_bytes": 230971031552,
+        "mem_free_bytes": 126834696192,
+        "node": "b22-21.hpc.usc.edu",
+        "scratch_free_bytes": 2780382268227584
+      },
+      "argv": [
+        "hmmscan",
+        "--cut_ga",
+        "--noali",
+        "--cpu",
+        "4",
+        "--tblout",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.tbl",
+        "--domtblout",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.dom",
+        "-o",
+        "/dev/null",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+        "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+      ],
+      "arm": "A",
+      "before": {
+        "load": [
+          77.37,
+          77.79,
+          77.31
+        ],
+        "mem_available_bytes": 230777602048,
+        "mem_free_bytes": 132904017920,
+        "node": "b22-21.hpc.usc.edu",
+        "scratch_free_bytes": 2780266063986688
+      },
+      "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.dom",
+      "pin_z": null,
+      "repeat": 2,
+      "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.tbl",
+      "wall_s": 1654.7511053569615
+    }
+  ],
+  "git_dirty": "false",
+  "git_head": "bebabc5b7f4b81c72e322f3a68f363a4429f855a",
+  "hmmer_tarball_sha256": "ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3",
+  "hmmer_version_lines": [
+    "# hmmscan :: search sequence(s) against a profile database",
+    "# HMMER 3.4 (Aug 2023); http://hmmer.org/",
+    "# Copyright (C) 2023 Howard Hughes Medical Institute."
+  ],
+  "host": "b22-21.hpc.usc.edu",
+  "input_md5": {
+    "37.3": "c4fa2257c93506b792a0a102cc27d2ad",
+    "37.4": "003b07d6c9c2871efbe98f41734b55d6",
+    "38.0": "a7a33bf0ba5e17a0aea4cf9841cf45d1",
+    "proteome": "194f1f02b5b5d08e5e0f55c1f15a3681"
+  },
+  "job_id": "13241855",
+  "laptop_wall_is_speed_evidence": false,
+  "meminfo_start": {
+    "MemAvailable": 234372923392,
+    "MemFree": 146507612160,
+    "MemTotal": 269877243904
+  },
+  "mode": "pilot",
+  "negative_control": {
+    "status": "refused",
+    "tries": [
+      {
+        "body_differs": true,
+        "cache_used": false,
+        "compare": {
+          "byte_equal": false,
+          "dom": {
+            "byte_equal": false,
+            "classes": [
+              "missing",
+              "value-only"
+            ],
+            "extra_keys": 0,
+            "lines_replay": 8598,
+            "lines_stock": 9048,
+            "missing_keys": 450,
+            "token_equal": false
+          },
+          "tbl": {
+            "byte_equal": false,
+            "classes": [
+              "missing"
+            ],
+            "extra_keys": 0,
+            "lines_replay": 8852,
+            "lines_stock": 9315,
+            "missing_keys": 463,
+            "token_equal": false
+          }
+        },
+        "drop_seed": 20261223,
+        "dropped_head": [
+          "Ribosomal_S4",
+          "PP_kinase",
+          "NiFe_hyd_SSU_C",
+          "Ribosomal_S11",
+          "Arg_repressor_C",
+          "PTS_EIIA_2",
+          "T3S_SPI-1_N0",
+          "UreE_C"
+        ],
+        "exercised_on_sample": true,
+        "judge_refused": true,
+        "k": 177,
+        "n_candidates": 3536,
+        "n_sample": 50,
+        "pads": [
+          {
+            "dom": {
+              "extra_candidate_rows": 8,
+              "fail_mode": "missing_and_extra_candidate",
+              "missing_candidate_rows": 12,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            },
+            "n_pad": 3536,
+            "seed": 20261031,
+            "tbl": {
+              "extra_candidate_rows": 0,
+              "fail_mode": "missing_candidate",
+              "missing_candidate_rows": 4,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            }
+          },
+          {
+            "dom": {
+              "extra_candidate_rows": 8,
+              "fail_mode": "missing_and_extra_candidate",
+              "missing_candidate_rows": 12,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            },
+            "n_pad": 3536,
+            "seed": 20261032,
+            "tbl": {
+              "extra_candidate_rows": 0,
+              "fail_mode": "missing_candidate",
+              "missing_candidate_rows": 4,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            }
+          },
+          {
+            "dom": {
+              "extra_candidate_rows": 8,
+              "fail_mode": "missing_and_extra_candidate",
+              "missing_candidate_rows": 12,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            },
+            "n_pad": 3536,
+            "seed": 20261033,
+            "tbl": {
+              "extra_candidate_rows": 0,
+              "fail_mode": "missing_candidate",
+              "missing_candidate_rows": 4,
+              "other_subject_rows": 0,
+              "pad_hit_rows": 0,
+              "pass": false
+            }
+          }
+        ],
+        "reduced_argv": [
+          "hmmscan",
+          "--cut_ga",
+          "--noali",
+          "--cpu",
+          "4",
+          "-Z",
+          "24736",
+          "--tblout",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/drop_20261223.tbl",
+          "--domtblout",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/drop_20261223.dom",
+          "-o",
+          "/dev/null",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/drop_20261223.hmm",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+        ],
+        "reduced_wall_s": 1678.9261391181499,
+        "residue_cap_binds": false,
+        "sample_seed": 20261034,
+        "sample_size_constant": 50
+      }
+    ]
+  },
+  "platform": "Linux 4.18.0-553.126.1.el8_10.x86_64",
+  "press_charged_to_arms": false,
+  "proteome": "GCF_003018555.1",
+  "protocol": "pipeline/docs/RELEASE_CHAIN_PROTOCOL.md",
+  "python": "3.11.9",
+  "release_md5": {
+    "37.3": "c4fa2257c93506b792a0a102cc27d2ad",
+    "37.4": "003b07d6c9c2871efbe98f41734b55d6",
+    "38.0": "a7a33bf0ba5e17a0aea4cf9841cf45d1"
+  },
+  "runner_sha256": "a5c4f6f6bde625ea8134c6367a636c18b0c41cb02cf3aad16e435d099d449114",
+  "scratch": "/scratch1/jjt_373/tare-w8/work/pilot_13241855",
+  "scratch_free_bytes_start": 2780597744304128,
+  "scratch_fstype": "lustre",
+  "scratch_policy": "/scratch1 only; node /tmp is not used",
+  "seed": 20261221,
+  "steps": [
+    {
+      "cache_bytes": 21745664,
+      "decision": "SHIP",
+      "fill": {
+        "after": {
+          "load": [
+            18.75,
+            19.55,
+            26.99
+          ],
+          "mem_available_bytes": 229959049216,
+          "mem_free_bytes": 143508807680,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2780485303402496
+        },
+        "argv": [
+          "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+          "-m",
+          "acts",
+          "run",
+          "--strategy",
+          "reference",
+          "--pin",
+          "-Z {entry_count}",
+          "--verify",
+          "audit",
+          "--prep",
+          "hmmpress -f {reference}",
+          "--input",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa",
+          "--reference",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+          "--cache",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/cache_fill.sqlite",
+          "-o",
+          "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill",
+          "--",
+          "hmmscan",
+          "--cut_ga",
+          "--noali",
+          "--cpu",
+          "4",
+          "--tblout",
+          "{output:tblout}",
+          "--domtblout",
+          "{output:domtblout}",
+          "-o",
+          "/dev/null",
+          "{reference}",
+          "{input}"
+        ],
+        "arm": "B",
+        "before": {
+          "load": [
+            55.05,
+            59.16,
+            65.82
+          ],
+          "mem_available_bytes": 230966394880,
+          "mem_free_bytes": 126830059520,
+          "node": "b22-21.hpc.usc.edu",
+          "scratch_free_bytes": 2780382268227584
+        },
+        "cache_bytes": 21745664,
+        "compare": {
+          "byte_equal": true,
+          "dom": {
+            "byte_equal": true,
+            "classes": [],
+            "lines_replay": 9027,
+            "lines_stock": 9027,
+            "token_equal": true
+          },
+          "tbl": {
+            "byte_equal": true,
+            "classes": [],
+            "lines_replay": 9294,
+            "lines_stock": 9294,
+            "token_equal": true
+          }
+        },
+        "decision": "SHIP",
+        "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/tables/domtblout",
+        "n_batches": "103",
+        "phases": {
+          "cache_load_s": 0.0005675139836966991,
+          "cache_store_s": 1.721275927964598,
+          "coverage_read_s": 0.000552264042198658,
+          "diff_s": 0.003536599688231945,
+          "discovery_build_s": 0.015107335988432169,
+          "discovery_s": 1737.8450678540394,
+          "discovery_scan_s": 1707.4159906790592,
+          "ic2_neighbor_build_s": 22.445842355955392,
+          "ic2_neighbor_s": 44.41238340595737,
+          "ic2_neighbor_scan_s": 20.813780512660742,
+          "ic2_random_20261031_build_s": 5.094989454839379,
+          "ic2_random_20261031_s": 7.440832655411214,
+          "ic2_random_20261031_scan_s": 2.1352799236774445,
+          "ic2_random_20261032_build_s": 5.0975522683002055,
+          "ic2_random_20261032_s": 7.418168192263693,
+          "ic2_random_20261032_scan_s": 2.1097006741911173,
+          "ic2_random_20261033_build_s": 5.085577141027898,
+          "ic2_random_20261033_s": 7.413749753963202,
+          "ic2_random_20261033_scan_s": 2.11947650462389,
+          "merge_rescale_s": 0.2078146911226213,
+          "parse_s": 38.04460196197033,
+          "pin_check_s": 95.02318331319839,
+          "prep_s": 44.27493806183338,
+          "probe_wall_s": 338.13273917417973,
+          "read_output_s": 0.15104263462126255,
+          "render_s": 0.004949350841343403,
+          "replay_build_s": 8.734103600960225,
+          "replay_plan_s": 0.025727725122123957,
+          "replay_s": 26.075064787175506,
+          "replay_scan_s": 16.890471764840186,
+          "subref_build_s": 2.94229242997244,
+          "tool_s": 1843.7889178898185,
+          "total_s": 2327.872367242817
+        },
+        "repeat": 1,
+        "returncode": 0,
+        "stderr_tail": "",
+        "stdout_tail": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nwrote /scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/decision.txt\n",
+        "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/fill/tables/tblout",
+        "wall_s": 2328.486763869878,
+        "why": "exact replay under pinned normalizer"
+      },
+      "kind": "fill",
+      "outcome": "PASS",
+      "phases": {
+        "cache_load_s": 0.0005675139836966991,
+        "cache_store_s": 1.721275927964598,
+        "coverage_read_s": 0.000552264042198658,
+        "diff_s": 0.003536599688231945,
+        "discovery_build_s": 0.015107335988432169,
+        "discovery_s": 1737.8450678540394,
+        "discovery_scan_s": 1707.4159906790592,
+        "ic2_neighbor_build_s": 22.445842355955392,
+        "ic2_neighbor_s": 44.41238340595737,
+        "ic2_neighbor_scan_s": 20.813780512660742,
+        "ic2_random_20261031_build_s": 5.094989454839379,
+        "ic2_random_20261031_s": 7.440832655411214,
+        "ic2_random_20261031_scan_s": 2.1352799236774445,
+        "ic2_random_20261032_build_s": 5.0975522683002055,
+        "ic2_random_20261032_s": 7.418168192263693,
+        "ic2_random_20261032_scan_s": 2.1097006741911173,
+        "ic2_random_20261033_build_s": 5.085577141027898,
+        "ic2_random_20261033_s": 7.413749753963202,
+        "ic2_random_20261033_scan_s": 2.11947650462389,
+        "merge_rescale_s": 0.2078146911226213,
+        "parse_s": 38.04460196197033,
+        "pin_check_s": 95.02318331319839,
+        "prep_s": 44.27493806183338,
+        "probe_wall_s": 338.13273917417973,
+        "read_output_s": 0.15104263462126255,
+        "render_s": 0.004949350841343403,
+        "replay_build_s": 8.734103600960225,
+        "replay_plan_s": 0.025727725122123957,
+        "replay_s": 26.075064787175506,
+        "replay_scan_s": 16.890471764840186,
+        "subref_build_s": 2.94229242997244,
+        "tool_s": 1843.7889178898185,
+        "total_s": 2327.872367242817
+      },
+      "press": {
+        "decompress_s": 9.296311933081597,
+        "ends": 24424,
+        "headers": 24424,
+        "hmmpress_s": 33.15830334788188,
+        "inconclusive": false,
+        "md5": "c4fa2257c93506b792a0a102cc27d2ad",
+        "press_charged": false,
+        "reasons": [],
+        "z": 24424
+      },
+      "reason": null,
+      "release": "37.3",
+      "repeats": [
+        {
+          "after": {
+            "load": [
+              77.37,
+              77.79,
+              77.31
+            ],
+            "mem_available_bytes": 230778118144,
+            "mem_free_bytes": 132904534016,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780266063986688
+          },
+          "argv": [
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.tbl",
+            "--domtblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.dom",
+            "-o",
+            "/dev/null",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+          ],
+          "arm": "A",
+          "before": {
+            "load": [
+              77.96,
+              76.19,
+              73.44
+            ],
+            "mem_available_bytes": 231547244544,
+            "mem_free_bytes": 139326251008,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780610996207616
+          },
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.dom",
+          "pin_z": null,
+          "repeat": 1,
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A1.tbl",
+          "wall_s": 1657.926735362038
+        },
+        {
+          "after": {
+            "load": [
+              55.05,
+              59.16,
+              65.82
+            ],
+            "mem_available_bytes": 230971031552,
+            "mem_free_bytes": 126834696192,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780382268227584
+          },
+          "argv": [
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.tbl",
+            "--domtblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.dom",
+            "-o",
+            "/dev/null",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.3.hmm",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+          ],
+          "arm": "A",
+          "before": {
+            "load": [
+              77.37,
+              77.79,
+              77.31
+            ],
+            "mem_available_bytes": 230777602048,
+            "mem_free_bytes": 132904017920,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780266063986688
+          },
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.dom",
+          "pin_z": null,
+          "repeat": 2,
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.3_A2.tbl",
+          "wall_s": 1654.7511053569615
+        }
+      ]
+    },
+    {
+      "cache_bytes": 21966848,
+      "decision": "SHIP",
+      "f_delta": 0.020132600258732213,
+      "kind": "update",
+      "new_release": "37.4",
+      "old_release": "37.3",
+      "outcome": "PASS",
+      "phases": {
+        "cache_load_s": 0.4489780035801232,
+        "cache_store_s": 0.905598581302911,
+        "coverage_read_s": 9.057736337184906,
+        "diff_s": 3.5218323711305857,
+        "discovery_build_s": 3.1457398519851267,
+        "discovery_s": 41.07716027786955,
+        "discovery_scan_s": 37.926017478108406,
+        "ic2_neighbor_build_s": 22.524898244533688,
+        "ic2_neighbor_s": 44.2343605030328,
+        "ic2_neighbor_scan_s": 20.434315628372133,
+        "ic2_random_20261031_build_s": 5.125278944149613,
+        "ic2_random_20261031_s": 7.625997117720544,
+        "ic2_random_20261031_scan_s": 2.2924395008012652,
+        "ic2_random_20261032_build_s": 5.174835058860481,
+        "ic2_random_20261032_s": 7.662374197039753,
+        "ic2_random_20261032_scan_s": 2.2787177418358624,
+        "ic2_random_20261033_build_s": 5.024170556571335,
+        "ic2_random_20261033_s": 7.381304406095296,
+        "ic2_random_20261033_scan_s": 2.150829628109932,
+        "merge_rescale_s": 2.6346437679603696,
+        "parse_s": 34.32877583196387,
+        "prep_s": 44.45461366139352,
+        "probe_wall_s": 0.0,
+        "read_output_s": 0.14743967493996024,
+        "render_s": 0.004851286765187979,
+        "replay_build_s": 8.713855782989413,
+        "replay_plan_s": 0.027546902652829885,
+        "replay_s": 26.138422343414277,
+        "replay_scan_s": 16.972999795805663,
+        "subref_build_s": 5.255315722897649,
+        "tool_s": 114.83578749606386,
+        "total_s": 241.7821348742582,
+        "verify_build_s": 0.0011509452015161514,
+        "verify_s": 32.783203673083335,
+        "verify_scan_s": 32.7804677230306
+      },
+      "press": {
+        "decompress_s": 9.574230784084648,
+        "ends": 24736,
+        "headers": 24736,
+        "hmmpress_s": 33.24066738598049,
+        "inconclusive": false,
+        "md5": "003b07d6c9c2871efbe98f41734b55d6",
+        "press_charged": false,
+        "reasons": [],
+        "z": 24736
+      },
+      "release": "37.4",
+      "repeats": [
+        {
+          "after": {
+            "load": [
+              18.13,
+              17.99,
+              19.34
+            ],
+            "mem_available_bytes": 232558755840,
+            "mem_free_bytes": 122951663616,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780381972529152
+          },
+          "argv": [
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_A1.tbl",
+            "--domtblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_A1.dom",
+            "-o",
+            "/dev/null",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.4.hmm",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+          ],
+          "arm": "A",
+          "before": {
+            "load": [
+              18.41,
+              19.34,
+              26.53
+            ],
+            "mem_available_bytes": 227268956160,
+            "mem_free_bytes": 138847137792,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780484514873344
+          },
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_A1.dom",
+          "pin_z": null,
+          "repeat": 1,
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_A1.tbl",
+          "wall_s": 1608.4734377940185
+        },
+        {
+          "after": {
+            "load": [
+              25.8,
+              22.16,
+              20.73
+            ],
+            "mem_available_bytes": 214642470912,
+            "mem_free_bytes": 106083827712,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780321273610240
+          },
+          "argv": [
+            "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+            "-m",
+            "acts",
+            "run",
+            "--strategy",
+            "reference",
+            "--pin",
+            "-Z {entry_count}",
+            "--verify",
+            "audit",
+            "--prep",
+            "hmmpress -f {reference}",
+            "--input",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa",
+            "--reference",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam37.4.hmm",
+            "--cache",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/cache_37.4_B1.sqlite",
+            "-o",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_B1",
+            "--",
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "{output:tblout}",
+            "--domtblout",
+            "{output:domtblout}",
+            "-o",
+            "/dev/null",
+            "{reference}",
+            "{input}"
+          ],
+          "arm": "B",
+          "before": {
+            "load": [
+              18.13,
+              17.99,
+              19.34
+            ],
+            "mem_available_bytes": 232563400704,
+            "mem_free_bytes": 122934632448,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780381972529152
+          },
+          "cache_bytes": 21966848,
+          "compare": {
+            "byte_equal": true,
+            "dom": {
+              "byte_equal": true,
+              "classes": [],
+              "lines_replay": 9048,
+              "lines_stock": 9048,
+              "token_equal": true
+            },
+            "tbl": {
+              "byte_equal": true,
+              "classes": [],
+              "lines_replay": 9315,
+              "lines_stock": 9315,
+              "token_equal": true
+            }
+          },
+          "decision": "SHIP",
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_B1/tables/domtblout",
+          "n_batches": "103",
+          "outcome": "PASS",
+          "phases": {
+            "cache_load_s": 0.4489780035801232,
+            "cache_store_s": 0.905598581302911,
+            "coverage_read_s": 9.057736337184906,
+            "diff_s": 3.5218323711305857,
+            "discovery_build_s": 3.1457398519851267,
+            "discovery_s": 41.07716027786955,
+            "discovery_scan_s": 37.926017478108406,
+            "ic2_neighbor_build_s": 22.524898244533688,
+            "ic2_neighbor_s": 44.2343605030328,
+            "ic2_neighbor_scan_s": 20.434315628372133,
+            "ic2_random_20261031_build_s": 5.125278944149613,
+            "ic2_random_20261031_s": 7.625997117720544,
+            "ic2_random_20261031_scan_s": 2.2924395008012652,
+            "ic2_random_20261032_build_s": 5.174835058860481,
+            "ic2_random_20261032_s": 7.662374197039753,
+            "ic2_random_20261032_scan_s": 2.2787177418358624,
+            "ic2_random_20261033_build_s": 5.024170556571335,
+            "ic2_random_20261033_s": 7.381304406095296,
+            "ic2_random_20261033_scan_s": 2.150829628109932,
+            "merge_rescale_s": 2.6346437679603696,
+            "parse_s": 34.32877583196387,
+            "prep_s": 44.45461366139352,
+            "probe_wall_s": 0.0,
+            "read_output_s": 0.14743967493996024,
+            "render_s": 0.004851286765187979,
+            "replay_build_s": 8.713855782989413,
+            "replay_plan_s": 0.027546902652829885,
+            "replay_s": 26.138422343414277,
+            "replay_scan_s": 16.972999795805663,
+            "subref_build_s": 5.255315722897649,
+            "tool_s": 114.83578749606386,
+            "total_s": 241.7821348742582,
+            "verify_build_s": 0.0011509452015161514,
+            "verify_s": 32.783203673083335,
+            "verify_scan_s": 32.7804677230306
+          },
+          "reason": null,
+          "repeat": 1,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nwrote /scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_B1/decision.txt\n",
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/37.4_B1/tables/tblout",
+          "wall_s": 242.29357076063752,
+          "why": "exact replay under pinned normalizer"
+        }
+      ]
+    },
+    {
+      "cache_bytes": 22593536,
+      "decision": "SHIP",
+      "f_delta": 0.9311802701115678,
+      "kind": "update",
+      "new_release": "38.0",
+      "old_release": "37.4",
+      "outcome": "PASS",
+      "phases": {
+        "cache_load_s": 0.053913640789687634,
+        "cache_store_s": 8.728049591649324,
+        "coverage_read_s": 45.24722269596532,
+        "diff_s": 0.2680826401337981,
+        "discovery_build_s": 33.53874621912837,
+        "discovery_s": 1507.6028171638027,
+        "discovery_scan_s": 1439.8226552130654,
+        "ic2_neighbor_build_s": 22.362362769432366,
+        "ic2_neighbor_s": 44.67285653622821,
+        "ic2_neighbor_scan_s": 21.10771204670891,
+        "ic2_random_20261031_build_s": 5.028853981290013,
+        "ic2_random_20261031_s": 7.356441888958216,
+        "ic2_random_20261031_scan_s": 2.115182519890368,
+        "ic2_random_20261032_build_s": 5.221357669681311,
+        "ic2_random_20261032_s": 7.58161647291854,
+        "ic2_random_20261032_scan_s": 2.145853833761066,
+        "ic2_random_20261033_build_s": 5.09282108116895,
+        "ic2_random_20261033_s": 7.407841043081135,
+        "ic2_random_20261033_scan_s": 2.0929546849802136,
+        "merge_rescale_s": 2.604463584255427,
+        "parse_s": 35.39616682101041,
+        "prep_s": 80.87633577967063,
+        "probe_wall_s": 0.0,
+        "read_output_s": 0.15266895480453968,
+        "render_s": 0.005217541940510273,
+        "replay_build_s": 15.084850917570293,
+        "replay_plan_s": 0.02605670178309083,
+        "replay_s": 32.447128681931645,
+        "replay_scan_s": 16.87220237450674,
+        "subref_build_s": 5.454524177592248,
+        "tool_s": 1524.2400676580146,
+        "total_s": 1764.3429440460168,
+        "verify_build_s": 0.0018673189915716648,
+        "verify_s": 40.08718513837084,
+        "verify_scan_s": 40.08350698510185
+      },
+      "press": {
+        "decompress_s": 10.178910589311272,
+        "ends": 25545,
+        "headers": 25545,
+        "hmmpress_s": 33.771964407060295,
+        "inconclusive": false,
+        "md5": "a7a33bf0ba5e17a0aea4cf9841cf45d1",
+        "press_charged": false,
+        "reasons": [],
+        "z": 25545
+      },
+      "release": "38.0",
+      "repeats": [
+        {
+          "after": {
+            "load": [
+              27.06,
+              27.65,
+              27.68
+            ],
+            "mem_available_bytes": 225717837824,
+            "mem_free_bytes": 118318551040,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780261541478400
+          },
+          "argv": [
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.tbl",
+            "--domtblout",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.dom",
+            "-o",
+            "/dev/null",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam38.0.hmm",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa"
+          ],
+          "arm": "A",
+          "before": {
+            "load": [
+              27.95,
+              23.76,
+              23.45
+            ],
+            "mem_available_bytes": 216199671808,
+            "mem_free_bytes": 112033517568,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780571633713152
+          },
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.dom",
+          "pin_z": null,
+          "repeat": 1,
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_A1.tbl",
+          "wall_s": 1796.040879894048
+        },
+        {
+          "after": {
+            "load": [
+              27.65,
+              27.54,
+              27.71
+            ],
+            "mem_available_bytes": 212394778624,
+            "mem_free_bytes": 106768789504,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2779805723394048
+          },
+          "argv": [
+            "/apps/spack/2406/apps/linux-rocky8-x86_64_v3/gcc-13.3.0/python-3.11.9-x74mtjf/bin/python3",
+            "-m",
+            "acts",
+            "run",
+            "--strategy",
+            "reference",
+            "--pin",
+            "-Z {entry_count}",
+            "--verify",
+            "audit",
+            "--prep",
+            "hmmpress -f {reference}",
+            "--input",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/queries.faa",
+            "--reference",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/pfam38.0.hmm",
+            "--cache",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/cache_38.0_B1.sqlite",
+            "-o",
+            "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1",
+            "--",
+            "hmmscan",
+            "--cut_ga",
+            "--noali",
+            "--cpu",
+            "4",
+            "--tblout",
+            "{output:tblout}",
+            "--domtblout",
+            "{output:domtblout}",
+            "-o",
+            "/dev/null",
+            "{reference}",
+            "{input}"
+          ],
+          "arm": "B",
+          "before": {
+            "load": [
+              27.06,
+              27.65,
+              27.68
+            ],
+            "mem_available_bytes": 225717485568,
+            "mem_free_bytes": 118274236416,
+            "node": "b22-21.hpc.usc.edu",
+            "scratch_free_bytes": 2780261541478400
+          },
+          "cache_bytes": 22593536,
+          "compare": {
+            "byte_equal": true,
+            "dom": {
+              "byte_equal": true,
+              "classes": [],
+              "lines_replay": 9098,
+              "lines_stock": 9098,
+              "token_equal": true
+            },
+            "tbl": {
+              "byte_equal": true,
+              "classes": [],
+              "lines_replay": 9347,
+              "lines_stock": 9347,
+              "token_equal": true
+            }
+          },
+          "decision": "SHIP",
+          "dom": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/tables/domtblout",
+          "n_batches": "114",
+          "outcome": "PASS",
+          "phases": {
+            "cache_load_s": 0.053913640789687634,
+            "cache_store_s": 8.728049591649324,
+            "coverage_read_s": 45.24722269596532,
+            "diff_s": 0.2680826401337981,
+            "discovery_build_s": 33.53874621912837,
+            "discovery_s": 1507.6028171638027,
+            "discovery_scan_s": 1439.8226552130654,
+            "ic2_neighbor_build_s": 22.362362769432366,
+            "ic2_neighbor_s": 44.67285653622821,
+            "ic2_neighbor_scan_s": 21.10771204670891,
+            "ic2_random_20261031_build_s": 5.028853981290013,
+            "ic2_random_20261031_s": 7.356441888958216,
+            "ic2_random_20261031_scan_s": 2.115182519890368,
+            "ic2_random_20261032_build_s": 5.221357669681311,
+            "ic2_random_20261032_s": 7.58161647291854,
+            "ic2_random_20261032_scan_s": 2.145853833761066,
+            "ic2_random_20261033_build_s": 5.09282108116895,
+            "ic2_random_20261033_s": 7.407841043081135,
+            "ic2_random_20261033_scan_s": 2.0929546849802136,
+            "merge_rescale_s": 2.604463584255427,
+            "parse_s": 35.39616682101041,
+            "prep_s": 80.87633577967063,
+            "probe_wall_s": 0.0,
+            "read_output_s": 0.15266895480453968,
+            "render_s": 0.005217541940510273,
+            "replay_build_s": 15.084850917570293,
+            "replay_plan_s": 0.02605670178309083,
+            "replay_s": 32.447128681931645,
+            "replay_scan_s": 16.87220237450674,
+            "subref_build_s": 5.454524177592248,
+            "tool_s": 1524.2400676580146,
+            "total_s": 1764.3429440460168,
+            "verify_build_s": 0.0018673189915716648,
+            "verify_s": 40.08718513837084,
+            "verify_scan_s": 40.08350698510185
+          },
+          "reason": null,
+          "repeat": 1,
+          "returncode": 0,
+          "stderr_tail": "",
+          "stdout_tail": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under pinned normalizer\nwrote /scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/decision.txt\n",
+          "tbl": "/scratch1/jjt_373/tare-w8/work/pilot_13241855/38.0_B1/tables/tblout",
+          "wall_s": 1764.9287939332426,
+          "why": "exact replay under pinned normalizer"
+        }
+      ],
+      "replay_forced": true,
+      "w7_fallback": {
+        "code_imported": false,
+        "comparison": "f_delta > threshold",
+        "executed": "replay",
+        "f_delta": 0.9311802701115678,
+        "note": "Current TARE always replays this step. The threshold rule is recorded and is not executed.",
+        "threshold": 0.8,
+        "would": "stock"
+      }
+    }
+  ],
+  "system": "TARE",
+  "task": 0,
+  "test": "release-chain-pilot",
+  "w7_code_imported": false
+}
