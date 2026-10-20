@@ -1,0 +1,30 @@
+{
+  "source": "pipeline/results/adversarial/measured_v2.json",
+  "code_commit": "bcca3b47697051857cf0fb61f8e33d504d709fd9",
+  "arms": {
+    "shipped": {
+      "hidden_trials": 800,
+      "hidden_unsafe": 489,
+      "hidden_detected": 311,
+      "covered_trials": 400,
+      "covered_unsafe": 127,
+      "below_trials": 400,
+      "below_unsafe": 362,
+      "c0_needless": 0,
+      "c0_trials": 200
+    },
+    "bounded": {
+      "hidden_trials": 800,
+      "hidden_unsafe": 272,
+      "hidden_detected": 528,
+      "covered_trials": 400,
+      "covered_unsafe": 3,
+      "below_trials": 400,
+      "below_unsafe": 269,
+      "c0_needless": 0,
+      "c0_trials": 200
+    }
+  },
+  "bounded_audit_fraction_of_stock": 0.06429750013644711,
+  "shipped_audit_fraction_of_stock": 0.021358068062426384
+}
