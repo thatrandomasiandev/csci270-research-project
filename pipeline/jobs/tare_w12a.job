@@ -27,6 +27,7 @@ STAGE="${ACTS_STAGE:-pilot}"
 SCRATCH="/scratch1/${USER}/tare-w12a/${SLURM_JOB_ID}"
 HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
 TARBALL="/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz"
+PILOT_JOB="${ACTS_PILOT_JOB:-13241867}"
 
 if [[ "${STAGE}" == "pilot" ]]; then
   OUT_NAME="server_pilot.json"
@@ -35,6 +36,8 @@ elif [[ "${STAGE}" == "measured" ]]; then
 else
   echo "STOP: stage ${STAGE}" >&2
   exit 2
+fi
+
 fi
 
 export PYTHONPATH="${ROOT}/pipeline"
@@ -59,6 +62,24 @@ module purge 2>/dev/null || true
 module load gcc/13.3.0 || module load gcc || true
 module load python/3.11.9
 
+# Measured-only pilot-pass guard (offline chain 2026-10-20).
+if [[ "${STAGE}" == "measured" ]]; then
+  python3 - <<PY
+import json, sys
+from pathlib import Path
+pilot = Path("${ROOT}/pipeline/results/baselines_exact/server_pilot.json")
+if not pilot.is_file():
+    sys.exit(f"STOP: missing {pilot}")
+d = json.loads(pilot.read_text())
+status = d.get("status")
+if status != "pilot_pass":
+    sys.exit(f"STOP: server_pilot status={status!r} (need pilot_pass)")
+job = str(d.get("slurm_job_id") or d.get("job_id") or "")
+want = "${PILOT_JOB}"
+if job and job != want:
+    sys.exit(f"STOP: pilot slurm_job_id={job!r} != {want}")
+print(f"W12a pilot_pass (job={job or 'unrecorded'}); starting measured", flush=True)
+PY
 mkdir -p "${SCRATCH}" "${ROOT}/pipeline/results/baselines_exact" "$(dirname "${ACTS_OUT}")"
 echo "=== host ==="
 hostname

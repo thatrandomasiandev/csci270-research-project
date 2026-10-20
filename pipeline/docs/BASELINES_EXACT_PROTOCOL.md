@@ -490,3 +490,11 @@ records that state. It is not a pilot result. The harness, when the
 job runs, writes `server_pilot.json` on the staged CARC tree. That file
 was not present. `server.json` was not written. No wall in this
 addendum is a measurement, because there is no wall.
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.
