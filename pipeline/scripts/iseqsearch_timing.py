@@ -362,10 +362,11 @@ def tare_declared_cmd(
         str(reference),
         "--prep",
         prep,
-        "--pin",
-        "--dbsize {total_entry_length}",
-        "--slack",
-        "--evalue 0.002",
+        # --pin/--slack use '=' so argparse nargs='?' does not swallow a
+        # value that begins with '-' (otherwise pin becomes "" and diamond
+        # sees a bare 'dbsize' subcommand).
+        "--pin=--dbsize {total_entry_length}",
+        "--slack=--evalue 0.002",
         "--cache",
         str(cache),
         "--verify",

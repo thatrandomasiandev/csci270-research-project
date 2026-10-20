@@ -390,3 +390,20 @@ same locked seed `20261252` after that commit is frozen into
 the capped-node check.
 
 
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.
+
+
+### Declared-pin argv fix (same day)
+
+Confirm job 13259333 FAILED: `--pin` / `--slack` values beginning with `-` were
+swallowed by argparse (`nargs='?'` on `--pin`), so diamond saw a bare `dbsize`
+subcommand. The driver now passes `--pin=--dbsize {total_entry_length}` and
+`--slack=--evalue 0.002`. Confirm is re-submitted; measured waits on it.
+Measured `--time` is 12:00:00 for the offline chain (bare-pin 30 min withdrawn).

@@ -1,8 +1,8 @@
 #!/bin/bash
 # Measured timing. Exclusive epyc-7542.
-# --time=00:30:00 was the bare-pin projection. It is withdrawn.
-# Replace it from the declared-pin confirmation wall before sbatch.
-# Do not submit this file until that replacement is in the addendum.
+# Offline chain (2026-10-20): --time=12:00:00 (≥ 8 h HMMER-class floor; confirm
+# wall was minutes; diamond measured arms need headroom without laptop resize).
+# Guard: confirm.json must have confirmation_pass=true before timing starts.
 #SBATCH --job-name=tare-w12b-measured
 #SBATCH --account=biyik_1165
 #SBATCH --partition=main
@@ -12,7 +12,7 @@
 #SBATCH --exclusive
 #SBATCH --mem=0
 #SBATCH --constraint=epyc-7542
-#SBATCH --time=00:30:00
+#SBATCH --time=12:00:00
 #SBATCH --output=/scratch1/jjt_373/tare-w12b/logs/%x-%j.out
 #SBATCH --error=/scratch1/jjt_373/tare-w12b/logs/%x-%j.err
 
@@ -44,5 +44,17 @@ export TARE_SCRATCH=/scratch1/jjt_373/tare-w12b/measured
 export TARE_OUT="${ROOT}/pipeline/results/iseqsearch_timing/measured.json"
 export TARE_THREADS=32
 export TARE_EXCLUSIVE=1
+
+python3 - <<'PY'
+import json, sys
+from pathlib import Path
+p = Path("pipeline/results/iseqsearch_timing/confirm.json")
+if not p.is_file():
+    sys.exit("STOP: confirm.json missing; measured stays unstarted")
+d = json.loads(p.read_text())
+if not d.get("confirmation_pass"):
+    sys.exit(f"STOP: confirmation_pass={d.get('confirmation_pass')} why={d.get('why')!r}")
+print("confirm PASS; starting measured", flush=True)
+PY
 
 python3 "${ROOT}/pipeline/scripts/iseqsearch_timing.py" measured
