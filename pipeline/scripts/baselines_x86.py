@@ -741,11 +741,14 @@ int main(void) {
         cache.parent.mkdir(parents=True, exist_ok=True)
         if cache.exists() and not keep_cache:
             cache.unlink()
+        # --prep matches baseline_carc / headline: sub-references need pressed
+        # sidecars. Full-Pfam press stays outside the clock (copied .h3*).
         argv = [
             sys.executable, "-m", "acts", "run",
             "--strategy", "reference",
             "--pin", "-Z {entry_count}",
             "--verify", "audit",
+            "--prep", "hmmpress -f {reference}",
             "--input", str(fasta),
             "--reference", str(self.hmm),
             "--cache", str(cache),
@@ -763,6 +766,7 @@ int main(void) {
             shutil.copy2(produced, dest)
         proc["decision"] = decision
         proc["tare_pin"] = "-Z {entry_count}"
+        proc["tare_prep"] = "hmmpress -f {reference}"
         return proc
 
     def finish_system(self, proc: dict, stock_text: str, *, cold: bool, cold_wall: float,

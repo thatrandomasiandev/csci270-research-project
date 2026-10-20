@@ -60,3 +60,9 @@ class BaselineX86Tests(unittest.TestCase):
         self.assertIn(harness.lock_sentence(), text)
         self.assertIn(str(harness.PILOT_SEED), text)
         self.assertIn(str(harness.MEASURED_SEED_RESERVED), text)
+
+    def test_tare_argv_includes_hmmpress_prep(self) -> None:
+        """Pilot 13241865 REFUSEd without --prep (use hmmpress first)."""
+        source = (PIPE / "scripts" / "baselines_x86.py").read_text()
+        self.assertIn('"--prep", "hmmpress -f {reference}"', source)
+        self.assertIn("def run_tare", source)

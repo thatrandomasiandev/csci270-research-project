@@ -228,3 +228,83 @@ Laptop times are not evidence. The login node is not a compute host.
   exact error. No imputed ratio.
 - **No third redesign.** If the pilot harness fails twice for the
   same reason, record the limitation and stop.
+
+---
+
+## Addendum 2026-10-20 — pilot 13241865 TIMEOUT and harness fix
+
+Written after job `13241865` (`tare-w5x-pilot`) hit the SLURM
+`--time=03:00:00` wall (state `TIMEOUT`, batch exit 143, SIGTERM) on
+node `b22-23`, and **before** resubmitting the pilot. Measured is not
+submitted until a complete pilot finishes.
+
+### Which arm was running
+
+Stdout last lines before cancel: `identical rerun tare`. Checkpoint in
+`pilot.json`: `system=TARE`, `signal=15`, `label=PARTIAL`. The cold
+TARE pair had already finished (INVALID); the kill landed on the
+identical-rerun arm of TARE behavior.
+
+### What finished (MEASURED walls from partial `pilot.json`)
+
+| Segment | Wall (s) |
+|---------|----------|
+| Identity stocks (2) | 325.0 + 321.0 |
+| INCR pair + behavior | 313.9 + 319.1 + 328.1 + 317.8 + 316.7 |
+| ProcessCache pair + behavior | 3418.7 + 317.3 + 0.01 + 3464.7 |
+| TARE stock + cold | 317.8 + 728.3 |
+| **Sum of finished run walls** | **10488.6 (~2.91 h)** |
+
+Controls passed: stock-vs-stock identical. Positive and negative
+comparator controls passed. Power floor met. Locked for the measured
+run (from this pilot's identity stocks; must match on redo):
+
+Locked stock data rows: 1043
+Locked stock body sha256: b0a9663c3784ad955c7ce1a9399af205315d00ba6fcac604accd098e48f82a73
+(pilot seed 20261261)
+
+### Kernel stop (exact)
+
+Riker is **BLOCKED** on this EPYC node:
+
+```
+GET_SYSCALL_INFO rc=-1 errno=5 (Input/output error)
+seccomp_bpf_ok
+```
+
+Probe also records `ptrace_scope=0`, `unshare` user+`--root` ok.
+Seccomp-bpf probe ok — ProcessCache and INCR were not stopped by the
+kernel probe. Riker binary `bin/rkr` is also absent in the reused
+build directory; the PTRACE failure alone is enough to BLOCK.
+
+### TARE cold INVALID (harness bug, not a kernel stop)
+
+Cold TARE decision `REFUSE` / why includes:
+
+```
+Failed to open binary auxfiles for .../calls/call2/reference: use hmmpress first
+```
+
+Root cause: `run_tare` omitted `--prep 'hmmpress -f {reference}'`,
+which every other CARC reference harness passes (`baseline_carc.py`,
+headline, release chain). Full-Pfam `.h3*` sidecars were correctly
+copied outside the clock; sub-references still need prep. Dated
+deviation from the locked sentence "does not run hmmpress inside the
+clock": that sentence meant the **full** Pfam press stays outside `T`
+(copied sidecars). Sub-reference prep is part of the shipped reference
+strategy and is inside the TARE process wall (`prep_s`), matching
+headline. Harness now passes `--prep`; unit test locks the argv.
+
+### Resubmitted pilot time limit
+
+Sized from finished walls (~2.91 h) with **at least 2×** the failed
+`03:00:00` limit, plus headroom for `--prep` and the unfinished TARE
+behavior arms:
+
+- **Pilot `--time=08:00:00`** (disclosed here; also the job file default).
+- Seed remains `20261261` (pilot redo, not a new draw).
+- Measured time limit stays the protocol formula after a **complete**
+  pilot: `1.5 × (4 × pilot_paired_wall + pilot_behavior_wall + 20 min)`.
+
+Partial artifact (not a Table 4 number): 
+`pipeline/results/baselines_x86/pilot_13241865_partial.json`.

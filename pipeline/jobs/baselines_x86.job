@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=32
 #SBATCH --exclusive
 #SBATCH --mem=0
-#SBATCH --time=03:00:00
+#SBATCH --time=08:00:00
 #SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w5x/logs/%x-%j.out
 #SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w5x/logs/%x-%j.err
 
