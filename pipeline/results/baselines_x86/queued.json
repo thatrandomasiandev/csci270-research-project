@@ -1,0 +1,27 @@
+{
+  "label": "INCONCLUSIVE",
+  "reason": "pilot job still PENDING (Priority); no wall times; measured run not submitted",
+  "question": "Table 4 first-run rho = T/T_stock on one exclusive x86 EPYC node",
+  "protocol": "pipeline/docs/BASELINES_X86_PROTOCOL.md",
+  "frozen_code_at_start": "1c65571538afcc139af560156147e4276905f9b4",
+  "harness_commit": "e8309972225551ff1d1a4f953e3b34a9c19505ec",
+  "seed_pilot": 20261261,
+  "seed_measured_reserved_unused": 20261262,
+  "pilot_job_id": "13241865",
+  "pilot_job_name": "tare-w5x-pilot",
+  "pilot_state": "PENDING",
+  "pilot_reason": "Priority",
+  "pilot_elapsed": "00:00:00",
+  "measured_job_id": null,
+  "measured_json": null,
+  "systems": {
+    "riker": {"status": "NOT_RUN"},
+    "incr": {"status": "NOT_RUN"},
+    "processcache": {"status": "NOT_RUN"},
+    "tare": {"status": "NOT_RUN"}
+  },
+  "staged_tree": "/project2/biyik_1165/jjt_373/csci270-star/tare-w5x/",
+  "builds_reused": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/",
+  "checked_utc": "2026-10-20T00:59:16Z",
+  "note": "Job 13241865 left queued. No rho invented. Measured not submitted until the pilot finishes and the 1.5x time limit can be set from pilot walls."
+}
