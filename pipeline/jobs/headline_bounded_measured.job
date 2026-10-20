@@ -13,7 +13,7 @@
 #SBATCH --exclusive
 #SBATCH --mem=0
 #SBATCH --time=08:00:00
-#SBATCH --array=0-8%6
+#SBATCH --array=0-8%3
 #SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/headline_bounded/logs/%x-%A_%a.out
 #SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/headline_bounded/logs/%x-%A_%a.err
 
@@ -26,6 +26,7 @@ GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data
 # W13: always /scratch1 (never node tmpfs).
 SCRATCH="/scratch1/${USER}/headline_bounded_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+PILOT_JOB="${ACTS_PILOT_JOB:-13259408}"
 
 export PYTHONPATH="${ROOT}"
 export PYTHONUNBUFFERED=1
@@ -47,6 +48,48 @@ if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
 module purge 2>/dev/null || true
 module load gcc/13.3.0 || module load gcc || true
 module load python/3.11.9 || module load python || true
+
+# Pilot-pass guard: pilot JSON must be EXACT, every B byte-identical with
+# bounded audit s recorded, and walls inside the 8 h limit. afterok alone is
+# not enough (FAIL outcomes can still exit 0).
+python3 - <<PY
+import json, sys
+from pathlib import Path
+root = Path("${ROOT}")
+pilot_job = "${PILOT_JOB}"
+cands = sorted(root.glob(f"results/headline_bounded_pilot_{pilot_job}_*.json"))
+if not cands:
+    sys.exit(f"STOP: no W13 pilot JSON for job {pilot_job} under {root}/results")
+path = cands[-1]
+d = json.loads(path.read_text())
+if d.get("outcome") != "EXACT":
+    sys.exit(f"STOP: pilot outcome={d.get('outcome')!r} in {path.name}")
+if not d.get("stock_vs_stock_byte_equal"):
+    sys.exit(f"STOP: pilot stock_vs_stock_byte_equal false in {path.name}")
+repeats = d.get("repeats") or []
+b_rows = [r for r in repeats if r.get("arm") == "B" or r.get("decision") == "SHIP"]
+if not b_rows:
+    sys.exit(f"STOP: pilot has no B/SHIP repeats in {path.name}")
+audit_ok = False
+for r in b_rows:
+    cmp_ = r.get("compare") or {}
+    if r.get("decision") != "SHIP" or not cmp_.get("byte_equal"):
+        sys.exit(f"STOP: pilot B not SHIP+byte_identical in {path.name}: {r.get('decision')}")
+    if r.get("audit_mode") == "bounded" and r.get("audit_s_target") is not None:
+        audit_ok = True
+if not audit_ok:
+    sys.exit(f"STOP: pilot missing audit_mode=bounded with audit_s_target in {path.name}")
+limit = 8 * 3600
+for key in ("fill", "stock_38_1"):
+    w = (d.get(key) or {}).get("wall_s")
+    if w is not None and float(w) > limit:
+        sys.exit(f"STOP: pilot {key} wall_s={w} exceeds 8h")
+for r in repeats:
+    w = r.get("wall_s")
+    if w is not None and float(w) > limit:
+        sys.exit(f"STOP: pilot repeat wall_s={w} exceeds 8h")
+print(f"W13 pilot PASS ({path.name}); starting measured task", flush=True)
+PY
 
 mkdir -p "${SCRATCH}" "${ROOT}/results" "${ROOT}/logs"
 echo "=== host ==="

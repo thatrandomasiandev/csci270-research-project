@@ -1154,3 +1154,11 @@ paired ratios.
 
 Same as the headline: three alternating pairs; INCONCLUSIVE (not KILL) if a
 task cannot finish under 8 h or if power is missing. No third redesign.
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.
