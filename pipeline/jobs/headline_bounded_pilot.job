@@ -1,0 +1,97 @@
+#!/bin/bash
+# W13 pilot: first of the nine EXACT genomes (task 0 = GCF_002302335.1),
+# full design under the bounded-audit default. Exclusive EPYC, 8 h.
+# Scratch is /scratch1 only (not node tmpfs).
+#SBATCH --job-name=headline_bounded_pilot
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=0
+#SBATCH --time=08:00:00
+#SBATCH --array=0
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/headline_bounded/logs/%x-%A_%a.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/headline_bounded/logs/%x-%A_%a.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/headline_bounded}"
+OLD_HMM="${ACTS_PFAM_OLD:-/project2/biyik_1165/jjt_373/csci270-star/reference_reannot/data/pfam38.1/Pfam-A.hmm.gz}"
+NEW_HMM="${ACTS_PFAM_NEW:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz}"
+GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
+SCRATCH="/scratch1/${USER}/headline_bounded_pilot_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+
+export PYTHONPATH="${ROOT}"
+export PYTHONUNBUFFERED=1
+export ACTS_CODE_ROOT="${ROOT}"
+export ACTS_PFAM_OLD="${OLD_HMM}"
+export ACTS_PFAM_NEW="${NEW_HMM}"
+export ACTS_GENOMES="${GENOMES}"
+export ACTS_SCRATCH="${SCRATCH}"
+export ACTS_OUT="${ROOT}/results/headline_bounded_pilot_${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.json"
+export ACTS_GIT_HEAD="${ACTS_GIT_HEAD:-}"
+export ACTS_GIT_DIRTY="${ACTS_GIT_DIRTY:-}"
+if [[ -z "${ACTS_COMMIT:-}" && -f "${ROOT}/ACTS_COMMIT" ]]; then
+  ACTS_COMMIT="$(tr -d '[:space:]' < "${ROOT}/ACTS_COMMIT")"
+fi
+export ACTS_COMMIT="${ACTS_COMMIT:-}"
+export ACTS_HMMER_SHA256="${HMMER_SHA256}"
+export ACTS_PILOT=1
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+mkdir -p "${SCRATCH}" "${ROOT}/results" "${ROOT}/logs"
+echo "=== host ==="
+hostname
+date -Is
+nproc
+python3 --version
+lscpu | grep -E 'Model name|CPU\(s\)' || true
+echo "SCRATCH=${SCRATCH}"
+df -h "${SCRATCH}" || true
+grep -E 'MemTotal|MemAvailable' /proc/meminfo || true
+module list 2>&1 || true
+gcc --version | head -n 1 || true
+
+echo "=== build HMMER 3.4 from the pinned tarball ==="
+TARBALL=""
+for candidate in \
+  "${ROOT}/hmmer-3.4.tar.gz" \
+  /project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz
+do
+  if [[ -f "${candidate}" ]]; then
+    TARBALL="${candidate}"
+    break
+  fi
+done
+if [[ -z "${TARBALL}" ]]; then
+  echo "STOP: HMMER 3.4 tarball not found on project (no download without approval)" >&2
+  exit 2
+fi
+echo "tarball=${TARBALL}"
+sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
+got="$(awk '{print $1}' "${SCRATCH}/hmmer.sha256")"
+if [[ "${got}" != "${HMMER_SHA256}" ]]; then
+  echo "STOP: HMMER tarball sha256 ${got} != ${HMMER_SHA256}" >&2
+  exit 2
+fi
+tar -C "${SCRATCH}" -xf "${TARBALL}"
+cd "${SCRATCH}/hmmer-3.4"
+./configure --prefix="${SCRATCH}/hmmer"
+make -j"${SLURM_CPUS_PER_TASK:-8}"
+make install
+export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+command -v hmmscan
+hmmscan -h | head -n 3 || true
+
+python3 "${ROOT}/scripts/headline_bounded_measured.py"
+echo HEADLINE_BOUNDED_PILOT_DONE

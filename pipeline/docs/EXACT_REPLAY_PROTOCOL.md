@@ -1053,3 +1053,104 @@ would make a genome's first two updates full stock comparisons.
 Every measured result committed before this addendum ran with the Bernoulli audit and keeps its
 recorded commit. The headline (array 13208152 / 13227819, `acts_commit = d125151`) is not changed by
 this; a re-timing under the new default is a separate, pre-registered run (W13).
+
+## Addendum 2026-10-20 — W13 re-timing under the bounded audit (pre-registration)
+
+Written and committed **before** any W13 measured run. Code is frozen at
+`acts_commit = 0e92344579d7b929d1d29e8cf8738c897a14450f` (origin/main tip that
+made the bounded audit the CLI default). First-use verification stays **OFF**
+(no `--first-use`).
+
+### Genomes (fixed list; not a new draw)
+
+The nine genomes with `outcome == "EXACT"` in
+`results/exact_replay/headline_carc.json`, in the original headline draw order
+with the refused fill genome removed:
+
+1. `GCF_002302335.1` (pilot genome; also re-run in the measured array)
+2. `GCF_009433135.1`
+3. `GCF_009948655.1`
+4. `GCF_022559285.1`
+5. `GCF_030347155.1`
+6. `GCF_049949335.1`
+7. `GCF_054388855.1`
+8. `GCF_055556535.1`
+9. `GCF_061234675.1`
+
+`GCF_015290725.1` is excluded here exactly as in the headline (refused at cache
+fill under `d125151` with `REFUSE: duplicate row key`). The pool-hash /
+`seed = 20261046` draw check is replaced by membership in this fixed list; the
+substitution is recorded in every result JSON (`draw_substitution`). Marker
+seed `20261291` labels the re-measurement; it is not used to sample genomes.
+Bootstrap CI seed remains `20261047` (10,000 percentile resamples), identical
+to the headline scorer.
+
+### Design (identical to the headline except the audit default)
+
+- Runner: `scripts/headline_bounded_measured.py` (fork of
+  `scripts/headline_carc_measured.py` with the fixed nine and audit-plan
+  recording).
+- Job: `jobs/headline_bounded_pilot.job` then
+  `jobs/headline_bounded_measured.job` (`--time=08:00:00`, exclusive EPYC
+  7542, `--mem=0`, array `0-8%6`).
+- Staged tree: `/project2/biyik_1165/jjt_373/csci270-star/headline_bounded/`
+  (new; never edit `headline_exact/`).
+- Pfam 38.1 / 38.2 and HMMER 3.4 tarball
+  (`sha256 ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3`)
+  at the same CARC paths as the headline.
+- `hmmscan --cut_ga --noali --cpu 4`; stock 38.1 then fill then A B A B A B
+  with r = 3; restore one cache snapshot before every B; unpinned control;
+  cache cap 5 GiB; scratch on `/scratch1/$USER` only (not node tmpfs).
+- TARE argv identical to the headline except the new default audit (no audit
+  flag; resolved plan `audit_mode=bounded`, `audit_s_target=299` or `n` when
+  `n < 299` is recorded from `decision.txt` on every B).
+
+### Metrics (unchanged definitions)
+
+- Per genome: `S_g = median(stock walls) / median(TARE walls)`.
+- Headline: median of the nine `S_g`; 95% percentile bootstrap, 10,000
+  resamples, seed `20261047`; geometric mean; range; CV flags (>5%, not a
+  FAIL); first-run overhead; break-even n.
+- Pass rule: every B byte-identical to its paired A; stock 38.2 repeats
+  identical; unpinned control differs; fill decision SHIP.
+- Also report: paired ratio `S_g(bounded) / S_g(original)` and
+  `verify_s / stock_median` per genome.
+
+### Prediction (stated before running)
+
+W9 server fit on the same nine genomes under the Bernoulli audit
+(`results/exact_replay/server_cost_fit.json`): `a = 0.973`, `c = 0.098`
+(rounded; exact `a = 0.9725467626703342`, `c = 0.09799254461859343`),
+`f = 4052/30134`, so `S = 1/(a·f + c) = 4.37×` without the audit change.
+
+Bounded audit replaces Bernoulli `s ≈ max(20, ⌈0.02·n⌉)` with
+`s = 299`. Scaling each genome's measured median `verify_s` by
+`299 / s_Bernoulli` and holding every other phase fixed gives per-genome
+projected speedups whose **median is 3.57×**. Adjusting the W9 `c` by the
+mean extra `verify/stock` across the nine genomes gives
+`c_eff = 0.146` and **`S_pred_bounded = 3.61×`**. The pre-registered
+prediction for the W13 headline median is **3.61×**; prediction error is
+`|S_pred_bounded − S_g| / S_g` (and vs the headline median). The scorer
+`scripts/headline_analysis.py` still emits the old pilot `S_pred = 4.08×`
+for continuity; the W13 result JSON overlays `S_pred_bounded` and the
+paired ratios.
+
+### Pilot then measured
+
+1. Pilot: task 0 only (`GCF_002302335.1`), full design; report as a pilot
+   (not a result). Confirm `audit_s_target = 299` and that walls fit 8 h.
+2. Measured: fresh full run of all nine (including a fresh run of the pilot
+   genome) as one array. Pilot JSON is not merged into the measured score.
+3. Score with `scripts/headline_analysis.py`; write
+   `results/exact_replay/headline_bounded.json`.
+
+### Controls
+
+- Positive: each paired B byte-identical to A; stock-vs-stock identity;
+  bounded audit plan visible (`audit_mode=bounded`, `s=299`).
+- Negative: unpinned control differs from stock.
+
+### Positive / negative power
+
+Same as the headline: three alternating pairs; INCONCLUSIVE (not KILL) if a
+task cannot finish under 8 h or if power is missing. No third redesign.
