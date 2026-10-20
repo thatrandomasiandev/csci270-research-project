@@ -9,7 +9,7 @@ Orchestrator branch: `exp/orchestrator-report-r2`. Round-1 tips (authoritative a
 | WS | Branch | Worktree | Status | Notes |
 |---|---|---|---|---|
 | W13 | `exp/w13-bounded-headline` | `ACTS-w13r2` @ `0e92344` | LAUNCHED | Highest CARC priority; freeze at bounded-audit default |
-| W6c | `exp/w6-row-keys` | `ACTS-w6` @ `080636d` | LAUNCHED | Collect CARC leftovers only; no new runs |
+| W6c | `exp/w6-row-keys` | `ACTS-w6` @ `2be1e06` | **DONE** | Needless HMMER 6/6 SHIP (incl. Drosophila); BLAST measured NOT_SHIP (`pident` col-2) |
 | W8 | `exp/w8-release-chain` | `ACTS-w8` @ `53d6e58` | LAUNCHED | Pilot 13241855 COMPLETED; commit + measured |
 | W12a | `exp/w12a-expert-script` | `ACTS-w12a` @ `b9ed4b8` | LAUNCHED | Pilot 13241867 still PENDING |
 | W5x | `exp/w5x-baselines-x86` | `ACTS-w5x` @ `5965454` | LAUNCHED | Pilot 13241865 TIMEOUT; resubmit |
@@ -33,6 +33,16 @@ Result files confirmed on CARC (not yet committed):
 - `/project2/biyik_1165/jjt_373/csci270-star/tare-w6/results/blast_measured.json`
 
 CARC exclusive priority: W13 > W8 > W12a > W5x > W12b > WA2 timing. Cap 6 exclusive EPYC.
+
+---
+
+## W6c — collect leftovers
+
+**STATUS: DONE.** Tip `2be1e068c99516ca9350082bb75f0b4f68360925` on `exp/w6-row-keys`. No new CARC runs.
+
+- Needless HMMER refusals fixed: **6/6** SHIP, bodies byte-identical (incl. Drosophila `GCF_000001215.4`).
+- BLAST measured: **NOT_SHIP** — both releases `REFUSE` / `out: column 2 matches no normalizer`; fallback ordered-equal to stock (2,137,688 lines).
+- Reports: `pipeline/docs/prompts/2026-10-20_w6c_report.md` (on that branch).
 
 ---
 
