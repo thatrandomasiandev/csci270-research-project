@@ -1,20 +1,20 @@
 # TARE orchestrator report — round 2 (2026-10-20)
 
-In progress. Final status only when every workstream is DONE, INCONCLUSIVE (with reason), or BLOCKED on Josh.
+**PAUSED 2026-10-20T17:48Z** — Josh stopped all local agents. CARC jobs left running (not cancelled). Resume by reattaching worktrees and polling those job IDs.
 
-Orchestrator branch: `exp/orchestrator-report-r2`. Round-1 tips (authoritative at launch): see `2026-10-19_orchestrator_report.md` on `exp/orchestrator-report`.
+Orchestrator branch: `exp/orchestrator-report-r2`. Round-1 tips: `2026-10-19_orchestrator_report.md` on `exp/orchestrator-report`.
 
-## Scoreboard (live)
+## Scoreboard (at stop)
 
-| WS | Branch | Worktree | Status | Notes |
+| WS | Branch | Tip | Status | In-flight CARC / notes |
 |---|---|---|---|---|
-| W13 | `exp/w13-bounded-headline` | `ACTS-w13r2` @ `0e92344` | LAUNCHED | Highest CARC priority; freeze at bounded-audit default |
-| W6c | `exp/w6-row-keys` | `ACTS-w6` @ `2be1e06` | **DONE** | Needless HMMER 6/6 SHIP (incl. Drosophila); BLAST measured NOT_SHIP (`pident` col-2) |
-| W8 | `exp/w8-release-chain` | `ACTS-w8` @ `53d6e58` | LAUNCHED | Pilot 13241855 COMPLETED; commit + measured |
-| W12a | `exp/w12a-expert-script` | `ACTS-w12a` @ `b9ed4b8` | LAUNCHED | Pilot 13241867 still PENDING |
-| W5x | `exp/w5x-baselines-x86` | `ACTS-w5x` @ `5965454` | LAUNCHED | Pilot 13241865 TIMEOUT; resubmit |
-| W12b | `exp/w12b-iseqsearch` | `ACTS-w12b` @ `5b949cf` | LAUNCHED | Confirm then exclusive measured |
-| WA2 | `exp/a-unrelated-ship` | `ACTS-exp-a` @ `258b20d` | LAUNCHED | Fresh draw seed 20261272 |
+| W13 | `exp/w13-bounded-headline` | `36017cd` | STOPPED | pre-registered; job `13259408` headline_bounded_pilot |
+| W6c | `exp/w6-row-keys` | `2be1e06` | **DONE** | 6/6 HMMER SHIP; BLAST measured NOT_SHIP |
+| W8 | `exp/w8-release-chain` | `ea33413` | STOPPED | measured array `13259414_{0,1,2}` PENDING |
+| W12a | `exp/w12a-expert-script` | `b9ed4b8` | STOPPED | pilot `13241867` (was RUNNING) |
+| W5x | `exp/w5x-baselines-x86` | `8f94718` | STOPPED | resubmitted pilot `13259326` PENDING |
+| W12b | `exp/w12b-iseqsearch` | `5b949cf` | STOPPED | confirm `13259333` (dup `13259402` cancelled earlier) |
+| WA2 | `exp/a-unrelated-ship` | `9a36ec0` / agent said `83f9bf5` | STOPPED | `13259447` array + `13259448` agg |
 
 ## CARC at launch (2026-10-20 ~10:35 PT)
 
