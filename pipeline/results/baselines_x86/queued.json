@@ -1,27 +1,33 @@
 {
   "label": "INCONCLUSIVE",
-  "reason": "pilot job still PENDING (Priority); no wall times; measured run not submitted",
+  "reason": "pilot 13241865 TIMEOUT on TARE identical-rerun; redo pilot 13259326 queued with --time=08:00:00 after --prep fix; measured not submitted",
   "question": "Table 4 first-run rho = T/T_stock on one exclusive x86 EPYC node",
   "protocol": "pipeline/docs/BASELINES_X86_PROTOCOL.md",
   "frozen_code_at_start": "1c65571538afcc139af560156147e4276905f9b4",
-  "harness_commit": "e8309972225551ff1d1a4f953e3b34a9c19505ec",
+  "harness_commit": "cf7f8055ecbc088916fe0c32b0b186cd24c1296a",
   "seed_pilot": 20261261,
   "seed_measured_reserved_unused": 20261262,
-  "pilot_job_id": "13241865",
+  "pilot_job_id_timeout": "13241865",
+  "pilot_timeout_arm": "identical_rerun tare",
+  "pilot_timeout_finished_wall_s": 10488.6,
+  "pilot_job_id": "13259326",
   "pilot_job_name": "tare-w5x-pilot",
-  "pilot_state": "PENDING",
-  "pilot_reason": "Priority",
-  "pilot_elapsed": "00:00:00",
+  "pilot_time_limit": "08:00:00",
+  "pilot_state": "SUBMITTED",
   "measured_job_id": null,
   "measured_json": null,
   "systems": {
-    "riker": {"status": "NOT_RUN"},
+    "riker": {
+      "status": "BLOCKED",
+      "reason": "PTRACE_GET_SYSCALL_INFO failed",
+      "probe_output": "GET_SYSCALL_INFO rc=-1 errno=5 (Input/output error)\nseccomp_bpf_ok\n"
+    },
     "incr": {"status": "NOT_RUN"},
     "processcache": {"status": "NOT_RUN"},
     "tare": {"status": "NOT_RUN"}
   },
   "staged_tree": "/project2/biyik_1165/jjt_373/csci270-star/tare-w5x/",
   "builds_reused": "/project2/biyik_1165/jjt_373/csci270-star/acts-baselines-20261009/",
-  "checked_utc": "2026-10-20T00:59:16Z",
-  "note": "Job 13241865 left queued. No rho invented. Measured not submitted until the pilot finishes and the 1.5x time limit can be set from pilot walls."
+  "checked_utc": "2026-10-20T17:36:00Z",
+  "note": "Riker BLOCKED from 13241865 probe (errno 5). Redo pilot has --prep and 8h limit. No rho invented."
 }
