@@ -498,3 +498,237 @@ Both md5s equal the headline pins: 38.1
 `dc814cc181ece09102c09c4e6c19f2fd`, 38.2
 `7ab3c4e215d0daaea3004e37c4e24f8a`. `pairs.json` was not written. The
 figure script was not run.
+
+## Addendum 2026-10-19 — W8 pilot design (before the pilot)
+
+This addendum is the W8 pilot. It is not the measured-run
+pre-registration. No W8 wall time exists yet. The skeleton's seeds
+20261121–20261129 and its 37.4 start are not used.
+
+Worktree `exp/w8-release-chain`, starting commit
+`1c65571538afcc139af560156147e4276905f9b4`. The runner that this
+addendum describes is committed on that branch before `sbatch`. The
+measured run will record the commit it actually executes.
+
+### What changed, and why
+
+Job `13223770` (`tare_chain_pilot`) imported `headline_carc_measured`,
+which imports `headline_analysis`, and the staged tree did not contain
+`pipeline/scripts/headline_analysis.py`. The staged tree for W8 is
+`/project2/biyik_1165/jjt_373/csci270-star/tare-w8/`. `PYTHONPATH` is
+`${ROOT}:${ROOT}/scripts`. The submit script copies
+`headline_analysis.py` next to the other scripts. A login-node dry run
+of `--self-test` and `--check-draw` is required before `sbatch`. That
+dry run does not scan.
+
+The timed chain, for the pilot and for the runner until the measured
+addendum says otherwise, is 37.3 → 37.4 → 38.0 → 38.1 → 38.2. Fill at
+37.3. No skips. 37.0–37.2 stay census-only: their \(f_\Delta\) values
+are already in `pairs.json`, and this workstream was told to stage
+37.3, 37.4, and 38.0. Calling that the full timed chain is a deviation
+from the skeleton's 37.0 start. It is disclosed here, before any scan.
+
+### Seeds and draw
+
+| Seed | Use |
+|---|---|
+| 20261221 | pilot genome |
+| 20261222 | measured genome draw, not scanned in the pilot |
+| 20261223 | first 5% drop |
+| 20261224 | one power retry of that drop |
+| 20261225–20261229 | unused |
+
+Blocked accessions are `EXCLUDE_REASONS` (50), the headline `DRAWS`
+(10), and every accession in
+`pipeline/results/diverse_genomes/draw.json` (98 unique; sha256 of the
+sorted list `0ed8d49d59742709d00b9e1c34bce89fcc64e1ac65b035a4750f7106e355e484`).
+None of those 98 are in the 100-stem recurrence pool, so the pool hash
+stays `40dc92dba7c117e9e9e435f61498fd255a08e6790789d7f861a64aa3a51a456c`
+(n = 40). The CARC directory's 100 stems hash to the same value as the
+laptop directory:
+`bf703062fb6adad0cbfd3335a7dfb7279bacff18a20a48e0aa95b2cb5ae5034d`.
+The runner stops if either hash moves.
+
+Pilot genome =
+`sorted(random.Random(20261221).sample(sorted(pool), 1))[0]`
+= `GCF_003018555.1`.
+Measured names, computed now and not locked as a result, are
+`GCF_014295275.1`, `GCF_024585005.1`, `GCF_057098645.1`
+(reduced-pool sha256
+`394fd6ad990f7e72b29866e7e4743cc04d4b0e222c0be8e5a5688df927688dc1`).
+`GCF_057098645.1` was also in the unrun skeleton draw. It was not
+scanned. The new seed drew it again. It is not in the three exclusion
+lists.
+
+### Files and checksums already checked
+
+Laptop md5 of `~/tmp/tare_c/Pfam{37.3,37.4,38.0}/Pfam-A.hmm.gz` equals
+`pairs.json`: `c4fa2257c93506b792a0a102cc27d2ad`,
+`003b07d6c9c2871efbe98f41734b55d6`,
+`a7a33bf0ba5e17a0aea4cf9841cf45d1`. Bytes 341949642, 347150343,
+355568131. CARC 38.1 and 38.2 md5 equal the headline pins above. The
+HMMER 3.4 tarball at
+`/project2/biyik_1165/jjt_373/csci270-star/headline_exact/hmmer-3.4.tar.gz`
+has sha256
+`ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3`.
+The job uses that file. It does not download.
+
+Copies of 37.3, 37.4, and 38.0 go to
+`/scratch1/$USER/tare-w8/data/`. 38.1 and 38.2 are symlinks to the
+project files named above. Working scratch is
+`/scratch1/$USER/tare-w8/work/`. Node `/tmp` is not used.
+
+### Pilot procedure
+
+Non-exclusive, `--constraint=epyc-7542`, 4 CPUs, 24G, 16 h, job name
+`tare-w8-pilot`. The first submit asked for 8 CPUs and 64G (job
+`13241855`). Headline batch MaxRSS on the same `hmmscan` was about
+9.1 GiB (`sacct` `13208152`, step MaxRSS 9525556K). Mixed EPYC 7542
+nodes had idle CPUs but not 64G of unallocated memory. The pending
+job was updated in place to 4 CPUs and 24G. The runner commit did
+not change. `hmmscan --cpu 4` matches the allocation. The HMMER
+build uses that same width. One genome. r = 1. Two stock scans at 37.3, then one
+fill, then each later release is one stock scan and one TARE update.
+Byte identity and `SHIP` are the pass, with the 1000-line floor. Stock
+disagreement is INCONCLUSIVE. Press is not charged. Laptop times are
+not speed evidence. The same command as the skeleton: `hmmscan
+--cut_ga --noali --cpu 4`, pin `-Z {entry_count}`, audit on.
+
+The 5% drop runs once, on the first update (37.3→37.4), after that
+update has passed. Seeds 20261223 then, if the drop is not exercised,
+20261224. The carried cache is not an input. A refusal is the pass.
+This is the skeleton's negative control, moved to the first step of
+the new chain.
+
+Drift, after the chain reaches 38.2 and passes: fill a new cache at
+38.1, update it to 38.2, and require chained = direct = stock on both
+tables.
+
+On 37.4→38.0 the shipped code replays. It does not consult a
+threshold. The result records what a separate rule would have done:
+if \(f_\Delta > 0.80\), that rule would run stock; otherwise it would
+replay. The census value is 0.9311802701115678, so the recorded
+decision is stock. The executed decision is the replay. No code from
+another workstream is imported. The two decisions are both reported.
+
+Pilot walls size the later exclusive job. They are not a speed claim.
+Output: `pipeline/results/release_chain/pilot_20261221.json` after the
+CARC file is copied back. The measured addendum is written after this
+pilot and before any measured `sbatch`.
+
+## Addendum 2026-10-20 — W8 measured run (locked before sbatch)
+
+Cites the finished pilot. Freezes the measured code. No measured wall
+below is a result.
+
+### Pilot that this addendum cites
+
+| Key | Value |
+|---|---|
+| Job | `13241855` (`tare-w8-pilot`), COMPLETED, ExitCode 0:0 |
+| sacct Elapsed | `05:39:03` (20343 s) |
+| Finished (UTC) | `2026-10-20T03:16:16Z` |
+| Outcome | `PASS` |
+| Proteome | `GCF_003018555.1` (seed `20261221`) |
+| Host / CPU | `b22-21.hpc.usc.edu`, AMD EPYC 7542 |
+| Pilot code (`git_head`) | `bebabc5b7f4b81c72e322f3a68f363a4429f855a` |
+| Chain | 37.3 → 37.4 → 38.0 → 38.1 → 38.2; every step `SHIP` + `PASS` |
+| Negative control | `refused` (seed `20261223`, first update) |
+| Drift | `pass` — chained 38.2 = direct 38.2 = stock, both tables byte-identical |
+| Committed files | `pipeline/results/release_chain/pilot.json` (canonical) and `pilot_20261221.json` (same bytes) |
+
+Pilot walls are not a speed claim. They size the exclusive array only.
+
+### Break-even counterfactual on 37.4 → 38.0 (recorded, not executed)
+
+Census \(f_\Delta = 0.9311802701115678\). The shipped runner always
+replays. Two non-executed rules are recorded:
+
+| Rule | Threshold | Would |
+|---|---|---|
+| W7 / exp/w7-breakeven \(f_\Delta > 0.80\) | 0.80 | stock |
+| Server break-even \((1-c)/a\) with \(a=0.973\), \(c=0.098\) | ≈0.927030 | stock |
+
+The pilot JSON records the 0.80 rule under `steps[2].w7_fallback`.
+The measured runner also writes `w7_fallback.break_even` for the
+\((1-c)/a\) rule. Neither rule chooses argv. `code_imported` stays false.
+
+### Measured code freeze
+
+Measured executes the runner and `pipeline/acts` at the commit recorded
+in `ACTS_GIT_HEAD` / each genome JSON's `git_head` after staging. That
+commit is the tip of `exp/w8-release-chain` at the measured pre-registration
+commit (this addendum + finished pilot JSON + break-even record fields).
+It is not the mid-pilot incomplete snapshot. The scan logic matches the
+pilot's `bebabc5` runner except for the recorded `break_even` object
+inside `w7_record` (counterfactual only).
+
+### Sample (locked; fresh; disjoint from the pilot)
+
+Same pool and exclusions as the W8 pilot addendum:
+
+- Headline `EXCLUDE_REASONS` (50) and headline `DRAWS` (10) from
+  `EXACT_REPLAY_PROTOCOL.md` / `headline_carc_measured.py`
+- Every accession in `pipeline/results/diverse_genomes/draw.json`
+  (98 unique; sha256 unchanged)
+- W12a locked draw (pilot `GCF_003018855.1`; measured
+  `GCF_018415995.1`, `GCF_019969525.1`, `GCF_037231045.1`,
+  `GCF_040271735.2`, `GCF_055807995.1`) — none of these are in the
+  W8 measured names below; listed so a future redraw cannot collide
+
+Pilot genome removed from the pool. Measured names
+(seed `20261222`, reduced-pool sha256
+`394fd6ad990f7e72b29866e7e4743cc04d4b0e222c0be8e5a5688df927688dc1`):
+
+1. `GCF_014295275.1`
+2. `GCF_024585005.1`
+3. `GCF_057098645.1`
+
+The runner stops if `draw_genomes(..., "measured", task)` disagrees.
+No genome from the pilot. Seeds `20261225`–`20261229` stay unused.
+Drop seeds stay unused on the measured path (negative control was pilot-only).
+
+### Procedure
+
+Full timed chain 37.3 → 37.4 → 38.0 → 38.1 → 38.2. Fill at 37.3.
+r = 3, alternating A B A B A B per step. Exclusive EPYC 7542,
+`--mem=0`, `--constraint=epyc-7542`, scratch `/scratch1/$USER/tare-w8/`.
+`hmmscan --cut_ga --noali --cpu 4`, pin `-Z {entry_count}`, audit on.
+Unpinned control once on genome 1 at 38.2 (must differ). Stock-vs-stock
+identity at every step. Line floor 1000+1000 → INCONCLUSIVE, not KILL.
+Press not charged. Laptop times are not speed evidence.
+
+\(S_g\), CV, \(S_{\mathrm{pred}}\) from earlier steps only, and cumulative
+payback follow Part 3 of this document, restricted to the five-release
+W8 chain (four updates after the fill).
+
+### Time limit
+
+Pilot sacct wall `05:39:03` × 1.5 = `08:28:34` (30514 s). The shared
+floor is never shorter than 8 h. The measured path uses r = 3 (three
+stock and three TARE walls per update) while the pilot used r = 1, so
+the exclusive array keeps `#SBATCH --time=24:00:00` — above the
+formula floor, sized for the extra repeats. Disclosed before sbatch.
+
+### Outputs
+
+Per genome (CARC, then copied):
+`pipeline/results/release_chain/measured_20261222_<accession>.json`
+
+Aggregate after all three finish:
+`pipeline/results/release_chain/measured.json`
+(keys include per-step \(S_g\), exactness/outcomes, payback, and the
+37.4→38.0 break-even record).
+
+Job name `tare-w8-measured`, array `0-2`. CARC priority after W13.
+Exclusive-node cap 6 across `tare-w8|tare-w12a|tare-w5x|tare-w12b|tare-w6`.
+Dry-run staged entry before `sbatch`. Never touch job `12864756`.
+Never edit `pipeline/paper/tare/main.tex`.
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.

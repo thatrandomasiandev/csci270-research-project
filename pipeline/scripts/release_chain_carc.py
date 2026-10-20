@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """CARC runner for the TARE Pfam release chain.
 
-Pilot seed 20261121, one genome, chain 37.4 → 38.0 → 38.1 → 38.2.
-Measured seed 20261122, three genomes, full chain from 37.0, r=3.
-``--self-test`` checks the drop judge on synthetic lines and does not scan.
+W8 pilot seed 20261221, one genome. W8 measured seed 20261222, three
+genomes. Timed chain, no skips: 37.3 → 37.4 → 38.0 → 38.1 → 38.2.
+``--self-test`` checks the drop judge and the recorded fallback rule on
+synthetic values and does not scan. ``--check-draw`` checks the genome
+pool only.
 """
 
 from __future__ import annotations
@@ -54,20 +56,33 @@ from headline_carc_pilot import (  # noqa: E402
 )
 
 ORDER = ("37.0", "37.1", "37.2", "37.3", "37.4", "38.0", "38.1", "38.2")
-PILOT_CHAIN = ("37.4", "38.0", "38.1", "38.2")
+# Timed chain for this workstream. 37.0–37.2 stay in the census only.
+W8_CHAIN = ("37.3", "37.4", "38.0", "38.1", "38.2")
+PILOT_CHAIN = W8_CHAIN
 POOL_SHA256 = "40dc92dba7c117e9e9e435f61498fd255a08e6790789d7f861a64aa3a51a456c"
 POOL_N = 40
-PILOT_GENOME = "GCF_057650775.1"
-MEASURED_SHA256 = "3cc3445dbbfd79ea11fa75f306c31e3032bf5b2e4d529b08b1ff7d23667f69e2"
+# Diverse-draw accessions are excluded. None of them are in the 100-stem
+# pool, so the pool hash above is unchanged. A future overlap stops the run.
+DIVERSE_N = 98
+DIVERSE_SHA256 = "0ed8d49d59742709d00b9e1c34bce89fcc64e1ac65b035a4750f7106e355e484"
+PILOT_GENOME = "GCF_003018555.1"
+MEASURED_SHA256 = "394fd6ad990f7e72b29866e7e4743cc04d4b0e222c0be8e5a5688df927688dc1"
 MEASURED_GENOMES = (
-    "GCF_025259645.1",
+    "GCF_014295275.1",
+    "GCF_024585005.1",
     "GCF_057098645.1",
-    "GCF_900196535.2",
 )
-SEED_PILOT = 20261121
-SEED_MEASURED = 20261122
-SEED_DROP = 20261123
-SEED_DROP_RETRY = 20261124
+SEED_PILOT = 20261221
+SEED_MEASURED = 20261222
+SEED_DROP = 20261223
+SEED_DROP_RETRY = 20261224
+# Recorded counterfactual. Not imported from another workstream and not executed.
+W7_F_THRESHOLD = 0.80
+# Server cost-model coefficients for the alternate break-even threshold
+# (1-c)/a. Same counterfactual role as W7_F_THRESHOLD: recorded, not executed.
+SERVER_A = 0.973
+SERVER_C = 0.098
+BREAK_EVEN_THRESHOLD = (1.0 - SERVER_C) / SERVER_A  # ≈ 0.927
 PRIOR_A = 1.0146410126797523
 PRIOR_C = 0.10846594102974193
 PRIOR_SOURCE = (
@@ -125,6 +140,78 @@ def drop_count(n: int) -> int:
     return max(1, int(round(0.05 * n)))
 
 
+def w7_record(f_delta: float) -> dict:
+    """What the threshold rule would do. The shipped runner still replays.
+
+    The rule is: if f_delta > 0.80, run stock. Otherwise replay. Equality
+    with the threshold replays. This function does not choose the argv.
+
+    Also records the server break-even threshold (1-c)/a with a=0.973,
+    c=0.098 (≈0.927). Same comparison, same non-execution.
+    """
+    would = "stock" if f_delta > W7_F_THRESHOLD else "replay"
+    be_would = "stock" if f_delta > BREAK_EVEN_THRESHOLD else "replay"
+    return {
+        "threshold": W7_F_THRESHOLD,
+        "comparison": "f_delta > threshold",
+        "f_delta": f_delta,
+        "would": would,
+        "executed": "replay",
+        "code_imported": False,
+        "note": (
+            "Current TARE always replays this step. The threshold rule is "
+            "recorded and is not executed."
+        ),
+        "break_even": {
+            "a": SERVER_A,
+            "c": SERVER_C,
+            "threshold": BREAK_EVEN_THRESHOLD,
+            "formula": "(1-c)/a",
+            "comparison": "f_delta > threshold",
+            "would": be_would,
+            "source": "exp/w7-breakeven server coefficients; not executed",
+        },
+    }
+
+
+def diverse_path() -> Path:
+    env = os.environ.get("ACTS_DIVERSE_DRAW")
+    if env:
+        return Path(env)
+    staged = PIPE / "diverse_draw.json"
+    if staged.is_file():
+        return staged
+    repo = PIPE / "results" / "diverse_genomes" / "draw.json"
+    if repo.is_file():
+        return repo
+    raise RuntimeError("STOP_DRAW: diverse draw file is missing")
+
+
+def load_diverse(path: Path | None = None) -> set[str]:
+    """Accessions in the diverse-genome draw. Membership is what matters."""
+    payload = json.loads((path or diverse_path()).read_text())
+    found: set[str] = set()
+
+    def walk(obj: object) -> None:
+        if isinstance(obj, dict):
+            accession = obj.get("accession")
+            if isinstance(accession, str) and (
+                accession.startswith("GCF_") or accession.startswith("GCA_")
+            ):
+                found.add(accession)
+            for value in obj.values():
+                walk(value)
+        elif isinstance(obj, list):
+            for value in obj:
+                walk(value)
+
+    walk(payload)
+    digest = hashlib.sha256("\n".join(sorted(found)).encode()).hexdigest()
+    if len(found) != DIVERSE_N or digest != DIVERSE_SHA256:
+        raise RuntimeError(f"STOP_DRAW: diverse {len(found)} {digest}")
+    return found
+
+
 def load_release_index(path: Path) -> tuple[dict, dict]:
     payload = json.loads(path.read_text())
     if payload.get("complete") is not True or payload.get("control_38_1_38_2_pass") is not True:
@@ -160,7 +247,7 @@ def pool_stems(genomes: Path) -> list[str]:
         raise RuntimeError(
             f"STOP_DRAW: exclude {len(EXCLUDE_REASONS)} draws {len(DRAWS)}"
         )
-    blocked = set(EXCLUDE_REASONS) | set(DRAWS)
+    blocked = set(EXCLUDE_REASONS) | set(DRAWS) | load_diverse()
     pool = [stem for stem in stems if stem not in blocked]
     digest = hashlib.sha256("\n".join(pool).encode()).hexdigest()
     if len(pool) != POOL_N or digest != POOL_SHA256:
@@ -729,7 +816,27 @@ def self_test() -> None:
     again = random_pad_names(names, {"M0", "M1"}, PAD_SEEDS[0])
     if pads != again:
         raise SystemExit("self-test: pad draw is not repeatable")
-    print("self-test pass", {"kept": kept["pass"], "dropped": dropped["fail_mode"], "example": stock_line != plus_line})
+    rebuild = w7_record(0.9311802701115678)
+    if rebuild["would"] != "stock" or rebuild["executed"] != "replay" or rebuild["code_imported"] is not False:
+        raise SystemExit(f"self-test: 37.4->38.0 record {rebuild}")
+    if rebuild["break_even"]["would"] != "stock":
+        raise SystemExit(f"self-test: 37.4->38.0 break-even {rebuild['break_even']}")
+    if abs(rebuild["break_even"]["threshold"] - BREAK_EVEN_THRESHOLD) > 1e-12:
+        raise SystemExit("self-test: break-even threshold drifted")
+    if w7_record(0.13446605163602576)["would"] != "replay":
+        raise SystemExit("self-test: 38.1->38.2 would not replay")
+    if w7_record(0.13446605163602576)["break_even"]["would"] != "replay":
+        raise SystemExit("self-test: 38.1->38.2 break-even would not replay")
+    if w7_record(0.80)["would"] != "replay":
+        raise SystemExit("self-test: threshold is strict greater-than")
+    print("self-test pass", {
+        "kept": kept["pass"],
+        "dropped": dropped["fail_mode"],
+        "example": stock_line != plus_line,
+        "w7_37_4_38_0": rebuild["would"],
+        "break_even_37_4_38_0": rebuild["break_even"]["would"],
+        "break_even_threshold": rebuild["break_even"]["threshold"],
+    })
 
 
 def open_release(version: str, root: Path) -> Path:
@@ -749,11 +856,21 @@ def run_chain(mode: str, task: int) -> None:
     scratch.mkdir(parents=True, exist_ok=True)
     kind = fstype(str(scratch))
     free = shutil.disk_usage(scratch).free
-    chain = PILOT_CHAIN if mode == "pilot" else ORDER
+    chain = W8_CHAIN
+    if str(scratch).startswith("/tmp") or str(scratch).startswith("/var/tmp"):
+        stop("scratch is node tmp; W8 uses /scratch1 only", {
+            "system": "TARE",
+            "scratch": str(scratch),
+        })
     payload: dict = {
         "system": "TARE",
         "test": f"release-chain-{mode}",
         "protocol": "pipeline/docs/RELEASE_CHAIN_PROTOCOL.md",
+        "addendum": (
+            "2026-10-19 W8" if mode == "pilot" else "2026-10-20 W8 measured"
+        ),
+        "scratch_policy": "/scratch1 only; node /tmp is not used",
+        "w7_code_imported": False,
         "seed": SEED_PILOT if mode == "pilot" else SEED_MEASURED,
         "mode": mode,
         "task": task,
@@ -811,7 +928,6 @@ def run_chain(mode: str, task: int) -> None:
     carried: Path | None = None
     repeats_per_step = 1 if mode == "pilot" else 3
     stocks_at_fill = 2 if mode == "pilot" else 3
-    first_update_stock: dict | None = None
 
     for index, version_name in enumerate(chain):
         expect = info[version_name]
@@ -840,6 +956,9 @@ def run_chain(mode: str, task: int) -> None:
             step["old_release"] = chain[index - 1]
             step["new_release"] = version_name
             step["f_delta"] = fdelta[(chain[index - 1], version_name)]
+            if chain[index - 1] == "37.4" and version_name == "38.0":
+                step["replay_forced"] = True
+                step["w7_fallback"] = w7_record(step["f_delta"])
         payload["current_step"] = step
         if index == 0:
             stock_rows = []
@@ -866,6 +985,9 @@ def run_chain(mode: str, task: int) -> None:
             filled["cache_bytes"] = cache_bytes(cache) if cache.exists() else None
             outcome, reason = score_exact(compared, filled["decision"])
             step["fill"] = public_row(filled)
+            step["decision"] = filled.get("decision")
+            step["phases"] = filled.get("phases")
+            step["cache_bytes"] = filled.get("cache_bytes")
             step["outcome"] = outcome
             step["reason"] = reason
             payload["fill"] = step["fill"]
@@ -928,8 +1050,14 @@ def run_chain(mode: str, task: int) -> None:
         else:
             step["outcome"] = "FAIL"
             step["reason"] = "a later repeat failed; B1 still carries the chain"
-        if mode == "pilot" and chain[index - 1] == "37.4" and b1_tables is not None:
-            first_update_stock = stock_rows[0]
+        b1 = next(
+            (row for row in step["repeats"] if row.get("arm") == "B" and row.get("repeat") == 1),
+            None,
+        )
+        if b1 is not None:
+            step["decision"] = b1.get("decision")
+            step["phases"] = b1.get("phases")
+            step["cache_bytes"] = b1.get("cache_bytes")
         if version_name == "38.2" and b1_tables is not None:
             payload["chained_38_2_tables"] = b1_tables
             payload["stock_38_2_tables"] = {"tbl": stock_rows[0]["tbl"], "dom": stock_rows[0]["dom"]}
@@ -938,9 +1066,9 @@ def run_chain(mode: str, task: int) -> None:
         keep_hmm = mode == "pilot" and version_name in {"38.1", "38.2"} and b1_ok
         if keep_hmm:
             payload.setdefault("kept_hmm", {})[version_name] = str(hmm)
-        if mode == "pilot" and chain[index - 1] == "37.4" and version_name == "38.0" and b1_ok:
+        if mode == "pilot" and index == 1 and b1_ok:
             payload["negative_control"] = run_pilot_negative(
-                payload, hmm, queries, first_update_stock, expect["z"], scratch
+                payload, hmm, queries, stock_rows[0], expect["z"], scratch
             )
             write_out(payload)
             if payload["negative_control"]["status"] != "refused":
@@ -1084,9 +1212,28 @@ def run_drift(payload: dict, scratch: Path, queries: Path, info: dict, release_r
     }
 
 
+def check_draw() -> None:
+    """Filename draw only. No scan and no sbatch requirement."""
+    genomes = Path(os.environ["ACTS_GENOMES"])
+    pool = pool_stems(genomes)
+    pilot = draw_genomes(genomes, "pilot", 0)
+    measured = [draw_genomes(genomes, "measured", task)[0] for task in range(len(MEASURED_GENOMES))]
+    print(json.dumps({
+        "pool_n": len(pool),
+        "pool_sha256": POOL_SHA256,
+        "pilot": pilot,
+        "measured": measured,
+        "chain": list(W8_CHAIN),
+        "diverse_n": DIVERSE_N,
+    }))
+
+
 def main() -> None:
     if "--self-test" in sys.argv:
         self_test()
+        return
+    if "--check-draw" in sys.argv:
+        check_draw()
         return
     if "--summarize" in sys.argv:
         raw = sys.argv[sys.argv.index("--summarize") + 1:]
