@@ -47,3 +47,30 @@ CARC exclusive priority: W13 > W8 > W12a > W5x > W12b > WA2 timing. Cap 6 exclus
 ---
 
 *(Sections below filled as workstreams finish.)*
+
+
+## Offline CARC chain (2026-10-20 ~11:02 PT)
+
+Local agents stopped; remaining stages submitted with SLURM dependencies so the
+laptop is not required to start them. In-job pilot-pass guards also exit unless
+the pre-registered pass rule holds. Exclusive order W13→W8→W12a→W5x→W12b→WA2;
+arrays `%3` / `%2`. Cancelled unchained W8 measured `13259414` and resubmitted.
+
+| JobID | Name | Waits on |
+|---|---|---|
+| 13259408 | headline_bounded_pilot | (running/queued) |
+| **13260162** | headline_bounded measured `0-8%3` | afterok:13259408 |
+| **13260163** | tare-w8-measured `0-2%2` | afterok:13260162 |
+| 13241867 | tare-w12a-pilot | (RUNNING) |
+| **13260164** | tare-w12a-measured | afterok:13241867:13260163 |
+| 13259326 | tare-w5x-pilot | (PENDING) |
+| **13260165** | tare-w5x-measured | afterok:13259326:13260164 |
+| **13260166** | tare-w12b-confirm | none |
+| **13260167** | tare-w12b-measured | afterok:13260166:13260165 |
+| 13259447 / 13259448 | tare_a_v2 / agg | (in flight) |
+| **13260168** | tare_a_v2time | afterok:13259448:13260167 |
+
+Branch tips: W13 `4598262`, W8 `9bbe068`, W12a `b8c33f0`, W5x `9a861a2`, W12b `72db6b6`, WA2 `deff3f4`.
+CARC map: `/project2/biyik_1165/jjt_373/csci270-star/tare_offline_chain_2026-10-20.json`.
+
+W12b note: confirm 13259333 had FAILED on `--pin` argparse swallowing; fixed with `--pin=--dbsize …` before re-submit.
