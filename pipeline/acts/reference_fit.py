@@ -267,9 +267,11 @@ def index_candidates(
 ) -> list[int | None]:
     """Columns that make (record, entry, column) unique. Integers first.
 
-    ``None`` means (record, entry) is already unique. The caller picks among
-    these when a part-scan is available: a presentation rank uniques the rows
-    of one file and then fails to align that file with a subset.
+    ``None`` means the index is the row-occurrence number inside
+    ``(record, entry)``: either that pair is already unique, or no column
+    separates the repeated pairs. The caller picks among real columns when a
+    part-scan is available. A presentation rank can unique one file and then
+    fail to align that file with a subset; occurrence order is what remains.
     """
     groups: dict[tuple[str, str], int] = Counter()
     for row in rows:
@@ -291,7 +293,9 @@ def index_candidates(
             rest.append(col)
     found = integers + rest
     if not found:
-        raise ValueError("duplicate rows have no row-index column")
+        # No column separates every repeated (record, entry). index_rows
+        # numbers those rows in file order. [None] is that occurrence index.
+        return [None]
     return found
 
 
@@ -311,9 +315,26 @@ def _shared_key_count(
     return shared
 
 
+# Not a whitespace token, so a suffixed index cannot equal a printed cell.
+_OCCURRENCE_SEP = "\x1f"
+
+
 def row_key(cells: list[str], record_col: int, entry_col: int, index_col: int | None) -> tuple[str, str, str]:
     index = cells[index_col] if index_col is not None else ""
     return (cells[record_col], cells[entry_col], index)
+
+
+def with_occurrence(base: tuple[str, str, str], occurrence: int) -> tuple[str, str, str]:
+    """Disambiguate the ``occurrence``-th row that shares ``base``, in file order.
+
+    Occurrence 0 keeps ``base``, so a key that was already unique is unchanged.
+    A later row appends the occurrence index to the third field. The cells
+    themselves are not rewritten.
+    """
+    if occurrence <= 0:
+        return base
+    record, entry, index = base
+    return (record, entry, f"{index}{_OCCURRENCE_SEP}{occurrence}")
 
 
 def index_rows(
@@ -322,9 +343,19 @@ def index_rows(
     entry_col: int,
     index_col: int | None,
 ) -> dict[tuple[str, str, str], list[str]]:
+    """Index rows in file order. Shared keys get a row-occurrence index.
+
+    The first row of a repeated base key keeps that key. Later rows are
+    numbered with ``with_occurrence``. Insertion order is file order, which
+    is the order a replay must keep.
+    """
+    seen: Counter[tuple[str, str, str]] = Counter()
     out: dict[tuple[str, str, str], list[str]] = {}
     for cells in rows:
-        key = row_key(cells, record_col, entry_col, index_col)
+        base = row_key(cells, record_col, entry_col, index_col)
+        occurrence = int(seen[base])
+        seen[base] = occurrence + 1
+        key = with_occurrence(base, occurrence)
         if key in out:
             raise ValueError(f"duplicate row key {key}")
         out[key] = cells
@@ -599,15 +630,21 @@ def _fit_column(
     table_names: list[str],
     phi_for,
 ) -> tuple[str, list[_Cand], list[_Cand]]:
-    """Return (status, fitting, non_identity). status is byte|mixed|numeric."""
+    """Return (status, fitting, non_identity). status is byte|mixed|numeric.
+
+    Pass-through text: ``n_text > n_num``, a strict majority of the aligned
+    tokens do not parse as a finite float. An even split, and a majority of
+    numbers that still contains a text token, stay mixed. The trailing
+    free-text column is decided by the caller, before this function runs.
+    """
     tokens = [row.whole[col] for row in rows] + [row.part_cells[col] for row in rows]
     parsed = [parse_finite(token) is not None for token in tokens]
-    if not parsed:
+    n_num = sum(parsed)
+    n_text = len(parsed) - n_num
+    if n_text > n_num:
         return "byte", [], []
-    if any(parsed) and not all(parsed):
+    if n_text:
         return "mixed", [], []
-    if not all(parsed):
-        return "byte", [], []
     fitting: list[_Cand] = []
     for label, kind, count_table in _family(table_names):
         phi_of = phi_for(kind, count_table)
@@ -939,12 +976,27 @@ def fit_observations(
             )
             continue
         width = min(min(len(row.whole), len(row.part_cells)) for row in bundle.aligned)
+        # Column W-1 is the first token of a free-text tail when any aligned
+        # row continues past the shortest row. It is pass-through text even
+        # if most of those first tokens parse as numbers. An equal-width
+        # table has no trailing free-text column.
+        ragged = any(
+            len(row.whole) > width or len(row.part_cells) > width for row in bundle.aligned
+        )
         for row in bundle.aligned:
             if " ".join(row.whole[width:]) != " ".join(row.part_cells[width:]):
                 refusals.append(f"{bundle.name}: trailing tokens are not byte-identical")
                 break
         else:
             for col in range(width):
+                if ragged and col == width - 1:
+                    same = all(row.whole[col] == row.part_cells[col] for row in bundle.aligned)
+                    if not same:
+                        refusals.append(
+                            f"{bundle.name}: non-numeric column {col} is not byte-identical"
+                        )
+                    columns.append(ColumnReport(index=col, role="byte", member=BYTE))
+                    continue
                 status, fitting, non_identity = _fit_column(
                     bundle.aligned, col, names, phi_for
                 )

@@ -119,3 +119,125 @@ Dropping 748 of those subjects (seed 20261142, 5 percent) returns
 lines. 14,718 + 780 = 15,498.
 
 Outcome recorded by the script: `PIN_EXACT_GATE_DID_NOT_SHIP`.
+
+## Addendum 2026-10-19 — shipped exactness after the row-occurrence index (W6)
+
+Written before the pilot. The locked text above is not edited. The gate
+change is the row-occurrence index in `acts/reference_fit.py`, disclosed
+in `REFERENCE_INCREMENTAL_PROTOCOL.md` (addendum 2026-10-19) and reviewed
+in `docs/prompts/2026-10-19_w6_semantics.md`. This run is not the 20-query
+pilot and not B1.
+
+### Claim
+
+`--pin '-dbsize {total_entry_length}'` makes the shipped reference
+strategy emit a body byte-identical to unpinned `blastp` 2.14.1 on
+Swiss-Prot 2026_01 and again on Swiss-Prot 2026_03. Byte-identical means
+the ordered data lines, comments excluded. A SHIP whose lines match as a
+multiset but not in order is not a pass.
+
+### Samples
+
+Query file: `GCF_001513615.1_protein.faa.gz` (4,787 records in the earlier
+pilot). That genome was used before. These seeds were not.
+
+| Role | Seed | Queries |
+| --- | --- | --- |
+| Pilot | `20261201` | 300 |
+| Measured | `20261202` | 2,000 |
+| Drop | `20261203` | `k = max(1, round(0.05 * n))` subjects |
+
+`sample_record_indices` keeps file order. The measured sample is not drawn
+until this pilot has finished and any deviation is written below. The
+measured row floor starts at 1,000 and may be raised, not lowered, in that
+note.
+
+### Command
+
+Same shape as the locked command. Threads stay 2. `OLD_FSC` unset. No
+`-comp_based_stats`. One cache, 2026_01 then 2026_03.
+
+```
+python3 -m acts run
+  --strategy reference
+  --pin '-dbsize {total_entry_length}'
+  --verify full
+  --prep 'makeblastdb -in {reference} -dbtype prot -out {reference}'
+  --input {queries}
+  --reference {release}
+  -- blastp -query {input} -db {reference} -out {output}
+       -outfmt "6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
+       -max_target_seqs 100000 -evalue 1000 -num_threads 2
+```
+
+### Controls
+
+1. Stock versus stock on 2026_03, before the tool. Two unpinned `blastp`
+   runs. Byte-identical ordered bodies, or the run stops. That stop is
+   determinism, not a pin result. 2026_01 is scanned once, as the body the
+   fill is compared with.
+2. Power. Fewer than 1,000 data rows in the 2026_03 stock body is
+   INCONCLUSIVE. The tool is not run.
+3. Positive. Each release's decision is SHIP and its ordered body equals
+   that release's unpinned stock body.
+4. Unpinned must differ. The subjects that appear in the 2026_03 stock
+   body are searched as their own database, without `-dbsize`. The ordered
+   body must differ from the full-database stock body.
+5. Drop. `random.Random(20261203)` drops 5 percent of those subject ids.
+   The remainder is searched with `-dbsize` set to the full release's
+   `total_entry_length`. The body must differ and the difference must
+   include missing rows. If the shipped run on 2026_03 returned SHIP, the
+   shipped neighbor check is run on that dropped candidate map and must
+   refuse. A check that accepts the dropped body fails the control.
+
+### Difference classes
+
+`compare_row_sets` in `scripts/blast_hsp_diagnosis.py`: missing, extra,
+`different_hsp`, `same_interval_different_score`, `value_only`. If those
+counts are all zero and the ordered lines still differ, the class is
+`order`.
+
+### Stop
+
+One pilot (`scripts/w6_blast_exact.py --mode pilot`). No third redesign.
+The measured mode refuses to start unless the pilot JSON exists and
+records a finished pilot that was not `STOP_STOCK` or `INCONCLUSIVE`.
+
+## Addendum 2026-10-19 — post-pilot, before the measured run
+
+Pilot job `13241903` on `a03-08`, frozen code
+`1c62ab90044de3d16cedf578f6a2851600ad954f`, seed `20261201`, 300 queries.
+Result: `pipeline/results/w6_followup/blast_pilot.json`.
+
+What the pilot showed:
+
+- Stock versus stock on 2026_03: ordered bodies equal, 297,810 data rows,
+  MD5 `30fb3f478b88414cae107e54765304e8`. Above the 1,000-row floor.
+- Both releases: decision `REFUSE`, reason
+  `out: column 2 matches no normalizer`. Column 2 is `pident` in the locked
+  outfmt. The fallback full-scan body was ordered-equal to that release's
+  stock body (2026_03: 297,810 lines; 2026_01: 297,699 lines).
+- Unpinned candidate database differed from stock
+  (`ordered_body_equal` false; `missing` 295,757; `extra` 407,738;
+  `same_interval_different_score` 279,694; `different_hsp` 116).
+- The 5% drop (seed `20261203`, 9,730 subjects) differed and had missing
+  rows (`missing` 15,024, `extra` 0). `body_pass` is true.
+- The shipped neighbor check did not run, because the 2026_03 decision was
+  not `SHIP`. `negative.pass` is therefore false. The outcome rule still
+  records `NOT_SHIP`, not `CONTROL_FAILED`, when the drop body passes and
+  the unpinned body differs. That is the rule the measured run uses.
+- `pilot_complete` is true. Outcome `NOT_SHIP`.
+
+The row-occurrence change removed the earlier
+`duplicate rows have no row-index column` refusal. The fit then refused
+`pident`. This note does not change the fitter and does not change the
+pass rule.
+
+Measured floor, raised and not lowered: 100,000 data rows on the 2026_03
+stock body. The pilot's 297,810 rows on 300 queries is why 1,000 is no
+longer the power check for the fresh sample.
+
+Time limit for the measured job: the pilot wall was 1:00:21. Scaled by
+2,000/300 and by 1.5, that is about 10.1 h. The job asks for 12 h.
+Threads stay 2. The code under test stays
+`1c62ab90044de3d16cedf578f6a2851600ad954f`.

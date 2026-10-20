@@ -1031,3 +1031,44 @@ its 48 h limit. It produced **no result**. Reasons:
 Its question (the measured per-release speedup on a dedicated node) is
 answered by the headline timing in `EXACT_REPLAY_PROTOCOL.md`, measured
 with exact mode. Nothing from this job is reported as a measurement.
+
+## Addendum 2026-10-19 — row-occurrence index and pass-through text
+
+Written before the follow-up runs that use it. The locked sections above
+are unchanged. Historical measured files stay historical: a run that
+already refused is not rewritten. The rule here is what the code does
+after this addendum.
+
+### Row-occurrence index
+
+`index_rows` used to raise `duplicate row key` when two data rows shared
+`(record, entry, index token)`. `index_candidates` used to raise
+`duplicate rows have no row-index column` when no column made that triple
+unique. Both raises aborted the fit, including while a later candidate
+was only being scored.
+
+The index is now the same triple, plus a row-occurrence index when the
+triple repeats. Rows are numbered in file order. Occurrence 0 keeps the
+old triple, so a table that was already unique is unchanged. Occurrence
+`k > 0` stores the third field as the printed index, a unit separator,
+and `k`. The cells are not rewritten. When no column uniques the rows,
+the index column is absent and the occurrence index distinguishes
+`(record, entry)` in file order. A replay still prints the tool's own
+lines, in the tool's order.
+
+### Pass-through text
+
+Section 3 still refuses a mixed column, with two exceptions. On the
+aligned tokens of one column, `n_num` is how many `parse_finite` accepts
+and `n_text` is how many it rejects.
+
+- `n_text > n_num`: the column is pass-through text (role `byte`). It is
+  not a numeric column and it is not a mixed refusal.
+- `n_text == n_num > 0`, or `n_num > n_text > 0`: still mixed, still REFUSE.
+- Let `W` be the shortest aligned row. If any aligned row is longer than
+  `W`, column `W - 1` is the trailing free-text column. It is pass-through
+  text even when `n_num >= n_text`. Tokens past `W` stay on the existing
+  tail check. An equal-width table has no trailing free-text column.
+
+A pass-through cell must still be byte-identical. A pairing that lines
+the wrong rows up fails that check or the row-key set check.
