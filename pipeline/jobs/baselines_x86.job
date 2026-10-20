@@ -27,6 +27,7 @@ ROOT=/project2/biyik_1165/jjt_373/csci270-star/tare-w5x
 SCRATCH=/scratch1/${USER}/tare-w5x/${SLURM_JOB_ID}
 PHASE="${ACTS_PHASE:?set ACTS_PHASE to pilot or measured}"
 OUT="${ROOT}/results/${PHASE}.json"
+PILOT_JOB="${ACTS_PILOT_JOB:-13259326}"
 
 mkdir -p "${ROOT}/logs" "${ROOT}/results" "${SCRATCH}"
 if [[ -f /etc/profile.d/modules.sh ]]; then
@@ -45,6 +46,29 @@ export ACTS_GIT_HEAD
 ACTS_GIT_HEAD="$(tr -d '[:space:]' < "${ROOT}/GIT_HEAD")"
 export ACTS_EXCLUSIVE=1
 export OMP_NUM_THREADS=1
+
+# Measured-only: refuse unless the resubmitted pilot finished as PILOT (not PARTIAL).
+if [[ "${PHASE}" == "measured" ]]; then
+  python3 - <<PY
+import json, sys
+from pathlib import Path
+p = Path("${ROOT}/results/pilot.json")
+if not p.is_file():
+    sys.exit(f"STOP: missing {p}")
+d = json.loads(p.read_text())
+label = d.get("label")
+if label != "PILOT":
+    sys.exit(f"STOP: pilot label={label!r} (need PILOT, not PARTIAL/TIMEOUT)")
+prov = d.get("provenance") or {}
+job = str(prov.get("slurm_job_id") or d.get("slurm_job_id") or "")
+want = "${PILOT_JOB}"
+if job and job != want:
+    sys.exit(f"STOP: pilot slurm_job_id={job!r} != {want}")
+if d.get("phase") != "pilot":
+    sys.exit(f"STOP: pilot.json phase={d.get('phase')!r}")
+print(f"W5x pilot PASS (job={job or 'unrecorded'}); starting measured", flush=True)
+PY
+fi
 
 cd "${ROOT}/pipeline"
 exec python3 "${ROOT}/pipeline/scripts/baselines_x86.py" \
