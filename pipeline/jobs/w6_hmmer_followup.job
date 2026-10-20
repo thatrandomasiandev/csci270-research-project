@@ -31,6 +31,7 @@ case "${SLURM_ARRAY_TASK_ID}" in
   3) ACC=GCA_001817145.1; QUERIES="${DIVERSE}/${ACC}_protein.faa.gz" ;;
   *) echo "STOP: task ${SLURM_ARRAY_TASK_ID} is not in the small array" >&2; exit 2 ;;
 esac
+case "${QUERIES}" in /*) ;; *) echo "QUERIES must be an absolute path: ${QUERIES}" >&2; exit 2 ;; esac
 
 export PYTHONPATH="${PIPE}"
 export PYTHONUNBUFFERED=1
