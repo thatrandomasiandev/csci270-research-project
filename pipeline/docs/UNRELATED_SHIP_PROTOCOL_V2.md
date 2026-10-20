@@ -120,3 +120,11 @@ behind W13, W8, W12a, W5x, W12b. Output:
 | 20261273 | injected-drop control |
 | 20261274 | timing genome sample (only if PASS) |
 | 20261275–20261279 | reserved |
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.

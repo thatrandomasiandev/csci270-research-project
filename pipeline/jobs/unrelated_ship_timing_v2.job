@@ -34,12 +34,29 @@ export ACTS_SCRATCH="/scratch1/${USER}/tare-exp-a"
 cd "${PROJ}/pipeline"
 test -f results/unrelated_ship/measured_v2.json
 python3 - <<'PY'
-import json
+import json, sys
 from pathlib import Path
 p = json.loads(Path("results/unrelated_ship/measured_v2.json").read_text())
 if p.get("outcome") != "PASS":
     raise SystemExit(f"timing blocked: outcome={p.get('outcome')}")
-print("measured_v2 PASS; starting timing_v2")
+genomes = p.get("genomes") or []
+if not genomes:
+    raise SystemExit("timing blocked: measured_v2 has no genomes")
+bad = []
+for g in genomes:
+    if g.get("decision") != "SHIP":
+        bad.append(f"{g.get('accession')}:decision={g.get('decision')}")
+        continue
+    if g.get("differing_lines", 1) != 0:
+        bad.append(f"{g.get('accession')}:differing_lines={g.get('differing_lines')}")
+        continue
+    # accept either nested compare.byte_equal or top-level ship markers
+    cmp_ = g.get("compare") or g.get("vs_stock") or {}
+    if "byte_equal" in cmp_ and not cmp_.get("byte_equal"):
+        bad.append(f"{g.get('accession')}:not byte_equal")
+if bad:
+    raise SystemExit("timing blocked: not every genome SHIP+byte-identical: " + "; ".join(bad[:8]))
+print(f"measured_v2 PASS; {len(genomes)} genomes SHIP byte-identical; starting timing_v2", flush=True)
 PY
 echo "git ${ACTS_GIT_HASH}"
 echo "host $(hostname)"
