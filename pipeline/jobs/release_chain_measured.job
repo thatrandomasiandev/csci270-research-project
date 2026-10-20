@@ -15,7 +15,7 @@
 #SBATCH --exclusive
 #SBATCH --mem=0
 #SBATCH --time=24:00:00
-#SBATCH --array=0-2
+#SBATCH --array=0-2%2
 #SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%A_%a.out
 #SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-w8/logs/%x-%A_%a.err
 

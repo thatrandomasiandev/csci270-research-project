@@ -724,3 +724,11 @@ Job name `tare-w8-measured`, array `0-2`. CARC priority after W13.
 Exclusive-node cap 6 across `tare-w8|tare-w12a|tare-w5x|tare-w12b|tare-w6`.
 Dry-run staged entry before `sbatch`. Never touch job `12864756`.
 Never edit `pipeline/paper/tare/main.tex`.
+
+## Addendum 2026-10-20 — laptop-offline CARC chain
+
+Measured (and W12b confirm) jobs were submitted before the laptop went offline,
+with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
+in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
+Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
+a dependent stage.
