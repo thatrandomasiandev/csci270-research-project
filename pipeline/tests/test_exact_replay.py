@@ -93,6 +93,36 @@ class ExactReplayTests(unittest.TestCase):
         with self.assertRaises(RunError):
             pin_tokens("-Z {nonsense}", values)
 
+    def test_pin_argv_lands_after_diamond_subcommand(self) -> None:
+        """Linux diamond treats ``diamond --dbsize N blastp`` as command dbsize.
+
+        Pins must merge into the blastp argv, matching probe extras.
+        """
+        from acts.infer_knobs import apply_extra_argv
+
+        values = {"entry_count": 7, "total_entry_length": 99}
+        base = [
+            "/bin/diamond",
+            "blastp",
+            "--db",
+            "{reference}",
+            "--query",
+            "{input}",
+            "--threads",
+            "4",
+        ]
+        pinned = apply_extra_argv(base, pin_tokens("--dbsize {total_entry_length}", values))
+        self.assertEqual(pinned[0], "/bin/diamond")
+        self.assertEqual(pinned[1], "blastp")
+        self.assertNotEqual(pinned[2], "--dbsize")
+        self.assertEqual(pinned[-2:], ["--dbsize", "99"])
+        hmm = apply_extra_argv(
+            ["hmmsearch", "--domtblout", "{output}", "{reference}", "{input}"],
+            pin_tokens("-Z {entry_count}", values),
+        )
+        self.assertEqual(hmm[0], "hmmsearch")
+        self.assertEqual(hmm[-2:], ["-Z", "7"])
+
     def test_release_update_is_byte_identical_to_stock(self) -> None:
         """E1-scale shape: the printed value is the reference size, and the pin sets it."""
         with tempfile.TemporaryDirectory() as raw:

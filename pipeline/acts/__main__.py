@@ -262,8 +262,10 @@ def main(argv: list[str] | None = None) -> int:
         nargs="?",
         const="",
         default=None,
-        help="exact mode (reference strategy): options that set the tool's normalizer, inserted after the tool name, "
-        "e.g. '-Z {entry_count}'. Placeholders: {entry_count}, {total_entry_length}. "
+        help="exact mode (reference strategy): options that set the tool's normalizer, merged into the tool argv "
+        "(after any subcommand word; replaces an earlier copy of the same flag), "
+        "e.g. '-Z {entry_count}' or '--dbsize {total_entry_length}'. "
+        "Placeholders: {entry_count}, {total_entry_length}. "
         "Pass --pin with no template to infer one when a value column depends on reference size. "
         "If every value column is the identity normalizer, exact mode runs with no pin: "
         "the probe-sample replay is compared with no added option, and the safety check still runs. "

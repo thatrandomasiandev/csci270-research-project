@@ -360,4 +360,33 @@ makedb, and the iSeqSearch merge do not. Three alternating repeats, then
 ×1.5, rounded up to a minute, and not submitted if that limit exceeds
 8 hours.
 
+## Addendum 2026-10-20 — confirm FAIL_CONTROL, pin placement
+
+Job `13259333` (`tare-w12b-confirm`) on `a01-09` (AMD EPYC 7513), 4
+threads, non-exclusive, frozen code `9d57c81`, seed `20261252`, file
+`pipeline/results/iseqsearch_timing/confirm.json`. Verdict
+`FAIL_CONTROL`. `confirmation_pass` false. Exclusive measured job not
+submitted.
+
+What failed: both the 2026_01 fill and the 2026_03 update returned
+`REFUSE_PIN` with
+`why: pin check failed: tool failed (1): Error: Invalid command: dbsize`.
+No replay body. `difference_class` null. `post_replay_refuse` false.
+
+Root cause (CARC diamond 2.2.5, MD5 `7de14b7f9f4c440ddfb5142ad96b1d8b`):
+TARE inserted pin tokens after argv[0], yielding
+`diamond --dbsize <N> blastp …`. That binary's syntax is
+`diamond COMMAND [OPTIONS]`; the same argv prints
+`Invalid command: dbsize`. `diamond blastp --dbsize <N> …` accepts the
+flag. Mac dx2 used a different diamond build and is not this host.
+
+Fix (not a redesign of the timing question): `reference_run._pinned` and
+probe extras now merge pin tokens with `apply_extra_argv`, the same
+helper probe already used for diamond scripts, so `--dbsize` lands on
+the blastp argv. Unit test
+`test_pin_argv_lands_after_diamond_subcommand`. Re-confirm with the
+same locked seed `20261252` after that commit is frozen into
+`GIT_HASH`. The exclusive job still waits on a confirmation pass and on
+the capped-node check.
+
 

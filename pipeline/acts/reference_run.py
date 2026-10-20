@@ -29,7 +29,7 @@ from collections.abc import Callable, Sequence
 
 from acts.audit import AUDIT_FLOOR, AUDIT_P, AUDIT_SEED, pick_audit, residue_cap_binds
 from acts.replay_batch import merge_bodies, plan_batches
-from acts.infer_knobs import capture_help, infer_knobs
+from acts.infer_knobs import apply_extra_argv, capture_help, infer_knobs
 from acts.fasta import FastaRec, write_fasta
 from acts.reference_cache import (
     UNRESOLVED_BINARY,
@@ -1136,7 +1136,10 @@ class ReferenceIncremental(Strategy):
         def call(records: Sequence[RecordItem], entries: Sequence[Entry], extra: Sequence[str]) -> dict[str, str]:
             if not extra:
                 return self._invoke(reference)(records, entries)
-            argv = self.argv[:1] + list(extra) + self.argv[1:]
+            # apply_extra_argv appends after any subcommand word, so a binary
+            # whose syntax is PROGRAM COMMAND [OPTIONS] does not treat a pin
+            # flag as the COMMAND.
+            argv = apply_extra_argv(self.argv, list(extra))
             inner = subprocess_invoke(
                 argv,
                 input_slot=self.input_path,
@@ -1221,7 +1224,9 @@ class ReferenceIncremental(Strategy):
 
         def call(records: Sequence[RecordItem], entries: Sequence[Entry], values: dict[str, int]) -> dict[str, str]:
             counter["n"] += 1
-            argv = self.argv[:1] + pin_tokens(self.pin or "", values) + self.argv[1:]
+            # Same placement as probe extras: after any subcommand word, not
+            # between the binary and the COMMAND word.
+            argv = apply_extra_argv(self.argv, pin_tokens(self.pin or "", values))
             inner = subprocess_invoke(
                 argv,
                 input_slot=self.input_path,
