@@ -4,14 +4,18 @@ Run:  python3 make_figures.py      (writes PDF + PNG next to this file)
 
 Sources (relative to pipeline/results/ unless noted):
   exact_replay/costpass_baseline.json, exact_replay/costpass_measured.json
+  exact_replay/server_cost_fit.json    (server a, c and the three phase bars)
+  exact_replay/headline_carc.json      (server median and its CI)
   exact_replay/e1_e2.json, exact_replay/e1scale.json
   reference_diamond/dx.json            (iSeqSearch / iDiamond comparison)
   infernal/test_i.json
+  release_chain/pairs.json             (measured f_delta for each Pfam pair)
   Pfam release table: pipeline/docs/MOTIVATION_EVIDENCE.md (relnotes for 38.2, CITED)
   Pfam 38.1 -> 38.2 strict-hash counts: results/reference_kill_r1.json (MEASURED)
-Curves labelled "model" are PROJECTED from the closed forms in the paper.
+Curves labelled "model" are PROJECTED from T = a f T_stock + c T_stock.
 """
 import json
+import sys
 from pathlib import Path
 
 import matplotlib
@@ -22,6 +26,8 @@ from matplotlib.patches import Patch  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 RES = HERE.parents[2] / "results"
+sys.path.insert(0, str(RES.parent / "scripts"))
+from fit_server_cost import stage_split  # noqa: E402
 
 plt.rcParams.update({
     "pdf.fonttype": 42, "ps.fonttype": 42,
@@ -111,53 +117,104 @@ def fig_churn():
 
 
 # ---------------------------------------------------------------------------
-# Figure: where the time goes, before vs after (MEASURED, workstation)
+# Figure: where the time goes (MEASURED). Laptop first version, then the
+# server headline. Separate seconds axes: server stock runs are ~2200–2550 s,
+# and one shared axis would shrink the laptop bar.
 # ---------------------------------------------------------------------------
-def fig_phases():
-    base = load("exact_replay/costpass_baseline.json")
-    meas = load("exact_replay/costpass_measured.json")
+def _draw_phase_bars(ax, rows, xlim, ylim):
     order = ["discovery", "replay", "check", "other"]
-    names = {"discovery": "discovery", "replay": "replay", "check": "check + audit", "other": "everything else"}
     cols = {"discovery": C["tare"], "replay": C["tare_light"], "check": C["n3"], "other": C["n1"]}
-    # First version: the run whose wall time is the median of three, so every bar is one run.
-    runs = base["replay_38.2"]["runs"]
-    walls = [r["wall_s"] for r in runs]
-    mid = sorted(range(len(runs)), key=lambda i: walls[i])[len(runs) // 2]
-    br = runs[mid]["breakdown"]
-    before = {"discovery": br["discovery_s"], "replay": br["replay_s"], "check": br["ic2_s"] + br["verify_s"]}
-    before["other"] = walls[mid] - sum(before.values())
-    stock_mid = sorted(base["stock"]["walls_s"])[1]
-    rows = [("first version\nGCF_013315695.1", before, stock_mid, None)]
-    for p in meas["proteomes"]:
-        ph = p["e2"]["phases"]
-        check = ph["ic2_neighbor_s"] + sum(v for k, v in ph.items() if k.startswith("ic2_random_") and k.count("_") == 3)
-        after = {"discovery": ph["discovery_s"], "replay": ph["replay_s"], "check": check + ph["verify_s"]}
-        after["other"] = p["e2"]["wall_s"] - sum(after.values())
-        rows.append((f"shipped\n{p['proteome']}", after, p["stock"]["wall_s"], 0.13446605163602576 * p["stock"]["wall_s"]))
-
-    fig, ax = plt.subplots(figsize=(ONE, 2.0))
+    gap = xlim * 0.012
     for i, (label, ph, stock, pred) in enumerate(rows):
         left = 0.0
-        for k in order:
-            ax.barh(i, ph[k], left=left, color=cols[k], edgecolor="white", linewidth=0.4, height=0.58,
-                    label=names[k] if i == 0 else None)
-            left += ph[k]
+        for key in order:
+            ax.barh(i, ph[key], left=left, color=cols[key], edgecolor="white", linewidth=0.4, height=0.58)
+            left += ph[key]
         ax.plot([stock, stock], [i - 0.36, i + 0.36], color=C["ink"], lw=1.3)
-        ax.text(stock + 8, i - 0.33, f"stock {stock:.0f}s", fontsize=FS, va="top")
-        ax.text(left + 8, i + 0.08, f"{left:.0f}s = {stock / left:.2f}$\\times$", va="center", fontsize=FS,
+        ax.text(stock + gap, i - 0.30, f"stock {stock:.0f}s", fontsize=FS, va="top")
+        ax.text(left + gap, i + 0.06, f"{left:.0f}s = {stock / left:.2f}$\\times$", va="center", fontsize=FS,
                 fontweight="bold", color=C["bad"] if stock < left else C["tare"])
         if pred is not None:
             ax.plot([pred, pred], [i - 0.36, i + 0.36], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
-    ax.plot([110, 135], [2.66, 2.66], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
-    ax.text(142, 2.66, "model: discovery = $f_\\Delta T_{stock}$", fontsize=FS, va="center")
     ax.set_yticks(range(len(rows)))
-    ax.set_yticklabels([r[0] for r in rows])
-    ax.invert_yaxis()
-    ax.set_xlim(0, 1080)
-    ax.set_ylim(2.8, -1.0)
+    ax.set_yticklabels([row[0] for row in rows])
+    ax.set_xlim(0, xlim)
+    ax.set_ylim(*ylim)
     ax.set_xlabel("wall-clock seconds")
-    ax.legend(ncol=4, loc="lower center", bbox_to_anchor=(0.45, 1.0), frameon=False, columnspacing=0.8, handlelength=1.2)
     ax.grid(axis="x")
+
+
+def fig_phases():
+    fit = load("exact_replay/server_cost_fit.json")
+    base = load("exact_replay/costpass_baseline.json")
+    # First version: the run whose wall time is the median of three.
+    runs = base["replay_38.2"]["runs"]
+    walls = [run["wall_s"] for run in runs]
+    mid = sorted(range(len(runs)), key=lambda i: walls[i])[len(runs) // 2]
+    breakdown = runs[mid]["breakdown"]
+    before = {
+        "discovery": breakdown["discovery_s"],
+        "replay": breakdown["replay_s"],
+        "check": breakdown["ic2_s"] + breakdown["verify_s"],
+    }
+    before["other"] = walls[mid] - sum(before.values())
+    stock_mid = sorted(base["stock"]["walls_s"])[1]
+    laptop_rows = [(
+        "first version\nGCF_013315695.1",
+        before,
+        stock_mid,
+        fit["f"] * stock_mid,
+    )]
+    measured = load("exact_replay/costpass_measured.json")
+    for proteome in measured["proteomes"]:
+        wall = proteome["e2"]["wall_s"]
+        laptop_rows.append((
+            f"shipped\n{proteome['proteome']}",
+            stage_split(proteome["e2"]["phases"], wall),
+            proteome["stock"]["wall_s"],
+            fit["f"] * proteome["stock"]["wall_s"],
+        ))
+
+    roles = {
+        "lowest_S_g": "lowest $S_g$",
+        "median_S_g": "median $S_g$",
+        "highest_S_g": "highest $S_g$",
+    }
+    server_rows = []
+    for spec in fit["phase_bars"]["genomes"]:
+        payload = json.loads((RES.parent / spec["source_path"]).read_text())
+        repeat = payload["repeats"][spec["repeats_index"]]
+        if repeat["arm"] != "B" or repeat["repeat"] != spec["repeat"]:
+            raise ValueError(f"phase bar does not match {spec['source_path']}")
+        stages = stage_split(repeat["phases"], repeat["wall_s"])
+        for key, value in stages.items():
+            if abs(value - spec["stages_s"][key]) > 1e-6:
+                raise ValueError(f"{spec['proteome']} {key} drifted from the fit file")
+        server_rows.append((
+            f"{roles[spec['role']]}\n{spec['proteome']}",
+            stages,
+            spec["stock_median_s"],
+            fit["f"] * spec["stock_median_s"],
+        ))
+
+    fig, (ax, bx) = plt.subplots(
+        2, 1, figsize=(ONE, 4.15), gridspec_kw={"height_ratios": [2.15, 2.45]}
+    )
+    _draw_phase_bars(ax, laptop_rows, 1120, (2.55, -0.62))
+    ax.set_title("laptop", loc="left")
+    _draw_phase_bars(bx, server_rows, 3600, (3.35, -0.62))
+    bx.set_title("server headline, median run", loc="left")
+    bx.plot([150, 430], [2.95, 2.95], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
+    bx.text(480, 2.95, "discovery $= f_\\Delta T_{stock}$", fontsize=FS, va="center")
+    handles = [
+        Patch(facecolor=C["tare"], label="discovery"),
+        Patch(facecolor=C["tare_light"], label="replay"),
+        Patch(facecolor=C["n3"], label="check + audit"),
+        Patch(facecolor=C["n1"], label="everything else"),
+    ]
+    fig.legend(handles=handles, ncol=4, loc="upper center", bbox_to_anchor=(0.52, 1.0),
+               frameon=False, columnspacing=0.8, handlelength=1.2)
+    fig.tight_layout(rect=(0, 0, 1, 0.93), h_pad=1.15)
     save(fig, "phases")
 
 
@@ -165,47 +222,51 @@ def fig_phases():
 # Figure: the cost model across release sizes (MODEL + MEASURED points)
 # ---------------------------------------------------------------------------
 def fig_model():
+    # Solid curve and pair ticks use the server fit. The dashed curve is the
+    # published laptop fit (same definition, two proteomes), kept so the two
+    # machines are not swapped silently. Panel (b) is unchanged and keeps its
+    # own y limit: the server ceiling 1/c sits above 8.
+    fit = load("exact_replay/server_cost_fit.json")
+    f_meas = fit["f"]
+    a, c = fit["a"], fit["c"]
+    a_l = fit["laptop_reference"]["recomputed_a"]
+    c_l = fit["laptop_reference"]["recomputed_c"]
     meas = load("exact_replay/costpass_measured.json")
-    f_meas = 0.13446605163602576
-    a_vals, c_vals, pts = [], [], []
-    for p in meas["proteomes"]:
-        stock = p["stock"]["wall_s"]
-        disc = p["e2"]["phases"]["discovery_s"]
-        wall = p["e2"]["wall_s"]
-        a_vals.append(disc / stock / f_meas)
-        c_vals.append((wall - disc) / stock)
-        pts.append(stock / wall)
-    a = sum(a_vals) / len(a_vals)
-    c = sum(c_vals) / len(c_vals)
+    pts = [p["stock"]["wall_s"] / p["e2"]["wall_s"] for p in meas["proteomes"]]
     fs = [0.004 + i * 0.001 for i in range(0, 997)]
 
-    fig, (ax, bx) = plt.subplots(1, 2, figsize=(ONE, 2.45), sharey=True, gridspec_kw={"width_ratios": [1.6, 1]})
+    fig, (ax, bx) = plt.subplots(1, 2, figsize=(ONE, 2.85), gridspec_kw={"width_ratios": [1.6, 1]})
     ax.plot([100 * f for f in fs], [1 / f for f in fs], ls="--", color=C["n3"], lw=0.8)
-    ax.text(30, 3.6, "$1/f_\\Delta$", fontsize=FS, color=C["stock"])
-    ax.plot([100 * f for f in fs], [1 / (a * f + c) for f in fs], color=C["tare"], lw=1.4)
+    ax.text(15, 7.55, "$1/f_\\Delta$", fontsize=FS, color=C["n3"])
+    ax.plot([100 * f for f in fs], [1 / (a_l * f + c_l) for f in fs], color=C["stock"], lw=1.0,
+            ls=(0, (4, 1.5)), label="laptop ($a$=1.06, $c$=0.152)")
+    ax.plot([100 * f for f in fs], [1 / (a * f + c) for f in fs], color=C["tare"], lw=1.4, label="server fit")
     ax.axhline(1 / c, color=C["tare"], lw=0.5, ls=":")
-    ax.text(99, 1 / c + 0.25, f"1/c = {1 / c:.1f}$\\times$", ha="right", fontsize=FS, color=C["tare"])
+    ax.text(99, 1 / c + 0.12, f"1/c = {1 / c:.1f}$\\times$", ha="right", va="bottom", fontsize=FS, color=C["tare"])
     ax.axhline(1, color=C["stock"], lw=0.6)
-    ax.scatter([100 * f_meas] * len(pts), pts, color=C["tare"], edgecolor=C["ink"], lw=0.4, zorder=5, s=16,
+    ax.scatter([100 * f_meas] * len(pts), pts, color=C["stock"], edgecolor=C["ink"], lw=0.4, zorder=5, s=16,
                label="laptop, 38.1$\\rightarrow$38.2")
     pairs = load("release_chain/pairs.json")["pairs"]
-    other = [p for p in pairs if not (p["old_release"] == "38.1" and p["new_release"] == "38.2")]
-    ax.plot([100 * p["f_delta"] for p in other], [1 / (a * p["f_delta"] + c) for p in other], ls="", marker="|",
-            ms=9, mew=1.4, color=C["stock"], label="model at measured $f_\\Delta$, other pairs")
-    for p in other:
-        if p["f_delta"] > 0.3:
-            ax.annotate(f"{p['old_release']}$\\rightarrow${p['new_release']}", (100 * p["f_delta"], 1 / (a * p["f_delta"] + c)),
-                        xytext=(-4, 10), textcoords="offset points", ha="right" if p["f_delta"] > 0.8 else "left", fontsize=FS)
+    ax.plot([100 * p["f_delta"] for p in pairs], [1 / (a * p["f_delta"] + c) for p in pairs], ls="", marker="|",
+            ms=9, mew=1.4, color=C["stock"], zorder=4, label="model at measured $f_\\Delta$")
+    for p in pairs:
+        speed = 1 / (a * p["f_delta"] + c)
+        if p["old_release"] == "37.3":
+            ax.annotate(f"{p['old_release']}$\\rightarrow${p['new_release']}", (100 * p["f_delta"], speed),
+                        xytext=(5, 1), textcoords="offset points", ha="left", va="bottom", fontsize=FS)
+        elif p["f_delta"] > 0.3 and not (p["old_release"] == "38.1"):
+            ax.annotate(f"{p['old_release']}$\\rightarrow${p['new_release']}", (100 * p["f_delta"], speed),
+                        xytext=(-4, 8), textcoords="offset points", ha="right" if p["f_delta"] > 0.8 else "left", fontsize=FS)
     head = load("exact_replay/headline_carc.json")
     ci = head["bootstrap_ci95"]
     ax.errorbar([100 * f_meas], [head["headline_median"]], yerr=[[head["headline_median"] - ci["low"]], [ci["high"] - head["headline_median"]]],
                 fmt="D", ms=3.6, color=C["tare"], mfc="white", mec=C["tare"], mew=0.9, capsize=1.5, lw=0.7, zorder=6,
                 label="server, median of 9 (95% CI)")
     ax.set_xlim(0, 100)
-    ax.set_ylim(0, 8)
+    ax.set_ylim(0, 11.4)
     ax.set_xlabel("changed fraction $f_\\Delta$ (%)")
     ax.set_ylabel("speedup over a full rerun")
-    ax.set_title(f"(a) HMMER ($a$={a:.2f}, $c$={c:.3f})", loc="left")
+    ax.set_title(f"(a) HMMER, server ($a$={a:.3f}, $c$={c:.3f})", loc="left")
     ax.grid()
     m2 = load("infernal/measured2.json")["summary"]
     ai, ci = m2["noclan"]["a"], m2["noclan"]["c"]
@@ -222,13 +283,15 @@ def fig_model():
                     fmt=mk, ms=3.6, color=C["tare"], mfc=face, mec=C["tare"], mew=0.9, capsize=1.5, lw=0.7, zorder=6,
                     label="after" + ("" if var == "noclan" else ", clans"))
     bx.set_xlim(0, 20)
+    bx.set_ylim(0, 8)
     bx.set_xlabel("$f_\\Delta$ (%)")
     bx.set_title(f"(b) Infernal ($c$={ci:.2f})", loc="left")
     bx.grid()
     bx.legend(loc="upper right", frameon=False, handletextpad=0.3, borderaxespad=0.2)
-    fig.tight_layout(w_pad=0.8, rect=(0, 0, 1, 0.88))
+    fig.tight_layout(w_pad=0.8, rect=(0, 0, 1, 0.78))
     h, l = ax.get_legend_handles_labels()
-    fig.legend(h, l, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.0), handletextpad=0.4, columnspacing=1.0)
+    fig.legend(h, l, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.0),
+               handletextpad=0.4, columnspacing=1.0)
     save(fig, "model")
 
 

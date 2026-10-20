@@ -1,0 +1,784 @@
+{
+  "system": "TARE",
+  "equation": "T_TARE = a * f * T_stock + c * T_stock",
+  "speedup_equation": "S = 1 / (a * f + c)",
+  "formulas": {
+    "f": "f_delta of Pfam 38.1->38.2 in results/release_chain/pairs.json. Equals 4052/30134.",
+    "pairing": "B-arm repeat r is paired with A-arm repeat r (the alternating A B A B A B design).",
+    "a_g_r": "phases.discovery_s / (f * A.wall_s)",
+    "c_g_r": "(B.wall_s - phases.discovery_s) / A.wall_s",
+    "a_g": "arithmetic mean of a_g_r over repeats 1, 2, 3",
+    "c_g": "arithmetic mean of c_g_r over repeats 1, 2, 3",
+    "a": "arithmetic mean of a_g over the 9 EXACT genomes",
+    "c": "arithmetic mean of c_g over the 9 EXACT genomes",
+    "mean": "sum of the values divided by the count, the same reduction as make_figures.fig_model",
+    "identity": "Every included genome has exactly 3 paired repeats, so the mean of a_g equals the arithmetic mean of all 27 a_g_r values. Same for c.",
+    "not_used": "phases.total_s is not U. Medians are not used inside a or c. S_g = median(A.wall_s) / median(B.wall_s) is recorded and is not an input."
+  },
+  "inclusion_rule": "The paper's headline set, as scored in results/exact_replay/headline_carc.json: tasks 0, 1, and 6-9 from array 13208152 and tasks 2, 4, and 5 from the 8 h rerun 13227819. Include a genome only when both headline_carc.json and the task file say outcome EXACT. Arithmetic mean over those 9. CV flags stay in the mean. Do not drop a genome because its a_g is low. The FAIL genome, the pilot, and the three timed-out partial files are excluded.",
+  "f": 0.13446605163602576,
+  "f_pair_index": 6,
+  "f_numerator_denominator": {
+    "changed_or_new": 4052,
+    "z_new": 30134
+  },
+  "a": 0.9725467626703342,
+  "c": 0.09799254461859343,
+  "n_genomes": 9,
+  "n_paired_repeats": 27,
+  "one_over_c": 10.20485797049357,
+  "speedup_at_headline_f": 4.371258544780619,
+  "laptop_reference": {
+    "role": "positive control and dashed reference curve",
+    "source": "results/exact_replay/costpass_measured.json",
+    "formula": "a_g = discovery_s / (f * stock_wall_s); c_g = (tare_wall_s - discovery_s) / stock_wall_s; a, c = arithmetic means over the two proteomes. One run each, which is the published laptop fit.",
+    "published_a": 1.06,
+    "published_c": 0.152,
+    "recomputed_a": 1.0603329419944263,
+    "recomputed_c": 0.15235585532542203,
+    "rounding_matches_published": true,
+    "proteomes": [
+      {
+        "proteome": "GCF_016806025.1",
+        "stock_wall_s": 648.9416185829905,
+        "discovery_s": 91.15112141700229,
+        "tare_wall_s": 190.69520458299667,
+        "a_g": 1.044584880888985,
+        "c_g": 0.15339451241138743
+      },
+      {
+        "proteome": "GCF_017165095.1",
+        "stock_wall_s": 693.2145589159918,
+        "discovery_s": 100.30562595801894,
+        "tare_wall_s": 205.20091079198755,
+        "a_g": 1.0760810030998678,
+        "c_g": 0.15131719823945664
+      }
+    ]
+  },
+  "excluded": [
+    {
+      "proteome": "GCF_015290725.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_3.json",
+      "outcome": "FAIL",
+      "reason": "Headline set, not EXACT. Task 3 refused at cache fill and has no B-arm phases. Listed, not imputed, not in the mean."
+    },
+    {
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_2.json",
+      "reason": "Timed out at 4 h. Superseded by the complete 8 h rerun 13227819 of the same task. The partial file is not merged."
+    },
+    {
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_4.json",
+      "reason": "Timed out at 4 h. Superseded by the complete 8 h rerun 13227819 of the same task. The partial file is not merged."
+    },
+    {
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_5.json",
+      "reason": "Timed out at 4 h. Superseded by the complete 8 h rerun 13227819 of the same task. The partial file is not merged."
+    },
+    {
+      "path": "results/exact_replay/headline_measured/headline_pilot.json",
+      "reason": "Pilot genome, job 13138266. Its three paired runs are the pre-registered prior a=1.0146410126797523, c=0.10846594102974193. Not part of the nine."
+    },
+    {
+      "path": "results/exact_replay/headline_measured/headline_pilot_13138266.json",
+      "reason": "Pilot genome, job 13138266. Its three paired runs are the pre-registered prior a=1.0146410126797523, c=0.10846594102974193. Not part of the nine."
+    }
+  ],
+  "genomes": [
+    {
+      "proteome": "GCF_002302335.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_0.json",
+      "job_id": "13208152",
+      "task": 0,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.002101333410356225,
+      "cv_B": 0.015288031124514014,
+      "cv_flag_A": false,
+      "cv_flag_B": false,
+      "S_g": 4.265546637703928,
+      "a_g": 1.0097878922414714,
+      "c_g": 0.09807841504067405,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2316.962238505017,
+          "tare_wall_s": 550.3351994901896,
+          "discovery_s": 318.79975436627865,
+          "phases_total_s_not_used": 549.6256376840174,
+          "a_g_r": 1.023260876493798,
+          "c_g_r": 0.09993060796420465,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2324.954020690173,
+          "tare_wall_s": 534.0588295641355,
+          "discovery_s": 308.49196584895253,
+          "phases_total_s_not_used": 533.3663913579658,
+          "a_g_r": 0.9867720432845516,
+          "c_g_r": 0.0970199245696147,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2325.8116431278177,
+          "tare_wall_s": 545.0541790211573,
+          "discovery_s": 318.7882617851719,
+          "phases_total_s_not_used": 544.3305061869323,
+          "a_g_r": 1.0193307569460641,
+          "c_g_r": 0.09728471258820279,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_009433135.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_1.json",
+      "job_id": "13208152",
+      "task": 1,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.0026545766356274834,
+      "cv_B": 0.007907813107123475,
+      "cv_flag_A": false,
+      "cv_flag_B": false,
+      "S_g": 4.231789700624204,
+      "a_g": 1.022848907869667,
+      "c_g": 0.09827191936765291,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2416.2012665136717,
+          "tare_wall_s": 568.4191212169826,
+          "discovery_s": 325.58058352861553,
+          "phases_total_s_not_used": 567.7321919761598,
+          "a_g_r": 1.0021038642075104,
+          "c_g_r": 0.10050426719573653,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2405.430182803888,
+          "tare_wall_s": 563.3470771959983,
+          "discovery_s": 332.3059296752326,
+          "phases_total_s_not_used": 562.662525263615,
+          "a_g_r": 1.0273837258590308,
+          "c_g_r": 0.09604982475585831,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2404.844684992917,
+          "tare_wall_s": 572.3045659973286,
+          "discovery_s": 336.0005204146728,
+          "phases_total_s_not_used": 571.5817266521044,
+          "a_g_r": 1.0390591335424595,
+          "c_g_r": 0.09826166615136388,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_049949335.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_6.json",
+      "job_id": "13208152",
+      "task": 6,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.22130600233609538,
+      "cv_B": 0.012719018976247574,
+      "cv_flag_A": true,
+      "cv_flag_B": false,
+      "S_g": 4.599361274428973,
+      "a_g": 0.8858501628119088,
+      "c_g": 0.09208479813125492,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2969.380380745046,
+          "tare_wall_s": 484.0778314410709,
+          "discovery_s": 274.44412729283795,
+          "phases_total_s_not_used": 483.4250362631865,
+          "a_g_r": 0.6873460709191745,
+          "c_g_r": 0.0705984674471493,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 1949.6991593521088,
+          "tare_wall_s": 484.261302029714,
+          "discovery_s": 275.5130030559376,
+          "phases_total_s_not_used": 483.6252106348984,
+          "a_g_r": 1.0509010921033104,
+          "c_g_r": 0.10706692772188717,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2227.292679260019,
+          "tare_wall_s": 494.91353772208095,
+          "discovery_s": 275.3269814932719,
+          "phases_total_s_not_used": 494.29581556189805,
+          "a_g_r": 0.9193033254132413,
+          "c_g_r": 0.0985889992247283,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_054388855.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_7.json",
+      "job_id": "13208152",
+      "task": 7,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.0957904548717504,
+      "cv_B": 0.026809684676465294,
+      "cv_flag_A": true,
+      "cv_flag_B": false,
+      "S_g": 4.683831507831228,
+      "a_g": 0.9017283390376208,
+      "c_g": 0.10082518205484718,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2092.220179256052,
+          "tare_wall_s": 530.3393054278567,
+          "discovery_s": 285.0625286111608,
+          "phases_total_s_not_used": 529.7576054171659,
+          "a_g_r": 1.013258122699873,
+          "c_g_r": 0.11723277466137003,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2519.843837502878,
+          "tare_wall_s": 517.916336291004,
+          "discovery_s": 285.46749268565327,
+          "phases_total_s_not_used": 517.2108581010252,
+          "a_g_r": 0.8425009141343303,
+          "c_g_r": 0.09224732110212969,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2425.8328543403186,
+          "tare_wall_s": 502.6675191251561,
+          "discovery_s": 277.0761002381332,
+          "phases_total_s_not_used": 501.9262201478705,
+          "a_g_r": 0.8494259802786595,
+          "c_g_r": 0.09299545040104185,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_055556535.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_8.json",
+      "job_id": "13208152",
+      "task": 8,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.10969366827320706,
+      "cv_B": 0.01014798919336302,
+      "cv_flag_A": true,
+      "cv_flag_B": false,
+      "S_g": 4.215987201591899,
+      "a_g": 0.9694899540702494,
+      "c_g": 0.09875460554885095,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2030.031103183981,
+          "tare_wall_s": 498.50474510295317,
+          "discovery_s": 283.91650245990604,
+          "phases_total_s_not_used": 497.8777631460689,
+          "a_g_r": 1.0401004674647478,
+          "c_g_r": 0.10570687429689055,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2107.1176845380105,
+          "tare_wall_s": 499.7922393460758,
+          "discovery_s": 285.5339039983228,
+          "phases_total_s_not_used": 499.16782260732725,
+          "a_g_r": 1.0077579630316866,
+          "c_g_r": 0.101683136599335,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2482.4554474879988,
+          "tare_wall_s": 507.90250763995573,
+          "discovery_s": 287.2772444160655,
+          "phases_total_s_not_used": 507.32805412774906,
+          "a_g_r": 0.8606114317143138,
+          "c_g_r": 0.08887380575032729,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_061234675.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13208152_9.json",
+      "job_id": "13208152",
+      "task": 9,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.12283317479923486,
+      "cv_B": 0.005435317727029902,
+      "cv_flag_A": true,
+      "cv_flag_B": false,
+      "S_g": 5.065259864107012,
+      "a_g": 0.8756677376618537,
+      "c_g": 0.09198784622407132,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2096.6459452928975,
+          "tare_wall_s": 508.51881559798494,
+          "discovery_s": 285.4805169804022,
+          "phases_total_s_not_used": 507.98000636696815,
+          "a_g_r": 1.012601865704249,
+          "c_g_r": 0.10637861824897896,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2659.6480137431063,
+          "tare_wall_s": 504.3015717868693,
+          "discovery_s": 278.78749465197325,
+          "phases_total_s_not_used": 503.7716118786484,
+          "a_g_r": 0.7795365304151237,
+          "c_g_r": 0.08479094826443388,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2554.41851097811,
+          "tare_wall_s": 503.360806168057,
+          "discovery_s": 286.76151406625286,
+          "phases_total_s_not_used": 502.8239073297009,
+          "a_g_r": 0.8348648168661879,
+          "c_g_r": 0.08479397215880115,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_009948655.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13227819_2.json",
+      "job_id": "13227819",
+      "task": 2,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.011330442406580276,
+      "cv_B": 0.012594945640503329,
+      "cv_flag_A": false,
+      "cv_flag_B": false,
+      "S_g": 4.133848860006259,
+      "a_g": 1.0433208295219785,
+      "c_g": 0.10103811405421415,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2329.090906601865,
+          "tare_wall_s": 551.763442858588,
+          "discovery_s": 324.2954709152691,
+          "phases_total_s_not_used": 551.2576456200331,
+          "a_g_r": 1.0354801807671794,
+          "c_g_r": 0.09766384442039396,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2290.6758600859903,
+          "tare_wall_s": 563.4194634291343,
+          "discovery_s": 326.66202274989337,
+          "phases_total_s_not_used": 562.9447528147139,
+          "a_g_r": 1.0605285271768443,
+          "c_g_r": 0.10335702436326075,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2340.9738078881055,
+          "tare_wall_s": 564.4676742288284,
+          "discovery_s": 325.46952709229663,
+          "phases_total_s_not_used": 563.9731782707386,
+          "a_g_r": 1.033953780621912,
+          "c_g_r": 0.1020934733789877,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_022559285.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13227819_4.json",
+      "job_id": "13227819",
+      "task": 4,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.0064512400638343185,
+      "cv_B": 0.010868925783602478,
+      "cv_flag_A": false,
+      "cv_flag_B": false,
+      "S_g": 4.243202948728078,
+      "a_g": 1.0092948754704636,
+      "c_g": 0.1005692983257469,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2214.9092039642856,
+          "tare_wall_s": 526.2915026461706,
+          "discovery_s": 299.5464497390203,
+          "phases_total_s_not_used": 525.807707821019,
+          "a_g_r": 1.0057628640497398,
+          "c_g_r": 0.10237216609209883,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2186.6955476030707,
+          "tare_wall_s": 519.3426929130219,
+          "discovery_s": 301.54377289582044,
+          "phases_total_s_not_used": 518.8383218748495,
+          "a_g_r": 1.0255324123600098,
+          "c_g_r": 0.09960184912615752,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2203.676445968915,
+          "tare_wall_s": 515.0902297780849,
+          "discovery_s": 295.30902808811516,
+          "phases_total_s_not_used": 514.5813086600974,
+          "a_g_r": 0.9965893500016415,
+          "c_g_r": 0.09973387975898436,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    },
+    {
+      "proteome": "GCF_030347155.1",
+      "path": "results/exact_replay/headline_measured/headline_measured_13227819_5.json",
+      "job_id": "13227819",
+      "task": 5,
+      "outcome": "EXACT",
+      "acts_commit": "d12515169eae5c8d4dbb555b33eabee1b815cbc7",
+      "measurement_git_head": "08d848ec3bc52a14315d68289e3f6d7c05b866b3",
+      "seed": 20261046,
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cv_A": 0.012418994329109777,
+      "cv_B": 0.008416305871609698,
+      "cv_flag_A": false,
+      "cv_flag_B": false,
+      "S_g": 4.172363531540619,
+      "a_g": 1.0349321653477943,
+      "c_g": 0.10032272282002837,
+      "repeats": [
+        {
+          "repeat": 1,
+          "repeats_index": 1,
+          "stock_wall_s": 2354.0463176402263,
+          "tare_wall_s": 551.8383388323709,
+          "discovery_s": 320.285929240752,
+          "phases_total_s_not_used": 551.3585340119898,
+          "a_g_r": 1.011836177615774,
+          "c_g_r": 0.09836357418138429,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 2,
+          "repeats_index": 3,
+          "stock_wall_s": 2296.3073274139315,
+          "tare_wall_s": 557.0913447528146,
+          "discovery_s": 324.99278694717214,
+          "phases_total_s_not_used": 556.5998234315775,
+          "a_g_r": 1.0525216981509071,
+          "c_g_r": 0.10107469284916169,
+          "decision": "SHIP",
+          "byte_equal": true
+        },
+        {
+          "repeat": 3,
+          "repeats_index": 5,
+          "stock_wall_s": 2324.387610583566,
+          "tare_wall_s": 561.1852097366937,
+          "discovery_s": 325.19036475010216,
+          "phases_total_s_not_used": 560.67838943284,
+          "a_g_r": 1.0404386202767015,
+          "c_g_r": 0.10152990142953915,
+          "decision": "SHIP",
+          "byte_equal": true
+        }
+      ]
+    }
+  ],
+  "predictions": [
+    {
+      "pair_index": 0,
+      "old_release": "37.0",
+      "new_release": "37.1",
+      "f_delta": 0.3926620156341935,
+      "f_delta_source": "results/release_chain/pairs.json pairs.0.f_delta",
+      "speedup": 2.0838772394144036,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 1,
+      "old_release": "37.1",
+      "new_release": "37.2",
+      "f_delta": 0.041368998172453895,
+      "f_delta_source": "results/release_chain/pairs.json pairs.1.f_delta",
+      "speedup": 7.234537864366587,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 2,
+      "old_release": "37.2",
+      "new_release": "37.3",
+      "f_delta": 0.03181297084834589,
+      "f_delta_source": "results/release_chain/pairs.json pairs.2.f_delta",
+      "speedup": 7.756017624028534,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 3,
+      "old_release": "37.3",
+      "new_release": "37.4",
+      "f_delta": 0.020132600258732213,
+      "f_delta_source": "results/release_chain/pairs.json pairs.3.f_delta",
+      "speedup": 8.505394644305186,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 4,
+      "old_release": "37.4",
+      "new_release": "38.0",
+      "f_delta": 0.9311802701115678,
+      "f_delta_source": "results/release_chain/pairs.json pairs.4.f_delta",
+      "speedup": 0.9964040755600193,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 5,
+      "old_release": "38.0",
+      "new_release": "38.1",
+      "f_delta": 0.1221935155198137,
+      "f_delta_source": "results/release_chain/pairs.json pairs.5.f_delta",
+      "speedup": 4.611877051086615,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    },
+    {
+      "pair_index": 6,
+      "old_release": "38.1",
+      "new_release": "38.2",
+      "f_delta": 0.13446605163602576,
+      "f_delta_source": "results/release_chain/pairs.json pairs.6.f_delta",
+      "speedup": 4.371258544780619,
+      "formula": "1 / (a * f_delta + c) with the server a and c"
+    }
+  ],
+  "phase_bars": {
+    "rule": "Lowest, median, and highest S_g among the 9. The bar is the B repeat whose wall_s is the middle of the three sorted B walls. The stock tick is the median of the three A walls.",
+    "genomes": [
+      {
+        "role": "lowest_S_g",
+        "proteome": "GCF_009948655.1",
+        "source_path": "results/exact_replay/headline_measured/headline_measured_13227819_2.json",
+        "job_id": "13227819",
+        "repeat": 2,
+        "repeats_index": 3,
+        "S_g": 4.133848860006259,
+        "stock_median_s": 2329.090906601865,
+        "tare_wall_s": 563.4194634291343,
+        "stages_s": {
+          "discovery": 326.66202274989337,
+          "replay": 26.01721694599837,
+          "check": 120.60709429020062,
+          "other": 90.13312944304198
+        },
+        "stage_sources": {
+          "discovery": "repeats.3.phases.discovery_s",
+          "replay": "repeats.3.phases.replay_s",
+          "check": "repeats.3.phases.ic2_neighbor_s + ic2_random_20261031_s + ic2_random_20261032_s + ic2_random_20261033_s + verify_s",
+          "other": "repeats.3.wall_s - (discovery + replay + check)"
+        }
+      },
+      {
+        "role": "median_S_g",
+        "proteome": "GCF_022559285.1",
+        "source_path": "results/exact_replay/headline_measured/headline_measured_13227819_4.json",
+        "job_id": "13227819",
+        "repeat": 2,
+        "repeats_index": 3,
+        "S_g": 4.243202948728078,
+        "stock_median_s": 2203.676445968915,
+        "tare_wall_s": 519.3426929130219,
+        "stages_s": {
+          "discovery": 301.54377289582044,
+          "replay": 25.706460212823004,
+          "check": 115.23683507181704,
+          "other": 76.85562473256141
+        },
+        "stage_sources": {
+          "discovery": "repeats.3.phases.discovery_s",
+          "replay": "repeats.3.phases.replay_s",
+          "check": "repeats.3.phases.ic2_neighbor_s + ic2_random_20261031_s + ic2_random_20261032_s + ic2_random_20261033_s + verify_s",
+          "other": "repeats.3.wall_s - (discovery + replay + check)"
+        }
+      },
+      {
+        "role": "highest_S_g",
+        "proteome": "GCF_061234675.1",
+        "source_path": "results/exact_replay/headline_measured/headline_measured_13208152_9.json",
+        "job_id": "13208152",
+        "repeat": 2,
+        "repeats_index": 3,
+        "S_g": 5.065259864107012,
+        "stock_median_s": 2554.41851097811,
+        "tare_wall_s": 504.3015717868693,
+        "stages_s": {
+          "discovery": 278.78749465197325,
+          "replay": 25.177953634876758,
+          "check": 114.83105076197535,
+          "other": 85.50507273804396
+        },
+        "stage_sources": {
+          "discovery": "repeats.3.phases.discovery_s",
+          "replay": "repeats.3.phases.replay_s",
+          "check": "repeats.3.phases.ic2_neighbor_s + ic2_random_20261031_s + ic2_random_20261032_s + ic2_random_20261033_s + verify_s",
+          "other": "repeats.3.wall_s - (discovery + replay + check)"
+        }
+      }
+    ]
+  },
+  "sensitivity_not_used": {
+    "median_wall_pair_only": {
+      "a": 0.9823015287250872,
+      "c": 0.0986234310900339,
+      "why_not": "Uses one of the three repeats. The definition averages every paired repeat."
+    },
+    "unpaired_ratio_of_medians": {
+      "a": 0.9743468784670952,
+      "c": 0.09715335035320267,
+      "why_not": "median(discovery) / (f * median(stock)) is not the per-repeat ratio followed by the arithmetic mean."
+    },
+    "drop_cv_flagged_arms": {
+      "n": 5,
+      "n_flagged_excluded": 4,
+      "a": 1.024036934090275,
+      "c": 0.09965609392166327,
+      "why_not": "A CV flag is not a drop rule. These genomes stay in a and c."
+    },
+    "drop_lowest_a_g": {
+      "a": 0.9846566407963944,
+      "why_not": "Dropping a genome to move the fit is the negative control. It is not the result."
+    }
+  },
+  "controls": {
+    "laptop_rounding_matches_published": true,
+    "n_exact": 9,
+    "refused_genome_excluded": "GCF_015290725.1",
+    "cv_flagged_genomes_kept": [
+      "GCF_049949335.1",
+      "GCF_054388855.1",
+      "GCF_055556535.1",
+      "GCF_061234675.1"
+    ],
+    "mean_of_27_matches_mean_of_genomes": true
+  },
+  "provenance": {
+    "analysis": "reduction of committed JSON; no new timing run and no new seed",
+    "git_head": "a851336a9ba3a876605f73996ba616d6f2e9a3e9",
+    "frozen_acts_commit": [
+      "d12515169eae5c8d4dbb555b33eabee1b815cbc7"
+    ],
+    "headline_score": "results/exact_replay/headline_carc.json",
+    "host": "Joshuas-MacBook-Pro-3.local",
+    "platform": "macOS-27.0-arm64-arm-64bit",
+    "python": "3.11.9",
+    "argv": [
+      "scripts/fit_server_cost.py"
+    ],
+    "cpu_model_of_measurements": [
+      "AMD EPYC 7542 32-Core Processor"
+    ]
+  }
+}
