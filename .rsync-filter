@@ -1,0 +1,7 @@
+- pfscan/
+- logs/
+- .git/
+- pipeline/paper/tare/main.tex
+- pipeline/paper/tare/main.pdf
+- **/__pycache__/
+- **/.pytest_cache/
