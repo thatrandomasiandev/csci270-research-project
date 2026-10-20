@@ -91,6 +91,32 @@ PinnedInvoke = Callable[[Sequence[RecordItem], Sequence[Entry], dict[str, int]],
 # reproduces. See docs/EXACT_REPLAY_PROTOCOL.md.
 PIN_PLACEHOLDERS = {"entry_count": "{entry_count}", "total_entry_length": "{total_entry_length}"}
 
+# T = a·f·T_stock + c·T_stock. Replay pays while f < (1-c)/a.
+# A laptop fit of that model is a=1.06, c=0.152, so (1-c)/a = 0.8.
+# 0.80 is the threshold when this cache has no usable fill/update history.
+DEFAULT_BREAK_EVEN_F = 0.80
+
+
+def changed_fraction(n_fresh: int, n_entries: int) -> float:
+    """Share of this reference that the entry diff has to scan."""
+    if n_entries <= 0:
+        return 0.0
+    return n_fresh / n_entries
+
+
+def break_even_f(a: float, c: float) -> float | None:
+    """(1-c)/a when some positive changed fraction still pays. Otherwise None."""
+    if not (a > 0) or c >= 1:
+        return None
+    threshold = (1.0 - c) / a
+    if not (threshold > 0):
+        return None
+    return threshold
+
+
+def fallback_reason(f_delta: float, threshold: float) -> str:
+    return f"fallback: f_delta={f_delta:.6f} > threshold={threshold:.6f}"
+
 
 class RunError(RuntimeError):
     def __init__(self, reason: str):
@@ -1045,6 +1071,7 @@ class ReferenceIncremental(Strategy):
         help_text: str | None = None,
         subset_aux: str | Sequence[str] | None = None,
         invalidate_group: str | None = None,
+        f_threshold: float | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -1084,6 +1111,10 @@ class ReferenceIncremental(Strategy):
         self._current_groups: dict[str, set[str]] = {}
         self._entry_names: set[str] = set()
         self._slack_factor: float | None = None
+        # None: (1-c)/a from this cache's fill/update history, else DEFAULT_BREAK_EVEN_F.
+        self.f_threshold = f_threshold
+        self._open_cache = None
+        self._open_ns = ""
         if slack:
             _argv, self._slack_factor = slack_rewrite(self.argv, slack)
         self.clock: dict[str, float] = {}
@@ -1106,6 +1137,7 @@ class ReferenceIncremental(Strategy):
             return self._finish("REFUSE", reason, self._phase_extra({}))
 
         cache = connect_cache(self.cache_path or (self.out_dir / "reference.sqlite"))
+        self._open_cache = cache
         ns = namespace_for(
             self.argv,
             reference,
@@ -1116,6 +1148,7 @@ class ReferenceIncremental(Strategy):
             self._group_rule or None,
             strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
         )
+        self._open_ns = ns
         try:
             return self._run_cached(cache, ns, reference, entries, records)
         finally:
@@ -1413,6 +1446,11 @@ class ReferenceIncremental(Strategy):
                 "REFUSE",
                 exc.reason,
                 self._phase_extra({}, probe_wall=probe_wall, probe_phases=probe_phases),
+            )
+        if stats.get("stock_fallback"):
+            return self._emit_stock(
+                cache, ns, invoke, entries, records, tables, stats,
+                probe_wall=probe_wall, probe_phases=probe_phases,
             )
         if self.pin or self._infer_pin:
             return self._run_exact(
@@ -1790,6 +1828,16 @@ class ReferenceIncremental(Strategy):
             "length_fresh": sum(entry.length for entry in fresh),
             "length_partial": sum(entry.length for entry in partial),
         }
+        # After the diff, before discovery or replay. A cold cache is a fill:
+        # there is nothing to replay, so the threshold does not apply.
+        f_delta = changed_fraction(len(fresh), len(entries))
+        threshold, source = self._resolve_f_threshold(cache, ns)
+        stats["f_delta"] = f_delta
+        stats["f_threshold"] = threshold
+        stats["f_threshold_source"] = source
+        if coverage and f_delta > threshold:
+            stats["stock_fallback"] = True
+            return [], 0, stats
         held: list[dict] = []
         started = time.perf_counter()
         kept_partial = record_keys - missing_keys
@@ -1940,7 +1988,83 @@ class ReferenceIncremental(Strategy):
         for name, text in texts.items():
             (dest / name).write_text(text)
 
+    def _resolve_f_threshold(self, cache: ReferenceCache, ns: str) -> tuple[float, str]:
+        """Flag, else (1-c)/a from this cache, else the documented default."""
+        if self.f_threshold is not None:
+            return float(self.f_threshold), "flag"
+        fit = cache.cost_fit(ns)
+        if fit is not None:
+            threshold = break_even_f(fit["a"], fit["c"])
+            if threshold is not None:
+                return threshold, "history"
+        return DEFAULT_BREAK_EVEN_F, "default"
+
+    def _emit_stock(
+        self, cache, ns, invoke, entries, records, tables, stats, *, probe_wall: float, probe_phases: dict,
+    ) -> StrategyResult:
+        """Whole-reference tool run. Replay does not pay above the threshold."""
+        why = fallback_reason(float(stats["f_delta"]), float(stats["f_threshold"]))
+        try:
+            started = time.perf_counter()
+            texts = invoke(records, entries)
+            _clock_add(self.clock, "stock_s", time.perf_counter() - started)
+        except RunError as exc:
+            return self._finish(
+                "REFUSE",
+                f"stock fallback failed: {exc.reason}",
+                self._phase_extra(
+                    {**stats, "fallback_full_scan": False},
+                    probe_wall=probe_wall,
+                    probe_phases=probe_phases,
+                ),
+            )
+        self._dump_raw(texts)
+        refresh = "ok"
+        try:
+            rows = _rows_from_run(texts, tables, entries) if tables else []
+            self._store(cache, ns, tables, records, entries, [], list(entries), [], set(), rows)
+        except RunError as exc:
+            refresh = exc.reason
+        return self._finish(
+            "FALLBACK",
+            why,
+            self._phase_extra(
+                {**stats, "fallback_full_scan": True, "mode": "stock", "cache_refresh": refresh},
+                probe_wall=probe_wall,
+                probe_phases=probe_phases,
+            ),
+        )
+
+    def _remember_cost(self, extra: dict) -> None:
+        """Store a paired wall when a full check actually timed a scan.
+
+        Sub-second walls are not a fill/update history. They stay out of the
+        threshold so a unit-test clock cannot move it.
+        """
+        cache = self._open_cache
+        if cache is None or not self._open_ns or extra.get("decision_recorded"):
+            return
+        if self.verify != "full":
+            return
+        stock = float(self.clock.get("verify_s") or 0.0)
+        discovery = float(self.clock.get("discovery_s") or 0.0)
+        f_delta = extra.get("f_delta")
+        if stock < 1.0 or f_delta is None or float(f_delta) <= 0:
+            return
+        tare = time.perf_counter() - self._t_all
+        kind = "fill" if not extra.get("n_stable") else "update"
+        cache.add_cost_observation(
+            self._open_ns,
+            kind=kind,
+            f_delta=float(f_delta),
+            stock_s=stock,
+            tare_s=tare,
+            discovery_s=discovery,
+        )
+
     def _finish(self, decision: str, reason: str, extra: dict) -> StrategyResult:
+        if decision == "SHIP":
+            self._remember_cost(extra)
         extra = {**extra, "program_binary": _binary_line(self.argv)}
         rec = StrategyResult(self.name, decision, reason, extra)
         rec.write(self.out_dir / "decision.txt")

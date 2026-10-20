@@ -200,6 +200,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 slack=args.slack,
                 subset_aux=args.subset_aux,
                 invalidate_group=args.invalidate_group,
+                f_threshold=args.f_threshold,
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -209,7 +210,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"decision: {rec.decision}")
         print(f"why:      {rec.reason}")
         print(f"wrote {out / 'decision.txt'}")
-        return 0 if rec.decision == "SHIP" else 1
+        return 0 if rec.decision in {"SHIP", "FALLBACK"} else 1
     if args.strategy != "record_memo":
         print(f"unknown strategy {args.strategy}; more later", file=sys.stderr)
         return 2
@@ -315,6 +316,19 @@ def main(argv: list[str] | None = None) -> int:
             "A new, changed, or removed member makes every still-present member "
             "of that group get scanned again. The file path is not part of the "
             "cache namespace. The rule is caller data."
+        ),
+    )
+    rn.add_argument(
+        "--f-threshold",
+        type=float,
+        default=None,
+        dest="f_threshold",
+        help=(
+            "Changed fraction above which an update runs the tool on the whole "
+            "reference instead of replaying. Default: (1-c)/a from this cache's "
+            "measured fill/update history, or 0.80 when that history is absent "
+            "or does not give a positive break-even. The comparison is strict, "
+            "so a changed fraction equal to the threshold still replays."
         ),
     )
     rn.add_argument(
