@@ -1,0 +1,41 @@
+#!/bin/bash
+# measured_v2 correctness: one proteome per array task. Submit only after
+# UNRELATED_SHIP_PROTOCOL_V2.md is committed and staged with matching GIT_HASH.
+#SBATCH --job-name=tare_a_v2
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
+#SBATCH --array=0-19
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%A_%a.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%A_%a.err
+
+set -euo pipefail
+
+PROJ=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/modules.sh
+fi
+module purge
+module load gcc/13.3.0
+module load python/3.11.9
+
+export ACTS_GIT_HASH
+ACTS_GIT_HASH="$(tr -d '[:space:]' < "${PROJ}/GIT_HASH")"
+export PYTHONPATH="${PROJ}/pipeline"
+export PATH="${PROJ}/pfscan/bin:${PATH}"
+export ACTS_SCRATCH="/scratch1/${USER}/tare-exp-a"
+
+cd "${PROJ}/pipeline"
+test -f docs/UNRELATED_SHIP_PROTOCOL_V2.md
+grep -q "38120" docs/UNRELATED_SHIP_PROTOCOL_V2.md
+grep -q "20261272" docs/UNRELATED_SHIP_PROTOCOL_V2.md
+echo "git ${ACTS_GIT_HASH}"
+echo "host $(hostname) task ${SLURM_ARRAY_TASK_ID}"
+python3 scripts/unrelated_ship.py measured_v2_task
+echo "task_exit $?"

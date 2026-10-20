@@ -5,9 +5,8 @@ The laptop cannot compile this source (Apple clang rejects -msse). Both
 phases run on CARC. Wall times in the JSON are diagnostics. They are not
 a timing claim.
 
-Seeds in this file: 20261101 pilot draw, 20261102 measured draw,
-20261103 injected candidate drop. No other seed from outside
-20261101-20261109 is used for a draw.
+Round-1 seeds: 20261101 pilot, 20261102 measured, 20261103 drop.
+WA2 measured_v2 seeds: 20261272 draw, 20261273 drop, 20261274 timing sample.
 """
 from __future__ import annotations
 
@@ -34,6 +33,16 @@ N_MEASURED = 10
 DROP_FRACTION = 0.05
 EXPECT_MATRIX = {"2026_02": 1434, "2026_03": 1441}
 
+# WA2 measured_v2 (pre-registered in UNRELATED_SHIP_PROTOCOL_V2.md).
+MEASURED_V2_SEED = 20261272
+DROP_V2_SEED = 20261273
+TIMING_V2_SEED = 20261274
+N_MEASURED_V2 = 20
+PER_GENOME_FLOOR = 1906
+POOLED_FLOOR = 38120  # 20 * 1906
+PROTOCOL_V2 = PIPE / "docs" / "UNRELATED_SHIP_PROTOCOL_V2.md"
+BUILD_SMOKE = "GCF_001513615.1_protein.faa.gz"
+
 GENOMES = Path(os.environ.get(
     "ACTS_GENOMES",
     "/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A",
@@ -48,6 +57,7 @@ PFSCAN = Path(os.environ.get(
     "/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/pfscan/bin/pfscanV3",
 ))
 RESULTS = PIPE / "results" / "unrelated_ship"
+TASKS_V2 = RESULTS / "v2_tasks"
 PROTOCOL = PIPE / "docs" / "UNRELATED_SHIP_PROTOCOL.md"
 
 LOCKED = [
@@ -372,6 +382,115 @@ def draw_pilot(names: list[str]) -> list[str]:
 def draw_measured(names: list[str], pilot_names: list[str]) -> list[str]:
     rest = [name for name in names if name not in set(pilot_names)]
     return random.Random(MEASURED_SEED).sample(rest, N_MEASURED)
+
+
+def excluded_for_v2(pilot_names: list[str], measured_names: list[str]) -> set[str]:
+    return set(pilot_names) | set(measured_names) | {BUILD_SMOKE}
+
+
+def draw_measured_v2(names: list[str], excluded: set[str]) -> list[str]:
+    rest = [name for name in names if name not in excluded]
+    if len(rest) < N_MEASURED_V2:
+        raise SystemExit(f"v2 pool has {len(rest)} after exclusions, need {N_MEASURED_V2}")
+    return random.Random(MEASURED_V2_SEED).sample(rest, N_MEASURED_V2)
+
+
+def known_bad_v2(reference: Path, fasta: Path, cache: Path, stock_body: list[str], folder: Path) -> dict:
+    """Injected drop under DROP_V2_SEED. Same control shape as round-1."""
+    from acts.reference_formats import parse_reference
+
+    stamp = folder / "known_bad_v2.json"
+    if stamp.is_file():
+        return json.loads(stamp.read_text())
+    folder.mkdir(parents=True, exist_ok=True)
+    entries = parse_reference(reference)
+    by_key = {entry.primary: entry for entry in entries}
+    candidates = sorted({line.split()[0] for line in stock_body if line.split()})
+    n_drop = max(1, int(round(DROP_FRACTION * len(candidates))))
+    dropped = random.Random(DROP_V2_SEED).sample(candidates, n_drop)
+    missing_keys = [token for token in dropped if token not in by_key]
+    if missing_keys:
+        raise SystemExit(f"dropped tokens are not matrix keys: {missing_keys[:5]}")
+    hashes = [by_key[token].content_hash for token in dropped]
+    dropped_cache = folder / "cache.sqlite"
+    src = sqlite3.connect(cache)
+    dst = sqlite3.connect(dropped_cache)
+    try:
+        src.backup(dst)
+        marks = ",".join("?" for _ in hashes)
+        n_rows = dst.execute(
+            f"SELECT COUNT(*) FROM rows WHERE entry_hash IN ({marks})", hashes,
+        ).fetchone()[0]
+        dst.execute(f"DELETE FROM rows WHERE entry_hash IN ({marks})", hashes)
+        dst.commit()
+    finally:
+        src.close()
+        dst.close()
+    rerun = tare(reference, fasta, dropped_cache, folder / "rerun", "full")
+    refused = rerun.get("decision", "").startswith("REFUSE")
+    payload = {
+        "seed": DROP_V2_SEED,
+        "fraction": DROP_FRACTION,
+        "n_candidates": len(candidates),
+        "n_dropped": n_drop,
+        "dropped": dropped,
+        "deleted_rows": n_rows,
+        "decision": rerun.get("decision"),
+        "why": rerun.get("why"),
+        "refused": refused and n_rows > 0,
+        "control": "injected 5% candidate-row drop must refuse",
+    }
+    stamp.write_text(json.dumps(payload, indent=2) + "\n")
+    log(f"known-bad-v2 refused={payload['refused']} decision={payload['decision']} deleted_rows={n_rows}")
+    return payload
+
+
+def one_measured_v2_genome(name: str, floor: int) -> dict:
+    folder = WORK / "measured_v2" / name.replace(".faa.gz", "")
+    folder.mkdir(parents=True, exist_ok=True)
+    fasta = decompress(name)
+    stock = pfscan(matrix_path("2026_03"), fasta, folder / "stock.out")
+    lines = body_lines((folder / "stock.out").read_text())
+    if len(lines) < floor:
+        return {
+            "genome": name,
+            "lines": {"stock": len(lines), "tare": None},
+            "differing_lines": None,
+            "classes": [],
+            "decision": "INCONCLUSIVE",
+            "checks": {"power": "miss", "floor": floor, "ship": False},
+            "xalip": stock["xalip"],
+            "work_dir": str(folder),
+        }
+    cache = folder / "cache.sqlite"
+    fill = tare(matrix_path("2026_02"), fasta, cache, folder / "fill", "audit")
+    update = tare(matrix_path("2026_03"), fasta, cache, folder / "update", "audit")
+    compared = classify(lines, update["body"])
+    decision = update.get("decision") or "FAIL"
+    if decision.upper() == "UNSAFE":
+        decision = "UNSAFE"
+    elif decision == "SHIP" and not compared["byte_equal"]:
+        decision = "FAIL"
+    return {
+        "genome": name,
+        "lines": {"stock": len(lines), "tare": update["n_lines"]},
+        "differing_lines": compared["differing_lines"],
+        "classes": compared["classes"],
+        "decision": decision,
+        "why": update.get("why"),
+        "checks": {
+            "power": "pass",
+            "floor": floor,
+            "ship": decision == "SHIP",
+            "byte_equal": compared["byte_equal"],
+            "xalip": stock["xalip"] or ("xalip" in (update.get("stderr_tail") or "")),
+        },
+        "contract": contract_summary(load_contract(cache)),
+        "release_diff": decision_counts(update.get("decision_text") or ""),
+        "work_dir": str(folder),
+        "fill": {k: v for k, v in fill.items() if k != "body"},
+        "update": {k: v for k, v in update.items() if k != "body"},
+    }
 
 
 def heuristic_note(matrix: Path, fasta: Path, folder: Path) -> dict:
@@ -708,14 +827,272 @@ def run_measured() -> None:
         raise SystemExit(f"measured outcome {outcome}")
 
 
-def main() -> None:
-    if len(sys.argv) != 2 or sys.argv[1] not in {"pilot", "measured"}:
-        raise SystemExit("usage: unrelated_ship.py pilot|measured")
-    os.environ.setdefault("PYTHONPATH", str(PIPE))
-    if sys.argv[1] == "pilot":
-        run_pilot()
+def _v2_draw_locked() -> tuple[list[str], list[str], list[str]]:
+    """Return (chosen, pilot_names, measured_r1_names) matching the protocol list."""
+    pilot_path = RESULTS / "pilot.json"
+    measured_path = RESULTS / "measured.json"
+    if not pilot_path.is_file() or not measured_path.is_file():
+        raise SystemExit("pilot.json and measured.json are required to lock v2 exclusions")
+    pilot = json.loads(pilot_path.read_text())
+    measured = json.loads(measured_path.read_text())
+    pilot_names = list(pilot["genomes_drawn"])
+    measured_names = list(measured["genomes_drawn"])
+    excluded = excluded_for_v2(pilot_names, measured_names)
+    chosen = draw_measured_v2(pool(), excluded)
+    return chosen, pilot_names, measured_names
+
+
+def run_measured_v2_task() -> None:
+    """One array task: one genome from the pre-registered draw."""
+    if not PROTOCOL_V2.is_file():
+        raise SystemExit("PROTOCOL_V2 is not on this tree")
+    protocol = PROTOCOL_V2.read_text()
+    if "38120" not in protocol or "Power floors" not in protocol:
+        raise SystemExit("PROTOCOL_V2 does not lock pooled floor 38120")
+    if "1906" not in protocol:
+        raise SystemExit("PROTOCOL_V2 does not lock per-genome floor 1906")
+    if "Seed `20261272`" not in protocol:
+        raise SystemExit("PROTOCOL_V2 does not lock seed 20261272")
+    raw = os.environ.get("SLURM_ARRAY_TASK_ID", "").strip()
+    if not raw:
+        raise SystemExit("SLURM_ARRAY_TASK_ID is required for measured_v2_task")
+    index = int(raw)
+    chosen, _, _ = _v2_draw_locked()
+    if index < 0 or index >= len(chosen):
+        raise SystemExit(f"array index {index} outside 0..{len(chosen) - 1}")
+    name = chosen[index]
+    # Confirm protocol lists this name at this position (1-indexed in the doc).
+    if name not in protocol:
+        raise SystemExit(f"{name} is not listed in PROTOCOL_V2")
+    if not PFSCAN.is_file():
+        raise SystemExit(f"pfscanV3 is not at {PFSCAN}")
+    prepare_references()
+    log(f"measured_v2 task {index} genome {name}")
+    row = one_measured_v2_genome(name, PER_GENOME_FLOOR)
+    payload = {
+        **host_block(),
+        "phase": "measured_v2_task",
+        "seed": MEASURED_V2_SEED,
+        "array_task_id": index,
+        "genome": name,
+        "per_genome_floor": PER_GENOME_FLOOR,
+        "pooled_floor": POOLED_FLOOR,
+        "result": row,
+    }
+    TASKS_V2.mkdir(parents=True, exist_ok=True)
+    dest = TASKS_V2 / f"task_{index:02d}.json"
+    write_json(dest, payload)
+
+
+def run_measured_v2_aggregate() -> None:
+    """Pool task JSONs, run known-bad, write measured_v2.json."""
+    if not PROTOCOL_V2.is_file():
+        raise SystemExit("PROTOCOL_V2 is not on this tree")
+    chosen, pilot_names, measured_names = _v2_draw_locked()
+    genomes = []
+    for index, name in enumerate(chosen):
+        path = TASKS_V2 / f"task_{index:02d}.json"
+        if not path.is_file():
+            raise SystemExit(f"missing task result {path}")
+        task = json.loads(path.read_text())
+        row = task["result"]
+        if row["genome"] != name:
+            raise SystemExit(f"task {index} genome {row['genome']} != locked {name}")
+        genomes.append(row)
+
+    powered = [row for row in genomes if row["checks"].get("power") == "pass"]
+    pooled_lines = sum(row["lines"]["stock"] for row in powered)
+    pooled_ok = pooled_lines >= POOLED_FLOOR
+
+    bad = None
+    control_genome = next(
+        (row for row in genomes if row["decision"] == "SHIP" and row.get("differing_lines") == 0),
+        None,
+    )
+    if control_genome is not None:
+        folder = Path(control_genome["work_dir"])
+        fasta = decompress(control_genome["genome"])
+        bad = known_bad_v2(
+            matrix_path("2026_03"),
+            fasta,
+            folder / "cache.sqlite",
+            body_lines((folder / "stock.out").read_text()),
+            folder / "known_bad_v2",
+        )
+
+    n_ship = sum(1 for row in genomes if row["decision"] == "SHIP")
+    n_unsafe = sum(1 for row in genomes if str(row["decision"]).upper() == "UNSAFE")
+    n_inconclusive = sum(1 for row in genomes if row["decision"] == "INCONCLUSIVE")
+    n_fail = sum(
+        1 for row in genomes
+        if row["decision"] not in {"SHIP", "INCONCLUSIVE"}
+    )
+    refused = bool(bad and bad.get("refused"))
+
+    if n_unsafe or n_fail:
+        outcome = "FAIL"
+    elif n_inconclusive or not pooled_ok:
+        outcome = "INCONCLUSIVE"
+    elif n_ship == len(chosen) and all(
+        row["decision"] == "SHIP" and row["differing_lines"] == 0 for row in genomes
+    ) and refused:
+        outcome = "PASS"
+    elif n_ship == len(chosen) and all(
+        row["decision"] == "SHIP" and row["differing_lines"] == 0 for row in genomes
+    ) and not refused:
+        outcome = "FAIL"
     else:
-        run_measured()
+        outcome = "FAIL"
+
+    # Strip work_dir / fill / update bodies from the committed summary size.
+    slim = []
+    for row in genomes:
+        slim.append({k: v for k, v in row.items() if k not in {"fill", "update"}})
+
+    payload = {
+        **host_block(),
+        "phase": "measured_v2",
+        "seed": MEASURED_V2_SEED,
+        "drop_seed": DROP_V2_SEED,
+        "pilot_seed": PILOT_SEED,
+        "excluded_pilot": pilot_names,
+        "excluded_measured_r1": measured_names,
+        "excluded_smoke": BUILD_SMOKE,
+        "per_genome_floor": PER_GENOME_FLOOR,
+        "pooled_floor": POOLED_FLOOR,
+        "pooled_stock_lines": pooled_lines,
+        "pooled_ok": pooled_ok,
+        "genomes_drawn": chosen,
+        "genomes": slim,
+        "known_bad": bad,
+        "contract": next((row.get("contract") for row in slim if row.get("contract")), None),
+        "checks": {
+            "n": len(genomes),
+            "n_ship": n_ship,
+            "n_unsafe": n_unsafe,
+            "n_inconclusive": n_inconclusive,
+            "n_fail": n_fail,
+            "n_differing": sum((row["differing_lines"] or 0) for row in genomes),
+            "per_genome_floor": PER_GENOME_FLOOR,
+            "pooled_floor": POOLED_FLOOR,
+            "pooled_stock_lines": pooled_lines,
+            "known_bad_refused": refused,
+        },
+        "outcome": outcome,
+    }
+    write_json(RESULTS / "measured_v2.json", payload)
+    if outcome != "PASS":
+        raise SystemExit(f"measured_v2 outcome {outcome}")
+
+
+def run_timing_v2() -> None:
+    """Exclusive paired timing for 5 genomes. Only after measured_v2 PASS."""
+    measured_path = RESULTS / "measured_v2.json"
+    if not measured_path.is_file():
+        raise SystemExit("measured_v2.json missing")
+    measured = json.loads(measured_path.read_text())
+    if measured.get("outcome") != "PASS":
+        raise SystemExit(f"timing_v2 blocked: measured_v2 outcome is {measured.get('outcome')}")
+    drawn = list(measured["genomes_drawn"])
+    timed = random.Random(TIMING_V2_SEED).sample(drawn, 5)
+    prepare_references()
+    rows = []
+    for name in timed:
+        folder = WORK / "timing_v2" / name.replace(".faa.gz", "")
+        folder.mkdir(parents=True, exist_ok=True)
+        fasta = decompress(name)
+        stock_walls = []
+        for rep in range(3):
+            out = folder / f"stock_r{rep}.out"
+            # Force fresh timing: remove prior meta so pfscan re-runs.
+            meta = out.with_suffix(".json")
+            if out.is_file():
+                out.unlink()
+            if meta.is_file():
+                meta.unlink()
+            meta_run = pfscan(matrix_path("2026_03"), fasta, out)
+            stock_walls.append(meta_run["wall_s"])
+        cache = folder / "cache.sqlite"
+        if cache.is_file():
+            cache.unlink()
+        fill = tare(matrix_path("2026_02"), fasta, cache, folder / "fill", "audit")
+        tare_walls = []
+        for rep in range(3):
+            # Fresh update each rep: clear update dir so tare re-runs.
+            update_dir = folder / f"update_r{rep}"
+            if update_dir.exists():
+                for child in update_dir.iterdir():
+                    if child.is_file():
+                        child.unlink()
+                    elif child.is_dir():
+                        import shutil
+                        shutil.rmtree(child)
+            # Reuse fill cache; copy for each update so cache is warm identically.
+            rep_cache = folder / f"cache_r{rep}.sqlite"
+            src = sqlite3.connect(cache)
+            dst = sqlite3.connect(rep_cache)
+            try:
+                src.backup(dst)
+            finally:
+                src.close()
+                dst.close()
+            update = tare(matrix_path("2026_03"), fasta, rep_cache, update_dir, "audit")
+            tare_walls.append(update["wall_s"])
+        import statistics
+        stock_med = statistics.median(stock_walls)
+        tare_med = statistics.median(tare_walls)
+        rows.append({
+            "genome": name,
+            "stock_walls_s": stock_walls,
+            "tare_update_walls_s": tare_walls,
+            "fill_wall_s": fill.get("wall_s"),
+            "stock_median_s": stock_med,
+            "tare_median_s": tare_med,
+            "speedup": (stock_med / tare_med) if tare_med else None,
+        })
+    import statistics as stats
+    speedups = [row["speedup"] for row in rows if row["speedup"]]
+    payload = {
+        **host_block(),
+        "phase": "timing_v2",
+        "seed": TIMING_V2_SEED,
+        "measured_v2_seed": MEASURED_V2_SEED,
+        "measured_v2_git_head": measured.get("git_head"),
+        "r": 3,
+        "exclusive": True,
+        "timing_claim": True,
+        "genomes_timed": timed,
+        "genomes": rows,
+        "median_speedup": stats.median(speedups) if speedups else None,
+        "disclosure": (
+            "Exclusive CARC timing of pfscanV3 stock vs TARE update after "
+            "measured_v2 PASS. Fill time excluded from the speedup ratio."
+        ),
+    }
+    # Override the host_block timing_claim=False.
+    payload["timing_claim"] = True
+    write_json(RESULTS / "timing_v2.json", payload)
+
+
+def main() -> None:
+    modes = {
+        "pilot", "measured",
+        "measured_v2_task", "measured_v2_aggregate", "timing_v2",
+    }
+    if len(sys.argv) != 2 or sys.argv[1] not in modes:
+        raise SystemExit(
+            "usage: unrelated_ship.py pilot|measured|"
+            "measured_v2_task|measured_v2_aggregate|timing_v2"
+        )
+    os.environ.setdefault("PYTHONPATH", str(PIPE))
+    dispatch = {
+        "pilot": run_pilot,
+        "measured": run_measured,
+        "measured_v2_task": run_measured_v2_task,
+        "measured_v2_aggregate": run_measured_v2_aggregate,
+        "timing_v2": run_timing_v2,
+    }
+    dispatch[sys.argv[1]]()
 
 
 if __name__ == "__main__":
