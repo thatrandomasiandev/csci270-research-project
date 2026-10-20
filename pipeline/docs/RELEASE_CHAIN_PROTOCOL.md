@@ -615,3 +615,112 @@ Pilot walls size the later exclusive job. They are not a speed claim.
 Output: `pipeline/results/release_chain/pilot_20261221.json` after the
 CARC file is copied back. The measured addendum is written after this
 pilot and before any measured `sbatch`.
+
+## Addendum 2026-10-20 — W8 measured run (locked before sbatch)
+
+Cites the finished pilot. Freezes the measured code. No measured wall
+below is a result.
+
+### Pilot that this addendum cites
+
+| Key | Value |
+|---|---|
+| Job | `13241855` (`tare-w8-pilot`), COMPLETED, ExitCode 0:0 |
+| sacct Elapsed | `05:39:03` (20343 s) |
+| Finished (UTC) | `2026-10-20T03:16:16Z` |
+| Outcome | `PASS` |
+| Proteome | `GCF_003018555.1` (seed `20261221`) |
+| Host / CPU | `b22-21.hpc.usc.edu`, AMD EPYC 7542 |
+| Pilot code (`git_head`) | `bebabc5b7f4b81c72e322f3a68f363a4429f855a` |
+| Chain | 37.3 → 37.4 → 38.0 → 38.1 → 38.2; every step `SHIP` + `PASS` |
+| Negative control | `refused` (seed `20261223`, first update) |
+| Drift | `pass` — chained 38.2 = direct 38.2 = stock, both tables byte-identical |
+| Committed files | `pipeline/results/release_chain/pilot.json` (canonical) and `pilot_20261221.json` (same bytes) |
+
+Pilot walls are not a speed claim. They size the exclusive array only.
+
+### Break-even counterfactual on 37.4 → 38.0 (recorded, not executed)
+
+Census \(f_\Delta = 0.9311802701115678\). The shipped runner always
+replays. Two non-executed rules are recorded:
+
+| Rule | Threshold | Would |
+|---|---|---|
+| W7 / exp/w7-breakeven \(f_\Delta > 0.80\) | 0.80 | stock |
+| Server break-even \((1-c)/a\) with \(a=0.973\), \(c=0.098\) | ≈0.927030 | stock |
+
+The pilot JSON records the 0.80 rule under `steps[2].w7_fallback`.
+The measured runner also writes `w7_fallback.break_even` for the
+\((1-c)/a\) rule. Neither rule chooses argv. `code_imported` stays false.
+
+### Measured code freeze
+
+Measured executes the runner and `pipeline/acts` at the commit recorded
+in `ACTS_GIT_HEAD` / each genome JSON's `git_head` after staging. That
+commit is the tip of `exp/w8-release-chain` at the measured pre-registration
+commit (this addendum + finished pilot JSON + break-even record fields).
+It is not the mid-pilot incomplete snapshot. The scan logic matches the
+pilot's `bebabc5` runner except for the recorded `break_even` object
+inside `w7_record` (counterfactual only).
+
+### Sample (locked; fresh; disjoint from the pilot)
+
+Same pool and exclusions as the W8 pilot addendum:
+
+- Headline `EXCLUDE_REASONS` (50) and headline `DRAWS` (10) from
+  `EXACT_REPLAY_PROTOCOL.md` / `headline_carc_measured.py`
+- Every accession in `pipeline/results/diverse_genomes/draw.json`
+  (98 unique; sha256 unchanged)
+- W12a locked draw (pilot `GCF_003018855.1`; measured
+  `GCF_018415995.1`, `GCF_019969525.1`, `GCF_037231045.1`,
+  `GCF_040271735.2`, `GCF_055807995.1`) — none of these are in the
+  W8 measured names below; listed so a future redraw cannot collide
+
+Pilot genome removed from the pool. Measured names
+(seed `20261222`, reduced-pool sha256
+`394fd6ad990f7e72b29866e7e4743cc04d4b0e222c0be8e5a5688df927688dc1`):
+
+1. `GCF_014295275.1`
+2. `GCF_024585005.1`
+3. `GCF_057098645.1`
+
+The runner stops if `draw_genomes(..., "measured", task)` disagrees.
+No genome from the pilot. Seeds `20261225`–`20261229` stay unused.
+Drop seeds stay unused on the measured path (negative control was pilot-only).
+
+### Procedure
+
+Full timed chain 37.3 → 37.4 → 38.0 → 38.1 → 38.2. Fill at 37.3.
+r = 3, alternating A B A B A B per step. Exclusive EPYC 7542,
+`--mem=0`, `--constraint=epyc-7542`, scratch `/scratch1/$USER/tare-w8/`.
+`hmmscan --cut_ga --noali --cpu 4`, pin `-Z {entry_count}`, audit on.
+Unpinned control once on genome 1 at 38.2 (must differ). Stock-vs-stock
+identity at every step. Line floor 1000+1000 → INCONCLUSIVE, not KILL.
+Press not charged. Laptop times are not speed evidence.
+
+\(S_g\), CV, \(S_{\mathrm{pred}}\) from earlier steps only, and cumulative
+payback follow Part 3 of this document, restricted to the five-release
+W8 chain (four updates after the fill).
+
+### Time limit
+
+Pilot sacct wall `05:39:03` × 1.5 = `08:28:34` (30514 s). The shared
+floor is never shorter than 8 h. The measured path uses r = 3 (three
+stock and three TARE walls per update) while the pilot used r = 1, so
+the exclusive array keeps `#SBATCH --time=24:00:00` — above the
+formula floor, sized for the extra repeats. Disclosed before sbatch.
+
+### Outputs
+
+Per genome (CARC, then copied):
+`pipeline/results/release_chain/measured_20261222_<accession>.json`
+
+Aggregate after all three finish:
+`pipeline/results/release_chain/measured.json`
+(keys include per-step \(S_g\), exactness/outcomes, payback, and the
+37.4→38.0 break-even record).
+
+Job name `tare-w8-measured`, array `0-2`. CARC priority after W13.
+Exclusive-node cap 6 across `tare-w8|tare-w12a|tare-w5x|tare-w12b|tare-w6`.
+Dry-run staged entry before `sbatch`. Never touch job `12864756`.
+Never edit `pipeline/paper/tare/main.tex`.

@@ -78,6 +78,11 @@ SEED_DROP = 20261223
 SEED_DROP_RETRY = 20261224
 # Recorded counterfactual. Not imported from another workstream and not executed.
 W7_F_THRESHOLD = 0.80
+# Server cost-model coefficients for the alternate break-even threshold
+# (1-c)/a. Same counterfactual role as W7_F_THRESHOLD: recorded, not executed.
+SERVER_A = 0.973
+SERVER_C = 0.098
+BREAK_EVEN_THRESHOLD = (1.0 - SERVER_C) / SERVER_A  # ≈ 0.927
 PRIOR_A = 1.0146410126797523
 PRIOR_C = 0.10846594102974193
 PRIOR_SOURCE = (
@@ -140,8 +145,12 @@ def w7_record(f_delta: float) -> dict:
 
     The rule is: if f_delta > 0.80, run stock. Otherwise replay. Equality
     with the threshold replays. This function does not choose the argv.
+
+    Also records the server break-even threshold (1-c)/a with a=0.973,
+    c=0.098 (≈0.927). Same comparison, same non-execution.
     """
     would = "stock" if f_delta > W7_F_THRESHOLD else "replay"
+    be_would = "stock" if f_delta > BREAK_EVEN_THRESHOLD else "replay"
     return {
         "threshold": W7_F_THRESHOLD,
         "comparison": "f_delta > threshold",
@@ -153,6 +162,15 @@ def w7_record(f_delta: float) -> dict:
             "Current TARE always replays this step. The threshold rule is "
             "recorded and is not executed."
         ),
+        "break_even": {
+            "a": SERVER_A,
+            "c": SERVER_C,
+            "threshold": BREAK_EVEN_THRESHOLD,
+            "formula": "(1-c)/a",
+            "comparison": "f_delta > threshold",
+            "would": be_would,
+            "source": "exp/w7-breakeven server coefficients; not executed",
+        },
     }
 
 
@@ -801,8 +819,14 @@ def self_test() -> None:
     rebuild = w7_record(0.9311802701115678)
     if rebuild["would"] != "stock" or rebuild["executed"] != "replay" or rebuild["code_imported"] is not False:
         raise SystemExit(f"self-test: 37.4->38.0 record {rebuild}")
+    if rebuild["break_even"]["would"] != "stock":
+        raise SystemExit(f"self-test: 37.4->38.0 break-even {rebuild['break_even']}")
+    if abs(rebuild["break_even"]["threshold"] - BREAK_EVEN_THRESHOLD) > 1e-12:
+        raise SystemExit("self-test: break-even threshold drifted")
     if w7_record(0.13446605163602576)["would"] != "replay":
         raise SystemExit("self-test: 38.1->38.2 would not replay")
+    if w7_record(0.13446605163602576)["break_even"]["would"] != "replay":
+        raise SystemExit("self-test: 38.1->38.2 break-even would not replay")
     if w7_record(0.80)["would"] != "replay":
         raise SystemExit("self-test: threshold is strict greater-than")
     print("self-test pass", {
@@ -810,6 +834,8 @@ def self_test() -> None:
         "dropped": dropped["fail_mode"],
         "example": stock_line != plus_line,
         "w7_37_4_38_0": rebuild["would"],
+        "break_even_37_4_38_0": rebuild["break_even"]["would"],
+        "break_even_threshold": rebuild["break_even"]["threshold"],
     })
 
 
@@ -840,7 +866,9 @@ def run_chain(mode: str, task: int) -> None:
         "system": "TARE",
         "test": f"release-chain-{mode}",
         "protocol": "pipeline/docs/RELEASE_CHAIN_PROTOCOL.md",
-        "addendum": "2026-10-19 W8",
+        "addendum": (
+            "2026-10-19 W8" if mode == "pilot" else "2026-10-20 W8 measured"
+        ),
         "scratch_policy": "/scratch1 only; node /tmp is not used",
         "w7_code_imported": False,
         "seed": SEED_PILOT if mode == "pilot" else SEED_MEASURED,

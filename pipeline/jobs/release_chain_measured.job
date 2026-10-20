@@ -1,6 +1,8 @@
 #!/bin/bash
 # TARE W8 release-chain measured run. One proteome per array task.
-# Do not sbatch until the post-pilot addendum sets --time from the pilot wall.
+# Pre-registered in RELEASE_CHAIN_PROTOCOL.md addendum 2026-10-20.
+# Pilot 13241855 wall 05:39:03 x 1.5 = 08:28:34 (floor). Measured uses
+# r=3 vs pilot r=1, so --time stays 24:00:00 (above that floor).
 # Exclusive EPYC 7542, --mem=0. Scratch is /scratch1. Node /tmp is not used.
 # A crash in the runner writes a partial JSON and exits 2. A scored FAIL exits 0.
 #SBATCH --job-name=tare-w8-measured
