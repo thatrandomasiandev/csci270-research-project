@@ -1,0 +1,211 @@
+#!/bin/bash
+# Build the approved pftools archive on an AMD EPYC 7542 node.
+# Correctness only. Non-exclusive. Do not run pfscan on the login node.
+#SBATCH --job-name=tare_a_pfscan
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%j.err
+
+set -euo pipefail
+
+PROJ=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a
+ARCH=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a-archives
+SCRATCH=/scratch1/${USER}/tare-exp-a
+PREFIX="${PROJ}/pfscan"
+SMOKE_FAA="/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A/GCF_001513615.1_protein.faa.gz"
+# That accession is not in the 20261101 or 20261102 draws.
+RESULT="${PREFIX}/build_result.json"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/modules.sh
+fi
+module purge
+module load gcc/13.3.0
+module load cmake/3.29.4
+module load python/3.11.9
+
+mkdir -p "${PREFIX}/bin" "${SCRATCH}/src" "${SCRATCH}/build" "${PROJ}/logs"
+cd "${SCRATCH}"
+
+python3 - <<'PY' "${ARCH}" "${RESULT}"
+import json, sys
+from pathlib import Path
+arch, dest = Path(sys.argv[1]), Path(sys.argv[2])
+expect = {
+    "pftools3-v3.2.13.zip": 44209720,
+    "prosite2026_02.tar.bz2": 11287183,
+    "prosite2026_03.tar.bz2": 11352723,
+}
+bad = []
+for name, size in expect.items():
+    path = arch / name
+    got = path.stat().st_size if path.is_file() else None
+    if got != size:
+        bad.append(f"{name} bytes {got} != {size}")
+if bad:
+    dest.write_text(json.dumps({"status": "FAIL", "reason": "; ".join(bad)}) + "\n")
+    raise SystemExit(2)
+print("archive bytes match")
+PY
+
+rm -rf "${SCRATCH}/src" "${SCRATCH}/build"
+mkdir -p "${SCRATCH}/src" "${SCRATCH}/build"
+unzip -q "${ARCH}/pftools3-v3.2.13.zip" -d "${SCRATCH}/src"
+SRC="$(find "${SCRATCH}/src" -mindepth 1 -maxdepth 2 -name CMakeLists.txt -printf '%h\n' | head -1)"
+if [[ -z "${SRC}" ]]; then
+  python3 - <<'PY' "${RESULT}"
+import json, sys
+Path = __import__("pathlib").Path
+Path(sys.argv[1]).write_text(json.dumps({"status": "FAIL", "reason": "CMakeLists.txt not in the approved zip"}) + "\n")
+PY
+  exit 2
+fi
+VERSION_LINE="$(grep -m1 'SET(VERSION' "${SRC}/CMakeLists.txt" || true)"
+echo "source ${SRC}"
+echo "version line ${VERSION_LINE}"
+
+set +e
+cmake -S "${SRC}" -B "${SCRATCH}/build" -DCMAKE_BUILD_TYPE=Release > "${SCRATCH}/cmake.out" 2>&1
+CMAKE_RC=$?
+set -e
+if [[ "${CMAKE_RC}" -ne 0 ]]; then
+  python3 - <<'PY' "${RESULT}" "${SCRATCH}/cmake.out" "${VERSION_LINE}"
+import json, sys
+from pathlib import Path
+log = Path(sys.argv[2]).read_text(errors="replace")[-4000:]
+Path(sys.argv[1]).write_text(json.dumps({
+    "status": "FAIL",
+    "stage": "cmake",
+    "version_line": sys.argv[3],
+    "log_tail": log,
+}, indent=2) + "\n")
+PY
+  echo "cmake failed" >&2
+  tail -n 40 "${SCRATCH}/cmake.out" >&2
+  exit 2
+fi
+
+set +e
+cmake --build "${SCRATCH}/build" --target pfscanV3 -j "${SLURM_CPUS_PER_TASK}" > "${SCRATCH}/build.out" 2>&1
+BUILD_RC=$?
+set -e
+BIN="$(find "${SCRATCH}/build" -type f -name pfscanV3 -perm -111 | head -1)"
+if [[ "${BUILD_RC}" -ne 0 || -z "${BIN}" ]]; then
+  python3 - <<'PY' "${RESULT}" "${SCRATCH}/cmake.out" "${SCRATCH}/build.out" "${VERSION_LINE}"
+import json, sys
+from pathlib import Path
+Path(sys.argv[1]).write_text(json.dumps({
+    "status": "FAIL",
+    "stage": "build",
+    "version_line": sys.argv[4],
+    "cmake_tail": Path(sys.argv[2]).read_text(errors="replace")[-2000:],
+    "build_tail": Path(sys.argv[3]).read_text(errors="replace")[-4000:],
+}, indent=2) + "\n")
+PY
+  echo "build failed" >&2
+  tail -n 50 "${SCRATCH}/build.out" >&2
+  exit 2
+fi
+cp -f "${BIN}" "${PREFIX}/bin/pfscanV3"
+chmod +x "${PREFIX}/bin/pfscanV3"
+
+set +e
+"${PREFIX}/bin/pfscanV3" --help > "${SCRATCH}/help.out" 2> "${SCRATCH}/help.err"
+HELP_RC=$?
+set -e
+
+# Rate smoke only. Not a correctness result and not a seed from 20261101-20261109.
+python3 - <<'PY' "${SMOKE_FAA}" "${SCRATCH}/smoke.faa"
+import gzip, sys
+from pathlib import Path
+src, dest = Path(sys.argv[1]), Path(sys.argv[2])
+text = gzip.open(src, "rt").read().split(">")
+recs = [">" + block for block in text if block.strip()]
+dest.write_text("".join(recs[:16]))
+print(f"smoke records {min(16, len(recs))} of {len(recs)}")
+PY
+
+# Matrix entries only, so the smoke times the locked search shape.
+python3 - <<'PY' "${ARCH}/prosite2026_03.tar.bz2" "${SCRATCH}/smoke.matrix"
+import sys, tarfile
+from pathlib import Path
+src, dest = sys.argv[1], Path(sys.argv[2])
+with tarfile.open(src, "r:bz2") as tf:
+    raw = tf.extractfile("prosite.dat").read().decode("utf-8", "replace")
+blocks, buf = [], []
+for line in raw.splitlines(keepends=True):
+    buf.append(line if line.endswith("\n") else line + "\n")
+    if line.strip() == "//":
+        blocks.append("".join(buf))
+        buf = []
+kept = []
+for block in blocks:
+    first = block.splitlines()[0] if block else ""
+    if first.startswith("ID ") and "MATRIX." in first:
+        kept.append(block)
+dest.write_text("".join(kept))
+print(f"smoke matrix entries {len(kept)}")
+PY
+
+set +e
+python3 - <<'PY' "${PREFIX}/bin/pfscanV3" "${SCRATCH}/smoke.matrix" "${SCRATCH}/smoke.faa" "${SCRATCH}"
+import subprocess, sys, time
+from pathlib import Path
+binary, matrix, fasta, scratch = sys.argv[1:]
+scratch = Path(scratch)
+t0 = time.perf_counter()
+proc = subprocess.run(
+    [binary, "--matrix-only", "--nthreads", "1", "--output-method", "7", "--fasta", matrix, fasta],
+    check=False, capture_output=True, text=True,
+)
+wall = time.perf_counter() - t0
+(scratch / "smoke.out").write_text(proc.stdout)
+(scratch / "smoke.err").write_text(proc.stderr)
+(scratch / "smoke.time").write_text(f"elapsed_sec {wall:.3f}\nreturncode {proc.returncode}\n")
+raise SystemExit(proc.returncode)
+PY
+SMOKE_RC=$?
+set -e
+
+python3 - <<'PY' "${RESULT}" "${PREFIX}/bin/pfscanV3" "${SCRATCH}" "${VERSION_LINE}" "${HELP_RC}" "${SMOKE_RC}" "${BIN}"
+import json, platform, sys
+from pathlib import Path
+dest, binary, scratch = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
+cmake_log = (scratch / "cmake.out").read_text(errors="replace")
+help_text = (scratch / "help.out").read_text(errors="replace") + (scratch / "help.err").read_text(errors="replace")
+smoke_err = (scratch / "smoke.err").read_text(errors="replace")
+smoke_out = (scratch / "smoke.out").read_text(errors="replace")
+time_txt = (scratch / "smoke.time").read_text(errors="replace") if (scratch / "smoke.time").is_file() else ""
+lines = [ln for ln in smoke_out.splitlines() if ln.strip()]
+payload = {
+    "status": "OK" if int(sys.argv[6]) == 0 else "FAIL",
+    "stage": "smoke" if int(sys.argv[6]) != 0 else "shipped",
+    "version_line": sys.argv[4],
+    "help_rc": int(sys.argv[5]),
+    "smoke_rc": int(sys.argv[6]),
+    "binary": binary,
+    "built_from": sys.argv[7],
+    "help_text": help_text[-1500:],
+    "smoke_lines": len(lines),
+    "smoke_time": time_txt.strip(),
+    "smoke_err_tail": smoke_err[-1500:],
+    "sse_cmake": [ln.strip() for ln in cmake_log.splitlines() if "SSE" in ln or "architecture" in ln],
+    "host": platform.platform(),
+    "processor": platform.processor(),
+    "note": "16-sequence smoke is a build check, not the correctness pilot.",
+}
+dest.write_text(json.dumps(payload, indent=2) + "\n")
+print(json.dumps({k: payload[k] for k in ("status", "version_line", "smoke_rc", "smoke_lines", "smoke_time")}))
+if payload["status"] != "OK":
+    raise SystemExit(2)
+PY
+
+echo "pfscanV3 is at ${PREFIX}/bin/pfscanV3"

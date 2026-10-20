@@ -1,0 +1,407 @@
+{
+  "system": "TARE",
+  "package": "acts",
+  "tool": "pfscanV3",
+  "version_string": "Version 3.2.12 built on Oct 18 2026 at 02:26:00.",
+  "archive_version_line": "SET(VERSION \"3.2.12\")",
+  "filename": "pftools3-v3.2.13.zip",
+  "locked_command": "pfscanV3 --matrix-only --nthreads 1 --output-method 7 --fasta {reference} {input}",
+  "git_head": "6b9632b97e88e9c759df78aadf70e94b00e25e88",
+  "host": "b22-07.hpc.usc.edu",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "cpu": "AMD EPYC 7542 32-Core Processor",
+  "disclosure": "Correctness ran on CARC (AMD EPYC 7542, x86_64) because the laptop build cannot compile SSE: Apple clang rejects -msse on arm64-apple-darwin27.0.0. This run is not a timing claim.",
+  "timing_claim": false,
+  "phase": "pilot",
+  "seed": 20261101,
+  "drop_seed": 20261103,
+  "pool": "pipeline/data/recurrence/A (e1scale, 100 bacterial proteomes)",
+  "genomes_drawn": [
+    "GCF_059615465.1_protein.faa.gz",
+    "GCF_003018555.1_protein.faa.gz"
+  ],
+  "references": {
+    "2026_02": {
+      "release": "2026_02",
+      "archive_bytes": 11287183,
+      "n_entries_parsed": 2745,
+      "n_matrix": 1434,
+      "expected_matrix": 1434
+    },
+    "2026_03": {
+      "release": "2026_03",
+      "archive_bytes": 11352723,
+      "n_entries_parsed": 2752,
+      "n_matrix": 1441,
+      "expected_matrix": 1441
+    }
+  },
+  "genomes": [
+    {
+      "genome": "GCF_059615465.1_protein.faa.gz",
+      "headers": {
+        "n_records": 4377,
+        "unique": true,
+        "n_unique": 4377
+      },
+      "fields": {
+        "n_lines": 1906,
+        "widths": {
+          "10": 1906
+        },
+        "all_ten": true
+      },
+      "stock_a_lines": 1906,
+      "stock_b_lines": 1906,
+      "stock_vs_stock": {
+        "byte_equal": true,
+        "differing_lines": 0,
+        "classes": []
+      },
+      "xalip": false,
+      "threads_2": {
+        "threads": 2,
+        "a_lines": 1906,
+        "b_lines": 1906,
+        "byte_equal": false,
+        "differing_lines": 489,
+        "classes": [
+          "order"
+        ],
+        "not_the_locked_argv": true
+      },
+      "heuristic": {
+        "profile": "PS01031|SHSP",
+        "n_sequences": 8,
+        "with_heuristic_lines": 0,
+        "without_heuristic_lines": 0,
+        "without_returncode": 0,
+        "one_profile_warning": true,
+        "not_a_kill": true
+      },
+      "fill": {
+        "decision": "SHIP",
+        "why": "exact replay under identity normalizer",
+        "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 0\nn_entries: 1434\nn_stable: 0\nn_fresh: 1434\nn_partial: 0\nlength_entries: 228371\nlength_fresh: 228371\nlength_partial: 0\nnormalizer: identity\nreplay_records: 1406\nreplay_entries: 332\ncandidate_pairs: 1776\nn_batches: 16\nrandom_pads: 3 on 50 records, residue fraction 0.034353\nic2: pass\nphases: {'parse_s': 0.4758282541297376, 'coverage_read_s': 0.0005267579108476639, 'diff_s': 0.00016092509031295776, 'cache_load_s': 0.00019160332158207893, 'subref_build_s': 0.4784117699600756, 'prep_s': 4.4193584471940994e-05, 'tool_s': 1023.6337028220296, 'read_output_s': 3.5338569432497025e-05, 'discovery_s': 921.192044171039, 'discovery_build_s': 0.011171065270900726, 'discovery_scan_s': 921.0810790178366, 'merge_rescale_s': 0.005418756976723671, 'cache_store_s': 0.03553518792614341, 'pin_check_s': 68.093123245053, 'replay_plan_s': 0.0015974468551576138, 'replay_s': 10.439903052058071, 'replay_build_s': 0.35172613291069865, 'replay_scan_s': 10.051092225126922, 'ic2_neighbor_s': 14.836769990157336, 'ic2_neighbor_build_s': 0.08287459099665284, 'ic2_neighbor_scan_s': 14.68598177144304, 'ic2_random_20261031_s': 3.3721860139630735, 'ic2_random_20261031_build_s': 0.010149980895221233, 'ic2_random_20261031_scan_s': 3.347361949738115, 'ic2_random_20261032_s': 3.243907657917589, 'ic2_random_20261032_build_s': 0.008228830993175507, 'ic2_random_20261032_scan_s': 3.2206258373335004, 'ic2_random_20261033_s': 3.200979352928698, 'ic2_random_20261033_build_s': 0.008807697333395481, 'ic2_random_20261033_scan_s': 3.177173087839037, 'render_s': 0.001745596993714571, 'total_s': 1157.5584877301008, 'probe_wall_s': 131.51002156594768}\nprobe_phases: {'subref_build_s': 0.03920545941218734, 'prep_s': 4.809815436601639e-06, 'tool_s': 131.459927033633, 'read_output_s': 4.480127245187759e-06}\n",
+        "n_lines": 1906,
+        "returncode": 0,
+        "wall_s": 1157.9527782402001,
+        "stderr_tail": "",
+        "timing_claim": false
+      },
+      "update": {
+        "decision": "SHIP",
+        "why": "exact replay under identity normalizer",
+        "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 1906\nn_entries: 1441\nn_stable: 1434\nn_fresh: 7\nn_partial: 0\nlength_entries: 229501\nlength_fresh: 1130\nlength_partial: 0\nbasis_entry_count_max: 1434\nnormalizer: identity\nreplay_records: 1406\nreplay_entries: 332\ncandidate_pairs: 1776\nn_batches: 16\nrandom_pads: 3 on 50 records, residue fraction 0.034353\nic2: pass\naudit: checked 32, residue fraction 0.020916\naudit_checked: 32\nphases: {'parse_s': 0.475095400121063, 'coverage_read_s': 0.2734319241717458, 'diff_s': 0.1491039227694273, 'cache_load_s': 0.13448132760822773, 'subref_build_s': 0.16868531657382846, 'prep_s': 4.881108179688454e-05, 'tool_s': 47.44051515776664, 'read_output_s': 3.530178219079971e-05, 'discovery_s': 5.499313611071557, 'discovery_build_s': 0.01427354384213686, 'discovery_scan_s': 5.48350776406005, 'merge_rescale_s': 0.006179697811603546, 'cache_store_s': 0.7740255543030798, 'replay_plan_s': 0.001536030787974596, 'replay_s': 10.126654780935496, 'replay_build_s': 0.04380714241415262, 'replay_scan_s': 10.045427010394633, 'ic2_neighbor_s': 14.852358795702457, 'ic2_neighbor_build_s': 0.08252936694771051, 'ic2_neighbor_scan_s': 14.700021128635854, 'ic2_random_20261031_s': 3.338676093146205, 'ic2_random_20261031_build_s': 0.009183790069073439, 'ic2_random_20261031_scan_s': 3.314895727671683, 'ic2_random_20261032_s': 3.2282129018567502, 'ic2_random_20261032_build_s': 0.008772751782089472, 'ic2_random_20261032_scan_s': 3.2044752067886293, 'ic2_random_20261033_s': 3.1770376418717206, 'ic2_random_20261033_build_s': 0.00908946106210351, 'ic2_random_20261033_scan_s': 3.153309915214777, 'render_s': 0.0018946798518300056, 'verify_s': 7.540936133824289, 'verify_build_s': 0.0010780715383589268, 'verify_scan_s': 7.5388784050010145, 'total_s': 49.90656556095928, 'probe_wall_s': 0.0}\nprobe_phases: {}\n",
+        "n_lines": 1906,
+        "returncode": 0,
+        "wall_s": 50.20461657876149,
+        "stderr_tail": "",
+        "timing_claim": false
+      },
+      "update_vs_stock": {
+        "byte_equal": true,
+        "differing_lines": 0,
+        "classes": []
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "decision": "SHIP",
+      "lines": {
+        "stock": 1906,
+        "tare": 1906
+      },
+      "differing_lines": 0
+    },
+    {
+      "genome": "GCF_003018555.1_protein.faa.gz",
+      "headers": {
+        "n_records": 5211,
+        "unique": true,
+        "n_unique": 5211
+      },
+      "fields": {
+        "n_lines": 2039,
+        "widths": {
+          "10": 2039
+        },
+        "all_ten": true
+      },
+      "stock_a_lines": 2039,
+      "stock_b_lines": 2039,
+      "stock_vs_stock": {
+        "byte_equal": true,
+        "differing_lines": 0,
+        "classes": []
+      },
+      "xalip": false,
+      "fill": {
+        "decision": "SHIP",
+        "why": "exact replay under identity normalizer",
+        "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 0\nn_entries: 1434\nn_stable: 0\nn_fresh: 1434\nn_partial: 0\nlength_entries: 228371\nlength_fresh: 228371\nlength_partial: 0\nnormalizer: identity\nreplay_records: 1508\nreplay_entries: 344\ncandidate_pairs: 1903\nn_batches: 18\nrandom_pads: 3 on 50 records, residue fraction 0.034553\nic2: pass\nphases: {'parse_s': 0.47648438392207026, 'coverage_read_s': 0.0005503632128238678, 'diff_s': 0.00016335025429725647, 'cache_load_s': 0.00024452386423945427, 'subref_build_s': 1.4508135761134326, 'prep_s': 4.703039303421974e-05, 'tool_s': 1144.5413677785546, 'read_output_s': 3.210920840501785e-05, 'discovery_s': 1040.8710769452155, 'discovery_build_s': 0.012465317267924547, 'discovery_scan_s': 1040.7544073509052, 'merge_rescale_s': 0.0056740702129900455, 'cache_store_s': 1.9544936306774616, 'pin_check_s': 65.39599412493408, 'replay_plan_s': 0.001743281725794077, 'replay_s': 11.771514671854675, 'replay_build_s': 1.3238815292716026, 'replay_scan_s': 10.40781284775585, 'ic2_neighbor_s': 17.39794299378991, 'ic2_neighbor_build_s': 0.08494104025885463, 'ic2_neighbor_scan_s': 17.24576565856114, 'ic2_random_20261031_s': 3.52501984173432, 'ic2_random_20261031_build_s': 0.008876677136868238, 'ic2_random_20261031_scan_s': 3.5012698341161013, 'ic2_random_20261032_s': 3.688419301994145, 'ic2_random_20261032_build_s': 0.0077430796809494495, 'ic2_random_20261032_scan_s': 3.6653486732393503, 'ic2_random_20261033_s': 3.6157876923680305, 'ic2_random_20261033_build_s': 0.007545035798102617, 'ic2_random_20261033_scan_s': 3.5934638869948685, 'render_s': 0.0018405169248580933, 'total_s': 1277.3699260461144, 'probe_wall_s': 127.48063331283629}\nprobe_phases: {'subref_build_s': 0.035494727082550526, 'prep_s': 5.889683961868286e-06, 'tool_s': 127.43351927259937, 'read_output_s': 4.888046532869339e-06}\n",
+        "n_lines": 2039,
+        "returncode": 0,
+        "wall_s": 1277.7744688447565,
+        "stderr_tail": "",
+        "timing_claim": false
+      },
+      "update": {
+        "decision": "SHIP",
+        "why": "exact replay under identity normalizer",
+        "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 2039\nn_entries: 1441\nn_stable: 1434\nn_fresh: 7\nn_partial: 0\nlength_entries: 229501\nlength_fresh: 1130\nlength_partial: 0\nbasis_entry_count_max: 1434\nnormalizer: identity\nreplay_records: 1508\nreplay_entries: 344\ncandidate_pairs: 1903\nn_batches: 18\nrandom_pads: 3 on 50 records, residue fraction 0.034553\nic2: pass\naudit: checked 36, residue fraction 0.025679\naudit_checked: 36\nphases: {'parse_s': 0.4788414230570197, 'coverage_read_s': 0.36203380674123764, 'diff_s': 0.21018605306744576, 'cache_load_s': 0.16233029402792454, 'subref_build_s': 0.1705437321215868, 'prep_s': 4.639197140932083e-05, 'tool_s': 54.94815839966759, 'read_output_s': 3.1454022973775864e-05, 'discovery_s': 6.3145757699385285, 'discovery_build_s': 0.016413748264312744, 'discovery_scan_s': 6.29664348391816, 'merge_rescale_s': 0.006760869175195694, 'cache_store_s': 0.2540466710925102, 'replay_plan_s': 0.001639125868678093, 'replay_s': 10.48882945207879, 'replay_build_s': 0.04781059920787811, 'replay_scan_s': 10.399137258995324, 'ic2_neighbor_s': 17.37075075460598, 'ic2_neighbor_build_s': 0.08078291593119502, 'ic2_neighbor_scan_s': 17.2264429689385, 'ic2_random_20261031_s': 3.5478821671567857, 'ic2_random_20261031_build_s': 0.008260139729827642, 'ic2_random_20261031_scan_s': 3.5252199908718467, 'ic2_random_20261032_s': 3.7414303878322244, 'ic2_random_20261032_build_s': 0.00833103433251381, 'ic2_random_20261032_scan_s': 3.7178191831335425, 'ic2_random_20261033_s': 3.682485729921609, 'ic2_random_20261033_build_s': 0.007945084013044834, 'ic2_random_20261033_scan_s': 3.659718413837254, 'render_s': 0.0017556766979396343, 'verify_s': 10.125200424343348, 'verify_build_s': 0.001046602614223957, 'verify_scan_s': 10.123177099972963, 'total_s': 57.10325171193108, 'probe_wall_s': 0.0}\nprobe_phases: {}\n",
+        "n_lines": 2039,
+        "returncode": 0,
+        "wall_s": 57.43287893012166,
+        "stderr_tail": "",
+        "timing_claim": false
+      },
+      "update_vs_stock": {
+        "byte_equal": true,
+        "differing_lines": 0,
+        "classes": []
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "decision": "SHIP",
+      "lines": {
+        "stock": 2039,
+        "tare": 2039
+      },
+      "differing_lines": 0
+    }
+  ],
+  "contract": {
+    "decision": "SHIP",
+    "reason": "decomposition and normalizers fitted",
+    "exact_eligible": false,
+    "primary_key_equal": true,
+    "inferred_pin": null,
+    "tables": [
+      {
+        "name": "stdout",
+        "record_col": 3,
+        "entry_col": 0,
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 1,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 2,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 4,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 8,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 9,
+            "role": "byte",
+            "member": "byte"
+          }
+        ]
+      }
+    ]
+  },
+  "known_bad": {
+    "seed": 20261103,
+    "fraction": 0.05,
+    "n_candidates": 332,
+    "n_dropped": 17,
+    "dropped": [
+      "PS50263|CN_HYDROLASE",
+      "PS50813|GAF",
+      "PS50857|COX2_CUA",
+      "PS50894|HPT",
+      "PS51935|NLPC_P60",
+      "PS51932|BMV",
+      "PS50327|TRP_RICH",
+      "PS50123|CHER",
+      "PS51711|G_FEOB",
+      "PS50983|FE_B12_PBP",
+      "PS51712|G_ENGA",
+      "PS51686|SAM_MT_RSMB_NOP",
+      "PS50317|ILE_RICH",
+      "PS50881|S5_DSRBD",
+      "PS51435|AP_NUCLEASE_F1_4",
+      "PS50889|S4",
+      "PS51108|PTS_EIID"
+    ],
+    "deleted_rows": 55,
+    "decision": "REFUSE",
+    "why": "IC2 neighbor stdout: pad_hit",
+    "refused": true,
+    "control": "injected 5% candidate-row drop must refuse"
+  },
+  "power_floor": 1906,
+  "outcome": "PASS",
+  "checks": {
+    "stock_vs_stock": true,
+    "headers_unique": true,
+    "fields_all_ten": true,
+    "update_byte_identical": true,
+    "known_bad_refused": true,
+    "power_floor": 1906
+  }
+}

@@ -1,0 +1,64 @@
+#!/bin/bash
+# Exclusive timing for 5 measured_v2 genomes (r=3). Submit ONLY after
+# measured_v2.json outcome is PASS. Lowest priority behind W13/W8/W12a/W5x/W12b.
+#SBATCH --job-name=tare_a_v2time
+#SBATCH --account=biyik_1165
+#SBATCH --partition=main
+#SBATCH --constraint=epyc-7542
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=12:00:00
+#SBATCH --exclusive
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/logs/%x-%j.err
+
+set -euo pipefail
+
+PROJ=/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a
+if [[ -f /etc/profile.d/modules.sh ]]; then
+  # shellcheck disable=SC1091
+  source /etc/profile.d/modules.sh
+fi
+module purge
+module load gcc/13.3.0
+module load python/3.11.9
+
+export ACTS_GIT_HASH
+ACTS_GIT_HASH="$(tr -d '[:space:]' < "${PROJ}/GIT_HASH")"
+export PYTHONPATH="${PROJ}/pipeline"
+export PATH="${PROJ}/pfscan/bin:${PATH}"
+export ACTS_SCRATCH="/scratch1/${USER}/tare-exp-a"
+
+cd "${PROJ}/pipeline"
+test -f results/unrelated_ship/measured_v2.json
+python3 - <<'PY'
+import json, sys
+from pathlib import Path
+p = json.loads(Path("results/unrelated_ship/measured_v2.json").read_text())
+if p.get("outcome") != "PASS":
+    raise SystemExit(f"timing blocked: outcome={p.get('outcome')}")
+genomes = p.get("genomes") or []
+if not genomes:
+    raise SystemExit("timing blocked: measured_v2 has no genomes")
+bad = []
+for g in genomes:
+    if g.get("decision") != "SHIP":
+        bad.append(f"{g.get('accession')}:decision={g.get('decision')}")
+        continue
+    if g.get("differing_lines", 1) != 0:
+        bad.append(f"{g.get('accession')}:differing_lines={g.get('differing_lines')}")
+        continue
+    # accept either nested compare.byte_equal or top-level ship markers
+    cmp_ = g.get("compare") or g.get("vs_stock") or {}
+    if "byte_equal" in cmp_ and not cmp_.get("byte_equal"):
+        bad.append(f"{g.get('accession')}:not byte_equal")
+if bad:
+    raise SystemExit("timing blocked: not every genome SHIP+byte-identical: " + "; ".join(bad[:8]))
+print(f"measured_v2 PASS; {len(genomes)} genomes SHIP byte-identical; starting timing_v2", flush=True)
+PY
+echo "git ${ACTS_GIT_HASH}"
+echo "host $(hostname)"
+python3 scripts/unrelated_ship.py timing_v2
+echo "timing_exit $?"
