@@ -410,6 +410,17 @@ def post_replay_refuse(decision: str, why: str, phases: dict) -> bool:
     )
 
 
+def confirmation_declared_pass(update: dict) -> bool:
+    """True when the declared-pin arm replayed then refused (expected confirm).
+
+    A correct REFUSE writes no body, so replay_body / difference_class must not
+    be required. A SHIP (body written) is a known-bad confirm outcome.
+    """
+    if update.get("body_written") or update.get("decision") == "SHIP":
+        return False
+    return bool(update.get("post_replay_refuse"))
+
+
 def acts_env(threads: str) -> dict:
     env = os.environ.copy()
     env["PYTHONPATH"] = str(ROOT) + os.pathsep + env.get("PYTHONPATH", "")
@@ -755,7 +766,11 @@ def run_confirmation(
         diamond, threads, queries, new_fa, snapshot, work, "confirm_new", stock_text, declared=True,
     )
     update["in_speed_claim"] = False
-    passed = bool(update.get("post_replay_refuse")) and update.get("replay_body") and update.get("difference_class")
+    # Declared-pin confirm expects: replay ran, then IC2/safety REFUSE (no shipped body).
+    # Job 13260166 had post_replay_refuse=True with replay_s>0 and pad_hit, but
+    # confirmation_pass required replay_body+difference_class — those are absent on
+    # REFUSE (no tables/out). That misclassified a correct refusal as FAIL_CONTROL.
+    passed = confirmation_declared_pass(update)
     PAYLOAD["tare_declared"] = update
     PAYLOAD["difference_class"] = update.get("difference_class")
     PAYLOAD["bare_pin_in_speed_claim"] = False

@@ -407,3 +407,19 @@ swallowed by argparse (`nargs='?'` on `--pin`), so diamond saw a bare `dbsize`
 subcommand. The driver now passes `--pin=--dbsize {total_entry_length}` and
 `--slack=--evalue 0.002`. Confirm is re-submitted; measured waits on it.
 Measured `--time` is 12:00:00 for the offline chain (bare-pin 30 min withdrawn).
+
+## Addendum 2026-10-22 — confirm pass rule (refusal without body)
+
+Job `13260166` (after the `--pin=` argv fix) ended `FAIL_CONTROL` with
+`decision=REFUSE` / `why=IC2 neighbor out: pad_hit`. Provenance showed
+`post_replay_refuse=true`, `replay_s>0`, and `ic2_neighbor_s>0`, but
+`replay_body=false` and `difference_class=null` because a REFUSE does not
+write `tables/out`. The old pass rule required all three of
+`post_replay_refuse`, `replay_body`, and `difference_class`, so a correct
+declared-pin refuse was scored as failure.
+
+Fix (not a redesign of the timing arms): `confirmation_declared_pass`
+returns true when `post_replay_refuse` holds and the arm did not SHIP a
+body. Unit tests: known-good refusal (pad_hit, no body) and known-bad
+SHIP. Confirm is **not** resubmitted while the exclusive-node freeze
+(W13/W8/W5x) is in force; resubmit only after those jobs finish.
