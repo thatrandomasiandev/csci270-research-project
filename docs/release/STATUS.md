@@ -3,7 +3,7 @@
 **Updated:** 2026-10-22  
 **Branch:** `release/1.0` · **Worktree:** `/Users/joshuaterranova/Desktop/CSCI270/ACTS-release`  
 **Start HEAD:** `de1527c155cbf53c9042c140d2ebeb295e1858d8`  
-**Tip:** `a6c5df9` (pushed `origin/release/1.0`)
+**Tip:** `80b90de` (pushed `origin/release/1.0`)
 
 ## Phase board
 
@@ -30,8 +30,8 @@ Local single-user console + CLI; Linux x86_64 + macOS arm64; Python ≥3.10,<3.1
 ## Evidence this session
 
 - Worktree created from `origin/main` (shared checkout was 47 commits behind).
-- `a6c5df9` on `origin/release/1.0`: Phase 0 docs; `acts.row_diff`; `tare` CLI (`version` / `run` / `selftest` / `console` stub); headline script imports shared classifier; 9 new row-diff tests green; `test_no_tool_names_in_acts` green after docstring fix.
-- Full suite last run: 1 fail was tool-name docstring (fixed); re-run of gated tests 10/10. Full suite re-run after fix still owed next session.
+- `a6c5df9` / `80b90de` on `origin/release/1.0`: Phase 0 docs; `acts.row_diff`; `tare` CLI (`version` / `run` / `selftest` / `console` stub); headline script imports shared classifier.
+- Full suite: **421 passed, 1 skipped** (`cd pipeline && python3 -m pytest -q`).
 - Console prototype present on shared Mac checkout only (`engine.py` 1792 lines); **absent from this branch**.
 - Known console defect in shared copy: `compare_bodies` keys on first 4 tokens — must switch to `acts.row_diff` after S1.
 
