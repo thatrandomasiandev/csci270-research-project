@@ -498,3 +498,14 @@ with SLURM `--dependency=afterok` on the pilot/prior exclusive stage and an
 in-job pilot-pass guard that exits unless the pre-registered pass rule holds.
 Exclusive arrays use `%2`–`%3` throttles. No laptop action is required to start
 a dependent stage.
+
+## Addendum 2026-10-22 — measured job `fi` syntax (staged copy)
+
+Measured job `13260164` failed in 2 s:
+`slurm_script: line 41: syntax error near unexpected token fi`.
+Cause: the CARC staged `tare_w12a.job` retained a stray `fi` after the
+STAGE/OUT_NAME block when the pilot-pass guard was moved below
+`module load` (orphan closer, no matching `if`). The branch copy is
+balanced (`bash -n` clean). Fix is already on `exp/w12a-expert-script`;
+do **not** rewrite the live staged tree while other exclusive jobs hold
+the node cap — rsync the job file only when resubmitting after the freeze.
