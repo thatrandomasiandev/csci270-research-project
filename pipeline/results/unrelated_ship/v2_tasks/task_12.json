@@ -1,0 +1,135 @@
+{
+  "system": "TARE",
+  "package": "acts",
+  "tool": "pfscanV3",
+  "version_string": "Version 3.2.12 built on Oct 18 2026 at 02:26:00.",
+  "archive_version_line": "SET(VERSION \"3.2.12\")",
+  "filename": "pftools3-v3.2.13.zip",
+  "locked_command": "pfscanV3 --matrix-only --nthreads 1 --output-method 7 --fasta {reference} {input}",
+  "git_head": "83f9bf5ffaa85ba150784c1485dd5056b476ead2",
+  "host": "b22-05.hpc.usc.edu",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "cpu": "AMD EPYC 7542 32-Core Processor",
+  "disclosure": "Correctness ran on CARC (AMD EPYC 7542, x86_64) because the laptop build cannot compile SSE: Apple clang rejects -msse on arm64-apple-darwin27.0.0. This run is not a timing claim.",
+  "timing_claim": false,
+  "phase": "measured_v2_task",
+  "seed": 20261272,
+  "array_task_id": 12,
+  "genome": "GCF_002058765.1_protein.faa.gz",
+  "per_genome_floor": 1906,
+  "pooled_floor": 38120,
+  "result": {
+    "genome": "GCF_002058765.1_protein.faa.gz",
+    "lines": {
+      "stock": 2065,
+      "tare": 2065
+    },
+    "differing_lines": 0,
+    "classes": [],
+    "decision": "SHIP",
+    "why": "exact replay under identity normalizer",
+    "checks": {
+      "power": "pass",
+      "floor": 1906,
+      "ship": true,
+      "byte_equal": true,
+      "xalip": false
+    },
+    "contract": {
+      "decision": "SHIP",
+      "reason": "decomposition and normalizers fitted",
+      "exact_eligible": false,
+      "primary_key_equal": true,
+      "inferred_pin": null,
+      "tables": [
+        {
+          "name": "stdout",
+          "record_col": 3,
+          "entry_col": 0,
+          "columns": [
+            {
+              "index": 0,
+              "role": "byte",
+              "member": "byte"
+            },
+            {
+              "index": 1,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 2,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 3,
+              "role": "byte",
+              "member": "byte"
+            },
+            {
+              "index": 4,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 5,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 6,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 7,
+              "role": "numeric",
+              "member": "identity"
+            },
+            {
+              "index": 8,
+              "role": "byte",
+              "member": "byte"
+            },
+            {
+              "index": 9,
+              "role": "byte",
+              "member": "byte"
+            }
+          ]
+        }
+      ]
+    },
+    "release_diff": {
+      "reused_rows": "2065",
+      "n_entries": "1441",
+      "n_stable": "1434",
+      "n_fresh": "7",
+      "n_partial": "0",
+      "normalizer": "identity",
+      "ic2": "pass"
+    },
+    "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_002058765.1_protein",
+    "fill": {
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 0\nn_entries: 1434\nn_stable: 0\nn_fresh: 1434\nn_partial: 0\nlength_entries: 228371\nlength_fresh: 228371\nlength_partial: 0\nnormalizer: identity\nreplay_records: 1518\nreplay_entries: 345\ncandidate_pairs: 1905\nn_batches: 16\nrandom_pads: 3 on 50 records, residue fraction 0.029724\nic2: pass\nphases: {'parse_s': 0.4570221332833171, 'coverage_read_s': 0.0005294359289109707, 'diff_s': 0.0001955181360244751, 'cache_load_s': 0.00020164018496870995, 'subref_build_s': 0.681103527545929, 'prep_s': 3.897491842508316e-05, 'tool_s': 1112.441731302999, 'read_output_s': 2.9762741178274155e-05, 'discovery_s': 1009.0545086949132, 'discovery_build_s': 0.5350823709741235, 'discovery_scan_s': 1008.4161947029643, 'merge_rescale_s': 0.006008808966726065, 'cache_store_s': 0.03818217199295759, 'pin_check_s': 66.05980511568487, 'replay_plan_s': 0.0015623602084815502, 'replay_s': 11.429365051910281, 'replay_build_s': 0.041595975402742624, 'replay_scan_s': 11.350817929487675, 'ic2_neighbor_s': 17.531913267914206, 'ic2_neighbor_build_s': 0.07445024745538831, 'ic2_neighbor_scan_s': 17.399512756150216, 'ic2_random_20261031_s': 3.1244214181788266, 'ic2_random_20261031_build_s': 0.008925709407776594, 'ic2_random_20261031_scan_s': 3.1007236652076244, 'ic2_random_20261032_s': 3.0830407650209963, 'ic2_random_20261032_build_s': 0.007485617883503437, 'ic2_random_20261032_scan_s': 3.060498759150505, 'ic2_random_20261033_s': 3.094045295845717, 'ic2_random_20261033_build_s': 0.008017610292881727, 'ic2_random_20261033_scan_s': 3.0713314269669354, 'render_s': 0.001759963110089302, 'total_s': 1246.4649352030829, 'probe_wall_s': 129.31611604616046}\nprobe_phases: {'subref_build_s': 0.03320596646517515, 'prep_s': 4.21842560172081e-06, 'tool_s': 129.27236213628203, 'read_output_s': 4.217959940433502e-06}\n",
+      "n_lines": 2065,
+      "returncode": 0,
+      "wall_s": 1247.703821620904,
+      "stderr_tail": "",
+      "timing_claim": false
+    },
+    "update": {
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "decision_text": "strategy: reference\ndecision: SHIP\nwhy:      exact replay under identity normalizer\nverify: audit\nmode: exact\nmatch: body-bytes\nreused_rows: 2065\nn_entries: 1441\nn_stable: 1434\nn_fresh: 7\nn_partial: 0\nlength_entries: 229501\nlength_fresh: 1130\nlength_partial: 0\nbasis_entry_count_max: 1434\nnormalizer: identity\nreplay_records: 1518\nreplay_entries: 345\ncandidate_pairs: 1905\nn_batches: 16\nrandom_pads: 3 on 50 records, residue fraction 0.029724\nic2: pass\naudit: checked 36, residue fraction 0.021451\naudit_checked: 36\nphases: {'parse_s': 0.4651974798180163, 'coverage_read_s': 0.2871868689544499, 'diff_s': 0.1647442919202149, 'cache_load_s': 0.14999534282833338, 'subref_build_s': 0.163333625998348, 'prep_s': 4.0037091821432114e-05, 'tool_s': 52.288468786049634, 'read_output_s': 2.3156404495239258e-05, 'discovery_s': 6.0287105068564415, 'discovery_build_s': 0.015534286852926016, 'discovery_scan_s': 6.011682027950883, 'merge_rescale_s': 0.006679953075945377, 'cache_store_s': 1.024415033403784, 'replay_plan_s': 0.0016093989834189415, 'replay_s': 11.449883267749101, 'replay_build_s': 0.0509140957146883, 'replay_scan_s': 11.361940481234342, 'ic2_neighbor_s': 17.500808184966445, 'ic2_neighbor_build_s': 0.07263575494289398, 'ic2_neighbor_scan_s': 17.36937909014523, 'ic2_random_20261031_s': 3.076994235161692, 'ic2_random_20261031_build_s': 0.007997672539204359, 'ic2_random_20261031_scan_s': 3.054299572017044, 'ic2_random_20261032_s': 3.097145872656256, 'ic2_random_20261032_build_s': 0.007716283202171326, 'ic2_random_20261032_scan_s': 3.0743481647223234, 'ic2_random_20261033_s': 3.0875629358924925, 'ic2_random_20261033_build_s': 0.007527216337621212, 'ic2_random_20261033_scan_s': 3.0651958300732076, 'render_s': 0.001835936214774847, 'verify_s': 8.353612454142421, 'verify_build_s': 0.0010483535006642342, 'verify_scan_s': 8.351623619906604, 'total_s': 55.04507429897785, 'probe_wall_s': 0.0}\nprobe_phases: {}\n",
+      "n_lines": 2065,
+      "returncode": 0,
+      "wall_s": 56.180760904215276,
+      "stderr_tail": "",
+      "timing_claim": false
+    }
+  }
+}

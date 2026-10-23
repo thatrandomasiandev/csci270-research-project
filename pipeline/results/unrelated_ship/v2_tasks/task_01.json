@@ -1,0 +1,38 @@
+{
+  "system": "TARE",
+  "package": "acts",
+  "tool": "pfscanV3",
+  "version_string": "Version 3.2.12 built on Oct 18 2026 at 02:26:00.",
+  "archive_version_line": "SET(VERSION \"3.2.12\")",
+  "filename": "pftools3-v3.2.13.zip",
+  "locked_command": "pfscanV3 --matrix-only --nthreads 1 --output-method 7 --fasta {reference} {input}",
+  "git_head": "83f9bf5ffaa85ba150784c1485dd5056b476ead2",
+  "host": "b22-09.hpc.usc.edu",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "cpu": "AMD EPYC 7542 32-Core Processor",
+  "disclosure": "Correctness ran on CARC (AMD EPYC 7542, x86_64) because the laptop build cannot compile SSE: Apple clang rejects -msse on arm64-apple-darwin27.0.0. This run is not a timing claim.",
+  "timing_claim": false,
+  "phase": "measured_v2_task",
+  "seed": 20261272,
+  "array_task_id": 1,
+  "genome": "GCF_055556535.1_protein.faa.gz",
+  "per_genome_floor": 1906,
+  "pooled_floor": 38120,
+  "result": {
+    "genome": "GCF_055556535.1_protein.faa.gz",
+    "lines": {
+      "stock": 1887,
+      "tare": null
+    },
+    "differing_lines": null,
+    "classes": [],
+    "decision": "INCONCLUSIVE",
+    "checks": {
+      "power": "miss",
+      "floor": 1906,
+      "ship": false
+    },
+    "xalip": false,
+    "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_055556535.1_protein"
+  }
+}

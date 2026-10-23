@@ -1,0 +1,1903 @@
+{
+  "system": "TARE",
+  "package": "acts",
+  "tool": "pfscanV3",
+  "version_string": "Version 3.2.12 built on Oct 18 2026 at 02:26:00.",
+  "archive_version_line": "SET(VERSION \"3.2.12\")",
+  "filename": "pftools3-v3.2.13.zip",
+  "locked_command": "pfscanV3 --matrix-only --nthreads 1 --output-method 7 --fasta {reference} {input}",
+  "git_head": "deff3f4",
+  "host": "b22-29.hpc.usc.edu",
+  "platform": "Linux-4.18.0-553.126.1.el8_10.x86_64-x86_64-with-glibc2.28",
+  "cpu": "AMD EPYC 7542 32-Core Processor",
+  "disclosure": "Correctness ran on CARC (AMD EPYC 7542, x86_64) because the laptop build cannot compile SSE: Apple clang rejects -msse on arm64-apple-darwin27.0.0. This run is not a timing claim.",
+  "timing_claim": false,
+  "phase": "measured_v2",
+  "seed": 20261272,
+  "drop_seed": 20261273,
+  "pilot_seed": 20261101,
+  "excluded_pilot": [
+    "GCF_059615465.1_protein.faa.gz",
+    "GCF_003018555.1_protein.faa.gz"
+  ],
+  "excluded_measured_r1": [
+    "GCF_049949335.1_protein.faa.gz",
+    "GCF_002357915.1_protein.faa.gz",
+    "GCF_025782825.1_protein.faa.gz",
+    "GCF_054902895.1_protein.faa.gz",
+    "GCF_055398225.1_protein.faa.gz",
+    "GCF_013085185.1_protein.faa.gz",
+    "GCF_005389605.2_protein.faa.gz",
+    "GCF_030717825.1_protein.faa.gz",
+    "GCF_002090355.1_protein.faa.gz",
+    "GCF_977065495.1_protein.faa.gz"
+  ],
+  "excluded_smoke": "GCF_001513615.1_protein.faa.gz",
+  "per_genome_floor": 1906,
+  "pooled_floor": 38120,
+  "pooled_stock_lines": 36004,
+  "pooled_ok": false,
+  "genomes_drawn": [
+    "GCF_004377995.2_protein.faa.gz",
+    "GCF_055556535.1_protein.faa.gz",
+    "GCF_002853805.1_protein.faa.gz",
+    "GCF_904866455.1_protein.faa.gz",
+    "GCF_052050745.1_protein.faa.gz",
+    "GCF_032384295.1_protein.faa.gz",
+    "GCF_048568975.1_protein.faa.gz",
+    "GCF_041235215.1_protein.faa.gz",
+    "GCF_048404355.1_protein.faa.gz",
+    "GCF_003722195.1_protein.faa.gz",
+    "GCF_018415995.1_protein.faa.gz",
+    "GCF_900196535.2_protein.faa.gz",
+    "GCF_002058765.1_protein.faa.gz",
+    "GCF_036498065.1_protein.faa.gz",
+    "GCF_015571655.1_protein.faa.gz",
+    "GCF_037231045.1_protein.faa.gz",
+    "GCF_024918035.1_protein.faa.gz",
+    "GCF_001900595.1_protein.faa.gz",
+    "GCF_049354865.1_protein.faa.gz",
+    "GCF_057812745.1_protein.faa.gz"
+  ],
+  "genomes": [
+    {
+      "genome": "GCF_004377995.2_protein.faa.gz",
+      "lines": {
+        "stock": 2031,
+        "tare": 2031
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2031",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_004377995.2_protein"
+    },
+    {
+      "genome": "GCF_055556535.1_protein.faa.gz",
+      "lines": {
+        "stock": 1887,
+        "tare": null
+      },
+      "differing_lines": null,
+      "classes": [],
+      "decision": "INCONCLUSIVE",
+      "checks": {
+        "power": "miss",
+        "floor": 1906,
+        "ship": false
+      },
+      "xalip": false,
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_055556535.1_protein"
+    },
+    {
+      "genome": "GCF_002853805.1_protein.faa.gz",
+      "lines": {
+        "stock": 2073,
+        "tare": 2073
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2073",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_002853805.1_protein"
+    },
+    {
+      "genome": "GCF_904866455.1_protein.faa.gz",
+      "lines": {
+        "stock": 1999,
+        "tare": 1999
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1999",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_904866455.1_protein"
+    },
+    {
+      "genome": "GCF_052050745.1_protein.faa.gz",
+      "lines": {
+        "stock": 1892,
+        "tare": null
+      },
+      "differing_lines": null,
+      "classes": [],
+      "decision": "INCONCLUSIVE",
+      "checks": {
+        "power": "miss",
+        "floor": 1906,
+        "ship": false
+      },
+      "xalip": false,
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_052050745.1_protein"
+    },
+    {
+      "genome": "GCF_032384295.1_protein.faa.gz",
+      "lines": {
+        "stock": 2033,
+        "tare": 2033
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2033",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_032384295.1_protein"
+    },
+    {
+      "genome": "GCF_048568975.1_protein.faa.gz",
+      "lines": {
+        "stock": 2088,
+        "tare": 2088
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2088",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_048568975.1_protein"
+    },
+    {
+      "genome": "GCF_041235215.1_protein.faa.gz",
+      "lines": {
+        "stock": 1956,
+        "tare": 1956
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1956",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_041235215.1_protein"
+    },
+    {
+      "genome": "GCF_048404355.1_protein.faa.gz",
+      "lines": {
+        "stock": 1970,
+        "tare": 1970
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1970",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_048404355.1_protein"
+    },
+    {
+      "genome": "GCF_003722195.1_protein.faa.gz",
+      "lines": {
+        "stock": 2035,
+        "tare": 2035
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2035",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_003722195.1_protein"
+    },
+    {
+      "genome": "GCF_018415995.1_protein.faa.gz",
+      "lines": {
+        "stock": 2012,
+        "tare": 2012
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2012",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_018415995.1_protein"
+    },
+    {
+      "genome": "GCF_900196535.2_protein.faa.gz",
+      "lines": {
+        "stock": 2067,
+        "tare": 2067
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2067",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_900196535.2_protein"
+    },
+    {
+      "genome": "GCF_002058765.1_protein.faa.gz",
+      "lines": {
+        "stock": 2065,
+        "tare": 2065
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2065",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_002058765.1_protein"
+    },
+    {
+      "genome": "GCF_036498065.1_protein.faa.gz",
+      "lines": {
+        "stock": 1917,
+        "tare": 1917
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1917",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_036498065.1_protein"
+    },
+    {
+      "genome": "GCF_015571655.1_protein.faa.gz",
+      "lines": {
+        "stock": 1929,
+        "tare": 1929
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1929",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_015571655.1_protein"
+    },
+    {
+      "genome": "GCF_037231045.1_protein.faa.gz",
+      "lines": {
+        "stock": 2037,
+        "tare": 2037
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "2037",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_037231045.1_protein"
+    },
+    {
+      "genome": "GCF_024918035.1_protein.faa.gz",
+      "lines": {
+        "stock": 1955,
+        "tare": 1955
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1955",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_024918035.1_protein"
+    },
+    {
+      "genome": "GCF_001900595.1_protein.faa.gz",
+      "lines": {
+        "stock": 1937,
+        "tare": 1937
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1937",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_001900595.1_protein"
+    },
+    {
+      "genome": "GCF_049354865.1_protein.faa.gz",
+      "lines": {
+        "stock": 1943,
+        "tare": 1943
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1943",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_049354865.1_protein"
+    },
+    {
+      "genome": "GCF_057812745.1_protein.faa.gz",
+      "lines": {
+        "stock": 1957,
+        "tare": 1957
+      },
+      "differing_lines": 0,
+      "classes": [],
+      "decision": "SHIP",
+      "why": "exact replay under identity normalizer",
+      "checks": {
+        "power": "pass",
+        "floor": 1906,
+        "ship": true,
+        "byte_equal": true,
+        "xalip": false
+      },
+      "contract": {
+        "decision": "SHIP",
+        "reason": "decomposition and normalizers fitted",
+        "exact_eligible": false,
+        "primary_key_equal": true,
+        "inferred_pin": null,
+        "tables": [
+          {
+            "name": "stdout",
+            "record_col": 3,
+            "entry_col": 0,
+            "columns": [
+              {
+                "index": 0,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 1,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 2,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 3,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 4,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 5,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 6,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 7,
+                "role": "numeric",
+                "member": "identity"
+              },
+              {
+                "index": 8,
+                "role": "byte",
+                "member": "byte"
+              },
+              {
+                "index": 9,
+                "role": "byte",
+                "member": "byte"
+              }
+            ]
+          }
+        ]
+      },
+      "release_diff": {
+        "reused_rows": "1957",
+        "n_entries": "1441",
+        "n_stable": "1434",
+        "n_fresh": "7",
+        "n_partial": "0",
+        "normalizer": "identity",
+        "ic2": "pass"
+      },
+      "work_dir": "/scratch1/jjt_373/tare-exp-a/work/measured_v2/GCF_057812745.1_protein"
+    }
+  ],
+  "known_bad": {
+    "seed": 20261273,
+    "fraction": 0.05,
+    "n_candidates": 344,
+    "n_dropped": 17,
+    "dropped": [
+      "PS50944|HTH_DTXR",
+      "PS51217|UVRD_HELICASE_CTER",
+      "PS50850|MFS",
+      "PS52035|PEPTIDASE_M14",
+      "PS51880|TGS",
+      "PS51686|SAM_MT_RSMB_NOP",
+      "PS50045|SIGMA54_INTERACT_4",
+      "PS50123|CHER",
+      "PS50890|PUA",
+      "PS50072|CSA_PPIASE_2",
+      "PS51850|KARI_N",
+      "PS51318|TAT",
+      "PS51387|FAD_PCMH",
+      "PS50860|AA_TRNA_LIGASE_II_ALA",
+      "PS51063|HTH_CRP_2",
+      "PS50846|HMA_2",
+      "PS50994|INTEGRASE"
+    ],
+    "deleted_rows": 153,
+    "decision": "REFUSE",
+    "why": "IC2 neighbor stdout: pad_hit",
+    "refused": true,
+    "control": "injected 5% candidate-row drop must refuse"
+  },
+  "contract": {
+    "decision": "SHIP",
+    "reason": "decomposition and normalizers fitted",
+    "exact_eligible": false,
+    "primary_key_equal": true,
+    "inferred_pin": null,
+    "tables": [
+      {
+        "name": "stdout",
+        "record_col": 3,
+        "entry_col": 0,
+        "columns": [
+          {
+            "index": 0,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 1,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 2,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 3,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 4,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 5,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 6,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 7,
+            "role": "numeric",
+            "member": "identity"
+          },
+          {
+            "index": 8,
+            "role": "byte",
+            "member": "byte"
+          },
+          {
+            "index": 9,
+            "role": "byte",
+            "member": "byte"
+          }
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "n": 20,
+    "n_ship": 18,
+    "n_unsafe": 0,
+    "n_inconclusive": 2,
+    "n_fail": 0,
+    "n_differing": 0,
+    "per_genome_floor": 1906,
+    "pooled_floor": 38120,
+    "pooled_stock_lines": 36004,
+    "known_bad_refused": true
+  },
+  "outcome": "INCONCLUSIVE",
+  "collected_utc": "2026-10-23T02:03:20Z",
+  "collected_from": "/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/pipeline/results/unrelated_ship/measured_v2.json",
+  "timing_eligible": false,
+  "timing_eligibility_why": "outcome=INCONCLUSIVE; pooled_stock_lines=36004 pooled_floor=38120; n_inconclusive=2"
+}
