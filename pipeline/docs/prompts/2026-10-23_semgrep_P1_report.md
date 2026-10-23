@@ -6,10 +6,11 @@
 |---|---|
 | Branch | `exp/semgrep-domain` |
 | Base (origin/main) | `b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8` |
-| Final HEAD | `43c857371cdf25f8d02aca4feaa785b18b1b0ea0` |
+| Feature tip (gates + smoke green) | `af07e79b2671b9c5a35facdea631058ecca1ce81` |
+| Branch | `origin/exp/semgrep-domain` (includes this report) |
 | Worktree | `../ACTS-semgrep` |
 
-Commits: baseline → yaml-list/json-records/{inputs} → pin-path tab/coerce fixes.
+Commits: baseline → yaml-list/json-records/{inputs} → pin-path tab/coerce fixes → report.
 
 ## Gates
 
