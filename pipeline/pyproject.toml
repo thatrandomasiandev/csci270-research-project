@@ -4,14 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "acts-memo"
-version = "0.2.0"
-description = "Local-only record-memoization CLI. Do not publish to PyPI — the name 'acts' is taken (Android Comms Test Suite 0.9)."
+version = "0.3.0a1"
+description = "TARE engine (research package name acts-memo). Do not publish until Josh approves — the name 'acts' is taken on PyPI."
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [{ name = "Joshua Terranova" }]
 
 [project.scripts]
 acts = "acts.__main__:main"
+tare = "acts.tare_cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

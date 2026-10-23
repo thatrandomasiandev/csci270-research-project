@@ -3,4 +3,4 @@
 Not a 2×-anything compiler. Not a replacement for the graded STAR source patch.
 """
 
-__version__ = "0.2.0"
+__version__ = "0.3.0a1"

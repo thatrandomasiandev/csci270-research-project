@@ -23,7 +23,6 @@ import sqlite3
 import statistics
 import subprocess
 import time
-from collections import Counter
 from pathlib import Path
 
 PIPE = Path(__file__).resolve().parents[1]
@@ -38,6 +37,12 @@ from acts.reference_run import (  # noqa: E402
     body_lines,
 )
 from acts.replay_batch import merge_bodies, plan_batches  # noqa: E402
+from acts.row_diff import (  # noqa: E402
+    classify,
+    compare_pair,
+    read_body,
+    row_key,
+)
 from headline_analysis import score_genome  # noqa: E402
 
 SEED = 20261046
@@ -414,74 +419,6 @@ def cli(reference: Path, queries: Path, cache: Path, out: Path) -> dict:
         "tbl": out / "tables" / "tblout",
         "dom": out / "tables" / "domtblout",
     }
-
-
-def row_key(tokens: list[str], kind: str) -> tuple:
-    need = 3 if kind == "tbl" else 19
-    if len(tokens) < need:
-        return ("short-line", kind, len(tokens))
-    if kind == "tbl":
-        return (tokens[0], tokens[2])
-    return (tokens[0], tokens[3], tokens[15], tokens[16], tokens[17], tokens[18])
-
-
-def classify(replay: list[str], stock_lines: list[str], kind: str) -> dict:
-    byte_equal = replay == stock_lines
-    rt = [line.split() for line in replay]
-    st = [line.split() for line in stock_lines]
-    out: dict = {
-        "lines_replay": len(replay),
-        "lines_stock": len(stock_lines),
-        "byte_equal": byte_equal,
-        "token_equal": rt == st,
-        "classes": [],
-    }
-    if byte_equal or rt == st:
-        if not byte_equal:
-            out["classes"] = ["whitespace-only"]
-        return out
-    rc = Counter(row_key(toks, kind) for toks in rt)
-    sc = Counter(row_key(toks, kind) for toks in st)
-    missing = sum(1 for key in sc if sc[key] > rc[key])
-    extra = sum(1 for key in rc if rc[key] > sc[key])
-    classes: list[str] = []
-    if missing:
-        classes.append("missing")
-    if extra:
-        classes.append("extra")
-    if not missing and not extra:
-        rk = [row_key(toks, kind) for toks in rt]
-        sk = [row_key(toks, kind) for toks in st]
-        if rk != sk:
-            classes.append("order")
-    value = False
-    buckets: dict[tuple, list[list[str]]] = {}
-    for toks in rt:
-        buckets.setdefault(row_key(toks, kind), []).append(toks)
-    for toks in st:
-        group = buckets.get(row_key(toks, kind))
-        if not group:
-            continue
-        if group.pop(0) != toks:
-            value = True
-    if value:
-        classes.append("value-only")
-    out["classes"] = classes
-    out["missing_keys"] = missing
-    out["extra_keys"] = extra
-    return out
-
-
-def read_body(path: Path) -> list[str]:
-    if not path.is_file():
-        return []
-    return body_lines(path.read_text())
-
-
-def compare_pair(replay_tbl: Path, replay_dom: Path, stock_tbl: Path, stock_dom: Path) -> dict:
-    tbl = classify(read_body(replay_tbl), read_body(stock_tbl), "tbl")
-    dom = classify(read_body(replay_dom), read_body(stock_dom), "dom")
-    return {"tbl": tbl, "dom": dom, "byte_equal": tbl["byte_equal"] and dom["byte_equal"]}
 
 
 def shape_of(phases: dict) -> dict:
