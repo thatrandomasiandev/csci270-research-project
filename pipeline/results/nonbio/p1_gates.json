@@ -1,0 +1,97 @@
+{
+  "gates": {
+    "G-a": {
+      "pass": true,
+      "returncode": 0,
+      "summary": "425 passed, 1 skipped, 1 warning in 33.96s",
+      "baseline_summary": "412 passed, 1 skipped, 1 warning in 30.38s"
+    },
+    "G-b": {
+      "pass": true,
+      "cases": [
+        {
+          "name": "format_roundtrip_profile_hmm_excerpt",
+          "ok": true,
+          "sha": "57353b70227d750bffbfe9f0d0d96d2320d5490de7017a04a50b1b9293b348cc",
+          "want": "57353b70227d750bffbfe9f0d0d96d2320d5490de7017a04a50b1b9293b348cc"
+        },
+        {
+          "name": "format_roundtrip_fasta_ref",
+          "ok": true,
+          "sha": "466c3fb183a3d3c9db789e35e10770314c58fd21f9d4a8a948059c48c4f4c2fe",
+          "want": "466c3fb183a3d3c9db789e35e10770314c58fd21f9d4a8a948059c48c4f4c2fe"
+        },
+        {
+          "name": "format_roundtrip_entryline_ab",
+          "ok": true,
+          "sha": "1c61c2128ca8ac4040b59db2e93b98930d277e56cb0774e05df77a8cefcd3320",
+          "want": "1c61c2128ca8ac4040b59db2e93b98930d277e56cb0774e05df77a8cefcd3320"
+        },
+        {
+          "name": "format_roundtrip_generalized_profile",
+          "ok": true,
+          "sha": "e1eae24e01a5899e841a9d1fa10789af32c93a8a3f29deefc5e6f23424366a7f",
+          "want": "e1eae24e01a5899e841a9d1fa10789af32c93a8a3f29deefc5e6f23424366a7f"
+        },
+        {
+          "name": "e2e_entryline_law",
+          "decision_ok": true,
+          "note": "equal after dropping phases/probe_phases wall-time lines"
+        }
+      ],
+      "n_compared": 5
+    },
+    "G-c": {
+      "pass": true,
+      "rows": [
+        {
+          "key": "parse_reference_text:profile_hmm_median_us",
+          "before": 4.915997124044225,
+          "after": 4.207999154459685,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:profile_hmm_median_us",
+          "before": 4.749999789055437,
+          "after": 4.520998118096031,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "parse_reference_text:fasta_median_us",
+          "before": 4.207999154459685,
+          "after": 4.207999154459685,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:fasta_median_us",
+          "before": 4.124998667975888,
+          "after": 4.291001459932886,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "parse_reference_text:entryline_median_us",
+          "before": 4.207999154459685,
+          "after": 4.249999619787559,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:entryline_median_us",
+          "before": 4.207999154459685,
+          "after": 4.292000085115433,
+          "tol": 50.0,
+          "ok": true
+        }
+      ]
+    },
+    "G-d": {
+      "pass": true,
+      "stdout": "OK",
+      "stderr": ""
+    }
+  }
+}

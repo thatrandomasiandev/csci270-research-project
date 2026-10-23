@@ -94,7 +94,7 @@ def merge_bodies(texts: Sequence[str], record_col: int, record_order: Sequence[s
         if end:
             tail = end
         for line in body:
-            cells = line.split()
+            cells = line.split("\t") if "\t" in line else line.split()
             if record_col < len(cells) and cells[record_col] in grouped:
                 grouped[cells[record_col]].append(line)
             else:

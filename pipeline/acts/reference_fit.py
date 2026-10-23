@@ -231,7 +231,12 @@ def parse_table_text(name: str, text: str) -> ParsedTable:
         if line.startswith("#"):
             meta.append(line)
             continue
-        rows.append(line.split())
+        # Tab-separated rows keep spaces inside a cell (json-records
+        # fingerprints/messages). Whitespace tables stay word-split.
+        if "\t" in line:
+            rows.append(line.split("\t"))
+        else:
+            rows.append(line.split())
         raw_lines.append(line)
     return ParsedTable(name=name, meta=meta, rows=rows, raw_lines=raw_lines)
 

@@ -972,10 +972,17 @@ def body_lines(text: str) -> list[str]:
     return [line for line in text.splitlines() if line.strip() and not line.startswith("#")]
 
 
+def _split_body_fields(line: str) -> list[str]:
+    """Split a body line. Tabs preserve spaces inside a cell."""
+    if "\t" in line:
+        return line.split("\t")
+    return line.split()
+
+
 def _body_record_filter(text: str, record_col: int, keep: set[str]) -> list[str]:
     out: list[str] = []
     for line in body_lines(text):
-        fields = line.split()
+        fields = _split_body_fields(line)
         if record_col < len(fields) and fields[record_col] in keep:
             out.append(line)
     return out
@@ -1204,25 +1211,28 @@ class ReferenceIncremental(Strategy):
             return base
         return self._json_records_invoke(base)
 
-    def _json_records_invoke(self, base: Invoke) -> Invoke:
-        """Convert tool JSON to a line table the fitter already understands."""
+    def _coerce_json_tables(self, texts: dict[str, str]) -> dict[str, str]:
+        """Convert tool JSON outputs to synthetic line tables; stash envelopes."""
         from acts.table_json import parse_json_records, to_line_table
 
         rows_key = self.json_rows or "results"
+        out: dict[str, str] = {}
+        for name, text in texts.items():
+            doc = parse_json_records(text, rows_key=rows_key)
+            self._json_meta[name] = {
+                "envelope": doc.envelope,
+                "key_order": doc.key_order,
+                "rows_key": doc.rows_key,
+            }
+            self._json_raw[name] = text
+            out[name] = to_line_table(doc)
+        return out
+
+    def _json_records_invoke(self, base: Invoke) -> Invoke:
+        """Convert tool JSON to a line table the fitter already understands."""
 
         def invoke(records: Sequence[RecordItem], entries: Sequence[Entry]) -> dict[str, str]:
-            texts = base(records, entries)
-            out: dict[str, str] = {}
-            for name, text in texts.items():
-                doc = parse_json_records(text, rows_key=rows_key)
-                self._json_meta[name] = {
-                    "envelope": doc.envelope,
-                    "key_order": doc.key_order,
-                    "rows_key": doc.rows_key,
-                }
-                self._json_raw[name] = text
-                out[name] = to_line_table(doc)
-            return out
+            return self._coerce_json_tables(base(records, entries))
 
         return invoke
 
@@ -1370,7 +1380,10 @@ class ReferenceIncremental(Strategy):
                 aux_flags=self._aux_flags,
                 entry_names=self._entry_names,
             )
-            return inner(records, entries)
+            texts = inner(records, entries)
+            if self.output_format == "json-records":
+                return self._coerce_json_tables(texts)
+            return texts
 
         return call
 
@@ -1380,7 +1393,7 @@ class ReferenceIncremental(Strategy):
             return self.slack_runner
         assert self.slack is not None
         argv, _factor = slack_rewrite(self.argv, self.slack)
-        return subprocess_invoke(
+        base = subprocess_invoke(
             argv,
             input_slot=self.input_path,
             reference_slot=reference,
@@ -1391,6 +1404,9 @@ class ReferenceIncremental(Strategy):
             aux_flags=self._aux_flags,
             entry_names=self._entry_names,
         )
+        if self.output_format != "json-records":
+            return base
+        return self._json_records_invoke(base)
 
     def _phase_extra(self, extra: dict, *, probe_wall: float = 0.0, probe_phases: dict | None = None) -> dict:
         payload = dict(extra)
@@ -1634,7 +1650,7 @@ class ReferenceIncremental(Strategy):
         # full run could also report pairs the cache never saw.
         for table in tables:
             for line in body_lines(texts.get(table.name, "")):
-                fields = line.split()
+                fields = _split_body_fields(line)
                 rec_key, ent = fields[table.record_col], fields[table.entry_col]
                 if ent not in cand.get(rec_key, set()):
                     return done("REFUSE_MATCH", f"{table.name}: replay reported a non-candidate pair ({rec_key}, {ent})", extra)
