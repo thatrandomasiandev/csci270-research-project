@@ -423,3 +423,18 @@ returns true when `post_replay_refuse` holds and the arm did not SHIP a
 body. Unit tests: known-good refusal (pad_hit, no body) and known-bad
 SHIP. Confirm is **not** resubmitted while the exclusive-node freeze
 (W13/W8/W5x) is in force; resubmit only after those jobs finish.
+
+## Addendum 2026-10-23 — resubmit after freeze lift
+
+Freeze on W13/W8/W5x lifted for new W12b submissions. Resubmitted the
+confirm → measured chain on CARC staged tree `tare-w12b` with code tip
+`d396b2b` (confirm pass-rule fix above). This is a **script pass-rule
+bug fix**, not a method failure and not a redesign of the locked arms.
+
+| Job | ID | Role |
+|---|---|---|
+| Confirm | `13347607` | `iseqsearch_timing_confirm.job` |
+| Measured | `13347608` | `iseqsearch_timing_measured.job`, `Dependency=afterok:13347607` |
+
+Staged `iseqsearch_timing.py` md5 `93f59ca93ea982d689218536d6c278b5`
+(matches worktree); `GIT_HEAD` written as `d396b2b` before sbatch.
