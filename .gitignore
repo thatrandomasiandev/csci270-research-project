@@ -84,3 +84,6 @@ star/Log.out
 # Local professor handoff tarballs
 STAR_suiteB_repro*.tar.gz
 **/STAR_2x_reproduce/
+pipeline/artifact/tare-artifact-*.tar.gz
+pipeline/artifact/tare-artifact-20*/
+pipeline/results/**/_w*_staging/

@@ -65,7 +65,7 @@ for i, (label, ph, stock) in enumerate(rows):
     left = 0.0
     for k in order:
         ax.barh(i, ph[k], left=left, color=colors[k], edgecolor="white", linewidth=0.4,
-                label=k if i == 0 else None)
+                label={"discovery":"selection"}.get(k,k) if i == 0 else None)
         left += ph[k]
     ax.plot([stock, stock], [i - 0.4, i + 0.4], color="black", linewidth=1.0)
     ax.text(left + 8, i, f"{stock / left:.2f}$\\times$", va="center", fontsize=7)

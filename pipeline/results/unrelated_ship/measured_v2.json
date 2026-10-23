@@ -1895,5 +1895,9 @@
     "pooled_stock_lines": 36004,
     "known_bad_refused": true
   },
-  "outcome": "INCONCLUSIVE"
+  "outcome": "INCONCLUSIVE",
+  "collected_utc": "2026-10-23T02:03:20Z",
+  "collected_from": "/project2/biyik_1165/jjt_373/csci270-star/tare-exp-a/pipeline/results/unrelated_ship/measured_v2.json",
+  "timing_eligible": false,
+  "timing_eligibility_why": "outcome=INCONCLUSIVE; pooled_stock_lines=36004 pooled_floor=38120; n_inconclusive=2"
 }

@@ -205,9 +205,9 @@ def fig_phases():
     _draw_phase_bars(bx, server_rows, 3600, (3.35, -0.62))
     bx.set_title("server headline, median run", loc="left")
     bx.plot([150, 430], [2.95, 2.95], color=C["ink"], lw=1.0, ls=(0, (1.5, 1.2)))
-    bx.text(480, 2.95, "discovery $= f_\\Delta T_{stock}$", fontsize=FS, va="center")
+    bx.text(480, 2.95, "selection $= f_\\Delta T_{stock}$", fontsize=FS, va="center")
     handles = [
-        Patch(facecolor=C["tare"], label="discovery"),
+        Patch(facecolor=C["tare"], label="selection"),
         Patch(facecolor=C["tare_light"], label="replay"),
         Patch(facecolor=C["n3"], label="check + audit"),
         Patch(facecolor=C["n1"], label="everything else"),
