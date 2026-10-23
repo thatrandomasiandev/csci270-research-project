@@ -47,6 +47,10 @@ Priority under exclusive EPYC cap 6:
 
 Record new job IDs here when submitted: _pending freeze lift_
 
+Hub branch: `hub/submission-ready` @ `708b658` (pushed). Not merged to `main` until finalize fills PENDING macros and pytest stays green.
+
+Finalize dry-run (2026-10-23): discovery SSH timed out; collectors correctly reported STILL RUNNING (exit 2). Checker: 0 mismatches. Anonymity OK. WA2 local COLLECTED (INCONCLUSIVE).
+
 ## JOSH-ONLY
 See `pipeline/docs/SUBMISSION_CHECKLIST.md` (abstract registration 2026-12-01, paper 2026-12-08, conflicts, artifact host, submit).
 
