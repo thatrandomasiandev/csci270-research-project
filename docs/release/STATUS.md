@@ -2,14 +2,15 @@
 
 **Updated:** 2026-10-22  
 **Branch:** `release/1.0` · **Worktree:** `/Users/joshuaterranova/Desktop/CSCI270/ACTS-release`  
-**Start HEAD:** `de1527c155cbf53c9042c140d2ebeb295e1858d8`
+**Start HEAD:** `de1527c155cbf53c9042c140d2ebeb295e1858d8`  
+**Tip:** `a6c5df9` (pushed `origin/release/1.0`)
 
 ## Phase board
 
 | Phase | Status | Notes |
 |-------|--------|-------|
 | 0 Decisions | **IN PROGRESS** | `DECISIONS_NEEDED.md` written; Josh summary owed |
-| 1 Foundation | **STARTED** | Packaging + shared row classifier; console **BLOCKED (S1)** |
+| 1 Foundation | **STARTED** | `acts.row_diff` + `tare` CLI landed; console **BLOCKED (S1)** |
 | 2 Clusters | not started | Needs D2 questionnaire answers + sbatch yes |
 | 3 Trust | not started | Needs campaign plan + CARC yes |
 | 4 Usability / docs | not started | |
@@ -29,12 +30,13 @@ Local single-user console + CLI; Linux x86_64 + macOS arm64; Python ≥3.10,<3.1
 ## Evidence this session
 
 - Worktree created from `origin/main` (shared checkout was 47 commits behind).
-- Research suite: 413 tests collected on worktree.
-- Console prototype present on shared Mac checkout only (`engine.py` 1792 lines, `server.py`, `static/`); **absent from this branch**.
-- Known console defect confirmed in shared copy: `compare_bodies` keys on first 4 whitespace tokens (`engine.py`), not the HMMER tbl/dom classifier in `pipeline/scripts/headline_carc_measured.py`.
+- `a6c5df9` on `origin/release/1.0`: Phase 0 docs; `acts.row_diff`; `tare` CLI (`version` / `run` / `selftest` / `console` stub); headline script imports shared classifier; 9 new row-diff tests green; `test_no_tool_names_in_acts` green after docstring fix.
+- Full suite last run: 1 fail was tool-name docstring (fixed); re-run of gated tests 10/10. Full suite re-run after fix still owed next session.
+- Console prototype present on shared Mac checkout only (`engine.py` 1792 lines); **absent from this branch**.
+- Known console defect in shared copy: `compare_bodies` keys on first 4 tokens — must switch to `acts.row_diff` after S1.
 
 ## Next engineering (while waiting)
 
-1. Shared `acts.row_diff` classifier + tests; research scripts import it.
-2. Installable package: keep `python3 -m acts`; add `tare` CLI entry point (additive).
+1. Full `pytest -q` green after docstring fix; lockfile / editable install notes.
+2. Progress-event channel design (no console yet).
 3. Stop console hardening until S1 clears.
