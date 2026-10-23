@@ -1,6 +1,26 @@
 # TARE orchestrator report — round 2 (2026-10-20)
 
-**PAUSED 2026-10-20T17:48Z** — Josh stopped all local agents. CARC jobs left running (not cancelled). Resume by reattaching worktrees and polling those job IDs.
+**PAUSED 2026-10-20T17:48Z** — Josh stopped all local agents. CARC jobs left running (not cancelled).
+
+### S2 RESOLVED (Josh check 2026-10-22 evening)
+
+Exclusive nodes in use; **do not submit**. **5 of 6** exclusive EPYC in the cap are committed. Never touch `12864756`.
+
+| JobID | Name | State (2026-10-22 eve) |
+|---|---|---|
+| **13260163** | tare-w8-measured | RUNNING (task 2 of 3) |
+| **13260165** | tare-w5x-measured | RUNNING |
+| **13260162** | headline_bounded measured (9 tasks) | PENDING (est. start ~02:33) |
+
+These three run from **staged copies** under
+`/project2/biyik_1165/jjt_373/csci270-star/{headline_bounded,tare-w8,tare-w5x}`
+via their own `ROOT`/`PYTHONPATH`, not from git.
+
+**Freeze until all three finish:**
+- Do **not** rsync or write into those three directories.
+- Do **not** rename `pipeline/acts/` paths.
+- Do **not** submit anything (node cap).
+- Additive packaging on `release/1.0` is cleared (orthogonal).
 
 Orchestrator branch: `exp/orchestrator-report-r2`. Round-1 tips: `2026-10-19_orchestrator_report.md` on `exp/orchestrator-report`.
 
