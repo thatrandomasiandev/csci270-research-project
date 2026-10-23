@@ -3,7 +3,8 @@
     "G-a": {
       "pass": true,
       "returncode": 0,
-      "summary": "425 passed, 1 skipped, 1 warning in 33.96s",
+      "summary": "425 passed, 1 skipped, 1 warning in 32.58s",
+      "final_recheck": "425 passed, 1 skipped, 1 warning in 32.58s",
       "baseline_summary": "412 passed, 1 skipped, 1 warning in 30.38s"
     },
     "G-b": {
