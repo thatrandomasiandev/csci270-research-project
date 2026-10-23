@@ -47,7 +47,19 @@
 \newtcolorbox{plainbox}[1]{enhanced,breakable,colback=cTare!4,colframe=cTare!70!black,boxrule=0.5pt,arc=1.5pt,
   left=4pt,right=4pt,top=3pt,bottom=3pt,fonttitle=\bfseries\small,title={#1},fontupper=\small}
 
-\newcommand{\sys}{TARE\xspace}
+% OSDI submission uses an anonymized system name distinct from the arXiv name
+% (CFP: https://www.usenix.org/conference/osdi27/call-for-papers).
+% Build arXiv with: ./build_arxiv.sh  (defines \arxivbuild).
+\ifdefined\arxivbuild
+  \newcommand{\sys}{TARE\xspace}
+  \newcommand{\sysexpansion}{Tool Annotation Reuse, Exact}
+  \author{{\rm Joshua Terranova}\\University of Southern California
+    \and {\rm Jiapeng Zhang}\\University of Southern California}
+\else
+  \newcommand{\sys}{PARE\xspace}
+  \newcommand{\sysexpansion}{Pin And Replay Exact}
+  \author{Anonymous Submission}
+\fi
 \newcommand{\pending}[1]{\textcolor{red}{\mbox{[PENDING: #1]}}}
 \newcommand{\tbd}{\textcolor{red}{TBD}}
 \newcommand{\dec}[1]{\textsc{#1}}
@@ -57,7 +69,6 @@
 
 \title{Pin and Replay, or Refuse: Exact Incremental Re\nobreakdash-annotation\\
 Across Reference Database Releases}
-\author{Anonymous Submission}
 \date{}
 
 \begin{document}
@@ -70,7 +81,7 @@ new release every few weeks to months. Each release forces a full re\nobreakdash
 changed: 86.6\% of Pfam's entries were identical between releases 38.1 and 38.2.
 % source: MEASURED pipeline/results/reference_kill_r1.json unchanged_strict=26082 z_new=30134; HAS 38.1; HAS 38.2; DERIVED identical_pct=100*unchanged_strict/z_new
 Reusing the old results is hard, because the search programs are fixed binaries whose printed statistics depend on
-the size of the whole database. We present \sys (Tool Annotation Reuse, Exact), a wrapper that reruns an unmodified
+the size of the whole database. We present \sys (\sysexpansion), a wrapper that reruns an unmodified
 program only on the entries that can matter, with the program's own database\nobreakdash-size setting pinned to the new
 release, so that the program itself prints the numbers a full run would print. \sys then tests the replay by adding
 back entries it left out, and refuses, returning an ordinary full run, if any line changes. When it ships, every
@@ -849,7 +860,7 @@ BLAST+ does not ship.
 
 \textbf{Limits and the bounded audit.} Random pads are weak against non\nobreakdash-neighbor coupling (\cref{eq:miss}, \cref{fig:adversarial}):
 on a synthetic scorer (1{,}400 trials), file\nobreakdash-wide coupling was always refused, but hidden or distant coupling missed on 741 of
-800 trials. With the earlier audit, 489 of those 800 still shipped; with the bounded audit ($s = 299$), where at least 1\% of
+800 trials. With the earlier audit, 489 of those 800 still shipped; with the bounded audit ($s{=}299$), where at least 1\% of
 records were affected only 3 of 400 shipped (vs.\ 127 of 400 earlier), matching the 5\% bound, and all 200 clean trials
 shipped. The bounded audit is the default (~6.4\% of a stock run vs.\ 2.1\% earlier). Guarantee: exact when entry\nobreakdash-local;
 refuse file\nobreakdash-wide and neighbor coupling; for hidden coupling, wrong updates ship with probability $\le 5\%$ when $\ge 1\%$ of

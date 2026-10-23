@@ -51,7 +51,10 @@ set -e
 
 echo
 echo "=== figures ==="
+# OSDI labels (anonymized system name); arXiv build uses build_arxiv.sh.
+export TARE_SYS_NAME="${TARE_SYS_NAME:-PARE}"
 python3 pipeline/paper/tare/figures/make_figures.py
+python3 pipeline/paper/tare/figures/make_churn_pairs.py
 
 echo
 echo "=== build PDF ==="

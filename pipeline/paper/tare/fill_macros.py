@@ -31,7 +31,7 @@ def main() -> None:
         "HeadlineBoundedCIhigh": r"\pending{W13 CI high}",
         "ReleaseChainPayback": r"\pending{W8 cumulative payback}",
         "BaselinesEpycRho": r"\pending{W5x Table 4 rho}",
-        "ExpertScriptRatio": r"\pending{W12a TARE/expert ratio}",
+        "ExpertScriptRatio": r"\pending{W12a system/expert ratio}",
         "ISeqSearchSpeedup": r"\pending{W12b iSeqSearch timing}",
         "PfscanTiming": r"\pending{WA2 pfscanV3 timing}",
     }

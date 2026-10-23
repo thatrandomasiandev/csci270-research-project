@@ -87,3 +87,7 @@ STAR_suiteB_repro*.tar.gz
 pipeline/artifact/tare-artifact-*.tar.gz
 pipeline/artifact/tare-artifact-20*/
 pipeline/results/**/_w*_staging/
+
+# arXiv paper build products
+pipeline/paper/tare/arxiv*
+!pipeline/paper/tare/build_arxiv.sh

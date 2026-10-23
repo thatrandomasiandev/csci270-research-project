@@ -15,6 +15,7 @@ Sources (relative to pipeline/results/ unless noted):
 Curves labelled "model" are PROJECTED from T = a f T_stock + c T_stock.
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -28,6 +29,10 @@ HERE = Path(__file__).resolve().parent
 RES = HERE.parents[2] / "results"
 sys.path.insert(0, str(RES.parent / "scripts"))
 from fit_server_cost import stage_split  # noqa: E402
+
+# OSDI figure labels use the anonymized system name (default PARE).
+# arXiv build sets TARE_SYS_NAME=TARE.
+SYS_NAME = os.environ.get("TARE_SYS_NAME", "PARE")
 
 plt.rcParams.update({
     "pdf.fonttype": 42, "ps.fonttype": 42,
@@ -105,7 +110,7 @@ def fig_churn():
     bx.text(total * 0.02, -0.75, f"also {removed} families removed", fontsize=FS, color=C["stock"])
     bx.annotate("", xy=(unchanged, -0.42), xytext=(total, -0.42),
                 arrowprops=dict(arrowstyle="<->", lw=0.6, color=C["tare"]))
-    bx.text(unchanged - 300, -0.42, "what TARE reruns: 13.4%", ha="right", va="center", fontsize=FS, color=C["tare"])
+    bx.text(unchanged - 300, -0.42, f"what {SYS_NAME} reruns: 13.4%", ha="right", va="center", fontsize=FS, color=C["tare"])
     bx.set_xlim(0, total * 1.02)
     bx.set_ylim(-1.0, 1.0)
     bx.set_yticks([])
@@ -318,7 +323,7 @@ def fig_idiamond():
             ha="center", va="center", fontsize=FS, color="white")
     ax.text(ident + value / 2, 1, f"{100 * ident / stock_rows:.1f}% byte-identical", ha="center", va="center", fontsize=FS)
     ax.set_yticks([0, 1])
-    ax.set_yticklabels(["TARE", "iSeqSearch"])
+    ax.set_yticklabels([SYS_NAME, "iSeqSearch"])
     ax.set_xlim(0, (stock_rows + extra) * 1.01)
     ax.set_xlabel("output rows, Swiss-Prot 2026_01 $\\rightarrow$ 2026_03, 300 queries")
     ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False, handlelength=1)

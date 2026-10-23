@@ -13,6 +13,9 @@ PAPER = REPO / "pipeline/paper/tare"
 # Host/lab/identity tokens. "discovery" and "CARC" are the cluster SSH alias /
 # center name — body prose must not use them; LaTeX % comments (provenance
 # keys like discovery_s) are stripped before scanning .tex sources.
+#
+# "TARE" is the arXiv system name; OSDI requires a different anonymized name
+# (CFP: https://www.usenix.org/conference/osdi27/call-for-papers).
 FORBIDDEN = [
     r"Terranova",
     r"Joshua(?!\s+Project)",
@@ -29,11 +32,12 @@ FORBIDDEN = [
     r"\bLIRA\b",
     r"@usc\.edu",
     r"thatrandomasiandev",
+    r"\bTARE\b",
 ]
 
 
 def strip_tex_comments(text: str) -> str:
-    """Remove TeX % comments (not escaped \\%). Keep newlines for line mapping."""
+    """Remove TeX % comments (not escaped \\%)."""
     out = []
     for line in text.splitlines(keepends=True):
         i = 0
@@ -45,8 +49,6 @@ def strip_tex_comments(text: str) -> str:
                 break
             buf.append(ch)
             i += 1
-        else:
-            buf.append("") if False else None
         out.append("".join(buf) if buf else ("\n" if line.endswith("\n") else ""))
     return "".join(out)
 
@@ -80,6 +82,16 @@ def main() -> int:
             continue
         raw = path.read_text(errors="replace")
         text = strip_tex_comments(raw) if path.suffix == ".tex" else raw
+        # arXiv-only branch may define TARE under \ifdefined\arxivbuild; strip
+        # that branch so the OSDI submission scan does not false-positive.
+        if path.name == "main.tex":
+            text = re.sub(
+                r"\\ifdefined\\arxivbuild.*?\\else",
+                r"\\else",
+                text,
+                count=1,
+                flags=re.DOTALL,
+            )
         scan_blob(str(path.relative_to(REPO)), text, bad)
 
     pdf = PAPER / "main.pdf"
@@ -95,6 +107,22 @@ def main() -> int:
         scan_blob("main.pdf pdfinfo", meta, bad)
     except FileNotFoundError:
         pass
+
+    # Figure PDFs included by the OSDI paper must not show the arXiv name.
+    for fig in (
+        "churn.pdf",
+        "churn_pairs.pdf",
+        "phases.pdf",
+        "model.pdf",
+        "idiamond.pdf",
+        "adversarial.pdf",
+    ):
+        path = PAPER / "figures" / fig
+        if not path.is_file():
+            continue
+        blob = pdf_text(path)
+        if blob and re.search(r"\bTARE\b", blob):
+            bad.append(f"figures/{fig}: matches /\\bTARE\\b/")
 
     if bad:
         print("ANONYMITY FAIL:")

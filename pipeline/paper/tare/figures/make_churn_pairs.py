@@ -12,6 +12,7 @@ Run from this directory: python3 make_churn_pairs.py
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -52,8 +53,9 @@ plt.rcParams.update({
     "grid.alpha": 0.35,
 })
 
-TARE = "#2171b5"
-TARE_LIGHT = "#9ecae1"
+SYS_NAME = os.environ.get("TARE_SYS_NAME", "PARE")
+SYS_BLUE = "#2171b5"
+SYS_LIGHT = "#9ecae1"
 GRAY = "#bdbdbd"
 INK = "#252525"
 WIDTH_IN = 7.0
@@ -96,11 +98,11 @@ def main() -> None:
     fig, ax = plt.subplots(figsize=(WIDTH_IN, 2.15))
     x = list(range(len(rows)))
     ax.bar(x, unchanged, color=GRAY, width=0.72, label="unchanged")
-    ax.bar(x, edited, bottom=unchanged, color=TARE_LIGHT, width=0.72, label="edited (TARE reruns)")
+    ax.bar(x, edited, bottom=unchanged, color=SYS_LIGHT, width=0.72, label=f"edited ({SYS_NAME} reruns)")
     bottom_new = [u + e for u, e in zip(unchanged, edited)]
-    ax.bar(x, new, bottom=bottom_new, color=TARE, width=0.72, label="new (TARE reruns)")
+    ax.bar(x, new, bottom=bottom_new, color=SYS_BLUE, width=0.72, label=f"new ({SYS_NAME} reruns)")
     for i, frac in enumerate(f_delta):
-        ax.text(i, 1.02, f"{100 * frac:.1f}%", ha="center", va="bottom", fontsize=6.8, color=TARE)
+        ax.text(i, 1.02, f"{100 * frac:.1f}%", ha="center", va="bottom", fontsize=6.8, color=SYS_BLUE)
     ax.set_xticks(x)
     ax.set_xticklabels([f"{lab}\n\u2212{removed[i]} removed" for i, lab in enumerate(labels)])
     ax.set_xlim(-0.6, len(rows) - 0.4)
