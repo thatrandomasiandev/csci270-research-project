@@ -35,7 +35,10 @@ def rsync_from_carc(remote_rel: str, dest: Path, timeout_s: int = 90) -> None:
     login node is unreachable. Failure → die() (collectors map to STILL RUNNING).
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
-    remote = f"discovery:{CARC_ROOT / remote_rel}"
+    # Path() drops a trailing slash; keep it so rsync copies the directory's
+    # contents into dest instead of nesting the directory itself.
+    slash = "/" if remote_rel.endswith("/") else ""
+    remote = f"discovery:{CARC_ROOT / remote_rel}{slash}"
     # Alias `discovery` only; add ConnectTimeout without disabling ControlMaster.
     ssh = (
         "ssh -o ConnectTimeout=20 -o ServerAliveInterval=15 "
