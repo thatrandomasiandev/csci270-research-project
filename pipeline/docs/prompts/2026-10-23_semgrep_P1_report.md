@@ -6,7 +6,7 @@
 |---|---|
 | Branch | `exp/semgrep-domain` |
 | Base (origin/main) | `b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8` |
-| Final HEAD | `60de236659e19a4fd1cdfbf115f39a2b32a5d940` |
+| Final HEAD | `43c857371cdf25f8d02aca4feaa785b18b1b0ea0` |
 | Worktree | `../ACTS-semgrep` |
 
 Commits: baseline → yaml-list/json-records/{inputs} → pin-path tab/coerce fixes.
