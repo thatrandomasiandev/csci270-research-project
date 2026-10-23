@@ -1,0 +1,6 @@
+rules:
+  - id: demo.indent2
+    pattern: assert False
+    message: bare assert false
+    languages: [python]
+    severity: WARNING

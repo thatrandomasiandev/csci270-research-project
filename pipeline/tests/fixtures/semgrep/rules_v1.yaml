@@ -1,0 +1,11 @@
+rules:
+- id: demo.print
+  pattern: print(...)
+  message: found print
+  languages: [python]
+  severity: WARNING
+- id: demo.eval
+  pattern: eval(...)
+  message: found eval
+  languages: [python]
+  severity: ERROR

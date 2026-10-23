@@ -201,6 +201,11 @@ def cmd_run(args: argparse.Namespace) -> int:
                 subset_aux=args.subset_aux,
                 invalidate_group=args.invalidate_group,
                 f_threshold=args.f_threshold,
+                reference_format=args.reference_format,
+                entry_key_field=args.entry_key_field,
+                output_format=args.output_format,
+                json_rows=args.json_rows,
+                volatile_json_fields=args.volatile_json_field or (),
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -329,6 +334,45 @@ def main(argv: list[str] | None = None) -> int:
             "measured fill/update history, or 0.80 when that history is absent "
             "or does not give a positive break-even. The comparison is strict, "
             "so a changed fraction equal to the threshold still replays."
+        ),
+    )
+    rn.add_argument(
+        "--reference-format",
+        default="auto",
+        choices=("auto", "yaml-list"),
+        help=(
+            "Reference parser. Default auto keeps the existing detectors and "
+            "never selects yaml-list. Pass yaml-list for a top-level YAML list "
+            "(Semgrep rules:)."
+        ),
+    )
+    rn.add_argument(
+        "--entry-key-field",
+        default="id",
+        help="Scalar field that keys each yaml-list item (default id).",
+    )
+    rn.add_argument(
+        "--output-format",
+        default="table",
+        choices=("table", "json-records"),
+        help=(
+            "Output parser. Default table is the existing line-table path. "
+            "json-records reads a top-level JSON array as rows."
+        ),
+    )
+    rn.add_argument(
+        "--json-rows",
+        default=None,
+        help="Top-level JSON array name for --output-format json-records (e.g. results).",
+    )
+    rn.add_argument(
+        "--volatile-json-field",
+        action="append",
+        default=None,
+        help=(
+            "Caller-declared top-level JSON field that may differ from stock "
+            "(repeatable). Recorded in decision.txt. Default: none. Semgrep's "
+            "time field is unavoidable under --json even with --no-time."
         ),
     )
     rn.add_argument(

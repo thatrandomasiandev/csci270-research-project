@@ -1,0 +1,2 @@
+print("hi")
+open("f")

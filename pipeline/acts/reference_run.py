@@ -170,11 +170,18 @@ def materialize_argv(
     reference_slot: Path,
     reference_file: Path,
     work: Path,
+    input_paths: Sequence[str] | None = None,
 ) -> tuple[list[str], dict[str, Path]]:
+    """Expand placeholders. ``{input}`` stays one path; ``{inputs}`` expands to
+    one argv token per record path (opt-in, Semgrep-style target lists)."""
     outputs: dict[str, Path] = {}
     cmd: list[str] = []
     for token in argv:
-        if token == "{input}" or _same(token, input_slot):
+        if token == "{inputs}":
+            if input_paths is None:
+                raise RunError("{inputs} requires record paths")
+            cmd.extend(str(p) for p in input_paths)
+        elif token == "{input}" or _same(token, input_slot):
             cmd.append(str(input_file))
         elif token == "{reference}" or _same(token, reference_slot):
             cmd.append(str(reference_file))
@@ -265,6 +272,8 @@ def subprocess_invoke(
         if not use_original:
             run_prep(prep, ref_path)
         _clock_add(phase, "prep_s", time.perf_counter() - started)
+        # {inputs}: one argv token per record key (path), in record order.
+        input_paths = [rec.key for rec in records] if any(t == "{inputs}" for t in argv) else None
         cmd, outputs = materialize_argv(
             argv,
             input_slot=input_slot,
@@ -272,6 +281,7 @@ def subprocess_invoke(
             reference_slot=reference_slot,
             reference_file=ref_path,
             work=work,
+            input_paths=input_paths,
         )
         # A full run uses the caller's own side files. A subset run rewrites
         # only the files the caller named, and only for this invocation.
@@ -1072,6 +1082,11 @@ class ReferenceIncremental(Strategy):
         subset_aux: str | Sequence[str] | None = None,
         invalidate_group: str | None = None,
         f_threshold: float | None = None,
+        reference_format: str = "auto",
+        entry_key_field: str = "id",
+        output_format: str = "table",
+        json_rows: str | None = None,
+        volatile_json_fields: Sequence[str] = (),
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -1113,6 +1128,18 @@ class ReferenceIncremental(Strategy):
         self._slack_factor: float | None = None
         # None: (1-c)/a from this cache's fill/update history, else DEFAULT_BREAK_EVEN_F.
         self.f_threshold = f_threshold
+        self.reference_format = reference_format or "auto"
+        self.entry_key_field = entry_key_field or "id"
+        self.output_format = output_format or "table"
+        if self.output_format == "json-records" and not json_rows:
+            raise RunError("json-records requires --json-rows NAME")
+        if self.output_format not in {"table", "json-records"}:
+            raise RunError(f"unknown output format {self.output_format!r}")
+        self.json_rows = json_rows
+        self.volatile_json_fields = tuple(volatile_json_fields or ())
+        # Last-seen JSON envelope / raw bytes per output (opt-in json-records).
+        self._json_meta: dict[str, dict] = {}
+        self._json_raw: dict[str, str] = {}
         self._open_cache = None
         self._open_ns = ""
         if slack:
@@ -1127,7 +1154,11 @@ class ReferenceIncremental(Strategy):
         try:
             started = time.perf_counter()
             reference = detect_reference(self.argv, self.input_path, self.reference)
-            entries = parse_reference(reference)
+            entries = parse_reference(
+                reference,
+                reference_format=self.reference_format,
+                entry_key_field=self.entry_key_field,
+            )
             records = read_records(self.input_path)
             self._n_entries = len(entries)
             self._entry_names = {key for entry in entries for key in entry.keys}
@@ -1156,18 +1187,69 @@ class ReferenceIncremental(Strategy):
 
     def _invoke(self, reference: Path) -> Invoke:
         if self.runner is not None:
-            return self.runner
-        return subprocess_invoke(
-            self.argv,
-            input_slot=self.input_path,
-            reference_slot=reference,
-            prep=self.prep,
-            scratch=self.out_dir / "calls",
-            clock=self.clock,
-            full_entries=self._n_entries,
-            aux_flags=self._aux_flags,
-            entry_names=self._entry_names,
+            base = self.runner
+        else:
+            base = subprocess_invoke(
+                self.argv,
+                input_slot=self.input_path,
+                reference_slot=reference,
+                prep=self.prep,
+                scratch=self.out_dir / "calls",
+                clock=self.clock,
+                full_entries=self._n_entries,
+                aux_flags=self._aux_flags,
+                entry_names=self._entry_names,
+            )
+        if self.output_format != "json-records":
+            return base
+        return self._json_records_invoke(base)
+
+    def _json_records_invoke(self, base: Invoke) -> Invoke:
+        """Convert tool JSON to a line table the fitter already understands."""
+        from acts.table_json import parse_json_records, to_line_table
+
+        rows_key = self.json_rows or "results"
+
+        def invoke(records: Sequence[RecordItem], entries: Sequence[Entry]) -> dict[str, str]:
+            texts = base(records, entries)
+            out: dict[str, str] = {}
+            for name, text in texts.items():
+                doc = parse_json_records(text, rows_key=rows_key)
+                self._json_meta[name] = {
+                    "envelope": doc.envelope,
+                    "key_order": doc.key_order,
+                    "rows_key": doc.rows_key,
+                }
+                self._json_raw[name] = text
+                out[name] = to_line_table(doc)
+            return out
+
+        return invoke
+
+    def _render_json_table(self, name: str, line_table: str) -> str:
+        """Rebuild Semgrep-shaped JSON from a synthetic line table + envelope."""
+        from acts.table_json import (
+            render_json_records,
+            row_objects_from_table,
+            sort_semgrep_results,
         )
+
+        meta = self._json_meta.get(name)
+        if meta is None:
+            raise RunError(f"json-records: no envelope cached for output {name}")
+        rows = sort_semgrep_results(row_objects_from_table(line_table))
+        return render_json_records(
+            envelope=meta["envelope"],
+            key_order=meta["key_order"],
+            rows_key=meta["rows_key"],
+            row_objects=rows,
+        )
+
+    def _emit_table_text(self, name: str, line_table: str) -> str:
+        """Ship JSON when opt-in; otherwise the line table as-is."""
+        if self.output_format != "json-records":
+            return line_table
+        return self._render_json_table(name, line_table)
 
     def _probe_invoke(self, reference: Path):
         """Tool call that accepts extra argv. Used by pin inference and, when
@@ -1568,7 +1650,7 @@ class ReferenceIncremental(Strategy):
             text = texts.get(table.name)
             if text is None:
                 text = "\n".join(table.meta) + ("\n" if table.meta else "")
-            (dest / table.name).write_text(text)
+            (dest / table.name).write_text(self._emit_table_text(table.name, text))
         _clock_add(self.clock, "render_s", time.perf_counter() - started)
         window = self._first_use_window(ns, stored)
         if window is not None:
@@ -1577,6 +1659,8 @@ class ReferenceIncremental(Strategy):
         if full_compare:
             started_phase = time.perf_counter()
             before_phase = dict(self.clock)
+            # Capture replay envelopes before stock overwrites _json_meta.
+            replay_meta = {k: dict(v) for k, v in self._json_meta.items()}
             stock = invoke(records, entries)
             _phase_from(self.clock, before_phase, "verify", started_phase)
             if window is not None:
@@ -1584,6 +1668,27 @@ class ReferenceIncremental(Strategy):
             for table in tables:
                 if body_lines(stock.get(table.name, "")) != body_lines(texts.get(table.name, "")):
                     return done("REFUSE_MATCH", f"{table.name}: body differs from a full run", extra)
+            if self.output_format == "json-records":
+                from acts.table_json import equal_except_volatile
+
+                for table in tables:
+                    # Re-render with stock envelope + our result rows; prove
+                    # non-volatile fields match stock bytes.
+                    ours = self._emit_table_text(table.name, texts.get(table.name, ""))
+                    stock_raw = self._json_raw.get(table.name, "")
+                    if not equal_except_volatile(
+                        ours, stock_raw, self.volatile_json_fields, rows_key=self.json_rows or "results"
+                    ):
+                        return done(
+                            "REFUSE_MATCH",
+                            f"{table.name}: json-records non-volatile fields differ from stock",
+                            extra,
+                        )
+                    (dest / table.name).write_text(ours)
+                if self.volatile_json_fields:
+                    extra["volatile_json_fields"] = list(self.volatile_json_fields)
+                # Restore unused — stock meta remains for any later emit.
+                _ = replay_meta
         elif self.verify == "audit":
             # The audit runs on every exact replay that reaches this point,
             # including a cold cache whose reused-row count is zero. The
@@ -1975,8 +2080,14 @@ class ReferenceIncremental(Strategy):
         dest = self.out_dir / "tables"
         dest.mkdir(parents=True, exist_ok=True)
         for table in tables:
-            text = render_table_text(table, _order_rows(held, table, entries, records))
-            (dest / table.name).write_text(text)
+            rows = _order_rows(held, table, entries, records)
+            if self.output_format == "json-records":
+                if not table.meta or not table.meta[0].startswith("#"):
+                    raise RunError("json-records ship missing column header meta")
+                text = table.meta[0] + "\n" + "\n".join("\t".join(cells) for cells in rows) + ("\n" if rows or table.meta else "")
+            else:
+                text = render_table_text(table, rows)
+            (dest / table.name).write_text(self._emit_table_text(table.name, text))
             sidecar = dump_rescale_provenance(_provenance_held(held, table))
             (dest / f"{table.name}.provenance.json").write_text(
                 json.dumps(sidecar, indent=2) + "\n"
@@ -1986,7 +2097,7 @@ class ReferenceIncremental(Strategy):
         dest = self.out_dir / "tables"
         dest.mkdir(parents=True, exist_ok=True)
         for name, text in texts.items():
-            (dest / name).write_text(text)
+            (dest / name).write_text(self._emit_table_text(name, text))
 
     def _resolve_f_threshold(self, cache: ReferenceCache, ns: str) -> tuple[float, str]:
         """Flag, else (1-c)/a from this cache, else the documented default."""

@@ -1,0 +1,11 @@
+rules:
+- id: demo.dup
+  pattern: x
+  message: a
+  languages: [python]
+  severity: INFO
+- id: demo.dup
+  pattern: y
+  message: b
+  languages: [python]
+  severity: INFO

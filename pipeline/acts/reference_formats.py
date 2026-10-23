@@ -56,6 +56,9 @@ class Entry:
     content_hash: str
     keys: tuple[str, ...]
     format_name: str
+    # yaml-list only: shared document header emitted once on write. Default
+    # None keeps every existing constructor call valid.
+    document_header: str | None = None
 
     @property
     def primary(self) -> str:
@@ -375,7 +378,10 @@ def parse_generalized_profile(text: str) -> list[Entry]:
 
 
 def parse_reference_text(text: str) -> list[Entry]:
-    """Detect one reference format and return its entries in file order."""
+    """Detect one reference format and return its entries in file order.
+
+    Auto-detection never returns yaml-list; that format is opt-in only.
+    """
     stripped = text.lstrip()
     if not stripped:
         raise FormatError("empty reference")
@@ -393,8 +399,20 @@ def parse_reference_text(text: str) -> list[Entry]:
         raise FormatError("reference format has no parser") from None
 
 
-def parse_reference(path: Path) -> list[Entry]:
+def parse_reference(
+    path: Path,
+    *,
+    reference_format: str = "auto",
+    entry_key_field: str = "id",
+) -> list[Entry]:
+    """Parse a reference file. ``reference_format='yaml-list'`` is opt-in."""
     try:
+        if reference_format == "yaml-list":
+            from acts.reference_yaml import parse_yaml_list
+
+            return parse_yaml_list(path, key_field=entry_key_field)
+        if reference_format != "auto":
+            raise FormatError(f"unknown reference format {reference_format!r}")
         return parse_reference_text(read_text(path))
     except FormatError:
         raise
@@ -411,6 +429,10 @@ def parses_as_entries(path: Path) -> bool:
 
 
 def write_entries(entries: list[Entry], path: Path) -> Path:
+    if entries and entries[0].format_name == "yaml-list":
+        from acts.reference_yaml import write_yaml_list
+
+        return write_yaml_list(entries, path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(entry.raw for entry in entries))
     return path
