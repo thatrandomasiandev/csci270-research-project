@@ -872,7 +872,11 @@ time iSeqSearch.}
 (2) \emph{``The check is sampled, so it is not exact.''} When \sys ships, every body line is byte\nobreakdash-identical to stock; sampling bounds only the probability of shipping a \emph{hidden} fault under the stated $\kappa$ (\cref{sec:eval-safety}).
 (3) \emph{``One tool family.''} HMMER and Infernal share lineage; DIAMOND and BLAST+ are refused from other codebases, and pfscanV3 is supporting evidence only (\cref{sec:discussion}).
 
-\textbf{Threats to validity.} \textit{Generality:} the two programs \sys replays exactly, HMMER and Infernal, come from one
+\textbf{Same problem outside biology.} When a reference release changes a global statistic, other fields recompute, approximate, or version---IR length\nobreakdash-normalized indexes and IDF drift~\cite{hadjieleftheriou2009incremental,staudinger2024reproducible}, mass\nobreakdash-spec spectral archives and database\nobreakdash-size {FDR}~\cite{frank2011spectral,aggarwal2022fdr}, astronomy catalog releases under updated global priors~\cite{delchambre2023gaia}. \sys's pin is the exact alternative when the normalizer is exposed.
+% source: CITED pipeline/docs/NONBIO_LITERATURE.md
+
+\textbf{Threats to validity.}
+ \textit{Generality:} the two programs \sys replays exactly, HMMER and Infernal, come from one
 research group and share code, so they may share the property that makes replay work; the two refused programs come from
 other groups. We therefore claim that the method works for programs whose coupling lies in settings they expose, and that
 it detects when coupling lies elsewhere; we do not claim it works for most search programs. BLAST+ is still refused (\cref{sec:eval-safety}). A program from an unrelated codebase, SIB's PROSITE scanner
@@ -884,30 +888,15 @@ as inconclusive under our rules, and we offer them as supporting evidence only.
 node with alternating runs. \textit{Check strength:} below the audit's 1\% guarantee, hidden coupling can ship (\cref{sec:eval-safety}).
 % source: MEASURED pipeline/results/release_chain/pairs.json pairs.3.f_delta=0.020132600258732213 pairs.4.f_delta=0.9311802701115678 pairs.6.f_delta=0.13446605163602576; HAS 37.3; HAS 37.4; HAS 38.0; HAS 38.1; HAS 38.2; DERIVED small=100*pairs_3_f_delta; DERIVED big=100*pairs_4_f_delta; DERIVED timed=100*pairs_6_f_delta; NOMINAL pct1=1; MEASURED pipeline/results/release_chain/measured.json n_pass=2 n_genomes=3
 
-\textbf{Anticipated objections.} \textit{``An expert could write this in a few lines of shell: run the changed families
-with \texttt{-Z}, then rerun each protein's candidates.''} For HMMER with \cutga, yes, and that script is \sys without its
-gate, check, and audit. Removing those stages from the measured laptop runs bounds what it would gain: the check and audit
-took 7.6\% of a stock run, so the script would reach about $4.6\times$ where \sys reached $3.4\times$ (an estimate from the
-measured stages, not a separate run). What the script cannot do is notice when its assumptions fail: run on DIAMOND, the
-same script silently drops hits, which is the case \sys refuses. \textit{``Why not just rescale the cached E-values?''}
-Rescaling reproduces the program's arithmetic but not its rounding, and it must be written for each program and column;
-pinning lets the program print its own numbers.
-% source: MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.stock.wall_s=648.9416185829905 proteomes.0.e2.wall_s=190.69520458299667 proteomes.0.e2.phases.verify_s=14.613079834030941 proteomes.0.e2.phases.ic2_neighbor_s=26.63462533301208 proteomes.0.e2.phases.ic2_random_20261031_s=2.6919128749868833 proteomes.0.e2.phases.ic2_random_20261032_s=2.5677419590065256 proteomes.0.e2.phases.ic2_random_20261033_s=2.719902084034402; DERIVED guard=ic2_neighbor_s+ic2_random_20261031_s+ic2_random_20261032_s+ic2_random_20261033_s+verify_s; DERIVED guard_pct=100*guard/proteomes_0_stock_wall_s; DERIVED s_script=proteomes_0_stock_wall_s/(proteomes_0_e2_wall_s-guard); DERIVED s_tare=proteomes_0_stock_wall_s/proteomes_0_e2_wall_s
-
-Rescaling cached E-values matched only 58.0\% of 44{,}132 HMMER hit lines (Wilson 95\% CI 57.5--58.5\%); value\nobreakdash-only
-mismatches remain. An expert shell script was byte\nobreakdash-identical on the two HMMER genomes in \cref{tab:exact}, but on a
-2{,}000-protein DIAMOND sample it silently dropped 68 of 227{,}223 stock lines. Server timing of that script is
-\ExpertScriptRatio (PENDING until W12a lands).
-% source: MEASURED pipeline/results/baselines_exact/rescale.json pooled.tbl.stock_lines=44132 pooled.tbl.byte_identical=25597 pooled.tbl.byte_identical_over_stock=0.5800099700897308 pooled.tbl.wilson95.low=0.5753984254071175 pooled.tbl.wilson95.high=0.5846075870893007; NOMINAL ci=95; DERIVED ident_pct=100*pooled_tbl_byte_identical_over_stock; DERIVED wlo=100*pooled_tbl_wilson95_low; DERIVED whi=100*pooled_tbl_wilson95_high; MEASURED pipeline/results/baselines_exact/expert_diamond.json classification.stock_lines=227223 classification.missing=68; NOMINAL q2000=2000
-\textit{``InterProScan already reuses precomputed results.''} Its lookup is keyed by the protein sequence for
-a fixed database version. \textit{``Use a faster or GPU search program.''} Complementary: it shrinks $T_{\text{stock}}$,
-and \sys's savings apply on top when coupling can be pinned.
-
-\textbf{Deployment.} The natural deployment is InterProScan~\cite{jones2014interproscan} after a member\nobreakdash-database update.
-Member databases that score each model against its own threshold, as Pfam does, should behave like our HMMER results;
-those that compare hits across models would need declared groups or would be refused. Pfam's own pipeline,
-\texttt{pfam\_scan.pl}, adds clan competition after \texttt{hmmscan}; we evaluated clan competition only for Infernal, so
-that step is not covered by our HMMER results.
+\textbf{Anticipated objections.} An expert shell script (changed families with \texttt{-Z}, then each protein's candidates)
+is \sys without its gate, check, and audit: on the measured laptop stages it would reach about $4.6\times$ where \sys
+reached $3.4\times$, but on DIAMOND it silently drops hits. Rescaling cached E-values matched only 58.0\% of 44{,}132
+HMMER hit lines (Wilson 95\% CI 57.5--58.5\%). Server timing of the expert script is \ExpertScriptRatio (PENDING until
+W12a lands). InterProScan~\cite{jones2014interproscan} reuses results keyed by protein for a fixed database version; a
+faster search program shrinks $T_{\mathrm{stock}}$, and \sys's savings apply on top when coupling can be pinned. The natural
+deployment is InterProScan after a member\nobreakdash-database update; clan competition after \texttt{hmmscan} is not covered by
+our HMMER results.
+% source: MEASURED pipeline/results/exact_replay/costpass_measured.json proteomes.0.stock.wall_s=648.9416185829905 proteomes.0.e2.wall_s=190.69520458299667 proteomes.0.e2.phases.verify_s=14.613079834030941 proteomes.0.e2.phases.ic2_neighbor_s=26.63462533301208 proteomes.0.e2.phases.ic2_random_20261031_s=2.6919128749868833 proteomes.0.e2.phases.ic2_random_20261032_s=2.5677419590065256 proteomes.0.e2.phases.ic2_random_20261033_s=2.719902084034402; DERIVED guard=ic2_neighbor_s+ic2_random_20261031_s+ic2_random_20261032_s+ic2_random_20261033_s+verify_s; DERIVED guard_pct=100*guard/proteomes_0_stock_wall_s; DERIVED s_script=proteomes_0_stock_wall_s/(proteomes_0_e2_wall_s-guard); DERIVED s_tare=proteomes_0_stock_wall_s/proteomes_0_e2_wall_s; MEASURED pipeline/results/baselines_exact/rescale.json pooled.tbl.stock_lines=44132 pooled.tbl.byte_identical=25597 pooled.tbl.byte_identical_over_stock=0.5800099700897308 pooled.tbl.wilson95.low=0.5753984254071175 pooled.tbl.wilson95.high=0.5846075870893007; NOMINAL ci=95; DERIVED ident_pct=100*pooled_tbl_byte_identical_over_stock; DERIVED wlo=100*pooled_tbl_wilson95_low; DERIVED whi=100*pooled_tbl_wilson95_high; MEASURED pipeline/results/baselines_exact/expert_diamond.json classification.stock_lines=227223 classification.missing=68; NOMINAL q2000=2000
 
 % =====================================================================
 \section{Related Work}
