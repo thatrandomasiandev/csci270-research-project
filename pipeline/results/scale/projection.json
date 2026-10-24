@@ -1,0 +1,947 @@
+{
+  "system": "TARE",
+  "claim_class": "PROJECTED",
+  "generated_utc": "2026-10-24T07:45:45Z",
+  "inputs": {
+    "assembly_summary": {
+      "url": "https://ftp.ncbi.nlm.nih.gov/genomes/refseq/bacteria/assembly_summary.txt",
+      "path": "/Users/joshuaterranova/tmp/tare_scale/assembly_summary.txt",
+      "sha256": "7034587bd874e2ef5ba670c6efd4a5f422dfd487fe4e6db1afb3f92288d4c626",
+      "bytes": 242166326,
+      "download_start_utc": "2026-10-24T07:39:25Z",
+      "download_end_utc": "2026-10-24T07:40:51Z",
+      "expected_sha256": "7034587bd874e2ef5ba670c6efd4a5f422dfd487fe4e6db1afb3f92288d4c626"
+    },
+    "headline_carc": {
+      "path": "pipeline/results/exact_replay/headline_carc.json",
+      "sha256": "e0f1b610262c5b480b91c71ab9e87a0f5085609552cc9e8b830173a080f05876"
+    },
+    "pairs": {
+      "path": "pipeline/results/release_chain/pairs.json",
+      "sha256": "b968396da25847da8f83840568bb8aee85c87148fd0bd37ccd832336f6251739"
+    },
+    "w8_dir": "pipeline/results/diverse_genomes/carc"
+  },
+  "assembly_counts": {
+    "n_assemblies": 544941,
+    "version_status_counts": {
+      "latest": 544941
+    },
+    "refseq_category_counts": {
+      "na": 522048,
+      "reference genome": 22893
+    },
+    "n_reference_genome": 22893,
+    "n_representative_genome": 0,
+    "n_reference_or_representative": 22893,
+    "all_bacteria": {
+      "n_with_protein_coding_gene_count": 544814,
+      "n_missing_or_blank_protein_coding_gene_count": 127,
+      "sum_protein_coding_gene_count": 2179028082,
+      "excluded_from_sum": 127,
+      "imputation": "none; blank/na excluded"
+    },
+    "representatives_only": {
+      "definition": "refseq_category in {reference genome, representative genome}",
+      "n_with_protein_coding_gene_count": 22893,
+      "n_missing_or_blank_protein_coding_gene_count": 0,
+      "sum_protein_coding_gene_count": 92099519,
+      "excluded_from_sum": 0,
+      "imputation": "none; blank/na excluded"
+    }
+  },
+  "cost_model": {
+    "definition": "core_seconds_per_protein = stock_median_wall_s * n_cpus / n_proteins; rate = median over headline EXACT genomes on the headline server",
+    "headline_server": {
+      "cpu_model": "AMD EPYC 7542 32-Core Processor",
+      "cpus_per_run": 4,
+      "nodes_seen": [
+        "b22-01.hpc.usc.edu",
+        "b22-11.hpc.usc.edu",
+        "b22-13.hpc.usc.edu",
+        "b22-15.hpc.usc.edu",
+        "b22-24.hpc.usc.edu",
+        "b22-25.hpc.usc.edu",
+        "b22-30.hpc.usc.edu"
+      ],
+      "n_exact_genomes": 9,
+      "core_seconds_per_protein_per_genome": [
+        {
+          "proteome": "GCF_002302335.1",
+          "value": 2.1097586394647667,
+          "stock_wall_s": 2324.954020690173,
+          "n_proteins": 4408,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_009433135.1",
+          "value": 2.065190111872838,
+          "stock_wall_s": 2405.430182803888,
+          "n_proteins": 4659,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_049949335.1",
+          "value": 2.2396105372147,
+          "stock_wall_s": 2227.292679260019,
+          "n_proteins": 3978,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_054388855.1",
+          "value": 2.3655122909218123,
+          "stock_wall_s": 2425.8328543403186,
+          "n_proteins": 4102,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_055556535.1",
+          "value": 2.0632731305145757,
+          "stock_wall_s": 2107.1176845380105,
+          "n_proteins": 4085,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_061234675.1",
+          "value": 2.475211735443905,
+          "stock_wall_s": 2554.41851097811,
+          "n_proteins": 4128,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_009948655.1",
+          "value": 2.045304857608663,
+          "stock_wall_s": 2329.090906601865,
+          "n_proteins": 4555,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_022559285.1",
+          "value": 2.057107534160014,
+          "stock_wall_s": 2203.676445968915,
+          "n_proteins": 4285,
+          "cpus": 4
+        },
+        {
+          "proteome": "GCF_030347155.1",
+          "value": 2.0168222217644827,
+          "stock_wall_s": 2324.387610583566,
+          "n_proteins": 4610,
+          "cpus": 4
+        }
+      ],
+      "core_seconds_per_protein_median": 2.065190111872838,
+      "core_seconds_per_protein_min": 2.0168222217644827,
+      "core_seconds_per_protein_max": 2.475211735443905
+    },
+    "headline_speedup": {
+      "median": 4.243202948728078,
+      "bootstrap_ci95": {
+        "low": 4.172363531540619,
+        "high": 4.683831507831228
+      },
+      "source": "pipeline/results/exact_replay/headline_carc.json headline_median / bootstrap_ci95"
+    },
+    "first_run_overhead_median": 1.320843729040477,
+    "break_even_n_median": 0.25991830789174863,
+    "first_run_note": "1.32\u00d7 first-run overhead and 0.26-update break-even apply when filling the cache; the per-release projection below assumes a warm cache and charges only the update (or rebuild) cost.",
+    "pfam_cadence": {
+      "releases": 8,
+      "months": 25,
+      "releases_per_year": 3.84,
+      "source": "paper Figure 1 / intro (eight releases in 25 months)"
+    },
+    "rebuild": {
+      "threshold_f_delta": 0.9,
+      "measured_pairs": [
+        {
+          "old_release": "37.0",
+          "new_release": "37.1",
+          "f_delta": 0.3926620156341935
+        },
+        {
+          "old_release": "37.1",
+          "new_release": "37.2",
+          "f_delta": 0.041368998172453895
+        },
+        {
+          "old_release": "37.2",
+          "new_release": "37.3",
+          "f_delta": 0.03181297084834589
+        },
+        {
+          "old_release": "37.3",
+          "new_release": "37.4",
+          "f_delta": 0.020132600258732213
+        },
+        {
+          "old_release": "37.4",
+          "new_release": "38.0",
+          "f_delta": 0.9311802701115678
+        },
+        {
+          "old_release": "38.0",
+          "new_release": "38.1",
+          "f_delta": 0.1221935155198137
+        },
+        {
+          "old_release": "38.1",
+          "new_release": "38.2",
+          "f_delta": 0.13446605163602576
+        }
+      ],
+      "rebuild_pairs": [
+        {
+          "old_release": "37.4",
+          "new_release": "38.0",
+          "f_delta": 0.9311802701115678
+        }
+      ],
+      "rebuild_fraction_among_measured_pairs": 0.14285714285714285,
+      "fallback": "\u2248 one full stock rerun under TARE"
+    }
+  },
+  "validation": {
+    "n_genomes": 62,
+    "n_headline": 9,
+    "n_w8": 53,
+    "rate_core_seconds_per_protein": 2.065190111872838,
+    "median_abs_rel_error_stock_wall": 0.26284007645898827,
+    "mean_abs_rel_error_stock_wall": 0.28296378743696127,
+    "widen_threshold": 0.25,
+    "widen_stated_range": true,
+    "widen_reason": "median abs relative error 0.2628 > 0.25",
+    "observed_core_seconds_per_protein": {
+      "min": 2.0168222217644827,
+      "p10": 2.1831722444584294,
+      "median": 2.801555842860195,
+      "p90": 4.698227744241987,
+      "max": 5.5910276892744575
+    },
+    "per_genome": [
+      {
+        "source": "headline",
+        "proteome": "GCF_002302335.1",
+        "n_proteins": 4408,
+        "cpus": 4,
+        "measured_stock_wall_s": 2324.954020690173,
+        "predicted_stock_wall_s": 2275.8395032838675,
+        "abs_rel_error": 0.0211249413834539,
+        "measured_core_s_per_protein": 2.1097586394647667
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_009433135.1",
+        "n_proteins": 4659,
+        "cpus": 4,
+        "measured_stock_wall_s": 2405.430182803888,
+        "predicted_stock_wall_s": 2405.430182803888,
+        "abs_rel_error": 0.0,
+        "measured_core_s_per_protein": 2.065190111872838
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_049949335.1",
+        "n_proteins": 3978,
+        "cpus": 4,
+        "measured_stock_wall_s": 2227.292679260019,
+        "predicted_stock_wall_s": 2053.8315662575374,
+        "abs_rel_error": 0.0778798020653987,
+        "measured_core_s_per_protein": 2.2396105372147
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_054388855.1",
+        "n_proteins": 4102,
+        "cpus": 4,
+        "measured_stock_wall_s": 2425.8328543403186,
+        "predicted_stock_wall_s": 2117.8524597255955,
+        "abs_rel_error": 0.12695862126843663,
+        "measured_core_s_per_protein": 2.3655122909218123
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_055556535.1",
+        "n_proteins": 4085,
+        "cpus": 4,
+        "measured_stock_wall_s": 2107.1176845380105,
+        "predicted_stock_wall_s": 2109.075401750136,
+        "abs_rel_error": 0.0009290972338616911,
+        "measured_core_s_per_protein": 2.0632731305145757
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_061234675.1",
+        "n_proteins": 4128,
+        "cpus": 4,
+        "measured_stock_wall_s": 2554.41851097811,
+        "predicted_stock_wall_s": 2131.2761954527687,
+        "abs_rel_error": 0.16565113105264667,
+        "measured_core_s_per_protein": 2.475211735443905
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_009948655.1",
+        "n_proteins": 4555,
+        "cpus": 4,
+        "measured_stock_wall_s": 2329.090906601865,
+        "predicted_stock_wall_s": 2351.7352398951944,
+        "abs_rel_error": 0.009722391354130316,
+        "measured_core_s_per_protein": 2.045304857608663
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_022559285.1",
+        "n_proteins": 4285,
+        "cpus": 4,
+        "measured_stock_wall_s": 2203.676445968915,
+        "predicted_stock_wall_s": 2212.3349073437776,
+        "abs_rel_error": 0.003929098298754934,
+        "measured_core_s_per_protein": 2.057107534160014
+      },
+      {
+        "source": "headline",
+        "proteome": "GCF_030347155.1",
+        "n_proteins": 4610,
+        "cpus": 4,
+        "measured_stock_wall_s": 2324.387610583566,
+        "predicted_stock_wall_s": 2380.1316039334456,
+        "abs_rel_error": 0.023982227876306852,
+        "measured_core_s_per_protein": 2.0168222217644827
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_037157775.1",
+        "n_proteins": 10560,
+        "cpus": 8,
+        "measured_stock_wall_s": 6077.09583785804,
+        "predicted_stock_wall_s": 2726.0509476721463,
+        "abs_rel_error": 0.5514220903527857,
+        "measured_core_s_per_protein": 4.6038604832257874
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000001215.4",
+        "n_proteins": 30802,
+        "cpus": 8,
+        "measured_stock_wall_s": 15826.607834071387,
+        "predicted_stock_wall_s": 7951.498228238394,
+        "abs_rel_error": 0.49758670262110893,
+        "measured_core_s_per_protein": 4.110540311426891
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000007225.1",
+        "n_proteins": 2559,
+        "cpus": 8,
+        "measured_stock_wall_s": 1788.429982106667,
+        "predicted_stock_wall_s": 660.602687035324,
+        "abs_rel_error": 0.6306242382174939,
+        "measured_core_s_per_protein": 5.5910276892744575
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000016385.1",
+        "n_proteins": 2443,
+        "cpus": 8,
+        "measured_stock_wall_s": 735.8118543489836,
+        "predicted_stock_wall_s": 630.6574304131678,
+        "abs_rel_error": 0.14290939091875887,
+        "measured_core_s_per_protein": 2.409535339661019
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000812185.1",
+        "n_proteins": 1456,
+        "cpus": 8,
+        "measured_stock_wall_s": 447.3058461030014,
+        "predicted_stock_wall_s": 375.8646003608565,
+        "abs_rel_error": 0.1597145361826862,
+        "measured_core_s_per_protein": 2.4577244291373703
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_002078355.1",
+        "n_proteins": 1778,
+        "cpus": 8,
+        "measured_stock_wall_s": 648.747009340208,
+        "predicted_stock_wall_s": 458.98850236373823,
+        "abs_rel_error": 0.29250001039613105,
+        "measured_core_s_per_protein": 2.918996667447505
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_002214165.1",
+        "n_proteins": 961,
+        "cpus": 8,
+        "measured_stock_wall_s": 592.6567695792764,
+        "predicted_stock_wall_s": 248.08096218872467,
+        "abs_rel_error": 0.5814087091845151,
+        "measured_core_s_per_protein": 4.93366717651843
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_002788215.1",
+        "n_proteins": 3275,
+        "cpus": 8,
+        "measured_stock_wall_s": 936.0667768069543,
+        "predicted_stock_wall_s": 845.4372020479431,
+        "abs_rel_error": 0.09681956138659308,
+        "measured_core_s_per_protein": 2.286575332658209
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_008000775.2",
+        "n_proteins": 3862,
+        "cpus": 8,
+        "measured_stock_wall_s": 1442.0176070523448,
+        "predicted_stock_wall_s": 996.9705265066125,
+        "abs_rel_error": 0.30862804890119294,
+        "measured_core_s_per_protein": 2.987089812640797
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_013407145.1",
+        "n_proteins": 1897,
+        "cpus": 8,
+        "measured_stock_wall_s": 645.9864554498345,
+        "predicted_stock_wall_s": 489.70820527784673,
+        "abs_rel_error": 0.24192186825831039,
+        "measured_core_s_per_protein": 2.7242444088553905
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_023169545.1",
+        "n_proteins": 724,
+        "cpus": 8,
+        "measured_stock_wall_s": 279.1475054146722,
+        "predicted_stock_wall_s": 186.89970512449185,
+        "abs_rel_error": 0.3304625637013905,
+        "measured_core_s_per_protein": 3.0845028222615714
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_025839675.1",
+        "n_proteins": 5052,
+        "cpus": 8,
+        "measured_stock_wall_s": 1722.3192830840126,
+        "predicted_stock_wall_s": 1304.167555647697,
+        "abs_rel_error": 0.242784094414577,
+        "measured_core_s_per_protein": 2.7273464498559186
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_029232205.1",
+        "n_proteins": 1169,
+        "cpus": 8,
+        "measured_stock_wall_s": 420.3478024690412,
+        "predicted_stock_wall_s": 301.77590509741844,
+        "abs_rel_error": 0.2820804502251576,
+        "measured_core_s_per_protein": 2.8766316678805213
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_029338335.1",
+        "n_proteins": 5366,
+        "cpus": 8,
+        "measured_stock_wall_s": 1866.9398883478716,
+        "predicted_stock_wall_s": 1385.226267538706,
+        "abs_rel_error": 0.2580231017697377,
+        "measured_core_s_per_protein": 2.783361741852958
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_036967215.1",
+        "n_proteins": 2717,
+        "cpus": 8,
+        "measured_stock_wall_s": 1231.57979096286,
+        "predicted_stock_wall_s": 701.3901917448126,
+        "abs_rel_error": 0.43049553354845205,
+        "measured_core_s_per_protein": 3.626293090799735
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_900083515.1",
+        "n_proteins": 1922,
+        "cpus": 8,
+        "measured_stock_wall_s": 564.2259972402826,
+        "predicted_stock_wall_s": 496.16192437744934,
+        "abs_rel_error": 0.12063264223156192,
+        "measured_core_s_per_protein": 2.3484953058908746
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000014725.1",
+        "n_proteins": 2584,
+        "cpus": 8,
+        "measured_stock_wall_s": 1011.8300353409722,
+        "predicted_stock_wall_s": 667.0564061349266,
+        "abs_rel_error": 0.34074263182932873,
+        "measured_core_s_per_protein": 3.132600728609821
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000020645.1",
+        "n_proteins": 2751,
+        "cpus": 8,
+        "measured_stock_wall_s": 809.3216979168355,
+        "predicted_stock_wall_s": 710.1672497202721,
+        "abs_rel_error": 0.12251549470597826,
+        "measured_core_s_per_protein": 2.3535345631896343
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000020945.1",
+        "n_proteins": 1411,
+        "cpus": 8,
+        "measured_stock_wall_s": 809.2374899159186,
+        "predicted_stock_wall_s": 364.2479059815718,
+        "abs_rel_error": 0.5498875045699898,
+        "measured_core_s_per_protein": 4.588164365221367
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000024985.1",
+        "n_proteins": 3453,
+        "cpus": 8,
+        "measured_stock_wall_s": 1332.0898086410016,
+        "predicted_stock_wall_s": 891.3876820371137,
+        "abs_rel_error": 0.3308351462079665,
+        "measured_core_s_per_protein": 3.0862202343260967
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000146505.1",
+        "n_proteins": 3101,
+        "cpus": 8,
+        "measured_stock_wall_s": 1111.341958023142,
+        "predicted_stock_wall_s": 800.5193171147088,
+        "abs_rel_error": 0.27968226940817154,
+        "measured_core_s_per_protein": 2.867054390256413
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000165505.1",
+        "n_proteins": 2910,
+        "cpus": 8,
+        "measured_stock_wall_s": 1284.5987335843965,
+        "predicted_stock_wall_s": 751.2129031937449,
+        "abs_rel_error": 0.41521590863035746,
+        "measured_core_s_per_protein": 3.5315429101976537
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000177635.2",
+        "n_proteins": 2556,
+        "cpus": 8,
+        "measured_stock_wall_s": 1501.0837642853148,
+        "predicted_stock_wall_s": 659.8282407433717,
+        "abs_rel_error": 0.5604320981664043,
+        "measured_core_s_per_protein": 4.698227744241987
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000284335.1",
+        "n_proteins": 1500,
+        "cpus": 8,
+        "measured_stock_wall_s": 852.3001870028675,
+        "predicted_stock_wall_s": 387.2231459761571,
+        "abs_rel_error": 0.5456728135449131,
+        "measured_core_s_per_protein": 4.545600997348626
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000317125.1",
+        "n_proteins": 6032,
+        "cpus": 8,
+        "measured_stock_wall_s": 1783.8091138801537,
+        "predicted_stock_wall_s": 1557.1533443521198,
+        "abs_rel_error": 0.12706279375095847,
+        "measured_core_s_per_protein": 2.3657945807429095
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_001017655.1",
+        "n_proteins": 2364,
+        "cpus": 8,
+        "measured_stock_wall_s": 1457.4464358147234,
+        "predicted_stock_wall_s": 610.2636780584236,
+        "abs_rel_error": 0.5812788291479942,
+        "measured_core_s_per_protein": 4.932136838628505
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_001027545.1",
+        "n_proteins": 1341,
+        "cpus": 8,
+        "measured_stock_wall_s": 367.2811315860599,
+        "predicted_stock_wall_s": 346.17749250268446,
+        "abs_rel_error": 0.057459088606708196,
+        "measured_core_s_per_protein": 2.1910880333247422
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_001547735.1",
+        "n_proteins": 1807,
+        "cpus": 8,
+        "measured_stock_wall_s": 633.7436940129846,
+        "predicted_stock_wall_s": 466.4748165192773,
+        "abs_rel_error": 0.26393773866928644,
+        "measured_core_s_per_protein": 2.805727477644647
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_002266435.3",
+        "n_proteins": 6497,
+        "cpus": 8,
+        "measured_stock_wall_s": 2158.645162255969,
+        "predicted_stock_wall_s": 1677.1925196047284,
+        "abs_rel_error": 0.2230346381468649,
+        "measured_core_s_per_protein": 2.6580208246956674
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_002871995.2",
+        "n_proteins": 1831,
+        "cpus": 8,
+        "measured_stock_wall_s": 679.391819247976,
+        "predicted_stock_wall_s": 472.6703868548958,
+        "abs_rel_error": 0.3042742443114809,
+        "measured_core_s_per_protein": 2.9683968072003317
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_003722295.1",
+        "n_proteins": 3897,
+        "cpus": 8,
+        "measured_stock_wall_s": 2216.202686870005,
+        "predicted_stock_wall_s": 1006.0057332460561,
+        "abs_rel_error": 0.5460678126571259,
+        "measured_core_s_per_protein": 4.5495564523890275
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_004376055.1",
+        "n_proteins": 3027,
+        "cpus": 8,
+        "measured_stock_wall_s": 1074.749703694135,
+        "predicted_stock_wall_s": 781.416308579885,
+        "abs_rel_error": 0.2729318222708068,
+        "measured_core_s_per_protein": 2.8404352922210374
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_005697565.1",
+        "n_proteins": 761,
+        "cpus": 8,
+        "measured_stock_wall_s": 276.54179907171056,
+        "predicted_stock_wall_s": 196.45120939190372,
+        "abs_rel_error": 0.28961477052891527,
+        "measured_core_s_per_protein": 2.907141120333357
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_014701195.1",
+        "n_proteins": 2232,
+        "cpus": 8,
+        "measured_stock_wall_s": 609.1050562039018,
+        "predicted_stock_wall_s": 576.1880412125217,
+        "abs_rel_error": 0.05404160523067608,
+        "measured_core_s_per_protein": 2.1831722444584294
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_020886695.1",
+        "n_proteins": 3484,
+        "cpus": 8,
+        "measured_stock_wall_s": 1207.6077374774031,
+        "predicted_stock_wall_s": 899.3902937206209,
+        "abs_rel_error": 0.25522976889881815,
+        "measured_core_s_per_protein": 2.7729224741157363
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_022813675.1",
+        "n_proteins": 2250,
+        "cpus": 8,
+        "measured_stock_wall_s": 1536.8536458550952,
+        "predicted_stock_wall_s": 580.8347189642357,
+        "abs_rel_error": 0.6220624387164315,
+        "measured_core_s_per_protein": 5.464368518595895
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_022814725.1",
+        "n_proteins": 3295,
+        "cpus": 8,
+        "measured_stock_wall_s": 1047.4394992841408,
+        "predicted_stock_wall_s": 850.6001773276251,
+        "abs_rel_error": 0.18792428783814527,
+        "measured_core_s_per_protein": 2.5431004534971553
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_025273655.1",
+        "n_proteins": 1125,
+        "cpus": 8,
+        "measured_stock_wall_s": 356.359496077057,
+        "predicted_stock_wall_s": 290.41735948211783,
+        "abs_rel_error": 0.1850438597002624,
+        "measured_core_s_per_protein": 2.534111972103516
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_027923555.1",
+        "n_proteins": 3387,
+        "cpus": 8,
+        "measured_stock_wall_s": 1706.0132914171554,
+        "predicted_stock_wall_s": 874.3498636141628,
+        "abs_rel_error": 0.48748941874429613,
+        "measured_core_s_per_protein": 4.029556047043768
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_028728065.1",
+        "n_proteins": 4227,
+        "cpus": 8,
+        "measured_stock_wall_s": 1478.0678809420206,
+        "predicted_stock_wall_s": 1091.1948253608107,
+        "abs_rel_error": 0.2617424142486901,
+        "measured_core_s_per_protein": 2.797384208075743
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_046845665.1",
+        "n_proteins": 3605,
+        "cpus": 8,
+        "measured_stock_wall_s": 1122.6225023539737,
+        "predicted_stock_wall_s": 930.6262941626976,
+        "abs_rel_error": 0.17102472807082378,
+        "measured_core_s_per_protein": 2.4912565932959194
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_055390895.1",
+        "n_proteins": 3196,
+        "cpus": 8,
+        "measured_stock_wall_s": 1005.17930707708,
+        "predicted_stock_wall_s": 825.0434496931988,
+        "abs_rel_error": 0.17920768574881524,
+        "measured_core_s_per_protein": 2.516093384423229
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_059995355.1",
+        "n_proteins": 2949,
+        "cpus": 8,
+        "measured_stock_wall_s": 1765.8974000099115,
+        "predicted_stock_wall_s": 761.2807049891248,
+        "abs_rel_error": 0.5688986772476974,
+        "measured_core_s_per_protein": 4.790498202807491
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_900660515.1",
+        "n_proteins": 727,
+        "cpus": 8,
+        "measured_stock_wall_s": 308.63728942908347,
+        "predicted_stock_wall_s": 187.67415141644415,
+        "abs_rel_error": 0.39192651748723123,
+        "measured_core_s_per_protein": 3.3962837901412213
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_946900835.1",
+        "n_proteins": 2760,
+        "cpus": 8,
+        "measured_stock_wall_s": 972.3798261629418,
+        "predicted_stock_wall_s": 712.4905885961291,
+        "abs_rel_error": 0.2672713178268499,
+        "measured_core_s_per_protein": 2.818492249747657
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCF_000146045.2",
+        "n_proteins": 6021,
+        "cpus": 8,
+        "measured_stock_wall_s": 2219.3833948480897,
+        "predicted_stock_wall_s": 1554.3137079482947,
+        "abs_rel_error": 0.2996641717891726,
+        "measured_core_s_per_protein": 2.9488568607847063
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_001817145.1",
+        "n_proteins": 1040,
+        "cpus": 8,
+        "measured_stock_wall_s": 326.7262453828007,
+        "predicted_stock_wall_s": 268.47471454346896,
+        "abs_rel_error": 0.1782884958356583,
+        "measured_core_s_per_protein": 2.5132788106369284
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_001824745.1",
+        "n_proteins": 671,
+        "cpus": 8,
+        "measured_stock_wall_s": 263.8254936491139,
+        "predicted_stock_wall_s": 173.21782063333427,
+        "abs_rel_error": 0.34343789814447284,
+        "measured_core_s_per_protein": 3.1454604309879453
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_002779365.1",
+        "n_proteins": 649,
+        "cpus": 8,
+        "measured_stock_wall_s": 219.64326606271788,
+        "predicted_stock_wall_s": 167.538547825684,
+        "abs_rel_error": 0.23722429178482388,
+        "measured_core_s_per_protein": 2.707467070110544
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_002781185.1",
+        "n_proteins": 571,
+        "cpus": 8,
+        "measured_stock_wall_s": 297.9130021170713,
+        "predicted_stock_wall_s": 147.4029442349238,
+        "abs_rel_error": 0.5052148003362449,
+        "measured_core_s_per_protein": 4.173912463986988
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_902806385.1",
+        "n_proteins": 2182,
+        "cpus": 8,
+        "measured_stock_wall_s": 1402.8183373347856,
+        "predicted_stock_wall_s": 563.2806030133165,
+        "abs_rel_error": 0.598465041394103,
+        "measured_core_s_per_protein": 5.143238633674741
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_982546495.1",
+        "n_proteins": 2042,
+        "cpus": 8,
+        "measured_stock_wall_s": 614.111671464052,
+        "predicted_stock_wall_s": 527.1397760555419,
+        "abs_rel_error": 0.14162228052296702,
+        "measured_core_s_per_protein": 2.405922317195111
+      },
+      {
+        "source": "w8_diverse",
+        "proteome": "GCA_060790075.1",
+        "n_proteins": 3661,
+        "cpus": 8,
+        "measured_stock_wall_s": 1180.0827208240516,
+        "predicted_stock_wall_s": 945.0826249458074,
+        "abs_rel_error": 0.19913866352872592,
+        "measured_core_s_per_protein": 2.5787112173156004
+      }
+    ]
+  },
+  "projection": {
+    "all_refseq_bacteria": {
+      "scope": "all_refseq_bacteria",
+      "n_proteins": 2179028082,
+      "stock_core_years_per_release": {
+        "point": 142.59979366110335,
+        "widened_lo": 105.11885299218301,
+        "widened_hi": 324.40902319361436,
+        "validation_band_lo": 105.11885299218301,
+        "validation_band_hi": 180.0807343300237,
+        "csp_p10_lo": 150.7463694488138,
+        "csp_p90_hi": 324.40902319361436
+      },
+      "tare_core_years_per_typical_update": {
+        "point": 33.60663993313079,
+        "widened_lo": 22.442919395462322,
+        "widened_hi": 77.75185952548779,
+        "speedup_point": 4.243202948728078,
+        "speedup_ci95": [
+          4.172363531540619,
+          4.683831507831228
+        ]
+      },
+      "tare_core_years_per_rebuild_release": {
+        "point": 142.59979366110335,
+        "widened_lo": 105.11885299218301,
+        "widened_hi": 324.40902319361436,
+        "assumption": "f_delta\u22480.93 like 37.4\u219238.0 \u2248 one full rerun under TARE (paper: measured speedup \u22481.00\u00d7 at that churn)"
+      },
+      "per_year": {
+        "pfam_releases_per_year": 3.84,
+        "stock_core_years": 547.5832076586369,
+        "tare_core_years_historical_mix": {
+          "point": 188.84002738828147,
+          "widened_lo": 131.53446548020497,
+          "widened_hi": 433.87621321867397,
+          "rebuild_fraction_among_measured_pairs": 0.14285714285714285
+        },
+        "tare_core_years_if_all_typical_updates": 129.04949734322224,
+        "tare_core_years_if_all_rebuilds": 547.5832076586369
+      }
+    },
+    "representatives_only": {
+      "scope": "representatives_only",
+      "n_proteins": 92099519,
+      "stock_core_years_per_release": {
+        "point": 6.027169871823096,
+        "widened_lo": 4.442988081881803,
+        "widened_hi": 13.71157868143148,
+        "validation_band_lo": 4.442988081881803,
+        "validation_band_hi": 7.611351661764389,
+        "csp_p10_lo": 6.3714957287237235,
+        "csp_p90_hi": 13.71157868143148
+      },
+      "tare_core_years_per_typical_update": {
+        "point": 1.420429318288858,
+        "widened_lo": 0.9485798271037842,
+        "widened_hi": 3.2862857173829636,
+        "speedup_point": 4.243202948728078,
+        "speedup_ci95": [
+          4.172363531540619,
+          4.683831507831228
+        ]
+      },
+      "tare_core_years_per_rebuild_release": {
+        "point": 6.027169871823096,
+        "widened_lo": 4.442988081881803,
+        "widened_hi": 13.71157868143148,
+        "assumption": "f_delta\u22480.93 like 37.4\u219238.0 \u2248 one full rerun under TARE (paper: measured speedup \u22481.00\u00d7 at that churn)"
+      },
+      "per_year": {
+        "pfam_releases_per_year": 3.84,
+        "stock_core_years": 23.14433230780069,
+        "tare_core_years_historical_mix": {
+          "point": 7.981574828739426,
+          "widened_lo": 5.559479064413901,
+          "widened_hi": 18.338355009314338,
+          "rebuild_fraction_among_measured_pairs": 0.14285714285714285
+        },
+        "tare_core_years_if_all_typical_updates": 5.454448582229215,
+        "tare_core_years_if_all_rebuilds": 23.14433230780069
+      }
+    }
+  },
+  "assumptions": [
+    "Protein work scales as sum of NCBI protein_coding_gene_count over assemblies with a non-blank count; blank/na rows are excluded, never imputed.",
+    "Per-protein cost is the median headline-server core-seconds/protein (stock wall \u00d7 --cpu / n_records) against current Pfam (38.2 in the timed headline).",
+    "A typical Pfam update matches the timed 38.1\u219238.2 regime (headline median speedup); a rebuild-like release (f_delta\u22650.9, as in 37.4\u219238.0) costs \u2248 one full stock rerun under TARE.",
+    "Annual cadence uses eight Pfam releases in 25 months; historical rebuild fraction is n_rebuild/n_pairs from release_chain/pairs.json.",
+    "Projection assumes a warm TARE cache (first-run 1.32\u00d7 paid once, break-even 0.26 updates); per-release figures are update costs only.",
+    "Core-year uses 365.25 SI days. Hardware is the headline AMD EPYC 7542 regime; W8 used 8 CPUs on other nodes and drives the validation widen."
+  ],
+  "what_would_make_the_number_wrong": [
+    "NCBI protein_coding_gene_count systematically differs from hmmscan FASTA record counts at scale.",
+    "hmmscan core-seconds/protein on production queues differs from the headline EPYC 7542/--cpu 4 median (validation already shows ~26% median wall error across W8).",
+    "Future Pfam releases are mostly rebuilds (or mostly tiny), so the historical 1/7 rebuild mix is a bad prior.",
+    "Caches are cold every release, or verify/refuse rates force full reruns far above the timed 13.4% pair.",
+    "Counting every assembly (including near-duplicates) overstates unique protein work relative to a deduplicated proteome catalog."
+  ],
+  "headline_sentence": {
+    "all_refseq_bacteria": "PROJECTED: re-annotating every RefSeq bacterial genome (2,179,028,082 proteins over 544,814 assemblies with counts; 127 excluded) against each new Pfam release costs 143 core-years with a full stock hmmscan; with TARE it costs 34 core-years on a typical update (headline median 4.24\u00d7) and \u2248143 core-years on a rebuild-like release.",
+    "representatives_only": "PROJECTED (reference/representative only, 92,099,519 proteins): 6.0 core-years stock / 1.4 TARE typical update per release."
+  }
+}
