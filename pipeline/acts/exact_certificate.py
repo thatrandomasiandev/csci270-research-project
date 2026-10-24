@@ -22,6 +22,13 @@ def body_lines(text: str) -> list[str]:
     return [line for line in text.splitlines() if line.strip() and not line.startswith("#")]
 
 
+def split_body_fields(line: str) -> list[str]:
+    """Split a body line. Tabs preserve spaces inside a cell (json-records)."""
+    if "\t" in line:
+        return line.split("\t")
+    return line.split()
+
+
 def judge(
     r_text: str,
     plus_text: str,
@@ -32,7 +39,7 @@ def judge(
     def take(text: str, keep) -> list[str]:
         chosen = []
         for line in body_lines(text):
-            cells = line.split()
+            cells = split_body_fields(line)
             if subject_col < len(cells) and keep(cells[subject_col]):
                 chosen.append(line)
         return chosen

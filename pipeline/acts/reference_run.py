@@ -1215,9 +1215,27 @@ class ReferenceIncremental(Strategy):
             return base
         return self._json_records_invoke(base)
 
+    def _seed_json_columns_from_tables(self, tables: Sequence[TableReport]) -> None:
+        """Restore the fill-time json-records header before the first replay batch.
+
+        An empty first batch would otherwise lock columns to ``[__json__]`` alone,
+        and later findings become JSON-only lines that whitespace-split into
+        fake record/entry tokens (e.g. ``is`` from a ``pass``-body message).
+        """
+        if self.output_format != "json-records":
+            return
+        for table in tables:
+            if table.name in self._json_columns:
+                continue
+            if not table.meta or not table.meta[0].startswith("#"):
+                continue
+            cols = table.meta[0][1:].split("\t")
+            if cols:
+                self._json_columns[table.name] = cols
+
     def _coerce_json_tables(self, texts: dict[str, str]) -> dict[str, str]:
         """Convert tool JSON outputs to synthetic line tables; stash envelopes."""
-        from acts.table_json import JSON_BLOB_COL, parse_json_records, to_line_table
+        from acts.table_json import parse_json_records, to_line_table
 
         rows_key = self.json_rows or "results"
         out: dict[str, str] = {}
@@ -1229,10 +1247,13 @@ class ReferenceIncremental(Strategy):
                 "rows_key": doc.rows_key,
             }
             self._json_raw[name] = text
-            # First invoke (usually the whole probe) locks the header. Later
-            # part scans pad missing optional fields; new fields stay only in
-            # __json__ so row width stays stable for the fitter.
-            locked = self._json_columns.setdefault(name, list(doc.columns))
+            # Lock the header from the first *non-empty* result (or from the
+            # stored fill meta via _seed_json_columns_from_tables). An empty
+            # first batch must not collapse the header to __json__ alone.
+            locked = self._json_columns.get(name)
+            if locked is None and doc.rows:
+                locked = list(doc.columns)
+                self._json_columns[name] = locked
             out[name] = to_line_table(doc, columns=locked)
         return out
 
@@ -1469,6 +1490,7 @@ class ReferenceIncremental(Strategy):
                 stored["slack_factor"] = self._slack_factor
         decision = stored.get("decision")
         tables = tables_from_dict(stored.get("tables") or [])
+        self._seed_json_columns_from_tables(tables)
         # A column that is not a normalizer (a rank, an overlap mark) still
         # has to come out of the tool. Exact mode replays instead of refusing,
         # and the probe-sample body check is what decides.

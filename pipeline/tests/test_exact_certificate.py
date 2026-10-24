@@ -53,6 +53,14 @@ class CertificatePredicateTests(unittest.TestCase):
         self.assertEqual(verdict["missing_candidate_rows"], 0)
         self.assertEqual(verdict["extra_candidate_rows"], 0)
 
+    def test_tab_cells_with_spaces_keep_subject_column(self) -> None:
+        # json-records: entry id in col 0, path in col 1, message with spaces later.
+        # Whitespace split would shift columns; tab split must not.
+        line = "pass-body-fn\t/tmp/a.py\t1\t1\t0\t`pass` is the body\t{json}\n"
+        verdict = judge(line, line, {"pass-body-fn"}, {"other"}, 0)
+        self.assertTrue(verdict["pass"])
+        self.assertEqual(verdict["missing_candidate_rows"], 0)
+
 
 class CertificateSampleTests(unittest.TestCase):
     def test_sample_keeps_order_and_is_stable(self) -> None:

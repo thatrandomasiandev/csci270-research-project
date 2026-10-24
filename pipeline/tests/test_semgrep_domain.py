@@ -277,5 +277,73 @@ class LineTableSanityTests(unittest.TestCase):
         self.assertEqual(widths, {len(doc.columns)})
         self.assertEqual(len(text.splitlines()) - 1, 1)
 
+    def test_empty_first_result_does_not_lock_json_only_header(self) -> None:
+        """Empty first batch must not lock [__json__] (P2 min-delta false REFUSE_MATCH)."""
+        from acts.reference_fit import TableReport
+        from acts.reference_run import ReferenceIncremental
+        from acts.table_json import to_line_table
+
+        empty = '{"version":"1","results":[],"errors":[]}'
+        hit = json.dumps(
+            {
+                "version": "1",
+                "results": [
+                    {
+                        "check_id": "pass-body-fn",
+                        "path": "/tmp/0012.py",
+                        "start": {"line": 32, "col": 1, "offset": 703},
+                        "end": {"line": 35, "col": 9, "offset": 838},
+                        "extra": {"message": "`pass` is the body of function foo"},
+                    }
+                ],
+                "errors": [],
+            },
+            separators=(",", ":"),
+        )
+        with tempfile.TemporaryDirectory() as raw:
+            out = Path(raw)
+            # Path A: seed from fill meta, then empty then hit.
+            strat = ReferenceIncremental(
+                argv=["true"],
+                input_path=out / "in",
+                out_dir=out,
+                output_format="json-records",
+                json_rows="results",
+            )
+            meta = [
+                "#check_id\tpath\tstart.line\tstart.col\tstart.offset\tend.line\tend.col\tend.offset\textra.message\t__json__"
+            ]
+            strat._seed_json_columns_from_tables(
+                [TableReport(name="out", record_col=1, entry_col=0, index_col=4, meta=meta, columns=[])]
+            )
+            strat._coerce_json_tables({"out": empty})
+            full_table = strat._coerce_json_tables({"out": hit})["out"]
+            body = [ln for ln in full_table.splitlines() if ln.strip() and not ln.startswith("#")]
+            self.assertTrue(body)
+            self.assertIn("\t", body[0])
+            fields = body[0].split("\t")
+            self.assertEqual(fields[0], "pass-body-fn")
+            self.assertEqual(fields[1], "/tmp/0012.py")
+            # Path B: no seed; empty must not lock, so the later hit still tabs.
+            strat2 = ReferenceIncremental(
+                argv=["true"],
+                input_path=out / "in",
+                out_dir=out / "b",
+                output_format="json-records",
+                json_rows="results",
+            )
+            strat2._coerce_json_tables({"out": empty})
+            self.assertNotIn("out", strat2._json_columns)
+            ok = strat2._coerce_json_tables({"out": hit})["out"]
+            ok_body = [ln for ln in ok.splitlines() if ln.strip() and not ln.startswith("#")]
+            self.assertIn("\t", ok_body[0])
+            # Old failure shape (manual lock to __json__ only): whitespace-split → record "is".
+            doc = parse_json_records(hit)
+            legacy = to_line_table(doc, columns=["__json__"])
+            legacy_body = [ln for ln in legacy.splitlines() if ln.strip() and not ln.startswith("#")]
+            self.assertNotIn("\t", legacy_body[0])
+            self.assertEqual(legacy_body[0].split()[1], "is")
+
+
 if __name__ == "__main__":
     unittest.main()

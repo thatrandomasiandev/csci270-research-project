@@ -39,3 +39,34 @@ Lock after this pilot’s limitations are accepted or mitigated.
 | Primary metric | Median wall ratio stock/TARE over the three TARE updates (laptop timings are not this metric) |
 
 Do not start CARC until: (a) a laptop release pair **SHIPs** an update under IC2, or (b) the measured claim is explicitly “refuse on coupling” rather than speedup.
+
+## Addendum 2026-10-24 (W2 overnight): lock timeouts off; diagnose P2 refuses
+
+### C4: wall-clock timeouts are nondeterminism
+
+Semgrep’s default `--timeout 5` emits rule×file `Timeout` rows into top-level `errors` (P2: `hardcoded-token` on `0683.py`). Those rows appear or vanish when the rule set or wall clock changes, so half-rule subsets disagreed with the full run (P2 rate **0.7**, seed 20261325). That is coupling class **C4**, not a TARE merge bug.
+
+**Locked Semgrep argv for every Semgrep/TARE run from this addendum on:**
+
+```
+--json --no-rewrite-rule-ids --metrics=off --disable-version-check
+--timeout 0 --timeout-threshold 0 --max-memory 0
+-j 2
+```
+
+(`--timeout 0` and `--timeout-threshold 0` disable per-rule time limits; `--max-memory 0` keeps the default “no memory limit.”) Re-measure of errors-dependence uses seed **20261326** (results below / in `semgrep_pilot.json`).
+
+### Attribution bugs found (TARE), not Semgrep cross-rule
+
+| Symptom (P2) | Root cause | Fix |
+|---|---|---|
+| Min-delta `REFUSE_MATCH` non-candidate `(is, {"check_id":"pass-body-fn"...})` | First empty replay batch locked json-records columns to `[__json__]`; later findings were JSON-only lines; whitespace split of `` `pass` is the body... `` made `record_col` → `is` | Do not lock columns from empty results; seed header from fill `table.meta` |
+| IC2 subject parse on tab cells | `exact_certificate.judge` used `line.split()` | Tab-aware `split_body_fields` (same rule as `_split_body_fields`) |
+
+Checked and **not** the P2 refuse cause: Semgrep dedup of identical spans across rules (plant still inconclusive); rule-id qualification collisions (concat ids unique); `check_id` ≠ rule `id` (pilot uses `--no-rewrite-rule-ids`); message wrapping (sanitized); merge order key (`path, start, end, check_id, message`).
+
+Exact refuse rows (P2 min-delta): file `corpus/files/0012.py`, rule `pass-body-fn`, span start line 32 col 1 → end line 35 col 9 — false non-candidate from the JSON-only lock bug above.
+
+### Re-run status
+
+See `pipeline/results/nonbio/semgrep_pilot.json` → `w2_overnight` and the report `pipeline/docs/prompts/2026-10-24_semgrep_W2_report.md`.
