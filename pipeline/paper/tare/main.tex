@@ -875,6 +875,12 @@ time iSeqSearch.}
 \textbf{Same problem outside biology.} When a reference release changes a global statistic, other fields recompute, approximate, or version---IR length\nobreakdash-normalized indexes and IDF drift~\cite{hadjieleftheriou2009incremental,staudinger2024reproducible}, mass\nobreakdash-spec spectral archives and database\nobreakdash-size {FDR}~\cite{frank2011spectral,aggarwal2022fdr}, astronomy catalog releases under updated global priors~\cite{delchambre2023gaia}. \sys's pin is the exact alternative when the normalizer is exposed.
 % source: CITED pipeline/docs/NONBIO_LITERATURE.md
 
+\textbf{Scale (PROJECTED).} Re-annotating every RefSeq bacterial genome against each new Pfam release is projected to cost
+143 core\nobreakdash-years for a full stock \texttt{hmmscan} of 2.18 billion proteins, versus 34 core\nobreakdash-years with \sys on a
+typical update at the headline median $4.24\times$ ($\approx$143 core\nobreakdash-years when a release rewrites ${\sim}$93\% of models,
+as in 37.4$\rightarrow$38.0).
+% source: PROJECTED pipeline/results/scale/projection.json projection.all_refseq_bacteria.stock_core_years_per_release.point=142.59979366110335 projection.all_refseq_bacteria.tare_core_years_per_typical_update.point=33.60663993313079 projection.all_refseq_bacteria.tare_core_years_per_rebuild_release.point=142.59979366110335 assembly_counts.all_bacteria.sum_protein_coding_gene_count=2179028082; MEASURED pipeline/results/exact_replay/headline_carc.json headline_median=4.243202948728078; MEASURED pipeline/results/release_chain/pairs.json pairs.4.f_delta=0.9311802701115678; DERIVED proteins_b=assembly_counts_all_bacteria_sum_protein_coding_gene_count/1e9; DERIVED pct93=100*pairs_4_f_delta; HAS PROJECTED; HAS core-years; HAS 37.4; HAS 38.0
+
 \textbf{Threats to validity.}
  \textit{Generality:} the two programs \sys replays exactly, HMMER and Infernal, come from one
 research group and share code, so they may share the property that makes replay work; the two refused programs come from
