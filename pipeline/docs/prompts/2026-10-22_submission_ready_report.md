@@ -18,7 +18,7 @@ Freeze still in force for `13260162`, `13260163`, `13260165` (pending/running at
 
 ### S2 — finalize path
 - `pipeline/paper/tare/collectors/` (W13/W8/W5x/W12a/W12b/WA2)
-- `pipeline/paper/tare/fill_macros.py` + `macros_pending.tex` (visible `\pending{...}`; finalize exits non-zero while any remain)
+- `pipeline/paper/tare/fill_macros.py` + `macros_pending.tex` (visible `\pending{..}`; finalize exits non-zero while any remain)
 - `pipeline/paper/tare/finalize.sh` (exit 0 ready / 2 still running / 1 hard fail)
 - `pipeline/docs/FINALIZE_RUNBOOK.md` with both-outcome wording per experiment
 

@@ -30,7 +30,7 @@ READ FIRST
 - The paper's description of the design and the first-run claim: pipeline/paper/tare/main.tex (read only).
 
 STEP 0 - BASELINE SNAPSHOT (before touching code)
-New worktree ../ACTS-sharedcontract, branch exp/shared-contract from origin/main; record HEAD. Commit
+New worktree ./ACTS-sharedcontract, branch exp/shared-contract from origin/main; record HEAD. Commit
 pipeline/results/shared_contract/p1_baseline.json with:
  a. full pytest result (`cd pipeline && python3 -m pytest -q`): counts and test ids;
  b. a regression corpus: every existing laptop-scale end-to-end fixture for the reference strategy (and one tiny real
@@ -82,7 +82,7 @@ STEP 4 - ZERO-REGRESSION GATES (report numbers; never loosen a gate)
  G-d default-path isolation test passes.
 
 STEP 5 - LAPTOP SMOKE (shape only, not evidence)
- On existing small fixtures, a batch of 3-5 genomes with the store: show which phases were skipped for genomes 2..N,
+ On existing small fixtures, a batch of 3-5 genomes with the store: show which phases were skipped for genomes 2.N,
  that every output equals stock, and the per-genome confirmations that ran. No speed claims.
 
 RULES
@@ -93,8 +93,7 @@ RULES
 4. Laptop: at most 2 threads, 3 GB RAM, nice -n 10, scratch ~/tmp/tare_sharedcontract/.
 5. Seeds: 20261331-20261339 only, after grepping the repo for collisions; record each.
 6. Never commit tools/carc-gpu-dashboard/, lab-notebook/, or the research-plan PDF. Say TARE, not ACTS, in prose.
-7. Commit small with tests alongside code; every commit message ends with:
-   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+7. Commit small with tests alongside code. Do not add a Co-Authored-By line or any AI attribution to commit messages.
    Push the branch; never merge to main; never force-push.
 
 REPORT (write pipeline/docs/prompts/2026-10-23_shared_contract_P1_report.md on the branch, and paste it back)

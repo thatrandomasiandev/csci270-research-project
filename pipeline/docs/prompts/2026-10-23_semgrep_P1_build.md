@@ -34,7 +34,7 @@ FACTS ALREADY ESTABLISHED (laptop, 2026-10-23; do not re-derive)
 - Semgrep takes target paths as command-line arguments, not a list file.
 
 STEP 0 - BASELINE SNAPSHOT (before touching code)
-Make your worktree ../ACTS-semgrep on a new branch exp/semgrep-domain from origin/main; record HEAD. Then record a
+Make your worktree ./ACTS-semgrep on a new branch exp/semgrep-domain from origin/main; record HEAD. Then record a
 committed baseline at pipeline/results/nonbio/p1_baseline.json:
  a. `cd pipeline && python3 -m pytest -q`: pass/fail counts and the list of test ids.
  b. A regression corpus that exercises every existing reference format and output path on the laptop: find the
@@ -100,8 +100,7 @@ RULES
 4. Laptop: at most 2 threads and 3 GB RAM, nice -n 10, scratch under ~/tmp/tare_semgrep_p1/.
 5. Seeds: if any randomness is needed, use 20261323 and record it. Never reuse a seed found in the repo.
 6. Never commit tools/carc-gpu-dashboard/, lab-notebook/, or the research-plan PDF. Say TARE, not ACTS, in prose.
-7. Commit small, with tests alongside code. Every commit message ends with:
-   Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+7. Commit small, with tests alongside code. Do not add a Co-Authored-By line or any AI attribution to commit messages.
    Push the branch. Never merge to main and never force-push.
 
 REPORT (write it to pipeline/docs/prompts/2026-10-23_semgrep_P1_report.md on the branch, and paste it back)

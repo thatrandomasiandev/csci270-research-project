@@ -117,7 +117,7 @@ SHARED RULES (copy verbatim into every subagent)
 5. New seeds only from 20261301-20261319, and never a seed already in the repo (grep first).
 6. Laptop: at most 2 threads and 3 GB RAM per subagent, nice -n 10; laptop times are never speed evidence.
 7. Downloads and installs need Josh's approval first (one message: name, URL, exact size).
-8. CARC only via the SSH alias `discovery` (ssh discovery '...', rsync -e ssh ... discovery:...). Never the raw host or
+8. CARC only via the SSH alias `discovery` (ssh discovery '..', rsync -e ssh .. discovery:..). Never the raw host or
    IP, carc-transfer, -S none, -o ControlMaster=no, or ssh -O exit. Never retry a failed connection in a loop: ask Josh.
    sbatch only; no compute on the login node. Project dir /project2/biyik_1165/jjt_373/csci270-star/, scratch
    /scratch1/$USER/. Timing jobs: --exclusive --mem=0 --constraint=epyc-7542, alternating stock/TARE, r=3, crash
@@ -127,8 +127,7 @@ SHARED RULES (copy verbatim into every subagent)
    argv, walls, per-run outcomes.
 10. Never commit Josh's own uncommitted files: tools/carc-gpu-dashboard/, lab-notebook/, the research-plan PDF,
     .gitignore edits. Say TARE, not ACTS, in all prose.
-11. Commit small. Every commit message ends with:
-    Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+11. Commit small. Do not add a Co-Authored-By line or any AI attribution to commit messages.
     Push branches. Never force-push.
 
 MERGING
