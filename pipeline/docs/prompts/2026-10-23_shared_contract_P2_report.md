@@ -2,8 +2,9 @@
 
 ## Final SHA
 
-`e185e2528782847527b3854e598f8a3fa7d65fdb` (pilot results in 57ffee1) — branch `exp/shared-contract`, worktree `../ACTS-sharedcontract`.
+`2429c0b3d088b4263d4e371f104a64f1976c9fc4` — branch `exp/shared-contract`, worktree `../ACTS-sharedcontract`.
 
+Pilot payload: `57ffee1077541959c74bf70d598b63f02ea848e9`.  
 Base `origin/main`: `b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8`.  
 P1 tip before this pilot: `86adef392f632a427a034cbe125637bae8482c37`.
 
