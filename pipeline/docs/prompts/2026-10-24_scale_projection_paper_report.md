@@ -1,5 +1,9 @@
 # W4 scale-projection sentence — hub fold-in (2026-10-24)
 
+## Final SHA
+
+`e7ae203` (paper sentence). Artifacts cherry-pick: `92d2ec2`.
+
 ## Decision
 
 **Shipped** in Discussion as `\textbf{Scale (PROJECTED).}` …
