@@ -1,0 +1,18 @@
+{
+  "exact_replay_pin_release": {
+    "files": {
+      "first/decision.txt": "13fe829c522ba91cc39b5031055d001d2a808c38853c31ed44bb0696cae9de9b",
+      "update/decision.txt": "8cf5d25cd59a625b6f94048da8198d98ebd19fe7e087ebcec68852ee486cd14c"
+    }
+  },
+  "identity_normalizer": {
+    "files": {
+      "first/decision.txt": "303241d622ced94b86efb1e03eeb59b8f6bfcd87740c54eb82a2c793956fc2c7"
+    }
+  },
+  "real_hmmscan_tiny": {
+    "files": {
+      "decision.txt": "9622fe68e0d4011fcb811d00520b8978e5cddf5cece06e2c2c9f1e0d0cba473d"
+    }
+  }
+}

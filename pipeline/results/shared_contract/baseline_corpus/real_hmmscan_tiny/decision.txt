@@ -1,0 +1,20 @@
+strategy: reference
+decision: REFUSE_PIN
+why:      pin check failed: no rows on the probe sample; pin cannot be checked
+verify: full
+mode: exact
+match: body-bytes
+reused_rows: 0
+n_entries: 4
+n_stable: 0
+n_fresh: 4
+n_partial: 0
+length_entries: 220
+length_fresh: 220
+length_partial: 0
+f_delta: 1.0
+f_threshold: 0.8
+f_threshold_source: default
+phases: {'parse_s': 0.0011097499991592485, 'coverage_read_s': 3.0459003028227016e-05, 'diff_s': 1.0830008250195533e-06, 'cache_load_s': 1.237499964190647e-05, 'subref_build_s': 0.00017854099860414863, 'prep_s': 2.079978003166616e-07, 'tool_s': 0.006668417001492344, 'read_output_s': 0.00016058400433394127, 'discovery_s': 0.004303875000914559, 'discovery_build_s': 0.00010116599878529087, 'discovery_scan_s': 0.003815834003034979, 'merge_rescale_s': 3.749999450519681e-06, 'cache_store_s': 0.00011479200111352839, 'pin_check_s': 0.0033390409989806358, 'total_s': 0.04041441699882853, 'probe_wall_s': 0.025741333000041777}
+probe_phases: {'subref_build_s': 0.0006068749971746001, 'prep_s': 0.006536666001920821, 'tool_s': 0.016946374998951796, 'read_output_s': 0.00029345900475163944}
+program_binary: /opt/homebrew/Cellar/hmmer/3.4/bin/hmmscan sha256:bc56e78284305f164a88ed41af48d2490f58e2eaee8bc47fae06f17dbe1cde34

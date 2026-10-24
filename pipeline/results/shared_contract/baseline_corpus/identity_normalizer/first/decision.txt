@@ -1,0 +1,26 @@
+strategy: reference
+decision: SHIP
+why:      exact replay under pinned normalizer
+verify: full
+mode: exact
+match: body-bytes
+reused_rows: 0
+n_entries: 4
+n_stable: 0
+n_fresh: 4
+n_partial: 0
+length_entries: 6
+length_fresh: 6
+length_partial: 0
+f_delta: 1.0
+f_threshold: 0.8
+f_threshold_source: default
+replay_records: 2
+replay_entries: 2
+candidate_pairs: 4
+n_batches: 1
+random_pads: 3 on 2 records, residue fraction 1.000000
+ic2: pass
+phases: {'parse_s': 5.562499791267328e-05, 'coverage_read_s': 1.5958001313265413e-05, 'diff_s': 7.919989002402872e-07, 'cache_load_s': 6.041002052370459e-06, 'discovery_s': 1.5624998923158273e-05, 'discovery_build_s': 0.0, 'discovery_scan_s': 0.0, 'merge_rescale_s': 5.666999641107395e-06, 'cache_store_s': 9.475000115344301e-05, 'pin_check_s': 2.2333999368129298e-05, 'replay_plan_s': 2.791999577311799e-06, 'replay_s': 1.8708000425249338e-05, 'replay_build_s': 0.0, 'replay_scan_s': 0.0, 'ic2_neighbor_s': 1.5250003343680874e-05, 'ic2_neighbor_build_s': 0.0, 'ic2_neighbor_scan_s': 0.0, 'ic2_random_20261031_s': 1.416700251866132e-05, 'ic2_random_20261031_build_s': 0.0, 'ic2_random_20261031_scan_s': 0.0, 'ic2_random_20261032_s': 1.2084001355106011e-05, 'ic2_random_20261032_build_s': 0.0, 'ic2_random_20261032_scan_s': 0.0, 'ic2_random_20261033_s': 1.0250001651002094e-05, 'ic2_random_20261033_build_s': 0.0, 'ic2_random_20261033_scan_s': 0.0, 'render_s': 9.779099855222739e-05, 'verify_s': 2.58299769484438e-06, 'verify_build_s': 0.0, 'verify_scan_s': 0.0, 'total_s': 0.0019314169985591434, 'probe_wall_s': 0.00021333399854484014}
+probe_phases: {}
+program_binary: 'law' not found on PATH; namespace keys the fixed marker 'unresolved', so a changed binary is not detected
