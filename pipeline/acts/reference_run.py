@@ -1480,25 +1480,45 @@ class ReferenceIncremental(Strategy):
             return None
 
         tables = list(fit.get("tables") or [])
-        table_results: list[dict] = []
-        all_ok = True
-        any_fail_why = ""
         lengths = [entry.length for entry in entries]
-        for table in tables:
-            tok, tw = verify_stored_fit(
-                [table],
-                entries_n=len(entries),
-                lengths=lengths,
-                part_index_lists=parts,
-                alias_to_index=aliases,
-                whole_tables=whole,
-                part_tables=part_tables,
-                monotone=monotone,
-            )
-            table_results.append({"table": table.get("name"), "ok": tok, "why": tw})
-            if not tok:
-                all_ok = False
-                any_fail_why = tw
+        # Accept with the full stored contract on this sample — same sibling
+        # count construction the probe uses for per_key_row_count. Checking
+        # tables one-at-a-time without count_key_tables drops siblings (P2d).
+        all_ok, any_fail_why = verify_stored_fit(
+            tables,
+            entries_n=len(entries),
+            lengths=lengths,
+            part_index_lists=parts,
+            alias_to_index=aliases,
+            whole_tables=whole,
+            part_tables=part_tables,
+            monotone=monotone,
+        )
+        table_results: list[dict] = []
+        if all_ok:
+            for table in tables:
+                table_results.append(
+                    {"table": table.get("name"), "ok": True, "why": ""}
+                )
+        else:
+            # Diagnose which table fails; still pass full keys for siblings.
+            for table in tables:
+                tok, tw = verify_stored_fit(
+                    [table],
+                    entries_n=len(entries),
+                    lengths=lengths,
+                    part_index_lists=parts,
+                    alias_to_index=aliases,
+                    whole_tables=whole,
+                    part_tables=part_tables,
+                    monotone=monotone,
+                    count_key_tables=tables,
+                )
+                table_results.append(
+                    {"table": table.get("name"), "ok": tok, "why": tw}
+                )
+                if not tok and tw:
+                    any_fail_why = tw
         confirm_wall = time.perf_counter() - started
         self._contract_meta["contract_confirm_wall_s"] = confirm_wall
         self._contract_meta["contract_confirmations"] = [

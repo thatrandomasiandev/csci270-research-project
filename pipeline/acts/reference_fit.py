@@ -1300,6 +1300,80 @@ def _bundle_table_fixed_keys(
     )
 
 
+def _tables_from_stored(
+    stored_tables: list[TableReport] | list[dict],
+) -> list[TableReport]:
+    tables: list[TableReport] = []
+    for raw in stored_tables:
+        if isinstance(raw, TableReport):
+            tables.append(raw)
+            continue
+        columns = [
+            ColumnReport(
+                index=int(col["index"]),
+                role=str(col["role"]),
+                member=col.get("member"),
+                count_table=col.get("count_table"),
+            )
+            for col in (raw.get("columns") or [])
+        ]
+        tables.append(
+            TableReport(
+                name=str(raw["name"]),
+                record_col=int(raw["record_col"]),
+                entry_col=int(raw["entry_col"]),
+                index_col=raw.get("index_col"),
+                meta=list(raw.get("meta") or []),
+                columns=columns,
+                layout=dict(raw.get("layout") or {}),
+            )
+        )
+    return tables
+
+
+def _sibling_row_counts(
+    key_tables: list[TableReport],
+    whole_tables: dict[str, str],
+    part_tables: list[dict[str, str]],
+) -> tuple[dict[str, dict[str, int]], list[dict[str, dict[str, int]]]]:
+    """Per-record row counts for ``per_key_row_count`` φ — same basis as the probe.
+
+    Counts come from every table named in ``key_tables`` that the tool wrote,
+    using that table's stored key columns. Callers that check a subset of tables
+    (Layer C) must still pass the full stored contract here so a
+    ``count_table`` sibling (e.g. ``tbl`` for domtbl c-Evalue) is visible.
+    """
+    sibling_wholes = {
+        t.name: per_record_counts(
+            index_rows(
+                parse_table_text(t.name, whole_tables[t.name]).rows,
+                t.record_col,
+                t.entry_col,
+                t.index_col,
+            )
+        )
+        for t in key_tables
+        if t.name in whole_tables
+    }
+    sibling_parts: list[dict[str, dict[str, int]]] = []
+    for part in part_tables:
+        sibling_parts.append(
+            {
+                t.name: per_record_counts(
+                    index_rows(
+                        parse_table_text(t.name, part[t.name]).rows,
+                        t.record_col,
+                        t.entry_col,
+                        t.index_col,
+                    )
+                )
+                for t in key_tables
+                if t.name in part
+            }
+        )
+    return sibling_wholes, sibling_parts
+
+
 def verify_stored_fit(
     stored_tables: list[TableReport] | list[dict],
     *,
@@ -1310,45 +1384,33 @@ def verify_stored_fit(
     whole_tables: dict[str, str],
     part_tables: list[dict[str, str]],
     monotone: bool = False,
+    count_key_tables: list[TableReport] | list[dict] | None = None,
 ) -> tuple[bool, str]:
     """Contradiction test: does the stored contract hold on these observations?
 
     Applies stored key columns, roles, and members to a part-vs-whole partition
-    (the same machinery the probe uses to accept a fit). Returns ``(True, "")``
+    and accepts a member exactly when ``_candidate_fits`` (the probe's column
+    acceptance predicate) accepts it on the aligned rows. Returns ``(True, "")``
     when nothing observed disagrees. A sample that produces no rows is not a
     contradiction. An observed cell or key disagreement is.
+
+    ``count_key_tables`` supplies key columns for sibling ``per_key_row_count``
+    counts. Defaults to ``stored_tables``. Layer-C per-table checks must pass
+    the full stored contract here; otherwise a ``count_table`` sibling is
+    invisible and a correct contract is falsely rejected (P2d).
     """
     if entries_n < 2:
         return False, "fewer than 2 reference entries"
     if len(part_index_lists) < 2:
         return False, "partition has fewer than 2 parts"
-    tables: list[TableReport] = []
-    for raw in stored_tables:
-        if isinstance(raw, TableReport):
-            tables.append(raw)
-        else:
-            columns = [
-                ColumnReport(
-                    index=int(col["index"]),
-                    role=str(col["role"]),
-                    member=col.get("member"),
-                    count_table=col.get("count_table"),
-                )
-                for col in (raw.get("columns") or [])
-            ]
-            tables.append(
-                TableReport(
-                    name=str(raw["name"]),
-                    record_col=int(raw["record_col"]),
-                    entry_col=int(raw["entry_col"]),
-                    index_col=raw.get("index_col"),
-                    meta=list(raw.get("meta") or []),
-                    columns=columns,
-                    layout=dict(raw.get("layout") or {}),
-                )
-            )
+    tables = _tables_from_stored(stored_tables)
     if not tables:
         return False, "stored contract has no tables"
+    key_tables = (
+        _tables_from_stored(count_key_tables)
+        if count_key_tables is not None
+        else tables
+    )
 
     part_of: dict[int, int] = {}
     for part_i, indices in enumerate(part_index_lists):
@@ -1369,6 +1431,23 @@ def verify_stored_fit(
     part_entry_counts = [len(indices) for indices in part_index_lists]
     part_lengths = [sum(lengths[i] for i in indices) for indices in part_index_lists]
     whole_length = sum(lengths)
+    # Sibling counts once, from the full key-table set — same construction the
+    # probe uses when it accepts ``per_key_row_count`` during inference.
+    sibling_wholes, sibling_parts = _sibling_row_counts(
+        key_tables, whole_tables, part_tables
+    )
+
+    def phi_for(kind: str, count_table: str | None):
+        return _phi_factory(
+            kind,
+            count_table,
+            part_entry_counts,
+            part_lengths,
+            entries_n,
+            whole_length,
+            sibling_parts,
+            sibling_wholes,
+        )
 
     saw_rows = False
     for table in tables:
@@ -1398,47 +1477,6 @@ def verify_stored_fit(
             )
         if not bundle.aligned:
             continue
-        # Sibling table counts for per_key_row_count members.
-        sibling_wholes = {
-            t.name: per_record_counts(
-                index_rows(
-                    parse_table_text(t.name, whole_tables[t.name]).rows,
-                    t.record_col,
-                    t.entry_col,
-                    t.index_col,
-                )
-            )
-            for t in tables
-            if t.name in whole_tables
-        }
-        sibling_parts = []
-        for part_i, part in enumerate(part_tables):
-            sibling_parts.append(
-                {
-                    t.name: per_record_counts(
-                        index_rows(
-                            parse_table_text(t.name, part[t.name]).rows,
-                            t.record_col,
-                            t.entry_col,
-                            t.index_col,
-                        )
-                    )
-                    for t in tables
-                    if t.name in part
-                }
-            )
-
-        def phi_for(kind: str, count_table: str | None):
-            return _phi_factory(
-                kind,
-                count_table,
-                part_entry_counts,
-                part_lengths,
-                entries_n,
-                whole_length,
-                sibling_parts,
-                sibling_wholes,
-            )
 
         width = min(min(len(row.whole), len(row.part_cells)) for row in bundle.aligned)
         for row in bundle.aligned:

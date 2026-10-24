@@ -622,6 +622,142 @@ print("imported", "acts.contract_store" in sys.modules)
         self.assertTrue(ok)
         self.assertEqual(why, "no_rows")
 
+    def test_verify_per_key_row_count_needs_sibling_count_table(self) -> None:
+        """P2d regression: own==stored per_key_row_count must verify with siblings.
+
+        Layer-C used to call verify_stored_fit([domtbl]) alone; sibling tbl
+        counts vanished and φ was NaN → false rejection. Full contract and
+        per-table-with-count_key_tables must accept; poisoned member, wrong
+        member, and wrong count_table must still fail.
+        """
+        # Four entries; parts {e1,e2} vs {e3,e4}. q0 hits e1+e2 in part0 and e3 in part1
+        # → tbl counts (2,1)/whole 3 so per_key φ ∈ {1.5, 3}, distinct from entry_count φ=2.
+        parts = [[0, 1], [2, 3]]
+        aliases = {"e1": 0, "e2": 1, "e3": 2, "e4": 3}
+        lengths = [10, 10, 10, 10]
+        # tbl: entry_col=0 record_col=2. Cells byte-identical part↔whole for same key.
+        whole = {
+            "tbl": "#\ne1 a q0 b\ne2 a q0 b\ne3 a q0 b\n",
+            "domtbl": (
+                "#\n"
+                # entry acc tlen query acc qlen E score bias # of c-Ev i-Ev ...
+                # part0 φ_tbl=1.5 → c=1.0e-3*1.5=1.5e-3; i uses entry_count φ=2
+                "e1 a 100 q0 b 50 1.0 10 0 1 1 1.5e-3 4.0e-3 10 0 1 10 1 10 1 10 0.9 d\n"
+                # part1 φ_tbl=3 → c=1.0e-3*3=3.0e-3
+                "e3 a 100 q0 b 50 2.0 10 0 1 1 3.0e-3 4.0e-3 10 0 1 10 1 10 1 10 0.9 d\n"
+            ),
+        }
+        part0 = {
+            "tbl": "#\ne1 a q0 b\ne2 a q0 b\n",
+            "domtbl": (
+                "#\n"
+                "e1 a 100 q0 b 50 1.0 10 0 1 1 1.0e-3 2.0e-3 10 0 1 10 1 10 1 10 0.9 d\n"
+            ),
+        }
+        part1 = {
+            "tbl": "#\ne3 a q0 b\n",
+            "domtbl": (
+                "#\n"
+                "e3 a 100 q0 b 50 2.0 10 0 1 1 1.0e-3 2.0e-3 10 0 1 10 1 10 1 10 0.9 d\n"
+            ),
+        }
+        stored = [
+            {
+                "name": "tbl",
+                "record_col": 2,
+                "entry_col": 0,
+                "index_col": None,
+                "columns": [
+                    {"index": 0, "role": "byte", "member": "byte"},
+                    {"index": 1, "role": "byte", "member": "byte"},
+                    {"index": 2, "role": "byte", "member": "byte"},
+                    {"index": 3, "role": "byte", "member": "byte"},
+                ],
+            },
+            {
+                "name": "domtbl",
+                "record_col": 3,
+                "entry_col": 0,
+                "index_col": 9,
+                "columns": [
+                    {"index": 0, "role": "byte", "member": "byte"},
+                    {"index": 1, "role": "byte", "member": "byte"},
+                    {"index": 2, "role": "numeric", "member": "identity"},
+                    {"index": 3, "role": "byte", "member": "byte"},
+                    {"index": 4, "role": "byte", "member": "byte"},
+                    {"index": 5, "role": "numeric", "member": "identity"},
+                    {"index": 6, "role": "numeric", "member": "identity"},
+                    {"index": 7, "role": "numeric", "member": "identity"},
+                    {"index": 8, "role": "numeric", "member": "identity"},
+                    {"index": 9, "role": "numeric", "member": "identity"},
+                    {"index": 10, "role": "numeric", "member": "identity"},
+                    {
+                        "index": 11,
+                        "role": "numeric",
+                        "member": "per_key_row_count",
+                        "count_table": "tbl",
+                    },
+                    {"index": 12, "role": "numeric", "member": "entry_count"},
+                    {"index": 13, "role": "numeric", "member": "identity"},
+                    {"index": 14, "role": "numeric", "member": "identity"},
+                    {"index": 15, "role": "numeric", "member": "identity"},
+                    {"index": 16, "role": "numeric", "member": "identity"},
+                    {"index": 17, "role": "numeric", "member": "identity"},
+                    {"index": 18, "role": "numeric", "member": "identity"},
+                    {"index": 19, "role": "numeric", "member": "identity"},
+                    {"index": 20, "role": "numeric", "member": "identity"},
+                    {"index": 21, "role": "numeric", "member": "identity"},
+                    {"index": 22, "role": "byte", "member": "byte"},
+                ],
+            },
+        ]
+        common = dict(
+            entries_n=4,
+            lengths=lengths,
+            part_index_lists=parts,
+            alias_to_index=aliases,
+            whole_tables=whole,
+            part_tables=[part0, part1],
+        )
+        # Positive: full contract (own == stored).
+        ok, why = verify_stored_fit(stored, **common)
+        self.assertTrue(ok, why)
+        # Positive: Layer-C style one table, but with full count_key_tables.
+        dom = [stored[1]]
+        ok, why = verify_stored_fit(dom, count_key_tables=stored, **common)
+        self.assertTrue(ok, why)
+        # The P2d bug shape: one table, no siblings → false rejection.
+        ok_bug, why_bug = verify_stored_fit(dom, **common)
+        self.assertFalse(ok_bug, "missing sibling counts must fail this sample")
+        self.assertIn("per_key_row_count", why_bug)
+
+        # Negative: poisoned identity on the scaled column.
+        poisoned = json.loads(json.dumps(stored))
+        for col in poisoned[1]["columns"]:
+            if col["index"] == 11:
+                col["member"] = "identity"
+                col["count_table"] = None
+        ok, why = verify_stored_fit(poisoned, **common)
+        self.assertFalse(ok, why)
+        self.assertIn("identity", why)
+
+        # Negative: hand-planted wrong member (entry_count φ=2 ≠ per_key φ).
+        wrong = json.loads(json.dumps(stored))
+        for col in wrong[1]["columns"]:
+            if col["index"] == 11:
+                col["member"] = "entry_count"
+                col["count_table"] = None
+        ok, why = verify_stored_fit(wrong, **common)
+        self.assertFalse(ok, why)
+
+        # Negative: wrong count_table name.
+        bad_ct = json.loads(json.dumps(stored))
+        for col in bad_ct[1]["columns"]:
+            if col["index"] == 11:
+                col["count_table"] = "domtbl"
+        ok, why = verify_stored_fit(bad_ct, **common)
+        self.assertFalse(ok, why)
+
     def test_confirm_n_matches_calibration(self) -> None:
         self.assertEqual(CONFIRM_N, 25)
 

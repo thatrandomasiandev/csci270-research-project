@@ -128,4 +128,19 @@ Conservative sensitivity (share probe only, re-pay pin_check+parse every genome)
 
 Neighbor + random pads (IC2), bounded audit (s=299 default path), refusal rules,
 break-even fallback, exactness tests, default path without the flag.
-EOF
+
+## 6. P2d root cause (verification false rejection)
+
+P2c reported q=0 because genomes 2–3 failed confirmation with
+`domtbl: column 11 stored member 'per_key_row_count' does not rescale…`.
+Hub check of arm-B caches showed every genome inferred the identical domtbl
+contract (index_col 9; col 11 `per_key_row_count` of `tbl`; col 12
+`entry_count`) as the store, and each genome’s own run with that contract was
+stock-identical — so verification rejected a correct contract. Reproduction on
+GCF_004377995.2: `verify_stored_fit` on the full stored (or own) table list
+accepts; Layer-C’s per-table loop called `verify_stored_fit([domtbl])`, which
+built sibling row-counts only from that one table, so `count_table='tbl'` was
+missing, φ was NaN, and all aligned c-Evalue rows failed (46/46) while the
+probe’s φ from real `tbl` counts accepted every row. Fix: accept with the full
+stored contract (probe-equivalent sibling construction via `_candidate_fits`);
+per-table diagnosis passes `count_key_tables=full`. Not genome dependence.
