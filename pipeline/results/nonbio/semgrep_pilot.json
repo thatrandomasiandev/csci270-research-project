@@ -515,7 +515,7 @@
   "w2_overnight": {
     "date": "2026-10-24",
     "branch": "exp/semgrep-domain",
-    "git_sha": "f41ba82d3bc970845abecf797ba0e674fc2ce620",
+    "git_sha": "87f612517c9070367a5afc4b43a766af0477ced0",
     "tasks": {
       "1_timeout_lock_errors_dependence": {
         "seed": 20261326,
@@ -691,7 +691,6 @@
         "summary": "428 passed, 1 skipped (post-fix)"
       },
       "GATE_R": "reconfirmed parse on committed HMMER/DIAMOND/Infernal-manifest tables; prior P2 GATE R PASS retained"
-    },
-    "results_note": "tip before final tip-stamp commit; see branch HEAD"
+    }
   }
 }
