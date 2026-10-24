@@ -876,10 +876,9 @@ time iSeqSearch.}
 % source: CITED pipeline/docs/NONBIO_LITERATURE.md
 
 \textbf{Scale (PROJECTED).} Re-annotating every RefSeq bacterial genome against each new Pfam release is projected to cost
-143 core\nobreakdash-years for a full stock \texttt{hmmscan} of 2.18 billion proteins, versus 34 core\nobreakdash-years with \sys on a
-typical update at the headline median $4.24\times$ ($\approx$143 core\nobreakdash-years when a release rewrites ${\sim}$93\% of models,
-as in 37.4$\rightarrow$38.0).
-% source: PROJECTED pipeline/results/scale/projection.json projection.all_refseq_bacteria.stock_core_years_per_release.point=142.59979366110335 projection.all_refseq_bacteria.tare_core_years_per_typical_update.point=33.60663993313079 projection.all_refseq_bacteria.tare_core_years_per_rebuild_release.point=142.59979366110335 assembly_counts.all_bacteria.sum_protein_coding_gene_count=2179028082; MEASURED pipeline/results/exact_replay/headline_carc.json headline_median=4.243202948728078; MEASURED pipeline/results/release_chain/pairs.json pairs.4.f_delta=0.9311802701115678; DERIVED proteins_b=assembly_counts_all_bacteria_sum_protein_coding_gene_count/1e9; DERIVED pct93=100*pairs_4_f_delta; HAS PROJECTED; HAS core-years; HAS 37.4; HAS 38.0
+143 core\nobreakdash-years (range 105--324) for a full stock \texttt{hmmscan} of 2.18 billion proteins, versus 34
+(range 22--78) with \sys on a typical update; rebuild-like releases cost about one full rerun under \sys.
+% source: PROJECTED pipeline/results/scale/projection.json projection.all_refseq_bacteria.stock_core_years_per_release.point=142.59979366110335 projection.all_refseq_bacteria.stock_core_years_per_release.widened_lo=105.11885299218301 projection.all_refseq_bacteria.stock_core_years_per_release.widened_hi=324.40902319361436 projection.all_refseq_bacteria.tare_core_years_per_typical_update.point=33.60663993313079 projection.all_refseq_bacteria.tare_core_years_per_typical_update.widened_lo=22.442919395462322 projection.all_refseq_bacteria.tare_core_years_per_typical_update.widened_hi=77.75185952548779 projection.all_refseq_bacteria.tare_core_years_per_rebuild_release.point=142.59979366110335 validation.median_abs_rel_error_stock_wall=0.26284007645898827 validation.widen_stated_range=true assembly_counts.all_bacteria.sum_protein_coding_gene_count=2179028082; DERIVED proteins_b=assembly_counts_all_bacteria_sum_protein_coding_gene_count/1e9; HAS PROJECTED; HAS core-years
 
 \textbf{Threats to validity.}
  \textit{Generality:} the two programs \sys replays exactly, HMMER and Infernal, come from one
