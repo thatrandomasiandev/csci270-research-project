@@ -1,6 +1,6 @@
 # Shared contract P2c report — verification fix + layered sharing + realistic re-pilot
 
-**Final SHA:** (set after tip commit; see end)  
+**Final SHA:** `2f8a96f0498c70a3f874ea15421842a859cd3a37`  
 **Branch:** `exp/shared-contract`  
 **Scratch:** `~/tmp/tare_sharedcontract_p2c/`  
 **No CARC. No paper edits.** Laptop walls are shape only.
@@ -125,4 +125,4 @@ GATE R held; outputs stock-identical; controls green. The blocking failure is **
 
 After the tip commit that adds this report and `p2c_realistic.json`, set:
 
-**Final SHA:** `<tip>`
+**Final SHA:** `2f8a96f0498c70a3f874ea15421842a859cd3a37`
