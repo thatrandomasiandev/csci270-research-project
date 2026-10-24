@@ -14,14 +14,16 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from acts.contract_store import (
+    CONFIRM_N,
     ContractStore,
     contract_key,
     fit_signatures_match,
     release_content_hash,
     shareable_payload,
 )
+from acts.reference_fit import PROBE_SEED, partition_indices, verify_stored_fit
 from acts.reference_formats import parse_entryline, parse_reference, read_records, write_entries
-from acts.reference_run import ReferenceIncremental, body_lines
+from acts.reference_run import ReferenceIncremental, body_lines, confirm_stored_fit
 
 FIX = Path(__file__).resolve().parent / "fixtures" / "reference_fitter"
 HITS = {"e1", "e3", "e4"}
@@ -129,7 +131,7 @@ class SharedContractTests(unittest.TestCase):
             )
             self.assertEqual(b_store.decision, "SHIP", b_store.reason)
             self.assertEqual(b_store.extra.get("contract_store"), "reused", b_store.extra)
-            self.assertIn("roles_match", b_store.extra.get("contract_confirmations") or [])
+            self.assertIn("stored_verified", b_store.extra.get("contract_confirmations") or [])
             b_plain = _run(
                 tmp,
                 genome=g_b,
@@ -413,9 +415,215 @@ print("imported", "acts.contract_store" in sys.modules)
         b["tables"][0]["columns"][0]["member"] = "identity"
         ok, why = fit_signatures_match(a, b)
         self.assertFalse(ok)
-        self.assertIn("disagree", why)
+        self.assertIn("member", why)
+        self.assertIn("entry_count", why)
+        self.assertIn("identity", why)
         shared = shareable_payload(a)
         self.assertNotIn("pin_checks", shared)
+
+    def test_verify_self_consistency_positive(self) -> None:
+        """Stored contract from genome A verifies on A's own sample (positive)."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, _ = self._genomes(tmp)
+            a = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "ca.sqlite",
+                out=tmp / "oa",
+                store=store,
+            )
+            self.assertEqual(a.decision, "SHIP", a.reason)
+            self.assertEqual(a.extra.get("contract_store"), "stored")
+            key = a.extra["contract_key"]
+            payload, err = ContractStore(store).load(key)
+            self.assertIsNone(err)
+            assert payload is not None
+            entries = parse_reference(ref)
+            records = read_records(g_a)
+            ri = ReferenceIncremental(
+                argv=ARGV,
+                input_path=g_a,
+                out_dir=tmp / "verify_out",
+                reference=ref,
+                cache_path=tmp / "cv.sqlite",
+                verify="none",
+                runner=stock,
+                pin="-Z {entry_count}",
+                pin_runner=honest_pin,
+            )
+            ok, why = confirm_stored_fit(
+                payload["fit"],
+                entries,
+                records,
+                ri._invoke(ref),
+                n_p=min(CONFIRM_N, len(records)),
+                seed=PROBE_SEED,
+            )
+            self.assertTrue(ok, why)
+            self.assertNotEqual(why, "no_rows")
+            # Second run on the same genome must reuse.
+            again = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "ca2.sqlite",
+                out=tmp / "oa2",
+                store=store,
+            )
+            self.assertEqual(again.extra.get("contract_store"), "reused", again.extra)
+            self.assertEqual(again.decision, "SHIP", again.reason)
+
+    def test_verify_poisoned_store_negative(self) -> None:
+        """Poison numeric member to identity → confirm_fail (negative control)."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store_dir = tmp / "store"
+            g_a, g_b = self._genomes(tmp)
+            a = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "ca.sqlite",
+                out=tmp / "oa",
+                store=store_dir,
+            )
+            self.assertEqual(a.extra.get("contract_store"), "stored")
+            key = a.extra["contract_key"]
+            path = ContractStore(store_dir).path_for(key)
+            payload = json.loads(path.read_text())
+            poisoned = False
+            for table in payload["fit"].get("tables") or []:
+                for col in table.get("columns") or []:
+                    if col.get("role") == "numeric" and col.get("member") not in (
+                        None,
+                        "identity",
+                        "byte",
+                    ):
+                        col["member"] = "identity"
+                        col["count_table"] = None
+                        poisoned = True
+                        break
+                if poisoned:
+                    break
+            self.assertTrue(poisoned, "fixture fit has no poisonable numeric member")
+            path.write_text(json.dumps(payload, indent=2) + "\n")
+            b = _run(
+                tmp,
+                genome=g_b,
+                ref=ref,
+                cache=tmp / "cb.sqlite",
+                out=tmp / "ob",
+                store=store_dir,
+            )
+            self.assertEqual(b.extra.get("contract_store"), "confirm_fail", b.extra)
+            reason = b.extra.get("contract_store_reason") or ""
+            self.assertTrue(
+                "identity" in reason or "differ" in reason or "member" in reason,
+                reason,
+            )
+            if b.decision == "SHIP":
+                got = (tmp / "ob" / "tables" / "out").read_text()
+                want = stock(read_records(g_b), parse_reference(ref))["out"]
+                self.assertEqual(body_lines(got), body_lines(want))
+
+    def test_verify_hand_planted_wrong_member_negative(self) -> None:
+        """Hand-plant identity on a scaled numeric column → confirm_stored_fit fails.
+
+        Distinct from the poisoned-store path: this calls the verification API
+        directly. On this fixture's PROBE_SEED bipartition, entry_count,
+        total_entry_length, and per_key_row_count share φ=2, so identity is the
+        discriminating wrong member.
+        """
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, g_b = self._genomes(tmp)
+            a = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "ca.sqlite",
+                out=tmp / "oa",
+                store=store,
+            )
+            self.assertEqual(a.decision, "SHIP", a.reason)
+            payload, err = ContractStore(store).load(a.extra["contract_key"])
+            self.assertIsNone(err)
+            assert payload is not None
+            fit = json.loads(json.dumps(payload["fit"]))
+            planted = False
+            for table in fit.get("tables") or []:
+                for col in table.get("columns") or []:
+                    if col.get("member") == "entry_count":
+                        col["member"] = "identity"
+                        col["count_table"] = None
+                        planted = True
+                        break
+                if planted:
+                    break
+            self.assertTrue(planted, "expected an entry_count column to re-label")
+            entries = parse_reference(ref)
+            records = read_records(g_b)
+            ri = ReferenceIncremental(
+                argv=ARGV,
+                input_path=g_b,
+                out_dir=tmp / "v",
+                reference=ref,
+                cache_path=tmp / "cv.sqlite",
+                verify="none",
+                runner=stock,
+                pin="-Z {entry_count}",
+                pin_runner=honest_pin,
+            )
+            ok, why = confirm_stored_fit(
+                fit,
+                entries,
+                records,
+                ri._invoke(ref),
+                n_p=min(CONFIRM_N, len(records)),
+                seed=PROBE_SEED,
+            )
+            self.assertFalse(ok, f"wrong member must fail, got ok why={why!r}")
+            self.assertIn("identity", why)
+            self.assertIn("differ", why)
+
+    def test_verify_stored_fit_unit_no_rows_is_not_contradiction(self) -> None:
+        """Empty observations accept the stored contract (vacuous, not a fail)."""
+        tables = [
+            {
+                "name": "out",
+                "record_col": 0,
+                "entry_col": 1,
+                "index_col": None,
+                "columns": [
+                    {"index": 0, "role": "byte", "member": "byte"},
+                    {"index": 1, "role": "byte", "member": "byte"},
+                    {"index": 2, "role": "numeric", "member": "entry_count"},
+                ],
+            }
+        ]
+        parts = partition_indices(4, 2, PROBE_SEED)
+        empty = {"out": "# header only\n"}
+        ok, why = verify_stored_fit(
+            tables,
+            entries_n=4,
+            lengths=[10, 10, 10, 10],
+            part_index_lists=parts,
+            alias_to_index={"e1": 0, "e2": 1, "e3": 2, "e4": 3},
+            whole_tables=empty,
+            part_tables=[empty, empty],
+        )
+        self.assertTrue(ok)
+        self.assertEqual(why, "no_rows")
+
+    def test_confirm_n_matches_calibration(self) -> None:
+        self.assertEqual(CONFIRM_N, 25)
 
 
 if __name__ == "__main__":

@@ -69,6 +69,7 @@ from acts.reference_fit import (
     rescale_cells,
     resolve_ties,
     sample_record_indices,
+    verify_stored_fit,
 )
 from acts.reference_formats import (
     Entry,
@@ -438,6 +439,59 @@ def probe_fit(
             if not table.meta:
                 table.meta = parse_table_text(table.name, whole.get(table.name, "")).meta
     return result
+
+
+def confirm_stored_fit(
+    stored: dict,
+    entries: Sequence[Entry],
+    records: Sequence[RecordItem],
+    invoke: Invoke,
+    *,
+    seed: int = PROBE_SEED,
+    n_p: int = 25,
+    k: int = PROBE_K,
+    primary_parts: list[list[int]] | None = None,
+    monotone: bool = False,
+) -> tuple[bool, str]:
+    """Verify a stored contract on a seeded sample (contradiction test).
+
+    Runs the same whole + part tool calls as the probe, then checks that the
+    *stored* keys/roles/members still rescale parts to whole. Does not
+    re-infer. No rows on the sample is not a contradiction.
+
+    Default ``n_p`` matches ``acts.contract_store.CONFIRM_N`` (calibrated in
+    ``p2b_confirm_n.json``). Callers that import the store should pass that
+    constant; this default avoids importing the store on the hot path.
+    """
+    if len(entries) < 2:
+        return False, "fewer than 2 reference entries"
+    if not records:
+        return False, "record input is empty"
+    tables = stored.get("tables") or []
+    if not tables:
+        return False, "stored contract has no tables"
+    parts = primary_parts if primary_parts is not None else partition_indices(len(entries), k, seed)
+    chosen = sample_record_indices(len(records), min(n_p, len(records)), seed)
+    probe_records = [records[i] for i in chosen]
+    try:
+        whole = invoke(probe_records, list(entries))
+        part_tables = [invoke(probe_records, _subset(entries, indices)) for indices in parts]
+    except RunError as exc:
+        return False, exc.reason
+    try:
+        aliases = alias_map(list(entries))
+    except FormatError as exc:
+        return False, str(exc)
+    return verify_stored_fit(
+        tables,
+        entries_n=len(entries),
+        lengths=[entry.length for entry in entries],
+        part_index_lists=parts,
+        alias_to_index=aliases,
+        whole_tables=whole,
+        part_tables=part_tables,
+        monotone=monotone,
+    )
 
 
 def _entry_order(entries: Sequence[Entry]) -> dict[str, int]:
@@ -1342,12 +1396,7 @@ class ReferenceIncremental(Strategy):
         on ``self._contract_meta`` for decision.txt.
         """
         # Lazy import: default path must not load this module (G-d).
-        from acts.contract_store import (
-            CONFIRM_N,
-            ContractStore,
-            contract_key,
-            fit_signatures_match,
-        )
+        from acts.contract_store import CONFIRM_N, ContractStore, contract_key
 
         key_info = contract_key(
             self.argv,
@@ -1373,27 +1422,27 @@ class ReferenceIncremental(Strategy):
         if payload is None:
             return None
         fit = dict(payload["fit"])
-        # Confirm column roles / members on this genome at reduced n.
+        # Verify the stored contract on this genome (contradiction test).
+        # Do not re-infer: a weaker sample can disagree with a stronger fit
+        # without any stored fact being wrong for this genome.
         started = time.perf_counter()
         n_confirm = min(CONFIRM_N, PROBE_N, len(records))
-        confirmed = probe_fit(
+        ok, why = confirm_stored_fit(
+            fit,
             entries,
             records,
             invoke,
             primary_parts=self.primary_parts,
-            baseline=self.baseline,
-            sample=self.sample,
-            k=PROBE_K,
             n_p=n_confirm,
             seed=PROBE_SEED,
+            k=PROBE_K,
             monotone=bool(self.pin and self.slack),
         )
         confirm_wall = time.perf_counter() - started
         self._contract_meta["contract_confirm_wall_s"] = confirm_wall
         self._contract_meta["contract_confirmations"] = [
-            f"probe_roles_n={n_confirm}",
+            f"verify_stored_n={n_confirm}",
         ]
-        ok, why = fit_signatures_match(fit, confirmed.as_dict())
         if not ok:
             self._contract_meta["contract_store"] = "confirm_fail"
             self._contract_meta["contract_store_reason"] = why
@@ -1404,7 +1453,7 @@ class ReferenceIncremental(Strategy):
             fit["slack_factor"] = self._slack_factor
         cache.save_contract(ns, fit)
         self._contract_meta["contract_store"] = "reused"
-        self._contract_meta["contract_confirmations"].append("roles_match")
+        self._contract_meta["contract_confirmations"].append("stored_verified")
         return fit
 
     def _publish_shared_contract(self, reference: Path, stored: dict) -> None:

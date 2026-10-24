@@ -60,6 +60,9 @@ logs/
 credentials.json
 secrets.json
 
+# Worktree may symlink pipeline/data to the shared checkout — never commit it.
+pipeline/data
+
 # STAR: clone upstream yourself (see star/docs/BUILD.md) — do not vendor
 star/upstream/
 

@@ -18,7 +18,9 @@ from typing import Any
 from acts.reference_cache import argv_namespace, program_binary
 
 STORE_VERSION = 1
-CONFIRM_N = 50
+# Smallest n with observed self-consistency on all 5 P2 genomes and poison catch.
+# Evidence: pipeline/results/shared_contract/p2b_confirm_n.json (P2b).
+CONFIRM_N = 25
 
 
 def release_content_hash(reference: Path) -> str:
@@ -126,39 +128,114 @@ def _table_signature(table: dict) -> tuple:
     )
 
 
-def fit_signatures_match(stored: dict, fitted: dict) -> tuple[bool, str]:
-    """Compare shareable fit facts. Layout/meta may still differ; roles must not."""
+def _field(value: object) -> object:
+    """Normalize a signature field for equality / reporting."""
+    return value
+
+
+def fit_signature_diffs(stored: dict, fitted: dict) -> list[dict]:
+    """Exact differing fields between two shareable fits.
+
+    Each item names the table (or ``""`` for fit-level fields), optional column
+    index, the field name, and stored vs confirmed values. Empty list means
+    every compared field matches.
+    """
+    diffs: list[dict] = []
+
+    def add(
+        table: str,
+        field: str,
+        stored_v: object,
+        confirmed_v: object,
+        *,
+        column: int | None = None,
+    ) -> None:
+        item = {
+            "table": table,
+            "field": field,
+            "stored": stored_v,
+            "confirmed": confirmed_v,
+        }
+        if column is not None:
+            item["column"] = column
+        diffs.append(item)
+
     if stored.get("decision") != fitted.get("decision"):
-        return False, (
-            f"decision {fitted.get('decision')!r} != stored {stored.get('decision')!r}"
-        )
-    st = list(stored.get("tables") or [])
-    ft = list(fitted.get("tables") or [])
-    if len(st) != len(ft):
-        return False, f"table count {len(ft)} != stored {len(st)}"
-    by_name = {t.get("name"): t for t in st}
-    for table in ft:
-        name = table.get("name")
-        prior = by_name.get(name)
-        if prior is None:
-            return False, f"unexpected table {name!r}"
-        if _table_signature(prior) != _table_signature(table):
-            return False, f"table {name!r} column roles/members disagree"
+        add("", "decision", stored.get("decision"), fitted.get("decision"))
     if bool(stored.get("exact_eligible")) != bool(fitted.get("exact_eligible")):
-        return False, "exact_eligible disagrees"
+        add(
+            "",
+            "exact_eligible",
+            bool(stored.get("exact_eligible")),
+            bool(fitted.get("exact_eligible")),
+        )
     if bool(stored.get("column_only_refusal")) != bool(fitted.get("column_only_refusal")):
-        return False, "column_only_refusal disagrees"
+        add(
+            "",
+            "column_only_refusal",
+            bool(stored.get("column_only_refusal")),
+            bool(fitted.get("column_only_refusal")),
+        )
     saved = stored.get("inferred_pin")
     got = fitted.get("inferred_pin")
     if isinstance(saved, dict) and saved.get("template"):
-        # Confirmation fit does not re-infer; template must stay applicable via
-        # size members on tables (checked by caller). Here only flag presence.
         if got is not None and isinstance(got, dict) and got.get("template") not in (
             None,
             saved.get("template"),
         ):
-            return False, "inferred_pin template disagrees"
-    return True, ""
+            add("", "inferred_pin.template", saved.get("template"), got.get("template"))
+
+    st = list(stored.get("tables") or [])
+    ft = list(fitted.get("tables") or [])
+    if len(st) != len(ft):
+        add("", "table_count", len(st), len(ft))
+    by_name = {t.get("name"): t for t in st}
+    fitted_names = {t.get("name") for t in ft}
+    for name, prior in by_name.items():
+        if name not in fitted_names:
+            add(str(name or ""), "table_present", True, False)
+    for table in ft:
+        name = str(table.get("name") or "")
+        prior = by_name.get(table.get("name"))
+        if prior is None:
+            add(name, "table_present", False, True)
+            continue
+        for field in ("record_col", "entry_col", "index_col"):
+            if prior.get(field) != table.get(field):
+                add(name, field, prior.get(field), table.get(field))
+        prior_cols = {int(c.get("index", -1)): c for c in (prior.get("columns") or [])}
+        fitted_cols = {int(c.get("index", -1)): c for c in (table.get("columns") or [])}
+        for index in sorted(set(prior_cols) | set(fitted_cols)):
+            pc = prior_cols.get(index)
+            fc = fitted_cols.get(index)
+            if pc is None:
+                add(name, "column_present", False, True, column=index)
+                continue
+            if fc is None:
+                add(name, "column_present", True, False, column=index)
+                continue
+            for field in ("role", "member", "count_table"):
+                if _field(pc.get(field)) != _field(fc.get(field)):
+                    add(name, field, pc.get(field), fc.get(field), column=index)
+    return diffs
+
+
+def fit_signatures_match(stored: dict, fitted: dict) -> tuple[bool, str]:
+    """Compare shareable fit facts. Layout/meta may still differ; roles must not."""
+    diffs = fit_signature_diffs(stored, fitted)
+    if not diffs:
+        return True, ""
+    # Compact reason for decision.txt; full list available via fit_signature_diffs.
+    parts: list[str] = []
+    for d in diffs[:12]:
+        loc = d["table"] or "fit"
+        if "column" in d:
+            loc = f"{loc}[{d['column']}]"
+        parts.append(f"{loc}.{d['field']}: stored={d['stored']!r} confirmed={d['confirmed']!r}")
+    why = "; ".join(parts)
+    if len(diffs) > 12:
+        why += f"; …+{len(diffs) - 12} more"
+    return False, why
 
 
 class ContractStore:

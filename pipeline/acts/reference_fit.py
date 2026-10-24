@@ -1211,3 +1211,272 @@ def resolve_ties(
         key_reason = getattr(primary, "_key_reason", "")
         merged.reason = key_reason or "primary row-key sets differ"
     return merged
+
+
+def _bundle_table_fixed_keys(
+    name: str,
+    whole_text: str,
+    part_texts: list[str],
+    record_col: int,
+    entry_col: int,
+    index_col: int | None,
+    alias_to_index: dict[str, int],
+    part_of_entry: dict[int, int],
+    *,
+    monotone: bool = False,
+) -> TableBundle:
+    """Bundle one table using caller-supplied key columns (no re-inference)."""
+    whole = parse_table_text(name, whole_text)
+    parts = [parse_table_text(name, text) for text in part_texts]
+    if not whole.rows and all(not part.rows for part in parts):
+        return TableBundle(
+            name=name,
+            meta=whole.meta,
+            raw_lines=whole.raw_lines,
+            record_col=record_col,
+            entry_col=entry_col,
+            index_col=index_col,
+            whole={},
+            parts=[{} for _ in parts],
+            aligned=[],
+            key_equal=True,
+            key_reason="",
+        )
+    whole_idx = index_rows(whole.rows, record_col, entry_col, index_col)
+    part_idx = [index_rows(part.rows, record_col, entry_col, index_col) for part in parts]
+    union: set[tuple[str, str, str]] = set()
+    overlap: set[tuple[str, str, str]] = set()
+    for indexed in part_idx:
+        overlap |= union & set(indexed)
+        union |= set(indexed)
+    only_whole = set(whole_idx) - union
+    only_union = union - set(whole_idx)
+    key_equal = not overlap and not only_whole and (not only_union or monotone)
+    subset_extra = (not key_equal) and (not overlap) and (not only_whole) and bool(only_union)
+    key_reason = ""
+    if overlap:
+        key_reason = f"{name}: row key appears in two parts"
+    elif not key_equal:
+        key_reason = (
+            f"{name}: row-key sets differ "
+            f"(whole {len(whole_idx)}, union {len(union)}, "
+            f"only-union {len(only_union)}, "
+            f"only-whole {len(only_whole)})"
+        )
+    aligned: list[Aligned] = []
+    for key, cells in whole_idx.items():
+        producers = [i for i, indexed in enumerate(part_idx) if key in indexed]
+        if len(producers) != 1:
+            continue
+        entry_token = cells[entry_col]
+        if entry_token not in alias_to_index:
+            raise ValueError(f"{name}: entry token {entry_token!r} is not in the reference")
+        entry_index = alias_to_index[entry_token]
+        entry_part = part_of_entry.get(entry_index)
+        if entry_part is None or entry_part != producers[0]:
+            raise ValueError(f"{name}: row emitted by a part that does not contain its entry")
+        aligned.append(
+            Aligned(
+                record_key=cells[record_col],
+                entry_index=entry_index,
+                part=producers[0],
+                whole=cells,
+                part_cells=part_idx[producers[0]][key],
+            )
+        )
+    return TableBundle(
+        name=name,
+        meta=whole.meta,
+        raw_lines=whole.raw_lines,
+        record_col=record_col,
+        entry_col=entry_col,
+        index_col=index_col,
+        whole=whole_idx,
+        parts=part_idx,
+        aligned=aligned,
+        key_equal=key_equal,
+        key_reason=key_reason,
+        subset_extra=subset_extra,
+    )
+
+
+def verify_stored_fit(
+    stored_tables: list[TableReport] | list[dict],
+    *,
+    entries_n: int,
+    lengths: list[int],
+    part_index_lists: list[list[int]],
+    alias_to_index: dict[str, int],
+    whole_tables: dict[str, str],
+    part_tables: list[dict[str, str]],
+    monotone: bool = False,
+) -> tuple[bool, str]:
+    """Contradiction test: does the stored contract hold on these observations?
+
+    Applies stored key columns, roles, and members to a part-vs-whole partition
+    (the same machinery the probe uses to accept a fit). Returns ``(True, "")``
+    when nothing observed disagrees. A sample that produces no rows is not a
+    contradiction. An observed cell or key disagreement is.
+    """
+    if entries_n < 2:
+        return False, "fewer than 2 reference entries"
+    if len(part_index_lists) < 2:
+        return False, "partition has fewer than 2 parts"
+    tables: list[TableReport] = []
+    for raw in stored_tables:
+        if isinstance(raw, TableReport):
+            tables.append(raw)
+        else:
+            columns = [
+                ColumnReport(
+                    index=int(col["index"]),
+                    role=str(col["role"]),
+                    member=col.get("member"),
+                    count_table=col.get("count_table"),
+                )
+                for col in (raw.get("columns") or [])
+            ]
+            tables.append(
+                TableReport(
+                    name=str(raw["name"]),
+                    record_col=int(raw["record_col"]),
+                    entry_col=int(raw["entry_col"]),
+                    index_col=raw.get("index_col"),
+                    meta=list(raw.get("meta") or []),
+                    columns=columns,
+                    layout=dict(raw.get("layout") or {}),
+                )
+            )
+    if not tables:
+        return False, "stored contract has no tables"
+
+    part_of: dict[int, int] = {}
+    for part_i, indices in enumerate(part_index_lists):
+        for index in indices:
+            if index in part_of:
+                return False, "partition parts overlap"
+            part_of[index] = part_i
+    if set(part_of) != set(range(entries_n)):
+        return False, "partition does not cover the reference"
+
+    names = [t.name for t in tables]
+    if any(set(part) != set(whole_tables) for part in part_tables):
+        return False, "probe runs did not write the same output tables"
+    for name in names:
+        if name not in whole_tables:
+            return False, f"stored table {name!r} missing from tool output"
+
+    part_entry_counts = [len(indices) for indices in part_index_lists]
+    part_lengths = [sum(lengths[i] for i in indices) for indices in part_index_lists]
+    whole_length = sum(lengths)
+
+    saw_rows = False
+    for table in tables:
+        try:
+            bundle = _bundle_table_fixed_keys(
+                table.name,
+                whole_tables[table.name],
+                [part[table.name] for part in part_tables],
+                table.record_col,
+                table.entry_col,
+                table.index_col,
+                alias_to_index,
+                part_of,
+                monotone=monotone,
+            )
+        except ValueError as exc:
+            return False, str(exc)
+        if bundle.whole or any(bundle.parts):
+            saw_rows = True
+        if not bundle.key_equal and not (monotone and bundle.subset_extra):
+            # Stored keys do not explain this partition on this sample.
+            return False, bundle.key_reason or f"{table.name}: stored keys disagree with parts"
+        if bundle.whole and not bundle.aligned:
+            return False, (
+                f"{table.name}: stored keys align no whole rows "
+                f"(whole {len(bundle.whole)})"
+            )
+        if not bundle.aligned:
+            continue
+        # Sibling table counts for per_key_row_count members.
+        sibling_wholes = {
+            t.name: per_record_counts(
+                index_rows(
+                    parse_table_text(t.name, whole_tables[t.name]).rows,
+                    t.record_col,
+                    t.entry_col,
+                    t.index_col,
+                )
+            )
+            for t in tables
+            if t.name in whole_tables
+        }
+        sibling_parts = []
+        for part_i, part in enumerate(part_tables):
+            sibling_parts.append(
+                {
+                    t.name: per_record_counts(
+                        index_rows(
+                            parse_table_text(t.name, part[t.name]).rows,
+                            t.record_col,
+                            t.entry_col,
+                            t.index_col,
+                        )
+                    )
+                    for t in tables
+                    if t.name in part
+                }
+            )
+
+        def phi_for(kind: str, count_table: str | None):
+            return _phi_factory(
+                kind,
+                count_table,
+                part_entry_counts,
+                part_lengths,
+                entries_n,
+                whole_length,
+                sibling_parts,
+                sibling_wholes,
+            )
+
+        width = min(min(len(row.whole), len(row.part_cells)) for row in bundle.aligned)
+        for row in bundle.aligned:
+            if " ".join(row.whole[width:]) != " ".join(row.part_cells[width:]):
+                return False, f"{table.name}: trailing tokens are not byte-identical"
+        by_index = {col.index: col for col in table.columns}
+        for col_i in range(width):
+            spec = by_index.get(col_i)
+            if spec is None:
+                # Stored fit did not classify this column; only fail if parts differ.
+                if any(row.whole[col_i] != row.part_cells[col_i] for row in bundle.aligned):
+                    return False, (
+                        f"{table.name}: column {col_i} differs across parts and "
+                        "has no stored role"
+                    )
+                continue
+            if spec.role == "byte" or spec.member in (None, BYTE):
+                if any(row.whole[col_i] != row.part_cells[col_i] for row in bundle.aligned):
+                    return False, (
+                        f"{table.name}: column {col_i} stored as byte/identity "
+                        "but part and whole cells differ"
+                    )
+                continue
+            member = spec.member or IDENTITY
+            if member == IDENTITY:
+                if any(row.whole[col_i] != row.part_cells[col_i] for row in bundle.aligned):
+                    return False, (
+                        f"{table.name}: column {col_i} stored as identity "
+                        "but part and whole cells differ"
+                    )
+                continue
+            phi_of = phi_for(member, spec.count_table)
+            if not _candidate_fits(bundle.aligned, col_i, phi_of, identity=False):
+                return False, (
+                    f"{table.name}: column {col_i} stored member {member!r} "
+                    "does not rescale parts to whole on this sample"
+                )
+    if not saw_rows:
+        return True, "no_rows"
+    return True, ""
+

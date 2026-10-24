@@ -1,0 +1,232 @@
+{
+  "seed_proteomes": 20261334,
+  "seed_pfam": 20261335,
+  "confirm_n": 50,
+  "probe_n": 300,
+  "probe_seed": 20261006,
+  "genome1": "GCF_025782825.1",
+  "rows": [
+    {
+      "genome": "GCF_025782825.1",
+      "n50_vs_own_n300_ok": true,
+      "n50_vs_own_n300_n_diffs": 0,
+      "n50_vs_own_n300_diffs": [],
+      "n300_vs_genome1_ok": true,
+      "n300_vs_genome1_n_diffs": 0,
+      "n300_vs_genome1_diffs": [],
+      "n300_vs_genome1_exactness_diffs": [],
+      "walls": {
+        "n300_s": 18.465610499999457,
+        "n50_s": 5.5484568329993635
+      },
+      "decision_n300": "SHIP",
+      "decision_n50": "SHIP"
+    },
+    {
+      "genome": "GCF_049949335.1",
+      "n50_vs_own_n300_ok": false,
+      "n50_vs_own_n300_n_diffs": 1,
+      "n50_vs_own_n300_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": 9,
+          "confirmed": null
+        }
+      ],
+      "n300_vs_genome1_ok": false,
+      "n300_vs_genome1_n_diffs": 1,
+      "n300_vs_genome1_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "n300_vs_genome1_exactness_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "walls": {
+        "n300_s": 18.31504758400115,
+        "n50_s": 5.140861292002228
+      },
+      "decision_n300": "SHIP",
+      "decision_n50": "SHIP"
+    },
+    {
+      "genome": "GCF_052882435.1",
+      "n50_vs_own_n300_ok": false,
+      "n50_vs_own_n300_n_diffs": 3,
+      "n50_vs_own_n300_diffs": [
+        {
+          "table": "tbl",
+          "field": "column_present",
+          "stored": false,
+          "confirmed": true,
+          "column": 19
+        },
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": 9,
+          "confirmed": null
+        },
+        {
+          "table": "domtbl",
+          "field": "column_present",
+          "stored": false,
+          "confirmed": true,
+          "column": 23
+        }
+      ],
+      "n300_vs_genome1_ok": false,
+      "n300_vs_genome1_n_diffs": 1,
+      "n300_vs_genome1_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "n300_vs_genome1_exactness_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "walls": {
+        "n300_s": 17.043332917000953,
+        "n50_s": 5.664774542001396
+      },
+      "decision_n300": "SHIP",
+      "decision_n50": "SHIP"
+    },
+    {
+      "genome": "GCF_055382035.1",
+      "n50_vs_own_n300_ok": false,
+      "n50_vs_own_n300_n_diffs": 3,
+      "n50_vs_own_n300_diffs": [
+        {
+          "table": "tbl",
+          "field": "column_present",
+          "stored": false,
+          "confirmed": true,
+          "column": 19
+        },
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": 9,
+          "confirmed": null
+        },
+        {
+          "table": "domtbl",
+          "field": "column_present",
+          "stored": false,
+          "confirmed": true,
+          "column": 23
+        }
+      ],
+      "n300_vs_genome1_ok": false,
+      "n300_vs_genome1_n_diffs": 3,
+      "n300_vs_genome1_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        },
+        {
+          "table": "domtbl",
+          "field": "member",
+          "stored": "per_key_row_count",
+          "confirmed": "identity",
+          "column": 11
+        },
+        {
+          "table": "domtbl",
+          "field": "count_table",
+          "stored": "tbl",
+          "confirmed": null,
+          "column": 11
+        }
+      ],
+      "n300_vs_genome1_exactness_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        },
+        {
+          "table": "domtbl",
+          "field": "member",
+          "stored": "per_key_row_count",
+          "confirmed": "identity",
+          "column": 11
+        },
+        {
+          "table": "domtbl",
+          "field": "count_table",
+          "stored": "tbl",
+          "confirmed": null,
+          "column": 11
+        }
+      ],
+      "walls": {
+        "n300_s": 17.60690749999776,
+        "n50_s": 5.466447416998562
+      },
+      "decision_n300": "SHIP",
+      "decision_n50": "SHIP"
+    },
+    {
+      "genome": "GCF_057098645.1",
+      "n50_vs_own_n300_ok": false,
+      "n50_vs_own_n300_n_diffs": 1,
+      "n50_vs_own_n300_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": 9,
+          "confirmed": null
+        }
+      ],
+      "n300_vs_genome1_ok": false,
+      "n300_vs_genome1_n_diffs": 1,
+      "n300_vs_genome1_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "n300_vs_genome1_exactness_diffs": [
+        {
+          "table": "domtbl",
+          "field": "index_col",
+          "stored": null,
+          "confirmed": 9
+        }
+      ],
+      "walls": {
+        "n300_s": 17.180293082998105,
+        "n50_s": 5.708492292000301
+      },
+      "decision_n300": "SHIP",
+      "decision_n50": "SHIP"
+    }
+  ],
+  "verdict": "PARTIAL: self-consistency fails (sample-size artifact) AND full fits differ in exactness-affecting fields (genuine genome dependence). Verification must catch the latter.",
+  "hypothesis": "Confirmation re-infers at n=50 and demands equality with stored n=300; weaker vs stronger inference is not a contradiction test."
+}

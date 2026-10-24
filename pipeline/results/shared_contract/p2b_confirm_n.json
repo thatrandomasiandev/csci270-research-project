@@ -1,0 +1,102 @@
+{
+  "candidates": [
+    10,
+    25,
+    50,
+    100,
+    150,
+    300
+  ],
+  "chosen": 25,
+  "rule": "smallest n with all-5 self-consistency AND poisoned-store fail",
+  "results": [
+    {
+      "n": 10,
+      "self_all_ok": false,
+      "self": [
+        {
+          "genome": "GCF_025782825.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 1.7320664580001903
+        },
+        {
+          "genome": "GCF_049949335.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 1.668036665996624
+        },
+        {
+          "genome": "GCF_052882435.1",
+          "ok": true,
+          "observed": false,
+          "why": "no_rows",
+          "wall_s": 1.9341465830002562
+        },
+        {
+          "genome": "GCF_055382035.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 1.7530950000000303
+        },
+        {
+          "genome": "GCF_057098645.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 1.6848057500028517
+        }
+      ],
+      "poison_caught": true,
+      "poison_why": "tbl: column 4 stored as identity but part and whole cells differ",
+      "eligible": false
+    },
+    {
+      "n": 25,
+      "self_all_ok": true,
+      "self": [
+        {
+          "genome": "GCF_025782825.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 2.349021834001178
+        },
+        {
+          "genome": "GCF_049949335.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 2.339001541997277
+        },
+        {
+          "genome": "GCF_052882435.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 2.262074708
+        },
+        {
+          "genome": "GCF_055382035.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 2.1694429999988643
+        },
+        {
+          "genome": "GCF_057098645.1",
+          "ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 2.2176042499995674
+        }
+      ],
+      "poison_caught": true,
+      "poison_why": "tbl: column 4 stored as identity but part and whole cells differ",
+      "eligible": true
+    }
+  ]
+}
