@@ -515,7 +515,7 @@
   "w2_overnight": {
     "date": "2026-10-24",
     "branch": "exp/semgrep-domain",
-    "git_sha": "68c5b770bb5a3e6a60ec9412a726d5e3b3129702",
+    "git_sha": "262af8a0786b091ad77dffb9055cec421da31690",
     "tasks": {
       "1_timeout_lock_errors_dependence": {
         "seed": 20261326,
