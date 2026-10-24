@@ -5,7 +5,7 @@ Branch: `hub/submission-ready`
 
 ## Final SHA (this step)
 
-Recorded after the commit that lands this report (see git log on the branch).
+`9aa316f` — Fold measured W8 release chain and matched W5x baselines into the paper.
 
 ## Gates
 

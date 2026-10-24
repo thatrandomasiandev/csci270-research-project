@@ -1,5 +1,9 @@
 # Cross-field Discussion paragraph (Step 4) — 2026-10-24
 
+## Final SHA
+
+`867f617` — Add a verified cross-field Discussion paragraph on reference-release normals.
+
 ## Verified citations (publisher pages)
 
 | Cite key | Venue (verified) | DOI | Notes |

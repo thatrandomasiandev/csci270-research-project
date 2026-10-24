@@ -4,7 +4,7 @@ Hub: `/Users/joshuaterranova/Desktop/CSCI270/ACTS-hub` · branch `hub/submission
 
 ## Final SHA
 
-Recorded after the commit that lands this report.
+`7df6e7f` — Integrate the formal core: C0-C4 taxonomy, exact-merge proposition, R1-R6 gate.
 
 ## What changed
 
