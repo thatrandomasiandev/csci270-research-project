@@ -1,0 +1,49 @@
+% Standalone compile check for drafts/formal_core.tex.
+% Build from pipeline/paper/tare: pdflatex drafts/formal_core_standalone.tex
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix2019_v3}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{etoolbox}
+\robustify{\nobreakdash}
+\usepackage{amsthm}
+\usepackage{enumitem}
+\setlist{nosep,leftmargin=*}
+\usepackage{xspace}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+\hypersetup{pdfauthor={},pdftitle={Formal core draft},colorlinks=true,linkcolor=blue!50!black,citecolor=blue!50!black,urlcolor=blue!50!black}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+
+\definecolor{cTare}{HTML}{2171B5}
+\definecolor{cBad}{HTML}{CB181D}
+\definecolor{cGrey}{HTML}{636363}
+
+\newcommand{\sys}{TARE\xspace}
+\newcommand{\sysexpansion}{Tool Annotation Reuse, Exact}
+\newcommand{\pending}[1]{\textcolor{red}{\mbox{[PENDING: #1]}}}
+\newcommand{\tbd}{\textcolor{red}{TBD}}
+\newcommand{\dec}[1]{\textsc{#1}}
+
+\title{Formal core draft (not for submission)}
+\author{Standalone compile check}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent\textit{Compile harness only.} The fragment below is intended to replace
+Problem Model and the Design rule statements named in
+\texttt{drafts/formal\_core\_notes.md}. Cross-references that live only in
+\texttt{main.tex} (figures, evaluation sections) are intentionally absent here.
+
+\input{drafts/formal_core.tex}
+
+\end{document}

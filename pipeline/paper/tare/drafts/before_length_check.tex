@@ -1,0 +1,105 @@
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix2019_v3}
+\usepackage{amsmath,amssymb,amsthm,enumitem,xspace,etoolbox}
+\robustify{\nobreakdash}
+\usepackage[capitalise,noabbrev]{cleveref}
+\hypersetup{colorlinks=false}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newcommand{\sys}{TARE\xspace}
+\newcommand{\dec}[1]{\textsc{#1}}
+\begin{document}
+\section{Problem Model}
+\label{sec:model}
+
+The effect of a release travels along a chain: a release changes some entries, and changed entries change some
+output lines. The goal is to produce every line of the new full run while running the program on as little as
+possible. We make this precise.
+
+\begin{definition}[Release]
+A reference $R$ is a list of entries in file order. Each entry has a name and a \textit{strict hash} $h(e)$ of the
+content that affects scoring. A new release $R'$ splits into \textit{stable} entries
+$S = \{e \in R' : h(e) \in h(R)\}$ and \textit{changed} entries $\Delta = R' \setminus S$.
+\end{definition}
+
+\begin{definition}[Exact re\nobreakdash-annotation]
+Let $f(Q,R)$ be the program's output on records $Q$ and reference $R$, and $\mathrm{body}(\cdot)$ the output with
+comment lines removed. Given $f(Q,R)$ and $R'$, an exact re\nobreakdash-annotation returns $O$ with
+$\mathrm{body}(O) = \mathrm{body}(f(Q,R'))$ byte for byte, or refuses and returns a full run $f(Q,R')$.
+\end{definition}
+
+\begin{definition}[Coupling]
+A program is \textit{coupled} across entries if the line for record $q$ and entry $e$ can depend on entries other
+than $e$. We distinguish four forms: a \textit{normalizer}, a global number computed from the whole reference, such as
+$Z$; a \textit{side file}, an extra input file that lists entry names; an \textit{entry group}, a set of entries whose
+hits compete, such as Rfam's clans; and \textit{neighbor coupling}, where the program reads bytes of the entries
+next to $e$ in the file.
+\end{definition}
+
+\begin{definition}[Entry locality under a pin]
+A program is \textit{entry-local under pin $\pi$} if, for every record $q$ and every subset $U \subseteq R'$ that
+contains all entries reported for $q$ in the full run, running it on $(\{q\},U)$ with its normalizers set to $\pi(R')$
+prints exactly $q$'s lines from the full run.
+\end{definition}
+
+Entry locality is what makes exact replay possible. It is a property of the program and its options, not something
+\sys proves; \sys tests it before and during every replay and refuses when a test fails. We assume the program is
+deterministic for fixed options and thread count, and that every input it reads is named on its command line.
+\sys treats the program as a black box at run time and never reads its source code. We, the authors, did read the
+source code of HMMER, Infernal, and DIAMOND, to design experiments and to explain their outcomes; none of that knowledge
+is built into \sys.
+
+The gate applies three rules in order and stops at the first that fires:
+\begin{equation}
+D = \left\{\begin{array}{@{}lll@{}}
+\dec{refuse} & \text{no contract} & \text{(R1)}\\
+\dec{refuse\_pin} & \text{size-dependent, no pin} & \text{(R2)}\\
+\dec{refuse\_pin} & \text{in-situ check fails} & \text{(R3)}\\
+\dec{authorize} & \text{otherwise} &
+\end{array}\right.
+\label{eq:gate}
+\end{equation}
+R1 fires when the output does not split or a column fits no hypothesis. R2 fires when a column depends on the database
+size and no pin is available; \sys never guesses. R3 replays the probe sample against its own hits with the pin set and
+requires every byte to match the whole run. Every refusal runs the program in full; \dec{refuse\_pin} differs from
+\dec{refuse} only in what it reports: the output does decompose, so declaring a working pin could enable replay. Before replaying, the gate also falls back
+to a full run when $f_\Delta$, the changed fraction of the reference, exceeds the break\nobreakdash-even point $(1-c)/a$ of the
+cost model (the cost model); with no timing history it uses 0.80.
+depends only on that protein's own hits, including the column widths and the per\nobreakdash-protein statistics. As a tripwire, if
+a replay ever reports a protein--family pair outside the candidates, \sys refuses (R4), because a full run could
+contain pairs the cache never saw.
+\subsection{Stage 6: Check or Refuse}
+\label{sec:check}
+
+The replay assumes the program is entry\nobreakdash-local. The check tries to prove that assumption wrong on the actual run. It
+reruns the replay with \textit{pads}, families that were deliberately left out, added back to the subset. If the
+program is entry\nobreakdash-local, pads change nothing: no candidate line changes and no pad family is reported. If anything
+changes, the replay depended on what it left out, and \sys refuses (R5).
+
+\sys uses two kinds of pads. The \textit{neighbor pad} adds, for every replayed protein, the families that sit next to
+its candidates in the database file; it catches neighbor coupling by construction, the failure we found in DIAMOND
+(the evaluation). \textit{Random pads} add three random samples of left\nobreakdash-out families, each as large as the
+candidate set, for a fixed sample of $s=50$ proteins.
+% source: MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT sample_s=50
+They test for dependencies of unknown form. If an unknown
+dependency affects $k$ of $n$ proteins and a random pad includes the responsible family with probability $q$, the check
+misses it with probability approximately
+\begin{equation}
+P_{\text{miss}} \approx h + (1-h)(1-q)^3, \qquad h = \binom{n-k}{s}\Big/\binom{n}{s},
+\label{eq:miss}
+\end{equation}
+% source: MEASURED pipeline/results/reference_diamond/dx3.json; LEN pad_seeds=3; NOMINAL one=1
+where $h$ is the chance that the protein sample contains no affected protein. The approximation treats each pad as a
+single detection event; when several affected proteins fall in the sample, each pad has more chances to detect, so the
+true miss probability is lower. The neighbor pad needs no such formula: it contains every candidate's file\nobreakdash-order
+neighbor by construction. The check is a test, not a proof. As a final safeguard, an audit reruns the stock program on a
+random sample of $s$ proteins and refuses if any line differs (R6). By default
+$s = \lceil \ln\varepsilon / \ln(1-\kappa) \rceil = 299$ for $\varepsilon = 0.05$ and $\kappa = 0.01$, capped at the
+record count: if at least a fraction $\kappa$ of the records is affected, the audit misses all of them with probability
+at most $\varepsilon$. This is the classical zero\nobreakdash-defect audit sample, not a new bound. The measured runs in
+the evaluation that predate it used an earlier audit, each record included with probability 0.02 and at least 20 in
+total. An optional first\nobreakdash-use mode instead compares the first two updates of a new program with a full run.
+\end{document}
