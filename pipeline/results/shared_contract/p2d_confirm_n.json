@@ -1,0 +1,59 @@
+{
+  "candidates": [
+    10,
+    25,
+    50,
+    100,
+    150,
+    300
+  ],
+  "chosen": 10,
+  "rule": "smallest n with all-available-genome self-consistency on FULL Pfam (own contract, observed rows) AND poisoned-store fail AND wrong-member fail; production accept = full-table verify_stored_fit",
+  "genomes": [
+    "GCF_003018855.1",
+    "GCF_004377995.2",
+    "GCF_045689345.1"
+  ],
+  "reference": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2c/pfam/Pfam-A.hmm",
+  "seed": 20261006,
+  "results": [
+    {
+      "n": 10,
+      "self_all_ok": true,
+      "self": [
+        {
+          "genome": "GCF_003018855.1",
+          "ok": true,
+          "per_table_with_siblings_ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 27.587209708995942,
+          "n_use": 10
+        },
+        {
+          "genome": "GCF_004377995.2",
+          "ok": true,
+          "per_table_with_siblings_ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 28.170990250000614,
+          "n_use": 10
+        },
+        {
+          "genome": "GCF_045689345.1",
+          "ok": true,
+          "per_table_with_siblings_ok": true,
+          "observed": true,
+          "why": "",
+          "wall_s": 29.65825683399453,
+          "n_use": 10
+        }
+      ],
+      "poison_caught": true,
+      "poison_why": "tbl: column 4 stored as identity but part and whole cells differ",
+      "wrong_member_caught": true,
+      "wrong_member_why": "domtbl: column 11 stored member 'entry_count' does not rescale parts to whole on this sample",
+      "eligible": true
+    }
+  ]
+}

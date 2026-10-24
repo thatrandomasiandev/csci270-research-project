@@ -24,9 +24,10 @@ from acts.reference_cache import argv_namespace, program_binary
 
 STORE_VERSION = 1
 REFSIDE_VERSION = 1
-# Smallest n with observed self-consistency on all 5 P2 genomes and poison catch.
-# Evidence: pipeline/results/shared_contract/p2b_confirm_n.json (P2b).
-CONFIRM_N = 25
+# Smallest n with observed self-consistency on available full-Pfam genomes,
+# poison catch, and wrong-member catch (P2d, after sibling-count fix).
+# Evidence: pipeline/results/shared_contract/p2d_confirm_n.json.
+CONFIRM_N = 10
 
 
 def release_content_hash(reference: Path) -> str:

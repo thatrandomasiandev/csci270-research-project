@@ -759,7 +759,7 @@ print("imported", "acts.contract_store" in sys.modules)
         self.assertFalse(ok, why)
 
     def test_confirm_n_matches_calibration(self) -> None:
-        self.assertEqual(CONFIRM_N, 25)
+        self.assertEqual(CONFIRM_N, 10)
 
     def test_layer_a_refside_parse_and_prep_cache(self) -> None:
         """Cached prepared reference → body-identical to a fresh-prep run."""
