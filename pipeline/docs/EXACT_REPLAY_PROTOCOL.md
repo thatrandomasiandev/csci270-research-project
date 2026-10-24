@@ -1053,3 +1053,11 @@ would make a genome's first two updates full stock comparisons.
 Every measured result committed before this addendum ran with the Bernoulli audit and keeps its
 recorded commit. The headline (array 13208152 / 13227819, `acts_commit = d125151`) is not changed by
 this; a re-timing under the new default is a separate, pre-registered run (W13).
+
+## Addendum 2026-10-24 — queued jobs moved to biyik_1173 (queue priority only)
+
+Queued CARC jobs for the W13 headline re-time (array `13260162_[0-8]`) were moved from
+Slurm account `biyik_1165` to `biyik_1173` on 2026-10-24. This is a **queue-priority / fairshare
+move only**: hardware constraints and limits are unchanged (`--exclusive`, `--mem=0`,
+`--constraint=epyc-7542`, same wall/time and node caps). No job was cancelled, resubmitted, or
+retouched beyond the account reassignment; job IDs stay `13260162_*`.

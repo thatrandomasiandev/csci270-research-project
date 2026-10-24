@@ -338,3 +338,10 @@ script is fixed the same way. This is the one allowed script-bug fix
 refuses to overwrite `Pfam-A.hmm.h3m.ssi`, while the guard only looked
 for a `.ssi` suffix. An existing `.ssi` or `.h3m.ssi` is now left in
 place. The NAME+CKSUM diff is unchanged.
+
+### 2026-10-24 — queued W12a job moved to biyik_1173 (queue priority only)
+
+Queued CARC job `13347581` (W12a expert-script measured) was moved from Slurm account
+`biyik_1165` to `biyik_1173` on 2026-10-24. Queue priority / fairshare only: identical hardware
+constraints and limits (`--exclusive`, `--mem=0`, `--constraint=epyc-7542`, same wall and exclusive
+node caps). No cancel, resubmit, or redesign; job ID unchanged.
