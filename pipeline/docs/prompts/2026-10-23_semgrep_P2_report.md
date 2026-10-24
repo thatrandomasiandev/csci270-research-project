@@ -2,7 +2,7 @@
 
 ## Final SHA
 
-`PENDING` — filled after commit on `exp/semgrep-domain`. Worktree: `../ACTS-semgrep`. Base `origin/main` = `b3cd9ad`.
+`15bf913a838e15e49f0728df38942a6ec9c1521c` — filled after commit on `exp/semgrep-domain`. Worktree: `../ACTS-semgrep`. Base `origin/main` = `b3cd9ad`.
 
 ## GATE R
 
