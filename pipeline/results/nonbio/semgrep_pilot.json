@@ -5,7 +5,8 @@
   "git": {
     "worktree_head_at_start": "b5885002b4d694c07c294b87186c8fae13becf2c",
     "origin_main_base": "b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8",
-    "final_sha": "15bf913a838e15e49f0728df38942a6ec9c1521c"
+    "final_sha": "db303b3bc425ddfeb53b5e6b791410e2a29d721f",
+    "results_sha": "15bf913a838e15e49f0728df38942a6ec9c1521c"
   },
   "seeds": {
     "pilot": 20261322,

@@ -2,7 +2,15 @@
 
 ## Final SHA
 
-`c42210b44531b6ce0b2ae83d0e2af37ce58585ba` (branch tip). Results commit `15bf913`. Worktree: `../ACTS-semgrep`. Base `origin/main` = `b3cd9ad`.
+| | |
+|---|---|
+| Branch tip | `db303b3bc425ddfeb53b5e6b791410e2a29d721f` |
+| Results commit | `15bf913a838e15e49f0728df38942a6ec9c1521c` |
+| Base `origin/main` | `b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8` |
+| Worktree | `../ACTS-semgrep` |
+
+Do not keep rewriting this block to chase HEAD.
+
 
 ## GATE R
 
