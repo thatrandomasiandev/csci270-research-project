@@ -1147,7 +1147,11 @@ class ReferenceIncremental(Strategy):
         # Last-seen JSON envelope / raw bytes per output (opt-in json-records).
         self._json_meta: dict[str, dict] = {}
         self._json_raw: dict[str, str] = {}
+        # Locked flat-column header per output name so whole/part probe tables
+        # share one width (optional Semgrep fields vary by which rules fire).
+        self._json_columns: dict[str, list[str]] = {}
         self._open_cache = None
+
         self._open_ns = ""
         if slack:
             _argv, self._slack_factor = slack_rewrite(self.argv, slack)
@@ -1213,7 +1217,7 @@ class ReferenceIncremental(Strategy):
 
     def _coerce_json_tables(self, texts: dict[str, str]) -> dict[str, str]:
         """Convert tool JSON outputs to synthetic line tables; stash envelopes."""
-        from acts.table_json import parse_json_records, to_line_table
+        from acts.table_json import JSON_BLOB_COL, parse_json_records, to_line_table
 
         rows_key = self.json_rows or "results"
         out: dict[str, str] = {}
@@ -1225,7 +1229,11 @@ class ReferenceIncremental(Strategy):
                 "rows_key": doc.rows_key,
             }
             self._json_raw[name] = text
-            out[name] = to_line_table(doc)
+            # First invoke (usually the whole probe) locks the header. Later
+            # part scans pad missing optional fields; new fields stay only in
+            # __json__ so row width stays stable for the fitter.
+            locked = self._json_columns.setdefault(name, list(doc.columns))
+            out[name] = to_line_table(doc, columns=locked)
         return out
 
     def _json_records_invoke(self, base: Invoke) -> Invoke:

@@ -113,11 +113,31 @@ def parse_json_records(text: str, *, rows_key: str = "results") -> JsonRecordsDo
     )
 
 
-def to_line_table(doc: JsonRecordsDoc) -> str:
-    """Tab-separated table with a header line for the fitter/cache path."""
-    lines = ["#" + "\t".join(doc.columns)]
-    for row in doc.flat_rows:
-        lines.append("\t".join(row))
+def _cell_token(value: str) -> str:
+    """Keep one physical line and one tab-cell: Semgrep messages/lines embed both."""
+    return value.replace("\t", " ").replace("\r", " ").replace("\n", " ")
+
+
+def to_line_table(doc: JsonRecordsDoc, columns: list[str] | None = None) -> str:
+    """Tab-separated table with a header line for the fitter/cache path.
+
+    ``columns`` locks the header across whole/part probe scans. A part scan
+    that hits fewer optional Semgrep fields must still emit the same width
+    or ``index_rows`` raises on a short row. Missing scalars become "".
+    Scalar cells are sanitized so embedded newlines/tabs cannot split rows;
+    the trailing ``__json__`` cell keeps the original object via JSON escapes.
+    """
+    cols = list(columns) if columns is not None else list(doc.columns)
+    if not cols or cols[-1] != JSON_BLOB_COL:
+        # Keep __json__ last even when the caller passes a partial lock.
+        cols = [c for c in cols if c != JSON_BLOB_COL] + [JSON_BLOB_COL]
+    scalar_cols = cols[:-1]
+    lines = ["#" + "\t".join(cols)]
+    for row_obj in doc.rows:
+        flat = _flatten(row_obj)
+        cells = [_cell_token(flat.get(col, "")) for col in scalar_cols]
+        cells.append(dumps_semgrep(row_obj))
+        lines.append("\t".join(cells))
     return "\n".join(lines) + ("\n" if lines else "")
 
 

@@ -255,5 +255,27 @@ print("OK")
         self.assertIn("OK", proc.stdout)
 
 
+
+class LineTableSanityTests(unittest.TestCase):
+    def test_line_table_sanitizes_newlines_in_scalars(self) -> None:
+        doc = parse_json_records(
+            json.dumps(
+                {
+                    "results": [
+                        {
+                            "check_id": "r1",
+                            "path": "/a.py",
+                            "start": {"line": 1},
+                            "extra": {"message": "line1\nline2\txx"},
+                        }
+                    ]
+                }
+            )
+        )
+        text = to_line_table(doc)
+        widths = {ln.count("\t") + 1 for ln in text.splitlines() if not ln.startswith("#") and ln.strip()}
+        self.assertEqual(widths, {len(doc.columns)})
+        self.assertEqual(len(text.splitlines()) - 1, 1)
+
 if __name__ == "__main__":
     unittest.main()
