@@ -5,8 +5,8 @@
 | | |
 |---|---|
 | Branch | `exp/semgrep-domain` |
-| Tip (this report) | `262af8a0786b091ad77dffb9055cec421da31690` |
-| Prior tip | `68c5b77` (column-lock + IC2 tab split + timeout addendum) |
+| Tip (this report) |  |
+| Prior tip | `f41ba82d3bc970845abecf797ba0e674fc2ce620` (column-lock + IC2 tab split + timeout addendum) |
 | Worktree | `../ACTS-semgrep` |
 
 ## What ran
