@@ -85,44 +85,46 @@ ssh -o BatchMode=yes -o ConnectTimeout=20 discovery \
   "source /etc/profile.d/modules.sh 2>/dev/null; module load python/3.11.9 || module load python; \
    export PYTHONPATH='${DEST}/pipeline'; python3 '${DEST}/pipeline/scripts/shared_contract_measured.py' --mode check-draw --genomes '${GENOMES}'"
 
-echo "=== sbatch smoke (non-exclusive) ==="
-SMOKE_OUT="$(ssh -o BatchMode=yes discovery \
-  "export ACTS_GIT_HEAD='${GIT_HEAD}' ACTS_GIT_DIRTY='false' ACTS_CODE_ROOT='${DEST}'; \
-   sbatch --export=ALL,ACTS_GIT_HEAD='${GIT_HEAD}',ACTS_GIT_DIRTY='false',ACTS_CODE_ROOT='${DEST}' \
-   '${DEST}/pipeline/jobs/shared_contract_smoke.job")"
-echo "${SMOKE_OUT}"
-SMOKE_ID="$(echo "${SMOKE_OUT}" | awk '{print $4}')"
-if [[ -z "${SMOKE_ID}" ]]; then
-  echo "STOP: could not parse smoke job id" >&2
-  exit 2
-fi
+echo "=== write remote sbatch helper ==="
+# Avoid nested-quote breakage over ssh by running a staged helper on discovery.
+ssh -o BatchMode=yes discovery "cat > '${DEST}/sbatch_shared_contract.sh'" <<EOF
+#!/bin/bash
+set -euo pipefail
+DEST="${DEST}"
+GIT_HEAD="${GIT_HEAD}"
+W13_JOB="${W13_JOB}"
+export ACTS_GIT_HEAD="\${GIT_HEAD}"
+export ACTS_GIT_DIRTY=false
+export ACTS_CODE_ROOT="\${DEST}"
 
-echo "=== sbatch measured N=1,5,20 (afterok smoke + afterany W13) ==="
-# Times: N=1 8h floor; N=5 24h; N=20 72h (pre-reg). Serialize N tasks via afterok
-# so exclusive nodes stay within cap while W13 drains.
+SMOKE_OUT=\$(sbatch --export=ALL,ACTS_GIT_HEAD=\${GIT_HEAD},ACTS_GIT_DIRTY=false,ACTS_CODE_ROOT=\${DEST} \\
+  \${DEST}/pipeline/jobs/shared_contract_smoke.job)
+echo "\${SMOKE_OUT}"
+SMOKE_ID=\$(echo "\${SMOKE_OUT}" | awk '{print \$4}')
+test -n "\${SMOKE_ID}"
+
 submit_n() {
-  local n="$1"
-  local time_lim="$2"
-  local deps="$3"
-  local out
-  out="$(ssh -o BatchMode=yes discovery \
-    "export ACTS_GIT_HEAD='${GIT_HEAD}' ACTS_GIT_DIRTY='false' ACTS_CODE_ROOT='${DEST}' ONLY_N='${n}'; \
-     sbatch --export=ALL,ACTS_GIT_HEAD='${GIT_HEAD}',ACTS_GIT_DIRTY='false',ACTS_CODE_ROOT='${DEST}',ONLY_N='${n}' \
-       --time='${time_lim}' \
-       --dependency='${deps}' \
-       --job-name=\"tare-sc-N${n}\" \
-       '${DEST}/pipeline/jobs/shared_contract_measured.job")"
-  echo "${out}"
-  echo "${out}" | awk '{print $4}'
+  local n="\$1" time_lim="\$2" deps="\$3"
+  sbatch --export=ALL,ACTS_GIT_HEAD=\${GIT_HEAD},ACTS_GIT_DIRTY=false,ACTS_CODE_ROOT=\${DEST},ONLY_N=\${n} \\
+    --time="\${time_lim}" \\
+    --dependency="\${deps}" \\
+    --job-name="tare-sc-N\${n}" \\
+    \${DEST}/pipeline/jobs/shared_contract_measured.job
 }
 
-N1_ID="$(submit_n 1 08:00:00 "afterok:${SMOKE_ID},afterany:${W13_JOB}")"
-echo "N1_ID=${N1_ID}"
-N5_ID="$(submit_n 5 24:00:00 "afterok:${SMOKE_ID},afterok:${N1_ID},afterany:${W13_JOB}")"
-echo "N5_ID=${N5_ID}"
-N20_ID="$(submit_n 20 72:00:00 "afterok:${SMOKE_ID},afterok:${N1_ID},afterany:${W13_JOB}")"
-echo "N20_ID=${N20_ID}"
+N1_OUT=\$(submit_n 1 08:00:00 "afterok:\${SMOKE_ID},afterany:\${W13_JOB}")
+echo "\${N1_OUT}"
+N1_ID=\$(echo "\${N1_OUT}" | awk '{print \$4}')
+N5_OUT=\$(submit_n 5 24:00:00 "afterok:\${SMOKE_ID},afterok:\${N1_ID},afterany:\${W13_JOB}")
+echo "\${N5_OUT}"
+N5_ID=\$(echo "\${N5_OUT}" | awk '{print \$4}')
+N20_OUT=\$(submit_n 20 72:00:00 "afterok:\${SMOKE_ID},afterok:\${N1_ID},afterany:\${W13_JOB}")
+echo "\${N20_OUT}"
+N20_ID=\$(echo "\${N20_OUT}" | awk '{print \$4}')
 
-echo "SUBMITTED smoke=${SMOKE_ID} measured_N1=${N1_ID} measured_N5=${N5_ID} measured_N20=${N20_ID}"
-printf '%s\n' "smoke=${SMOKE_ID}" "N1=${N1_ID}" "N5=${N5_ID}" "N20=${N20_ID}" "git=${GIT_HEAD}" \
-  | ssh -o BatchMode=yes discovery "cat > '${DEST}/SUBMITTED_JOBS.txt'"
+printf '%s\\n' "smoke=\${SMOKE_ID}" "N1=\${N1_ID}" "N5=\${N5_ID}" "N20=\${N20_ID}" "git=\${GIT_HEAD}" \\
+  > "\${DEST}/SUBMITTED_JOBS.txt"
+echo "SUBMITTED smoke=\${SMOKE_ID} measured_N1=\${N1_ID} measured_N5=\${N5_ID} measured_N20=\${N20_ID}"
+EOF
+ssh -o BatchMode=yes discovery "chmod +x '${DEST}/sbatch_shared_contract.sh' && bash '${DEST}/sbatch_shared_contract.sh'"
+ssh -o BatchMode=yes discovery "cat '${DEST}/SUBMITTED_JOBS.txt'"
