@@ -1,0 +1,74 @@
+#!/bin/bash
+# Shared-contract smoke: N=2, r=1, 500-model Pfam subset. Not exclusive.
+# Must PASS before measured starts (afterok). Account biyik_1173.
+#SBATCH --job-name=tare-sc-smoke
+#SBATCH --account=biyik_1173
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=02:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-sharedcontract/logs/%x-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-sharedcontract/logs/%x-%j.err
+
+set -euo pipefail
+
+ROOT="${ACTS_CODE_ROOT:-/project2/biyik_1165/jjt_373/csci270-star/tare-sharedcontract}"
+PFAM="${ACTS_PFAM:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/hmmer/Pfam-A.hmm.gz}"
+GENOMES="${ACTS_GENOMES:-/project2/biyik_1165/jjt_373/csci270-star/pipeline/data/recurrence/A}"
+SCRATCH="/scratch1/${USER}/tare-sharedcontract/smoke_${SLURM_JOB_ID}"
+HMMER_SHA256="ca70d94fd0cf271bd7063423aabb116d42de533117343a9b27a65c17ff06fbf3"
+
+export PYTHONPATH="${ROOT}/pipeline"
+export PYTHONUNBUFFERED=1
+export ACTS_CODE_ROOT="${ROOT}"
+export ACTS_PFAM="${PFAM}"
+export ACTS_GENOMES="${GENOMES}"
+export ACTS_SCRATCH="${SCRATCH}"
+export ACTS_OUT="${ROOT}/results/smoke_${SLURM_JOB_ID}.json"
+export ACTS_GIT_HEAD="${ACTS_GIT_HEAD:-}"
+export ACTS_GIT_DIRTY="${ACTS_GIT_DIRTY:-false}"
+export ACTS_HMMER_SHA256="${HMMER_SHA256}"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0 || module load gcc || true
+module load python/3.11.9 || module load python || true
+
+mkdir -p "${SCRATCH}" "${ROOT}/results" "${ROOT}/logs"
+hostname
+date -Is
+python3 --version
+
+echo "=== build HMMER 3.4 from pinned tarball ==="
+TARBALL=""
+for candidate in \
+  "${ROOT}/hmmer-3.4.tar.gz" \
+  /project2/biyik_1165/jjt_373/csci270-star/pipeline/builds/hmmer-3.4.tar.gz \
+  /project2/biyik_1165/jjt_373/csci270-star/builds/hmmer-3.4.tar.gz
+do
+  if [[ -f "${candidate}" ]]; then TARBALL="${candidate}"; break; fi
+done
+if [[ -z "${TARBALL}" ]]; then
+  TARBALL="${SCRATCH}/hmmer-3.4.tar.gz"
+  curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer/hmmer-3.4.tar.gz \
+    || curl -L --fail --retry 3 -o "${TARBALL}" http://eddylab.org/software/hmmer3/3.4/hmmer-3.4.tar.gz
+fi
+sha256sum "${TARBALL}" | tee "${SCRATCH}/hmmer.sha256"
+got="$(awk '{print $1}' "${SCRATCH}/hmmer.sha256")"
+if [[ "${got}" != "${HMMER_SHA256}" ]]; then
+  echo "STOP: HMMER sha256 ${got} != ${HMMER_SHA256}" >&2
+  exit 2
+fi
+tar -C "${SCRATCH}" -xf "${TARBALL}"
+cd "${SCRATCH}/hmmer-3.4"
+./configure --prefix="${SCRATCH}/hmmer"
+make -j"${SLURM_CPUS_PER_TASK:-8}"
+make install
+export PATH="${SCRATCH}/hmmer/bin:${PATH}"
+command -v hmmscan
+hmmscan -h | head -n 3
+
+python3 "${ROOT}/pipeline/scripts/shared_contract_measured.py" --mode smoke
+echo SHARED_CONTRACT_SMOKE_DONE
