@@ -32,6 +32,7 @@
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}
 \newtheorem{assumption}{Assumption}
+\newtheorem{proposition}{Proposition}
 
 % palette shared with figures/make_figures.py
 \definecolor{cStable}{HTML}{9ECAE1}
@@ -277,45 +278,7 @@ $Z_{\text{new}}/Z_{\text{old}}$ gets closer but still fails, because printed num
 a rescaled number differs from the program's rounding of its own internal value.
 
 % =====================================================================
-\section{Problem Model}
-\label{sec:model}
-
-The effect of a release travels along a chain: a release changes some entries, and changed entries change some
-output lines. The goal is to produce every line of the new full run while running the program on as little as
-possible. We make this precise.
-
-\begin{definition}[Release]
-A reference $R$ is a list of entries in file order. Each entry has a name and a \textit{strict hash} $h(e)$ of the
-content that affects scoring. A new release $R'$ splits into \textit{stable} entries
-$S = \{e \in R' : h(e) \in h(R)\}$ and \textit{changed} entries $\Delta = R' \setminus S$.
-\end{definition}
-
-\begin{definition}[Exact re\nobreakdash-annotation]
-Let $f(Q,R)$ be the program's output on records $Q$ and reference $R$, and $\mathrm{body}(\cdot)$ the output with
-comment lines removed. Given $f(Q,R)$ and $R'$, an exact re\nobreakdash-annotation returns $O$ with
-$\mathrm{body}(O) = \mathrm{body}(f(Q,R'))$ byte for byte, or refuses and returns a full run $f(Q,R')$.
-\end{definition}
-
-\begin{definition}[Coupling]
-A program is \textit{coupled} across entries if the line for record $q$ and entry $e$ can depend on entries other
-than $e$. We distinguish four forms: a \textit{normalizer}, a global number computed from the whole reference, such as
-$Z$; a \textit{side file}, an extra input file that lists entry names; an \textit{entry group}, a set of entries whose
-hits compete, such as Rfam's clans; and \textit{neighbor coupling}, where the program reads bytes of the entries
-next to $e$ in the file.
-\end{definition}
-
-\begin{definition}[Entry locality under a pin]
-A program is \textit{entry-local under pin $\pi$} if, for every record $q$ and every subset $U \subseteq R'$ that
-contains all entries reported for $q$ in the full run, running it on $(\{q\},U)$ with its normalizers set to $\pi(R')$
-prints exactly $q$'s lines from the full run.
-\end{definition}
-
-Entry locality is what makes exact replay possible. It is a property of the program and its options, not something
-\sys proves; \sys tests it before and during every replay and refuses when a test fails. We assume the program is
-deterministic for fixed options and thread count, and that every input it reads is named on its command line.
-\sys treats the program as a black box at run time and never reads its source code. We, the authors, did read the
-source code of HMMER, Infernal, and DIAMOND, to design experiments and to explain their outcomes; none of that knowledge
-is built into \sys.
+\input{drafts/formal_core.tex}
 
 % =====================================================================
 \section{Design}
@@ -338,23 +301,23 @@ full stock run.
   lab/.style={font=\tiny, fill=white, inner sep=1pt},
   node distance=0.5cm and 0.62cm]
 % lanes
-\node[stage] (s1) at (0,0) {\textbf{1. Entry diff}\\ split $R'$ into stable $S$, changed $\Delta$};
+\node[stage] (s1) at (0,0) {\textbf{1. Entry diff}\\ split $E'$ into stable $S$, changed $\Delta$};
 \node[stage, right=of s1] (s2) {\textbf{2. Contract inference}\\ probe halves, fit each column};
 \node[gate, right=of s2] (s3) {\textbf{3. Coupling gate}\\ pin, side files, groups};
 \node[io, fill=cBad!8, draw=cBad, right=0.9cm of s3] (refuse) {\textbf{Refuse}\\ run the stock program in full};
-\node[stage, below=1.25cm of s3] (s4) {\textbf{4. Selection}\\ all records vs.\ $\Delta$ $\rightarrow$ $C_q$};
+\node[stage, below=1.25cm of s3] (s4) {\textbf{4. Selection}\\ all records vs.\ $\Delta$ $\rightarrow$ $C_r$};
 \node[stage, left=of s4] (s5) {\textbf{5. Batched replay}\\ batches vs.\ their candidates};
 \node[gate, left=of s5] (s6) {\textbf{6. Check or refuse}\\ pads, then a sampled audit};
 \node[io, fill=cTare!12, draw=cTare, left=0.75cm of s6] (ship) {\textbf{Ship}\\ output byte\nobreakdash-identical to a full run};
-\node[store, above=0.75cm of s1] (cache) {cache\\ $f(Q,R)$\\[-1pt]{\tiny (also read by 4, 5)}};
+\node[store, above=0.75cm of s1] (cache) {cache\\ $P(R,E)$\\[-1pt]{\tiny (also read by 4, 5)}};
 \node[store, above=0.75cm of s2] (contract) {contract\\ (per argv)};
-\node[io, fill=gray!8, left=0.75cm of s1, text width=1.6cm] (in) {records $Q$\\ old $R$, new $R'$};
+\node[io, fill=gray!8, left=0.75cm of s1, text width=1.6cm] (in) {records $R$\\ old $E$, new $E'$};
 % flows
 \draw[arr] (in) -- (s1);
 \draw[arr] (s1) -- node[lab, above]{$S$, $\Delta$} (s2);
 \draw[arr] (s2) -- node[lab, above]{contract} (s3);
 \draw[arr] (s3) -- node[lab, left]{authorize, pin $\pi$} (s4);
-\draw[arr] (s4) -- node[lab, above]{$C_q$} (s5);
+\draw[arr] (s4) -- node[lab, above]{$C_r$} (s5);
 \draw[arr] (s5) -- node[lab, above]{replay body} (s6);
 \draw[arr] (s6) -- node[lab, above]{pass} (ship);
 \draw[arr, densely dashed] (contract) -- (s2.north);
@@ -433,22 +396,11 @@ compete. On a subset, \sys rewrites that file to the families present, because t
 find. If any member of a declared group changes, \sys re\nobreakdash-searches the whole group, because a change to one member
 can reveal a hit of another that the cache never recorded.
 
-The gate applies three rules in order and stops at the first that fires:
-\begin{equation}
-D = \left\{\begin{array}{@{}lll@{}}
-\dec{refuse} & \text{no contract} & \text{(R1)}\\
-\dec{refuse\_pin} & \text{size-dependent, no pin} & \text{(R2)}\\
-\dec{refuse\_pin} & \text{in-situ check fails} & \text{(R3)}\\
-\dec{authorize} & \text{otherwise} &
-\end{array}\right.
-\label{eq:gate}
-\end{equation}
-R1 fires when the output does not split or a column fits no hypothesis. R2 fires when a column depends on the database
-size and no pin is available; \sys never guesses. R3 replays the probe sample against its own hits with the pin set and
-requires every byte to match the whole run. Every refusal runs the program in full; \dec{refuse\_pin} differs from
-\dec{refuse} only in what it reports: the output does decompose, so declaring a working pin could enable replay. Before replaying, the gate also falls back
-to a full run when $f_\Delta$, the changed fraction of the reference, exceeds the break\nobreakdash-even point $(1-c)/a$ of the
-cost model (\cref{sec:cost}); with no timing history it uses 0.80.
+The gate applies refusal rules R1--R6 from \cref{sec:model} as one surface: R1--R3 on the probe (no contract; size
+dependence without a pin; in\nobreakdash-situ pin check), and R4--R6 on the update (non\nobreakdash-candidate pair; pad change; audit).
+Every refusal runs the program in full; \dec{refuse\_pin} (R2/R3) differs from \dec{refuse} only in what it reports: the
+output does decompose, so declaring a working pin could enable replay. Before replaying, the gate also falls back to a
+full run when $f_\Delta$ exceeds the break\nobreakdash-even point $(1-c)/a$ of \cref{eq:cost}; with no timing history it uses 0.80.
 % source: MEASURED pipeline/results/breakeven/measured.json threshold_default=0.8; NOMINAL one=1
 
 \subsection{Stage 4: Selection}
@@ -457,7 +409,7 @@ Changed entries may produce hits the cache has never seen. \sys runs the program
 entries $\Delta$ alone, with the pin set. A record's \textit{candidates} are its cached hits on stable entries plus its
 new hits:
 \begin{equation}
-C_q = \{e \in S : (q,e) \in f(Q,R)\} \;\cup\; \{e : (q,e) \in f_\pi(Q,\Delta)\}.
+C_r = \{e \in S : (r,e) \in P(R,E)\} \;\cup\; \{e : (r,e) \in P_\pi(R,\Delta)\}.
 \label{eq:cand}
 \end{equation}
 Selection compares every record with every changed entry, so its cost is proportional to the changed fraction of the
@@ -481,57 +433,38 @@ T_{\text{replay}} = \alpha k + \beta \sum_b |U_b| + \gamma \sum_b |B_b|\,|U_b|,
 where $k$ is the number of batches, $|B_b|$ and $|U_b|$ the proteins and families in batch $b$, $\alpha$ the cost of
 starting the program, $\beta$ the cost per family of preparing a sub\nobreakdash-database, and $\gamma$ the cost of one
 protein--family comparison. Stitching is safe for HMMER because, in its source code, each protein's output block
-depends only on that protein's own hits, including the column widths and the per\nobreakdash-protein statistics. As a tripwire, if
-a replay ever reports a protein--family pair outside the candidates, \sys refuses (R4), because a full run could
-contain pairs the cache never saw.
+depends only on that protein's own hits, including the column widths and the per\nobreakdash-protein statistics. As a tripwire
+(R4 in \cref{sec:model}), if a replay ever reports a protein--family pair outside the candidates, \sys refuses, because
+a full run could contain pairs the cache never saw.
 
 \subsection{Stage 6: Check or Refuse}
 \label{sec:check}
 
-The replay assumes the program is entry\nobreakdash-local. The check tries to prove that assumption wrong on the actual run. It
-reruns the replay with \textit{pads}, families that were deliberately left out, added back to the subset. If the
-program is entry\nobreakdash-local, pads change nothing: no candidate line changes and no pad family is reported. If anything
-changes, the replay depended on what it left out, and \sys refuses (R5).
-
-\sys uses two kinds of pads. The \textit{neighbor pad} adds, for every replayed protein, the families that sit next to
-its candidates in the database file; it catches neighbor coupling by construction, the failure we found in DIAMOND
-(\cref{sec:eval-safety}). \textit{Random pads} add three random samples of left\nobreakdash-out families, each as large as the
+The check tries to falsify C0/C1 on the actual run. It reruns the replay with \textit{pads} (left\nobreakdash-out families added
+back). The \textit{neighbor pad} adds file\nobreakdash-order neighbors of every candidate (R5; catches C2 as in DIAMOND,
+\cref{sec:eval-safety}). \textit{Random pads} add three random samples of left\nobreakdash-out families, each as large as the
 candidate set, for a fixed sample of $s=50$ proteins.
 % source: MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT sample_s=50
-They test for dependencies of unknown form. If an unknown
-dependency affects $k$ of $n$ proteins and a random pad includes the responsible family with probability $q$, the check
-misses it with probability approximately
+If an unknown dependency affects $k$ of $n$ proteins and a random pad includes the responsible family with probability
+$q$, the check misses it with probability approximately
 \begin{equation}
 P_{\text{miss}} \approx h + (1-h)(1-q)^3, \qquad h = \binom{n-k}{s}\Big/\binom{n}{s},
 \label{eq:miss}
 \end{equation}
 % source: MEASURED pipeline/results/reference_diamond/dx3.json; LEN pad_seeds=3; NOMINAL one=1
-where $h$ is the chance that the protein sample contains no affected protein. The approximation treats each pad as a
-single detection event; when several affected proteins fall in the sample, each pad has more chances to detect, so the
-true miss probability is lower. The neighbor pad needs no such formula: it contains every candidate's file\nobreakdash-order
-neighbor by construction. The check is a test, not a proof. As a final safeguard, an audit reruns the stock program on a
-random sample of $s$ proteins and refuses if any line differs (R6). By default
-$s = \lceil \ln\varepsilon / \ln(1-\kappa) \rceil = 299$ for $\varepsilon = 0.05$ and $\kappa = 0.01$, capped at the
-record count: if at least a fraction $\kappa$ of the records is affected, the audit misses all of them with probability
-at most $\varepsilon$. This is the classical zero\nobreakdash-defect audit sample, not a new bound. The measured runs in
-\cref{sec:eval} that predate it used an earlier audit, each record included with probability 0.02 and at least 20 in
-total. An optional first\nobreakdash-use mode instead compares the first two updates of a new program with a full run.
-% source: MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT audit_p=0.02; TEXT audit_floor=20; MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT s=299; TEXT audit_p=0.02; TEXT audit_floor=20; NOMINAL eps=0.05; NOMINAL kappa=0.01; NOMINAL one=1
+where $h$ is the chance that the protein sample contains no affected protein. Pads are a test of C0/C1, not the audit
+bound: R6's sample size $s$ is \cref{eq:audit-s} in \cref{sec:model}. The measured runs in \cref{sec:eval} that predate
+the bounded default used an earlier audit (each record with probability 0.02 and at least 20). An optional
+first\nobreakdash-use mode compares the first two updates of a new program with a full run.
+% source: MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT audit_p=0.02; TEXT audit_floor=20; NOMINAL one=1
 
 \subsection{Cost Model}
 \label{sec:cost}
 
-Let $T_{\text{stock}}$ be the time of a full run on the new release and $f_\Delta = |\Delta|/|R'|$ the fraction of entries
-that changed. \sys's update time is approximately
-\begin{equation}
-T_{\sys} \approx a f_\Delta T_{\text{stock}} + c\, T_{\text{stock}},
-\label{eq:cost}
-\end{equation}
-where the first term is selection ($a$ is near one if the program's time grows linearly with database size) and $c$
-collects every other cost (replay, check, audit, parsing) as a fraction of a stock run. The speedup
-$1/(a f_\Delta + c)$ can never exceed $1/f_\Delta$, and even for a tiny release it cannot exceed $1/c$. The first run
-also fills the cache, which costs a full run plus the contract probes; with fill time $F$ and update time $U$, \sys
-becomes cheaper than repeated full runs after $n \ge (F - T_{\text{stock}})/(T_{\text{stock}} - U)$ releases.
+\cref{eq:cost} in \cref{sec:model} is the working model: selection scales with $f_\Delta$, and $c$ collects replay,
+check, audit, and parsing. The speedup $1/(a f_\Delta + c)$ never exceeds $1/f_\Delta$ or $1/c$. The first run also
+fills the cache (a full run plus contract probes); with fill time $F$ and update time $U$, \sys becomes cheaper than
+repeated full runs after $n \ge (F - T_{\mathrm{stock}})/(T_{\mathrm{stock}} - U)$ releases.
 % source: NOMINAL one=1
 
 % =====================================================================
@@ -868,9 +801,9 @@ BLAST+ does not ship.
 on a synthetic scorer (1{,}400 trials), file\nobreakdash-wide coupling was always refused, but hidden or distant coupling missed on 741 of
 800 trials. With the earlier audit, 489 of those 800 still shipped; with the bounded audit ($s{=}299$), where at least 1\% of
 records were affected only 3 of 400 shipped (vs.\ 127 of 400 earlier), matching the 5\% bound, and all 200 clean trials
-shipped. The bounded audit is the default (~6.4\% of a stock run vs.\ 2.1\% earlier). Guarantee: exact when entry\nobreakdash-local;
-refuse file\nobreakdash-wide and neighbor coupling; for hidden coupling, wrong updates ship with probability $\le 5\%$ when $\ge 1\%$ of
-records are affected.
+shipped. The bounded audit is the default (~6.4\% of a stock run vs.\ 2.1\% earlier). Guarantee: under C0/C1 with
+(D)--(O) in \cref{sec:model}, \cref{prop:exact} gives an exact merge; refuse C2--C4 when observed; for hidden
+coupling, wrong updates ship with probability $\le 5\%$ when $\ge 1\%$ of records are affected (\cref{eq:audit-s}).
 % source: MEASURED pipeline/results/adversarial/measured.json n_records=2000 n_models=2500; MEASURED pipeline/results/adversarial/v2_summary.json arms.shipped.hidden_unsafe=489 arms.shipped.hidden_trials=800 arms.bounded.hidden_unsafe=272 arms.bounded.covered_unsafe=3 arms.bounded.covered_trials=400 arms.shipped.covered_unsafe=127 arms.bounded.below_unsafe=269 arms.bounded.below_trials=400 arms.bounded.c0_trials=200 arms.bounded.c0_needless=0 bounded_audit_fraction_of_stock=0.06429750013644711 shipped_audit_fraction_of_stock=0.021358068062426384; DERIVED b=100*bounded_audit_fraction_of_stock; DERIVED sh=100*shipped_audit_fraction_of_stock; NOMINAL missed=741; NOMINAL trials1400=1400; NOMINAL pct1=1; NOMINAL pct5=5; NOMINAL sbound=299
 
 \begin{figure}[t]

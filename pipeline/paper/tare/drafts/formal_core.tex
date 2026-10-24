@@ -1,0 +1,81 @@
+% Formal core for hub integration. Notation: records $R$, reference $E$.
+\section{Problem Model}
+\label{sec:model}
+
+\paragraph{Program and release.}
+A black-box program $P$ maps records $R$, reference $E$, and options $o$ to a
+tabular body (headers ignored). Each entry of the ordered list $E$ has a strict
+hash $h(e)$ (SHA-256 after dropping caller-declared volatile tags). A release
+$E\!\to\!E'$ yields stable $S=\{e\in E':h(e)\in h(E)\}$, changed
+$\Delta=E'\setminus S$, and $f_\Delta=|\Delta|/|E'|$.
+% source: MEASURED pipeline/results/reference_kill_r1.json unchanged_strict=26082 z_new=30134; DERIVED identical_pct=100*unchanged_strict/z_new
+Every body row is attributable to a pair $(r,e)$ with printable fields
+$f(r,e,o,g(E'))$, where $g(E')$ is a reference-wide statistic (entry count,
+length, \ldots). Exact re-annotation returns $\mathrm{body}(P(R,E',o))$ byte for
+byte, or refuses and returns that full run.
+
+\paragraph{Coupling taxonomy.}
+\textbf{C0} (entry-local): $f$ independent of $g$ and of every $e'\neq e$
+(Infernal under Rfam's recommended command) $\rightarrow$ replay.
+\textbf{C1} (reference-size): $f$ depends on $E'$ only through a normalizer in
+$g$ that $P$ exposes or \sys rescales (HMMER \texttt{-Z}) $\rightarrow$ pin, or
+refuse if uncovered.
+\textbf{C2} (neighbor/order): the line for $(r,e)$ depends on neighbors of $e$
+or on input order (DIAMOND) $\rightarrow$ refuse.
+\textbf{C3} (cross-record global, e.g.\ FDR) and \textbf{C4} (nondeterministic)
+$\rightarrow$ refuse when observed.
+Refusal rules R1--R6 form one surface: R1 no contract; R2 size-dependent, no
+pin; R3 in-situ pin check fails; R4 non-candidate pair in replay; R5 pad changes
+a line; R6 audit differs. C0/C1 replay; C2--C4 refuse (R1--R3 on the probe,
+R4--R6 on the update). Side-file rewrites and invalidate-groups are
+\textit{declarations} that keep C1 sound, not a sixth class.
+
+\paragraph{Exactness (C0/C1).}
+\label{asm:det}\label{asm:pin}\label{asm:key}\label{asm:order}%
+Assumptions: (D)~\textbf{determinism}---fixed $(r,e,o,g)$ prints the same cells;
+(P)~\textbf{pin fixes $g$}---pinned options set every fitted size member of
+$g(E')$ to the full-release value; (K)~\textbf{unique attribution}---after key
+widening each body row has a unique $(r,e)$; (O)~\textbf{row-determined
+body}---the body is a deterministic function of its rows in fixed record order.
+\begin{proposition}[Exact merge]\label{prop:exact}
+Assume C0 or C1 and (D)--(O). Let $C_r$ be $r$'s candidates (cached stable hits
+plus selection on $\Delta$). Running $P$ on each $r$ against $C_r$ with $g$
+pinned, then merging in record order, yields $\mathrm{body}(P(R,E',o))$.
+\end{proposition}
+\begin{proof}
+Under C0/C1 and (P), cells for $(r,e)$ equal $f(r,e,o,g(E'))$ on any universe
+containing $e$. Selection puts every new/changed hit in $C_r$; stable hits remain
+cached. By (K)--(O), assembling those rows reproduces the full body; (D) removes
+drift.
+\end{proof}
+The probe (R1), pin check (R3), pads (R5), and non-candidate tripwire (R4) test
+these assumptions; they do not prove C0/C1 on the full input. Not covered:
+C2--C4; residual couplings below $\kappa$ or that evade pads and the audit;
+limitation F6 (coupling outside the closed family that still looks locally
+consistent).
+
+\paragraph{Audit bound.}
+If at least a fraction $\kappa$ of records would differ under a wrong update, a
+with-replacement sample of size $s$ misses all of them with probability
+$\le(1-\kappa)^s$. Setting that $\le\varepsilon$ gives
+\begin{equation}
+s=\bigl\lceil\ln\varepsilon/\ln(1-\kappa)\bigr\rceil.
+\label{eq:audit-s}
+\end{equation}
+% source: MEASURED pipeline/docs/EXACT_REPLAY_PROTOCOL.md; TEXT s=299; NOMINAL eps=0.05; NOMINAL kappa=0.01
+For $\varepsilon=0.05$, $\kappa=0.01$, $s=299$. This bounds shipping a wrong
+update given $\ge\kappa$ affected (R6), not couplings below $\kappa$. Empirically,
+3 of 400 adversarial trials at $\ge 1\%$ affected shipped under the bounded audit.
+% source: MEASURED pipeline/results/adversarial/v2_summary.json arms.bounded.covered_unsafe=3 arms.bounded.covered_trials=400
+
+\paragraph{Cost model.}
+With stock time $T_{\mathrm{stock}}$,
+\begin{equation}
+T_{\sys}\approx a\,f_\Delta\,T_{\mathrm{stock}}+c\,T_{\mathrm{stock}},
+\label{eq:cost}
+\end{equation}
+where $a$ scales selection and $c$ collects replay, check, audit, and parsing.
+Fallback when $f_\Delta>(1-c)/a$; default threshold $0.80$ with no timing history.
+% source: MEASURED pipeline/results/breakeven/measured.json threshold_default=0.8; NOMINAL one=1
+Any program whose rows factor as $f(r,e,o,g(E))$ fits; C2--C4 remain refuse
+classes. \sys never reads the program's source at run time.
