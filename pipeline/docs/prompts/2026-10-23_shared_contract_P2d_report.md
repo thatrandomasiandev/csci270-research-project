@@ -1,6 +1,6 @@
 # Shared contract P2d report — verification false-rejection fix + re-pilot
 
-**Final SHA:** *(set after tip commit)*  
+**Final SHA:** `d6cb014bd6ac993d0f93cff1a5d61722ed512a7a`  
 **Branch:** `exp/shared-contract`  
 **Scratch:** `~/tmp/tare_sharedcontract_p2d/`  
 **No CARC. No paper edits.** Laptop walls are shape only.
@@ -129,4 +129,4 @@ Reasons: GATE R PASS; all controls green; every output stock-identical; **q = 1.
 
 After the tip commit that adds this report and `p2d_realistic.json`:
 
-**Final SHA:** *(fill on tip)*
+**Final SHA:** `d6cb014bd6ac993d0f93cff1a5d61722ed512a7a`
