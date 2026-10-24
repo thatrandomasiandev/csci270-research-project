@@ -625,6 +625,156 @@ print("imported", "acts.contract_store" in sys.modules)
     def test_confirm_n_matches_calibration(self) -> None:
         self.assertEqual(CONFIRM_N, 25)
 
+    def test_layer_a_refside_parse_and_prep_cache(self) -> None:
+        """Cached prepared reference → body-identical to a fresh-prep run."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, g_b = self._genomes(tmp)
+            prep_script = tmp / "prep.py"
+            prep_script.write_text(
+                "import sys\nfrom pathlib import Path\n"
+                "Path(sys.argv[1] + '.idx').write_text('ok\\n')\n"
+            )
+            prep = f"{sys.executable} {prep_script} {{reference}}"
+
+            def run(genome, cache, out, store_path):
+                return ReferenceIncremental(
+                    argv=ARGV,
+                    input_path=genome,
+                    out_dir=out,
+                    reference=ref,
+                    cache_path=cache,
+                    verify="full",
+                    runner=stock,
+                    pin="-Z {entry_count}",
+                    pin_runner=honest_pin,
+                    prep=prep,
+                    contract_store=store_path,
+                ).run()
+
+            a = run(g_a, tmp / "ca.sqlite", tmp / "oa", store)
+            self.assertEqual(a.decision, "SHIP", a.reason)
+            self.assertEqual(a.extra.get("contract_refside_parse"), "stored")
+            self.assertEqual(a.extra.get("contract_refside_prep"), "stored")
+            b = run(g_b, tmp / "cb.sqlite", tmp / "ob", store)
+            self.assertEqual(b.decision, "SHIP", b.reason)
+            self.assertEqual(b.extra.get("contract_refside_parse"), "hit")
+            self.assertEqual(b.extra.get("contract_refside_prep"), "hit")
+            # Fresh prep, no store — body must match the cached-prep run.
+            plain = ReferenceIncremental(
+                argv=ARGV,
+                input_path=g_b,
+                out_dir=tmp / "ob_plain",
+                reference=ref,
+                cache_path=tmp / "cb_plain.sqlite",
+                verify="full",
+                runner=stock,
+                pin="-Z {entry_count}",
+                pin_runner=honest_pin,
+                prep=prep,
+            ).run()
+            self.assertEqual(plain.decision, "SHIP", plain.reason)
+            got = (tmp / "ob" / "tables" / "out").read_text()
+            want = (tmp / "ob_plain" / "tables" / "out").read_text()
+            self.assertEqual(body_lines(got), body_lines(want))
+
+    def test_layer_a_prep_command_isolation(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g, _ = self._genomes(tmp)
+            prep_a = tmp / "prep_a.py"
+            prep_b = tmp / "prep_b.py"
+            prep_a.write_text(
+                "import sys\nfrom pathlib import Path\nPath(sys.argv[1]+'.idx').write_text('a\\n')\n"
+            )
+            prep_b.write_text(
+                "import sys\nfrom pathlib import Path\nPath(sys.argv[1]+'.idx').write_text('b\\n')\n"
+            )
+            a = ReferenceIncremental(
+                argv=ARGV,
+                input_path=g,
+                out_dir=tmp / "oa",
+                reference=ref,
+                cache_path=tmp / "ca.sqlite",
+                verify="full",
+                runner=stock,
+                pin="-Z {entry_count}",
+                pin_runner=honest_pin,
+                prep=f"{sys.executable} {prep_a} {{reference}}",
+                contract_store=store,
+            ).run()
+            b = ReferenceIncremental(
+                argv=ARGV,
+                input_path=g,
+                out_dir=tmp / "ob",
+                reference=ref,
+                cache_path=tmp / "cb.sqlite",
+                verify="full",
+                runner=stock,
+                pin="-Z {entry_count}",
+                pin_runner=honest_pin,
+                prep=f"{sys.executable} {prep_b} {{reference}}",
+                contract_store=store,
+            ).run()
+            self.assertNotEqual(
+                a.extra.get("contract_refside_key"),
+                b.extra.get("contract_refside_key"),
+            )
+            self.assertEqual(b.extra.get("contract_refside_prep"), "stored")
+
+    def test_layer_b_refinement_conflict_not_merged(self) -> None:
+        from acts.contract_store import merge_undetermined_fields
+
+        stored = {
+            "decision": "SHIP",
+            "tables": [
+                {
+                    "name": "out",
+                    "record_col": 0,
+                    "entry_col": 1,
+                    "index_col": 9,
+                    "columns": [
+                        {"index": 2, "role": "numeric", "member": "entry_count"}
+                    ],
+                }
+            ],
+            "exact_eligible": False,
+            "column_only_refusal": False,
+        }
+        richer = json.loads(json.dumps(stored))
+        richer["tables"][0]["index_col"] = 5
+        merged, events = merge_undetermined_fields(stored, richer)
+        self.assertIsNone(merged)
+        self.assertTrue(any(e.get("action") == "conflict" for e in events))
+        # Fill undetermined index_col.
+        weak = json.loads(json.dumps(stored))
+        weak["tables"][0]["index_col"] = None
+        merged, events = merge_undetermined_fields(weak, stored)
+        self.assertIsNotNone(merged)
+        self.assertEqual(merged["tables"][0]["index_col"], 9)
+        self.assertTrue(any(e.get("action") == "fill" for e in events))
+
+    def test_layer_c_recorded_on_reuse(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, g_b = self._genomes(tmp)
+            _run(
+                tmp, genome=g_a, ref=ref, cache=tmp / "ca.sqlite", out=tmp / "oa", store=store
+            )
+            b = _run(
+                tmp, genome=g_b, ref=ref, cache=tmp / "cb.sqlite", out=tmp / "ob", store=store
+            )
+            self.assertEqual(b.extra.get("contract_store"), "reused")
+            self.assertEqual(b.extra.get("contract_layer_c"), "all_tables_verified")
+            conf = b.extra.get("contract_confirmations") or []
+            self.assertTrue(any(str(c).startswith("layer_c_tables=") for c in conf))
+
 
 if __name__ == "__main__":
     unittest.main()

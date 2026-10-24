@@ -4,6 +4,10 @@ Keyed by program-binary digest, normalized argv (same ingredients as the
 reference cache namespace), and the reference release content hash. Stores only
 genome-independent fit facts. Callers must confirm before trusting a hit.
 Atomic publish: write ``*.tmp`` then ``os.replace``.
+
+Also hosts the Layer-A reference-side cache (parsed entries + prepared
+reference) and Layer-B refinement helpers. Imported only when
+``--contract-store`` is set.
 """
 
 from __future__ import annotations
@@ -11,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -18,6 +23,7 @@ from typing import Any
 from acts.reference_cache import argv_namespace, program_binary
 
 STORE_VERSION = 1
+REFSIDE_VERSION = 1
 # Smallest n with observed self-consistency on all 5 P2 genomes and poison catch.
 # Evidence: pipeline/results/shared_contract/p2b_confirm_n.json (P2b).
 CONFIRM_N = 25
@@ -276,7 +282,13 @@ class ContractStore:
             return None, "missing key parts"
         return payload, None
 
-    def save(self, key_info: dict[str, str], fit: dict) -> Path:
+    def save(
+        self,
+        key_info: dict[str, str],
+        fit: dict,
+        *,
+        verification_samples: list[dict] | None = None,
+    ) -> Path:
         """Atomically publish a shareable fit. Returns the final path."""
         key = key_info["key"]
         payload: dict[str, Any] = {
@@ -287,6 +299,13 @@ class ContractStore:
             "release_hash": key_info["release_hash"],
             "fit": shareable_payload(fit),
         }
+        if verification_samples is not None:
+            payload["verification_samples"] = list(verification_samples)
+        else:
+            # Preserve samples already on disk when a caller republishes the fit.
+            prior, _ = self.load(key)
+            if prior and isinstance(prior.get("verification_samples"), list):
+                payload["verification_samples"] = list(prior["verification_samples"])
         dest = self.path_for(key)
         fd, tmp_name = tempfile.mkstemp(
             prefix=f".{key}.",
@@ -307,3 +326,316 @@ class ContractStore:
                 pass
             raise
         return dest
+
+    def append_verification_sample(self, key: str, sample: dict) -> None:
+        """Record one genome's verification sample ids (Layer B)."""
+        payload, err = self.load(key)
+        if payload is None or err:
+            return
+        samples = list(payload.get("verification_samples") or [])
+        samples.append(sample)
+        payload["verification_samples"] = samples
+        dest = self.path_for(key)
+        fd, tmp_name = tempfile.mkstemp(
+            prefix=f".{key}.",
+            suffix=".tmp",
+            dir=str(self.root),
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                json.dump(payload, fh, indent=2, sort_keys=True)
+                fh.write("\n")
+                fh.flush()
+                os.fsync(fh.fileno())
+            os.replace(tmp_name, dest)
+        except Exception:
+            try:
+                os.unlink(tmp_name)
+            except OSError:
+                pass
+            raise
+
+
+def refside_key(release_hash: str, prep: str | None) -> str:
+    """Key for Layer-A cache: release bytes + prep command string."""
+    blob = f"{release_hash}\0{prep or ''}".encode()
+    return hashlib.sha256(blob).hexdigest()
+
+
+def _entries_to_jsonable(entries: list) -> list[dict]:
+    out = []
+    for entry in entries:
+        out.append(
+            {
+                "raw": entry.raw,
+                "length": int(entry.length),
+                "content_hash": entry.content_hash,
+                "keys": list(entry.keys),
+                "format_name": entry.format_name,
+            }
+        )
+    return out
+
+
+def _entries_from_jsonable(rows: list[dict]):
+    from acts.reference_formats import Entry
+
+    return [
+        Entry(
+            raw=str(row["raw"]),
+            length=int(row["length"]),
+            content_hash=str(row["content_hash"]),
+            keys=tuple(row["keys"]),
+            format_name=str(row["format_name"]),
+        )
+        for row in rows
+    ]
+
+
+def _link_or_copy(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        return
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
+
+
+def _sidecar_paths(reference: Path) -> list[Path]:
+    """Files next to ``reference`` that look like prep outputs (same stem prefix)."""
+    parent = reference.parent
+    name = reference.name
+    found: list[Path] = []
+    for path in parent.iterdir():
+        if path.name == name:
+            continue
+        if path.name.startswith(name + ".") or path.name.startswith(name):
+            # hmmpress: file.hmm.h3m; toy prep: file.idx beside file
+            if path.name.startswith(name + ".") or path.suffix in {
+                ".idx",
+                ".h3m",
+                ".h3i",
+                ".h3f",
+                ".h3p",
+            }:
+                found.append(path)
+    return sorted(found)
+
+
+class RefSideCache:
+    """Layer A: parse + prepared-reference cache under ``root``."""
+
+    def __init__(self, root: Path):
+        self.root = Path(root)
+        self.root.mkdir(parents=True, exist_ok=True)
+
+    def dir_for(self, key: str) -> Path:
+        return self.root / key
+
+    def acquire(
+        self,
+        reference: Path,
+        prep: str | None,
+        *,
+        parse_reference,
+        run_prep,
+    ) -> tuple[list, Path, dict]:
+        """Return (entries, reference_path_to_use, meta for decision.txt).
+
+        On miss: parse, optionally copy+prep into the cache, publish.
+        On hit: load entries; use the cached prepared reference when prep was set.
+        """
+        release = release_content_hash(reference)
+        key = refside_key(release, prep)
+        dest = self.dir_for(key)
+        meta_path = dest / "meta.json"
+        entries_path = dest / "entries.json"
+        prepared = dest / "prepared" / reference.name
+        meta: dict[str, Any] = {
+            "contract_refside_key": key,
+            "contract_refside_parse": "miss",
+            "contract_refside_prep": "skip" if not prep else "miss",
+        }
+
+        if meta_path.is_file() and entries_path.is_file():
+            try:
+                saved = json.loads(meta_path.read_text())
+                rows = json.loads(entries_path.read_text())
+            except (OSError, json.JSONDecodeError):
+                saved, rows = None, None
+            if (
+                isinstance(saved, dict)
+                and int(saved.get("version") or 0) == REFSIDE_VERSION
+                and saved.get("release_hash") == release
+                and saved.get("prep") == (prep or "")
+                and isinstance(rows, list)
+            ):
+                entries = _entries_from_jsonable(rows)
+                meta["contract_refside_parse"] = "hit"
+                if prep:
+                    if prepared.is_file():
+                        meta["contract_refside_prep"] = "hit"
+                        return entries, prepared, meta
+                    meta["contract_refside_prep"] = "miss_prepared"
+                else:
+                    return entries, reference, meta
+
+        # Miss path: parse from caller reference, then publish.
+        entries = parse_reference(reference)
+        dest.mkdir(parents=True, exist_ok=True)
+        if prep:
+            prepared.parent.mkdir(parents=True, exist_ok=True)
+            if prepared.exists():
+                prepared.unlink()
+            _link_or_copy(reference, prepared)
+            # Drop stale sidecars from a prior prep command under this key.
+            for stale in list(prepared.parent.iterdir()):
+                if stale == prepared:
+                    continue
+                if stale.name.startswith(prepared.name):
+                    if stale.is_file():
+                        stale.unlink()
+            run_prep(prep, prepared)
+            ref_out = prepared
+            meta["contract_refside_prep"] = "stored"
+        else:
+            ref_out = reference
+            meta["contract_refside_prep"] = "skip"
+
+        entries_path.write_text(json.dumps(_entries_to_jsonable(entries), indent=2) + "\n")
+        payload = {
+            "version": REFSIDE_VERSION,
+            "key": key,
+            "release_hash": release,
+            "prep": prep or "",
+            "reference_name": reference.name,
+        }
+        tmp = dest / "meta.json.tmp"
+        tmp.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        os.replace(tmp, meta_path)
+        meta["contract_refside_parse"] = "stored"
+        return entries, ref_out, meta
+
+
+def merge_undetermined_fields(stored: dict, richer: dict) -> tuple[dict | None, list[dict]]:
+    """Layer B: fill undetermined stored fields from ``richer`` when compatible.
+
+    Returns ``(merged, events)``. ``merged`` is None when a determined-field
+    conflict is found (caller keeps stored and records the conflict). Events
+    list each fill or conflict for decision.txt.
+    """
+    events: list[dict] = []
+    out = json.loads(json.dumps(shareable_payload(stored)))
+    richer_tables = {t.get("name"): t for t in (richer.get("tables") or [])}
+    for table in out.get("tables") or []:
+        name = table.get("name")
+        other = richer_tables.get(name)
+        if other is None:
+            continue
+        for field in ("record_col", "entry_col", "index_col"):
+            sv = table.get(field)
+            rv = other.get(field)
+            if sv is None and rv is not None:
+                table[field] = rv
+                events.append(
+                    {"table": name, "field": field, "action": "fill", "value": rv}
+                )
+            elif sv is not None and rv is not None and sv != rv:
+                events.append(
+                    {
+                        "table": name,
+                        "field": field,
+                        "action": "conflict",
+                        "stored": sv,
+                        "richer": rv,
+                    }
+                )
+                return None, events
+        by_i = {int(c.get("index", -1)): c for c in (table.get("columns") or [])}
+        for col in other.get("columns") or []:
+            index = int(col.get("index", -1))
+            if index not in by_i:
+                # New column classification the stored fit lacked.
+                table.setdefault("columns", []).append(json.loads(json.dumps(col)))
+                events.append(
+                    {
+                        "table": name,
+                        "field": "column_present",
+                        "action": "fill",
+                        "column": index,
+                    }
+                )
+                continue
+            prior = by_i[index]
+            for field in ("role", "member", "count_table"):
+                sv = prior.get(field)
+                rv = col.get(field)
+                # Fill numeric members the stored fit left blank; never overwrite.
+                if field == "member":
+                    if prior.get("role") == "numeric" and sv in (None, ""):
+                        if rv not in (None, ""):
+                            prior[field] = rv
+                            if "count_table" in col:
+                                prior["count_table"] = col.get("count_table")
+                            events.append(
+                                {
+                                    "table": name,
+                                    "field": field,
+                                    "action": "fill",
+                                    "column": index,
+                                    "value": rv,
+                                }
+                            )
+                        continue
+                    if sv not in (None, "") and rv not in (None, "") and sv != rv:
+                        events.append(
+                            {
+                                "table": name,
+                                "field": field,
+                                "action": "conflict",
+                                "column": index,
+                                "stored": sv,
+                                "richer": rv,
+                            }
+                        )
+                        return None, events
+                    continue
+                if sv in (None, "") and rv not in (None, ""):
+                    prior[field] = rv
+                    events.append(
+                        {
+                            "table": name,
+                            "field": field,
+                            "action": "fill",
+                            "column": index,
+                            "value": rv,
+                        }
+                    )
+                elif sv not in (None, "") and rv not in (None, "") and sv != rv:
+                    events.append(
+                        {
+                            "table": name,
+                            "field": field,
+                            "action": "conflict",
+                            "column": index,
+                            "stored": sv,
+                            "richer": rv,
+                        }
+                    )
+                    return None, events
+    if not events:
+        return out, events
+    if any(e.get("action") == "conflict" for e in events):
+        return None, events
+    return out, events
+
+
+def verification_sample_record(
+    record_ids: list[str],
+    *,
+    n: int,
+    seed: int,
+) -> dict:
+    """Persist one genome's verification sample for Layer-B re-checks."""
+    return {"record_ids": list(record_ids), "n": int(n), "seed": int(seed)}

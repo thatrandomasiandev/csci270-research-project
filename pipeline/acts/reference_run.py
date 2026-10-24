@@ -452,6 +452,8 @@ def confirm_stored_fit(
     k: int = PROBE_K,
     primary_parts: list[list[int]] | None = None,
     monotone: bool = False,
+    record_indices: Sequence[int] | None = None,
+    tables: list | None = None,
 ) -> tuple[bool, str]:
     """Verify a stored contract on a seeded sample (contradiction test).
 
@@ -462,16 +464,22 @@ def confirm_stored_fit(
     Default ``n_p`` matches ``acts.contract_store.CONFIRM_N`` (calibrated in
     ``p2b_confirm_n.json``). Callers that import the store should pass that
     constant; this default avoids importing the store on the hot path.
+
+    ``record_indices`` (Layer B) reuses a prior verification sample.
+    ``tables`` (Layer C) limits the check to a subset of stored tables.
     """
     if len(entries) < 2:
         return False, "fewer than 2 reference entries"
     if not records:
         return False, "record input is empty"
-    tables = stored.get("tables") or []
-    if not tables:
+    use_tables = tables if tables is not None else (stored.get("tables") or [])
+    if not use_tables:
         return False, "stored contract has no tables"
     parts = primary_parts if primary_parts is not None else partition_indices(len(entries), k, seed)
-    chosen = sample_record_indices(len(records), min(n_p, len(records)), seed)
+    if record_indices is not None:
+        chosen = [int(i) for i in record_indices]
+    else:
+        chosen = sample_record_indices(len(records), min(n_p, len(records)), seed)
     probe_records = [records[i] for i in chosen]
     try:
         whole = invoke(probe_records, list(entries))
@@ -483,7 +491,7 @@ def confirm_stored_fit(
     except FormatError as exc:
         return False, str(exc)
     return verify_stored_fit(
-        tables,
+        use_tables,
         entries_n=len(entries),
         lengths=[entry.length for entry in entries],
         part_index_lists=parts,
@@ -1185,7 +1193,21 @@ class ReferenceIncremental(Strategy):
         try:
             started = time.perf_counter()
             reference = detect_reference(self.argv, self.input_path, self.reference)
-            entries = parse_reference(reference)
+            if self.contract_store_path is not None:
+                # Layer A: parse + prepared-reference cache (opt-in only).
+                from acts.contract_store import RefSideCache
+
+                entries, reference, ref_meta = RefSideCache(
+                    self.contract_store_path / "refside"
+                ).acquire(
+                    reference,
+                    self.prep,
+                    parse_reference=parse_reference,
+                    run_prep=run_prep,
+                )
+                self._contract_meta.update(ref_meta)
+            else:
+                entries = parse_reference(reference)
             records = read_records(self.input_path)
             self._n_entries = len(entries)
             self._entry_names = {key for entry in entries for key in entry.keys}
@@ -1396,7 +1418,14 @@ class ReferenceIncremental(Strategy):
         on ``self._contract_meta`` for decision.txt.
         """
         # Lazy import: default path must not load this module (G-d).
-        from acts.contract_store import CONFIRM_N, ContractStore, contract_key
+        from acts.contract_store import (
+            CONFIRM_N,
+            ContractStore,
+            contract_key,
+            merge_undetermined_fields,
+            verification_sample_record,
+        )
+        from acts.reference_fit import verify_stored_fit
 
         key_info = contract_key(
             self.argv,
@@ -1409,7 +1438,10 @@ class ReferenceIncremental(Strategy):
             strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
         )
         store = ContractStore(self.contract_store_path)
+        # Keep Layer-A meta already recorded in run(); only fill store fields.
+        prior_meta = dict(self._contract_meta)
         self._contract_meta = {
+            **prior_meta,
             "contract_store": "miss",
             "contract_key": key_info["key"],
             "contract_confirmations": [],
@@ -1422,32 +1454,137 @@ class ReferenceIncremental(Strategy):
         if payload is None:
             return None
         fit = dict(payload["fit"])
-        # Verify the stored contract on this genome (contradiction test).
-        # Do not re-infer: a weaker sample can disagree with a stronger fit
-        # without any stored fact being wrong for this genome.
-        started = time.perf_counter()
         n_confirm = min(CONFIRM_N, PROBE_N, len(records))
-        ok, why = confirm_stored_fit(
-            fit,
-            entries,
-            records,
-            invoke,
-            primary_parts=self.primary_parts,
-            n_p=n_confirm,
-            seed=PROBE_SEED,
-            k=PROBE_K,
-            monotone=bool(self.pin and self.slack),
+        chosen = sample_record_indices(len(records), n_confirm, PROBE_SEED)
+        monotone = bool(self.pin and self.slack)
+        parts = (
+            self.primary_parts
+            if self.primary_parts is not None
+            else partition_indices(len(entries), PROBE_K, PROBE_SEED)
         )
+        probe_records = [records[i] for i in chosen]
+
+        # One whole+parts invoke, then Layer-C per-table verify on those outputs.
+        started = time.perf_counter()
+        try:
+            whole = invoke(probe_records, list(entries))
+            part_tables = [
+                invoke(probe_records, _subset(entries, indices)) for indices in parts
+            ]
+            aliases = alias_map(list(entries))
+        except (RunError, FormatError) as exc:
+            why = getattr(exc, "reason", None) or str(exc)
+            self._contract_meta["contract_store"] = "confirm_fail"
+            self._contract_meta["contract_store_reason"] = why
+            self._contract_meta["contract_confirm_wall_s"] = time.perf_counter() - started
+            return None
+
+        tables = list(fit.get("tables") or [])
+        table_results: list[dict] = []
+        all_ok = True
+        any_fail_why = ""
+        lengths = [entry.length for entry in entries]
+        for table in tables:
+            tok, tw = verify_stored_fit(
+                [table],
+                entries_n=len(entries),
+                lengths=lengths,
+                part_index_lists=parts,
+                alias_to_index=aliases,
+                whole_tables=whole,
+                part_tables=part_tables,
+                monotone=monotone,
+            )
+            table_results.append({"table": table.get("name"), "ok": tok, "why": tw})
+            if not tok:
+                all_ok = False
+                any_fail_why = tw
         confirm_wall = time.perf_counter() - started
         self._contract_meta["contract_confirm_wall_s"] = confirm_wall
         self._contract_meta["contract_confirmations"] = [
             f"verify_stored_n={n_confirm}",
+            f"layer_c_tables={json.dumps(table_results, sort_keys=True)}",
         ]
-        if not ok:
+        if not all_ok:
+            # Per-table re-probe is not clean (sibling per_key_row_count members).
             self._contract_meta["contract_store"] = "confirm_fail"
-            self._contract_meta["contract_store_reason"] = why
+            self._contract_meta["contract_store_reason"] = any_fail_why
+            self._contract_meta["contract_layer_c"] = "partial_fail_whole_probe_fallback"
             return None
-        # pin_checks must not ride along from another genome.
+        self._contract_meta["contract_layer_c"] = "all_tables_verified"
+
+        sample = verification_sample_record(
+            [records[i].key for i in chosen],
+            n=n_confirm,
+            seed=PROBE_SEED,
+        )
+        sample["record_indices"] = list(chosen)
+        # Persist observations so Layer B can re-check without other genomes' files.
+        sample["whole_tables"] = whole
+        sample["part_tables"] = part_tables
+        sample["part_index_lists"] = parts
+        store.append_verification_sample(key_info["key"], sample)
+
+        # Layer B: fill undetermined stored fields from this sample's own fit.
+        self._contract_meta["contract_layer_b"] = "noop"
+        richer = probe_fit(
+            entries,
+            probe_records,
+            invoke,
+            primary_parts=parts,
+            sample=False,
+            k=PROBE_K,
+            n_p=n_confirm,
+            seed=PROBE_SEED,
+            monotone=monotone,
+        )
+        if richer.decision == "SHIP":
+            merged, events = merge_undetermined_fields(fit, richer.as_dict())
+            if events and merged is None:
+                self._contract_meta["contract_layer_b"] = "conflict"
+                self._contract_meta["contract_layer_b_events"] = events
+            elif events and merged is not None:
+                prior_samples = list(
+                    (store.load(key_info["key"])[0] or {}).get("verification_samples")
+                    or []
+                )
+                merge_ok = True
+                merge_why = ""
+                checked = 0
+                for samp in prior_samples:
+                    sw = samp.get("whole_tables")
+                    sp = samp.get("part_tables")
+                    sparts = samp.get("part_index_lists") or parts
+                    if not isinstance(sw, dict) or not isinstance(sp, list):
+                        continue
+                    checked += 1
+                    mok, mwhy = verify_stored_fit(
+                        merged.get("tables") or [],
+                        entries_n=len(entries),
+                        lengths=lengths,
+                        part_index_lists=sparts,
+                        alias_to_index=aliases,
+                        whole_tables=sw,
+                        part_tables=sp,
+                        monotone=monotone,
+                    )
+                    if not mok:
+                        merge_ok = False
+                        merge_why = mwhy
+                        break
+                if merge_ok and checked == 0:
+                    self._contract_meta["contract_layer_b"] = "refine_no_samples"
+                    self._contract_meta["contract_layer_b_events"] = events
+                elif merge_ok:
+                    store.save(key_info, merged, verification_samples=prior_samples)
+                    fit = merged
+                    self._contract_meta["contract_layer_b"] = "refined"
+                    self._contract_meta["contract_layer_b_events"] = events
+                else:
+                    self._contract_meta["contract_layer_b"] = "refine_rejected"
+                    self._contract_meta["contract_layer_b_reason"] = merge_why
+                    self._contract_meta["contract_layer_b_events"] = events
+
         fit.pop("pin_checks", None)
         if self.pin and self._slack_factor is not None and "slack_factor" not in fit:
             fit["slack_factor"] = self._slack_factor
@@ -1473,11 +1610,12 @@ class ReferenceIncremental(Strategy):
             group_rule=self._group_rule or None,
             strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
         )
+        # Verification samples (with observations) are appended on successful
+        # confirm by later genomes; the first publisher only writes the fit.
         ContractStore(self.contract_store_path).save(key_info, stored)
         if not self._contract_meta:
             self._contract_meta = {}
         self._contract_meta.setdefault("contract_key", key_info["key"])
-        # Preserve miss/confirm_fail/corrupt as the read outcome; note the write.
         if self._contract_meta.get("contract_store") in (None, "miss"):
             self._contract_meta["contract_store"] = "stored"
         else:
