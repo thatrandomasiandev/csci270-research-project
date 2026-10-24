@@ -1,0 +1,1445 @@
+{
+  "pilot": true,
+  "not_a_result": true,
+  "branch": "exp/shared-contract",
+  "started_note": "laptop pilot P2",
+  "projection": {
+    "assumptions": {
+      "W5x_total_s": 1013.7,
+      "W5x_ratio": 4.2,
+      "W5x_stock_T_s": 241.35714285714286,
+      "W5x_probe_s": 538.5,
+      "W5x_pin_check_s": 151.8,
+      "W5x_parse_s": 48.9,
+      "laptop_confirm_walls_s": [
+        5.753767291000258,
+        5.656835875000979,
+        5.173681540996768,
+        5.170954459001223
+      ],
+      "laptop_probe_walls_s": [
+        16.254904834000627,
+        17.710333541999717,
+        17.422223875000782,
+        18.1933528749978,
+        17.71906020899769
+      ],
+      "confirm_to_probe_ratio": 0.3115015783601873,
+      "confirm_tax_projected_w5x_s": 167.74359994696087,
+      "code_policy": "On reuse: skip full probe, pay reduced-n confirm, always re-run pin_check; parse still runs; discovery/replay/IC2/audit per genome.",
+      "headline_rho20_1_29_assumes_shared_pin": true,
+      "code_implements": "conservative re-pay pin every genome (+ confirm tax)"
+    },
+    "formula_code": "batch(N)= total + (N-1)*((total-probe)+confirm_tax); rho(N)=(batch/N)/T; confirm_tax=probe*ratio_laptop",
+    "rho_headline_shared_pin_no_confirm": {
+      "1": 4.2,
+      "5": 1.7498549866824504,
+      "20": 1.2904527966854098,
+      "100": 1.1679455460195323
+    },
+    "rho_conservative_share_probe_only_no_confirm": {
+      "1": 4.2,
+      "5": 2.4150932228469966,
+      "20": 2.0804232021308082,
+      "100": 1.9911778632731578
+    },
+    "rho_code_as_built_with_confirm_tax": {
+      "1": 4.2,
+      "5": 2.971094501155952,
+      "20": 2.7406747201226933,
+      "100": 2.679229445180491
+    }
+  },
+  "manifest": {
+    "pfam_subset": {
+      "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/pfam_subset.hmm",
+      "n_models": 3000,
+      "source_total_seen": 30134,
+      "seed": 20261335,
+      "sha256": "e6547f4b33a3ff99879a87f85d1f8b3158132bb4c2e55877207744d9696c23fa",
+      "first5_names": [
+        "1TM_TonB_rel",
+        "2OG-FeII_Oxy",
+        "2OG-FeII_Oxy_5",
+        "4HBT_2",
+        "4PPT_N"
+      ],
+      "last5_names": [
+        "zf-Paramyx-P",
+        "zf-met",
+        "zf_Tbcl_4",
+        "zf_Tbcl_5",
+        "zf_ULT1"
+      ]
+    },
+    "pfam_update": {
+      "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/pfam_subset_update.hmm",
+      "n_models": 3000,
+      "seed": 20261336,
+      "sha256": "30b93b5c35aa50a3ad6e5a8b55916459b851edf016c5fac50dfdd4fb17924f0e",
+      "n_dropped": 40,
+      "n_added": 40
+    },
+    "genomes": [
+      {
+        "source": "GCF_025782825.1_protein.faa.gz",
+        "accession": "GCF_025782825.1",
+        "n_proteins": 300,
+        "source_n": 4577,
+        "seed": 20261334,
+        "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/genomes/GCF_025782825.1_protein.faa",
+        "sha256": "8661395e2d72c2d4361127664c39e0eb49eb8e20142ae7586e7dab4603ec738a"
+      },
+      {
+        "source": "GCF_049949335.1_protein.faa.gz",
+        "accession": "GCF_049949335.1",
+        "n_proteins": 300,
+        "source_n": 4143,
+        "seed": 20261334,
+        "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/genomes/GCF_049949335.1_protein.faa",
+        "sha256": "83d8b237d8532c47876b5fb5570e2779f1be47a3e2764c242773438bdd0beda8"
+      },
+      {
+        "source": "GCF_052882435.1_protein.faa.gz",
+        "accession": "GCF_052882435.1",
+        "n_proteins": 300,
+        "source_n": 5167,
+        "seed": 20261334,
+        "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/genomes/GCF_052882435.1_protein.faa",
+        "sha256": "d64c6a3cb6fd539019f6d8879ec679c322e4f315a052ae0075e7fc7292ee2f8f"
+      },
+      {
+        "source": "GCF_055382035.1_protein.faa.gz",
+        "accession": "GCF_055382035.1",
+        "n_proteins": 300,
+        "source_n": 5177,
+        "seed": 20261334,
+        "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/genomes/GCF_055382035.1_protein.faa",
+        "sha256": "d4943d84aa4bc06f25aff20ddc6f21166c60d4548bdb2d391a8aa8e1b82756ff"
+      },
+      {
+        "source": "GCF_057098645.1_protein.faa.gz",
+        "accession": "GCF_057098645.1",
+        "n_proteins": 300,
+        "source_n": 4969,
+        "seed": 20261334,
+        "path": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/data/genomes/GCF_057098645.1_protein.faa",
+        "sha256": "26d950db23f7eff071391eb48d57b75ebb8ca1f71cd0747e53e7c4bdcc095ec5"
+      }
+    ],
+    "seeds": {
+      "primary": 20261332,
+      "proteome_subset": 20261334,
+      "pfam_subset": 20261335,
+      "update_ref": 20261336,
+      "contradiction": 20261337,
+      "p1_smoke_reserved": 20261333,
+      "test_SEED_B_overlap_note": "20261332 also used in tests/test_shared_contract.py as SEED_B"
+    },
+    "full_pfam_note": "Full Pfam-A has 30134 models; laptop stock of one full proteome vs full Pfam exceeds 10 min at 2 threads (not timed to completion; using seeded 3000-model subset per protocol).",
+    "n_proteins_per_genome": 300,
+    "cpu": "2",
+    "calibration_stock": {
+      "wall_s": 4.760757125000964,
+      "tbl_sha256": "1705315ee96db665f92a57a930a6a507043572ef9e1b5dedfc5b3613f212fdde",
+      "domtbl_sha256": "95d3e13681654f538f8bffd92bb7ea0797c5689cf0ad4a2f4ab578eac55d69d8",
+      "returncode": 0
+    }
+  },
+  "gate_r": {
+    "genome": "GCF_025782825.1",
+    "arms": {
+      "main": {
+        "fill": {
+          "label": "gate_r_main_fill",
+          "wall_s": 30.59923583300042,
+          "returncode": 0,
+          "log": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/logs/gate_r_main_fill.log",
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "61cb929dd304ef02feab561ca67e7de0779c3b5eaab6a7c3b4c510ab5746fecf",
+          "tables": {
+            "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+            "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+          },
+          "phases": {
+            "parse_s": 1.7486691669982974,
+            "coverage_read_s": 4.35840011050459e-05,
+            "diff_s": 0.00015100000018719584,
+            "cache_load_s": 1.424999936716631e-05,
+            "subref_build_s": 0.03185175100588822,
+            "prep_s": 0.44269145700673107,
+            "tool_s": 10.561471374003304,
+            "read_output_s": 0.0012669999996433035,
+            "discovery_s": 4.725801915999909,
+            "discovery_build_s": 0.00041762500040931627,
+            "discovery_scan_s": 4.717998374999297,
+            "merge_rescale_s": 0.00035399999978835694,
+            "cache_store_s": 0.004210166996927001,
+            "pin_check_s": 4.509591500001989,
+            "replay_plan_s": 0.0005169579999346752,
+            "replay_s": 0.09811470900240238,
+            "replay_build_s": 0.028157167002063943,
+            "replay_scan_s": 0.06878129200049443,
+            "ic2_neighbor_s": 0.14948862500023097,
+            "ic2_neighbor_build_s": 0.07179829199958476,
+            "ic2_neighbor_scan_s": 0.07535658300184878,
+            "ic2_random_20261031_s": 0.25105966699993587,
+            "ic2_random_20261031_build_s": 0.11875579200204811,
+            "ic2_random_20261031_scan_s": 0.12720858300235705,
+            "ic2_random_20261032_s": 0.23884279200137826,
+            "ic2_random_20261032_build_s": 0.10742862500046613,
+            "ic2_random_20261032_scan_s": 0.1262302079994697,
+            "ic2_random_20261033_s": 0.2554868750012247,
+            "ic2_random_20261033_build_s": 0.11937875000148779,
+            "ic2_random_20261033_scan_s": 0.13091650000205846,
+            "render_s": 0.0003313750021334272,
+            "verify_s": 0.8437303339997015,
+            "verify_build_s": 0.00016045799929997884,
+            "verify_scan_s": 0.843079417001718,
+            "total_s": 30.49540295800034,
+            "probe_wall_s": 17.648275333001948
+          },
+          "probe_phases": {
+            "subref_build_s": 0.32414041699666996,
+            "prep_s": 2.5082550419974723,
+            "tool_s": 14.799490875000629,
+            "read_output_s": 0.0006491680069302674
+          },
+          "code_root": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/main_code/pipeline"
+        },
+        "update": {
+          "label": "gate_r_main_update",
+          "wall_s": 5.217576250001002,
+          "returncode": 0,
+          "log": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/logs/gate_r_main_update.log",
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "98801a5acc9cf65dfe1d1e2b01b535c928cdcc59325f13c8e6370c3319123caf",
+          "tables": {
+            "domtbl": "8bd939d3b3e75fa37b9e2cf8be9ed8bcbe288f32308f155d196c97d02e3d8f06",
+            "tbl": "216df90770ba9d375398494095da4a210141ceeedd97c303d15e5d3cfdc64ef4"
+          },
+          "phases": {
+            "parse_s": 1.7235839159984607,
+            "coverage_read_s": 0.010746374999143882,
+            "diff_s": 0.006163583002489759,
+            "cache_load_s": 0.001143207999120932,
+            "subref_build_s": 0.12049941700752242,
+            "prep_s": 1.69436816599773,
+            "tool_s": 1.5313470409964793,
+            "read_output_s": 0.00115774899313692,
+            "discovery_s": 0.15110774999993737,
+            "discovery_build_s": 0.03574858300271444,
+            "discovery_scan_s": 0.11460770899793715,
+            "merge_rescale_s": 0.00038625000161118805,
+            "cache_store_s": 0.0008985829990706407,
+            "replay_plan_s": 0.00046808300248812884,
+            "replay_s": 0.09846804200060433,
+            "replay_build_s": 0.029041583999060094,
+            "replay_scan_s": 0.0680771659972379,
+            "ic2_neighbor_s": 0.1513801670007524,
+            "ic2_neighbor_build_s": 0.07179962400186923,
+            "ic2_neighbor_scan_s": 0.07715662499686005,
+            "ic2_random_20261031_s": 0.24600500000087777,
+            "ic2_random_20261031_build_s": 0.11024199999883422,
+            "ic2_random_20261031_scan_s": 0.1306842920021154,
+            "ic2_random_20261032_s": 0.24162024999895948,
+            "ic2_random_20261032_build_s": 0.1097160419994907,
+            "ic2_random_20261032_scan_s": 0.12692637500003912,
+            "ic2_random_20261033_s": 0.25239337499806425,
+            "ic2_random_20261033_build_s": 0.12140483400071389,
+            "ic2_random_20261033_scan_s": 0.12592220800070208,
+            "render_s": 0.0003174580015183892,
+            "verify_s": 2.225916125000367,
+            "verify_build_s": 1.33691491600257,
+            "verify_scan_s": 0.8879726660015876,
+            "total_s": 5.127285957998538,
+            "probe_wall_s": 0.0
+          },
+          "probe_phases": {},
+          "code_root": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/main_code/pipeline"
+        }
+      },
+      "branch": {
+        "fill": {
+          "label": "gate_r_branch_fill",
+          "wall_s": 31.925809250002203,
+          "returncode": 0,
+          "log": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/logs/gate_r_branch_fill.log",
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "61cb929dd304ef02feab561ca67e7de0779c3b5eaab6a7c3b4c510ab5746fecf",
+          "tables": {
+            "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+            "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+          },
+          "phases": {
+            "parse_s": 1.7933453750010813,
+            "coverage_read_s": 4.5750002755085006e-05,
+            "diff_s": 0.00018600000112201087,
+            "cache_load_s": 2.0874998881481588e-05,
+            "subref_build_s": 0.028975248995266156,
+            "prep_s": 0.49722775099871797,
+            "tool_s": 11.877387290995102,
+            "read_output_s": 0.0016668329953972716,
+            "discovery_s": 5.338686792001681,
+            "discovery_build_s": 0.00047554100092384033,
+            "discovery_scan_s": 5.329781582997384,
+            "merge_rescale_s": 0.00036979200012865476,
+            "cache_store_s": 0.004684624997025821,
+            "pin_check_s": 5.111620874999062,
+            "replay_plan_s": 0.0005132079968461767,
+            "replay_s": 0.10504191699874355,
+            "replay_build_s": 0.0310191259959538,
+            "replay_scan_s": 0.07261441599985119,
+            "ic2_neighbor_s": 0.1622626249991299,
+            "ic2_neighbor_build_s": 0.07544020900240866,
+            "ic2_neighbor_scan_s": 0.08399108400044497,
+            "ic2_random_20261031_s": 0.26557462499840767,
+            "ic2_random_20261031_build_s": 0.11990941699696123,
+            "ic2_random_20261031_scan_s": 0.14021583400244708,
+            "ic2_random_20261032_s": 0.25685149999844725,
+            "ic2_random_20261032_build_s": 0.11520108400145546,
+            "ic2_random_20261032_scan_s": 0.13623091599947657,
+            "ic2_random_20261033_s": 0.2994411250001576,
+            "ic2_random_20261033_build_s": 0.15176491599777364,
+            "ic2_random_20261033_scan_s": 0.142270666998229,
+            "render_s": 0.00034291699921595864,
+            "verify_s": 0.9035910419988795,
+            "verify_build_s": 0.00018924899995909072,
+            "verify_scan_s": 0.9028639579992159,
+            "total_s": 31.811590041997988,
+            "probe_wall_s": 17.550917125001433
+          },
+          "probe_phases": {
+            "subref_build_s": 0.16813608300071792,
+            "prep_s": 2.3596354169967526,
+            "tool_s": 15.005687833003321,
+            "read_output_s": 0.0007864149956731126
+          },
+          "code_root": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-sharedcontract/pipeline"
+        },
+        "update": {
+          "label": "gate_r_branch_update",
+          "wall_s": 5.445523333000892,
+          "returncode": 0,
+          "log": "/Users/joshuaterranova/tmp/tare_sharedcontract_p2/logs/gate_r_branch_update.log",
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "98801a5acc9cf65dfe1d1e2b01b535c928cdcc59325f13c8e6370c3319123caf",
+          "tables": {
+            "domtbl": "8bd939d3b3e75fa37b9e2cf8be9ed8bcbe288f32308f155d196c97d02e3d8f06",
+            "tbl": "216df90770ba9d375398494095da4a210141ceeedd97c303d15e5d3cfdc64ef4"
+          },
+          "phases": {
+            "parse_s": 1.7596669160011515,
+            "coverage_read_s": 0.011298334000457544,
+            "diff_s": 0.0067332920007174835,
+            "cache_load_s": 0.0012192909998702817,
+            "subref_build_s": 0.17951008199815988,
+            "prep_s": 1.7326406660067732,
+            "tool_s": 1.6034479570007534,
+            "read_output_s": 0.001238081997144036,
+            "discovery_s": 0.15144512500046403,
+            "discovery_build_s": 0.03568983299919637,
+            "discovery_scan_s": 0.11485724999874947,
+            "merge_rescale_s": 0.00043324999933247454,
+            "cache_store_s": 0.0008529580009053461,
+            "replay_plan_s": 0.0004604580026352778,
+            "replay_s": 0.10155887500150129,
+            "replay_build_s": 0.03055141599907074,
+            "replay_scan_s": 0.06965487499837764,
+            "ic2_neighbor_s": 0.15549920800185646,
+            "ic2_neighbor_build_s": 0.07312712400380406,
+            "ic2_neighbor_scan_s": 0.07974070799900801,
+            "ic2_random_20261031_s": 0.24951354199947673,
+            "ic2_random_20261031_build_s": 0.11191970900108572,
+            "ic2_random_20261031_scan_s": 0.1322665000006964,
+            "ic2_random_20261032_s": 0.24997224999970058,
+            "ic2_random_20261032_build_s": 0.11173445800159243,
+            "ic2_random_20261032_scan_s": 0.13276345800113631,
+            "ic2_random_20261033_s": 0.25522450000062236,
+            "ic2_random_20261033_build_s": 0.12096337499679066,
+            "ic2_random_20261033_scan_s": 0.12900966700181016,
+            "render_s": 0.0004078329984622542,
+            "verify_s": 2.374369166998804,
+            "verify_build_s": 1.4281648330033931,
+            "verify_scan_s": 0.9451554990009754,
+            "total_s": 5.336604125001031,
+            "probe_wall_s": 0.0
+          },
+          "probe_phases": {},
+          "code_root": "/Users/joshuaterranova/Desktop/CSCI270/ACTS-sharedcontract/pipeline"
+        }
+      }
+    },
+    "compare": {
+      "fill": {
+        "stripped_match": true,
+        "tables_match": true,
+        "main_stripped": "61cb929dd304ef02feab561ca67e7de0779c3b5eaab6a7c3b4c510ab5746fecf",
+        "branch_stripped": "61cb929dd304ef02feab561ca67e7de0779c3b5eaab6a7c3b4c510ab5746fecf",
+        "main_tables": {
+          "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+          "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+        },
+        "branch_tables": {
+          "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+          "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+        },
+        "main_decision": "SHIP",
+        "branch_decision": "SHIP",
+        "compare_note": "table sha256 is comment-stripped body (hmmscan headers embed cwd/date/paths)"
+      },
+      "update": {
+        "stripped_match": true,
+        "tables_match": true,
+        "main_stripped": "98801a5acc9cf65dfe1d1e2b01b535c928cdcc59325f13c8e6370c3319123caf",
+        "branch_stripped": "98801a5acc9cf65dfe1d1e2b01b535c928cdcc59325f13c8e6370c3319123caf",
+        "main_tables": {
+          "domtbl": "8bd939d3b3e75fa37b9e2cf8be9ed8bcbe288f32308f155d196c97d02e3d8f06",
+          "tbl": "216df90770ba9d375398494095da4a210141ceeedd97c303d15e5d3cfdc64ef4"
+        },
+        "branch_tables": {
+          "domtbl": "8bd939d3b3e75fa37b9e2cf8be9ed8bcbe288f32308f155d196c97d02e3d8f06",
+          "tbl": "216df90770ba9d375398494095da4a210141ceeedd97c303d15e5d3cfdc64ef4"
+        },
+        "main_decision": "SHIP",
+        "branch_decision": "SHIP",
+        "compare_note": "table sha256 is comment-stripped body (hmmscan headers embed cwd/date/paths)"
+      }
+    },
+    "GATE_R": "PASS",
+    "gate_r_note": "Initial FAIL was raw-file sha256 differing only in hmmscan comment footers (Query file/Target/Date/cwd). Bodies identical. GATE R uses body sha256."
+  },
+  "pilot_batch": {
+    "genomes": [
+      {
+        "accession": "GCF_025782825.1",
+        "faa_sha256": "8661395e2d72c2d4361127664c39e0eb49eb8e20142ae7586e7dab4603ec738a",
+        "arm_A_stock": {
+          "wall_s": 4.587733083000785,
+          "tbl_sha256": "b15825980317a05484a32010cbe200712edab6221ed80fbf89d7e2f6c252e198",
+          "domtbl_sha256": "22f736bf17fe77a3f127e392f3cd3345d6774a5acc0ff8e5ae7dcfa5d750936f",
+          "returncode": 0
+        },
+        "arm_B": {
+          "label": "pilot_B_GCF_025782825.1",
+          "wall_s": 28.219539165998867,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "ed6013ae7b270c8e03298723b9a0ce5f0f9e04d1803a795f954a7232c2813048",
+          "tables": {
+            "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+            "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+          },
+          "phases": {
+            "parse_s": 1.6853021250026359,
+            "coverage_read_s": 3.579199983505532e-05,
+            "diff_s": 0.0001561250028316863,
+            "cache_load_s": 1.4749999536434188e-05,
+            "subref_build_s": 0.024781874006293947,
+            "prep_s": 0.46403770998949767,
+            "tool_s": 9.715290290998382,
+            "read_output_s": 0.0013024189938732889,
+            "discovery_s": 4.420086958001775,
+            "discovery_build_s": 0.0003881249976984691,
+            "discovery_scan_s": 4.4121761659989716,
+            "merge_rescale_s": 0.0003583750003599562,
+            "cache_store_s": 0.004387958000734216,
+            "pin_check_s": 4.504199333998258,
+            "replay_plan_s": 0.0004532079983619042,
+            "replay_s": 0.09311612499732291,
+            "replay_build_s": 0.029427124998619547,
+            "replay_scan_s": 0.06262220899952808,
+            "ic2_neighbor_s": 0.1672609579982236,
+            "ic2_neighbor_build_s": 0.09058775100129424,
+            "ic2_neighbor_scan_s": 0.07422937500086846,
+            "ic2_random_20261031_s": 0.2372012919986446,
+            "ic2_random_20261031_build_s": 0.11406120899846428,
+            "ic2_random_20261031_scan_s": 0.11823954099963885,
+            "ic2_random_20261032_s": 0.23068404199875658,
+            "ic2_random_20261032_build_s": 0.10753124999973807,
+            "ic2_random_20261032_scan_s": 0.11816325000108918,
+            "ic2_random_20261033_s": 0.2470982919985545,
+            "ic2_random_20261033_build_s": 0.1171804580008029,
+            "ic2_random_20261033_scan_s": 0.12516950000281213,
+            "render_s": 0.00030775000050198287,
+            "verify_s": 0.33966187499754597,
+            "verify_build_s": 0.00019800100199063309,
+            "verify_scan_s": 0.33902891599791474,
+            "total_s": 28.20359387499775,
+            "probe_wall_s": 16.254904834000627
+          },
+          "probe_phases": {
+            "subref_build_s": 0.16445379200013122,
+            "prep_s": 2.420512040000176,
+            "tool_s": 13.65380154200102,
+            "read_output_s": 0.0006374599943228532
+          },
+          "extra_contract": {},
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c",
+              "tare_body_sha256": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c",
+              "stock_nrows": 57,
+              "tare_nrows": 57
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+              "tare_body_sha256": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+              "stock_nrows": 52,
+              "tare_nrows": 52
+            }
+          }
+        },
+        "arm_C": {
+          "label": "pilot_C_GCF_025782825.1",
+          "wall_s": 31.021029792002082,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": "stored",
+          "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+          "contract_confirmations": "[]",
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "2efe37ae4c1d4164167032f330640e0022247635f7c72f68cd1b053c9ab06ec5",
+          "tables": {
+            "domtbl": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+            "tbl": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c"
+          },
+          "phases": {
+            "parse_s": 1.7961025000004156,
+            "coverage_read_s": 7.395799912046641e-05,
+            "diff_s": 0.00015658400297979824,
+            "cache_load_s": 1.737500133458525e-05,
+            "subref_build_s": 0.03520295699490816,
+            "prep_s": 0.46684037600061856,
+            "tool_s": 11.278882500009786,
+            "read_output_s": 0.001552624991745688,
+            "discovery_s": 5.271359582999139,
+            "discovery_build_s": 0.0005904169956920668,
+            "discovery_scan_s": 5.262928500000271,
+            "merge_rescale_s": 0.000396167000872083,
+            "cache_store_s": 0.005190916999708861,
+            "pin_check_s": 5.0918709590005165,
+            "replay_plan_s": 0.0005452090008475352,
+            "replay_s": 0.10378154199861456,
+            "replay_build_s": 0.030843459004245233,
+            "replay_scan_s": 0.07163941699764109,
+            "ic2_neighbor_s": 0.1637193339993246,
+            "ic2_neighbor_build_s": 0.07618333299978985,
+            "ic2_neighbor_scan_s": 0.08476983300352003,
+            "ic2_random_20261031_s": 0.267296375001024,
+            "ic2_random_20261031_build_s": 0.12252516700027627,
+            "ic2_random_20261031_scan_s": 0.13927195799988112,
+            "ic2_random_20261032_s": 0.2584413330005191,
+            "ic2_random_20261032_build_s": 0.11336145799941733,
+            "ic2_random_20261032_scan_s": 0.13960470800157054,
+            "ic2_random_20261033_s": 0.27858745800040197,
+            "ic2_random_20261033_build_s": 0.12690262499745586,
+            "ic2_random_20261033_scan_s": 0.14622116700047627,
+            "render_s": 0.00030945799881010316,
+            "verify_s": 0.38437441700079944,
+            "verify_build_s": 0.00016133299868670292,
+            "verify_scan_s": 0.38359912500163773,
+            "total_s": 31.0008731659982,
+            "probe_wall_s": 17.17951449999964
+          },
+          "probe_phases": {
+            "subref_build_s": 0.17219466699680197,
+            "prep_s": 2.545403960004478,
+            "tool_s": 14.444530207001662,
+            "read_output_s": 0.0007573760012746789
+          },
+          "extra_contract": {
+            "contract_store": "stored",
+            "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+            "contract_confirmations": []
+          },
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c",
+              "tare_body_sha256": "af3d8aadb9c73fd0b03c48af36698ca69a9216da1c3a29a782a654eba76cff9c",
+              "stock_nrows": 57,
+              "tare_nrows": 57
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+              "tare_body_sha256": "af1f1ab4200b3df037e254a5cc37ad77bdd4a5c227894e56416a4df7a04cb86d",
+              "stock_nrows": 52,
+              "tare_nrows": 52
+            }
+          },
+          "genome_index": 0
+        }
+      },
+      {
+        "accession": "GCF_049949335.1",
+        "faa_sha256": "83d8b237d8532c47876b5fb5570e2779f1be47a3e2764c242773438bdd0beda8",
+        "arm_A_stock": {
+          "wall_s": 4.825413292001031,
+          "tbl_sha256": "37e6d3124e983899bacec64dad216438193aac6802c1d4f148c8cd29a0847a80",
+          "domtbl_sha256": "6651c477e656f9dfee6d69296e804270133e058948eb2143396f566eef37d5bd",
+          "returncode": 0
+        },
+        "arm_B": {
+          "label": "pilot_B_GCF_049949335.1",
+          "wall_s": 30.83155895800155,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "052baa8fc4aa1e8d5e62aaefe3c18ac81c8069f066a5c4935e1be4666a937ced",
+          "tables": {
+            "domtbl": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+            "tbl": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7"
+          },
+          "phases": {
+            "parse_s": 1.8773284169983526,
+            "coverage_read_s": 3.825000021606684e-05,
+            "diff_s": 0.0001552499998069834,
+            "cache_load_s": 1.4457997167482972e-05,
+            "subref_build_s": 0.03134029200373334,
+            "prep_s": 0.4498237919906387,
+            "tool_s": 10.68346637700597,
+            "read_output_s": 0.0014545009944413323,
+            "discovery_s": 4.870498624997708,
+            "discovery_build_s": 0.0004397910015541129,
+            "discovery_scan_s": 4.862117374999798,
+            "merge_rescale_s": 0.0003696249987115152,
+            "cache_store_s": 0.005380250000598608,
+            "pin_check_s": 5.038321125000948,
+            "replay_plan_s": 0.0005225830027484335,
+            "replay_s": 0.08625499999834574,
+            "replay_build_s": 0.028222333996382076,
+            "replay_scan_s": 0.05674183299925062,
+            "ic2_neighbor_s": 0.14991912500045146,
+            "ic2_neighbor_build_s": 0.07335420899835299,
+            "ic2_neighbor_scan_s": 0.07381641800020589,
+            "ic2_random_20261031_s": 0.23441970899875741,
+            "ic2_random_20261031_build_s": 0.11680012500073644,
+            "ic2_random_20261031_scan_s": 0.11258687500230735,
+            "ic2_random_20261032_s": 0.24074183300035656,
+            "ic2_random_20261032_build_s": 0.12072566700226162,
+            "ic2_random_20261032_scan_s": 0.11492333400019561,
+            "ic2_random_20261033_s": 0.23278308299995842,
+            "ic2_random_20261033_build_s": 0.11303499999485211,
+            "ic2_random_20261033_scan_s": 0.11449091699978453,
+            "render_s": 0.0003079999987676274,
+            "verify_s": 0.34873829199932516,
+            "verify_build_s": 0.00017729200044414029,
+            "verify_scan_s": 0.34804291700129397,
+            "total_s": 30.811461500001315,
+            "probe_wall_s": 17.710333541999717
+          },
+          "probe_phases": {
+            "subref_build_s": 0.3178611670045939,
+            "prep_s": 2.4477129179977055,
+            "tool_s": 14.930086749998736,
+            "read_output_s": 0.0006965419961488806
+          },
+          "extra_contract": {},
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+              "tare_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+              "stock_nrows": 56,
+              "tare_nrows": 56
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+              "tare_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+              "stock_nrows": 53,
+              "tare_nrows": 53
+            }
+          }
+        },
+        "arm_C": {
+          "label": "pilot_C_GCF_049949335.1",
+          "wall_s": 18.840647208999144,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": "reused",
+          "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+          "contract_confirmations": [
+            "probe_roles_n=50",
+            "roles_match"
+          ],
+          "contract_confirm_wall_s": 5.753767291000258,
+          "contract_store_reason": null,
+          "stripped_sha256": "4bf9decf38a9652c9ef08847ea43acba99c639fa326ed57439123a3502629a63",
+          "tables": {
+            "domtbl": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+            "tbl": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7"
+          },
+          "phases": {
+            "parse_s": 1.9088934999999765,
+            "coverage_read_s": 3.96249997720588e-05,
+            "diff_s": 0.00015708299906691536,
+            "cache_load_s": 1.4332999853650108e-05,
+            "subref_build_s": 0.028114208005717956,
+            "prep_s": 0.43093224999756785,
+            "tool_s": 10.552582373991754,
+            "read_output_s": 0.0013094610003463458,
+            "discovery_s": 4.919171124998684,
+            "discovery_build_s": 0.0004515840009844396,
+            "discovery_scan_s": 4.911020166000526,
+            "merge_rescale_s": 0.0004495409993978683,
+            "cache_store_s": 0.0049976249974861275,
+            "pin_check_s": 4.882037166997179,
+            "replay_plan_s": 0.0005090000013296958,
+            "replay_s": 0.0798413749980682,
+            "replay_build_s": 0.02560866800195072,
+            "replay_scan_s": 0.05306795899741701,
+            "ic2_neighbor_s": 0.14025774999754503,
+            "ic2_neighbor_build_s": 0.06695262399443891,
+            "ic2_neighbor_scan_s": 0.07087766699987696,
+            "ic2_random_20261031_s": 0.22684583400041447,
+            "ic2_random_20261031_build_s": 0.1134456660001888,
+            "ic2_random_20261031_scan_s": 0.10846595799739589,
+            "ic2_random_20261032_s": 0.2347133750008652,
+            "ic2_random_20261032_build_s": 0.11478166600136319,
+            "ic2_random_20261032_scan_s": 0.11491491600099835,
+            "ic2_random_20261033_s": 0.23018741700070677,
+            "ic2_random_20261033_build_s": 0.11119899900222663,
+            "ic2_random_20261033_scan_s": 0.11377449999781675,
+            "render_s": 0.0002855419988918584,
+            "verify_s": 0.3343832079990534,
+            "verify_build_s": 0.0001751670024532359,
+            "verify_scan_s": 0.333684582998103,
+            "total_s": 18.819482416998653,
+            "probe_wall_s": 5.8419420840000384
+          },
+          "probe_phases": {
+            "subref_build_s": 0.2210088749998249,
+            "prep_s": 2.8498961240002245,
+            "tool_s": 2.6715122499990684,
+            "read_output_s": 0.000746583998989081
+          },
+          "extra_contract": {
+            "contract_store": "reused",
+            "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+            "contract_confirmations": [
+              "probe_roles_n=50",
+              "roles_match"
+            ],
+            "contract_confirm_wall_s": 5.753767291000258
+          },
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+              "tare_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+              "stock_nrows": 56,
+              "tare_nrows": 56
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+              "tare_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+              "stock_nrows": 53,
+              "tare_nrows": 53
+            }
+          },
+          "genome_index": 1
+        }
+      },
+      {
+        "accession": "GCF_052882435.1",
+        "faa_sha256": "d64c6a3cb6fd539019f6d8879ec679c322e4f315a052ae0075e7fc7292ee2f8f",
+        "arm_A_stock": {
+          "wall_s": 4.640976583999873,
+          "tbl_sha256": "7c0dd2341430fcb9fc6654f10ffc26543a34571f2126da97e43ed82345338bdc",
+          "domtbl_sha256": "1dccae24b7b7a4dfa09f1db516a9aa53fbc17672c16f86b4d7f7adf2fc916f8d",
+          "returncode": 0
+        },
+        "arm_B": {
+          "label": "pilot_B_GCF_052882435.1",
+          "wall_s": 30.614846208001836,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "a5bb2e2d1483cadf2eac3c1296f1b6c3c1243f26856b32f161c2d9e86407e2e4",
+          "tables": {
+            "domtbl": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+            "tbl": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2"
+          },
+          "phases": {
+            "parse_s": 1.8358361249993322,
+            "coverage_read_s": 3.662499875645153e-05,
+            "diff_s": 0.00014925000141374767,
+            "cache_load_s": 1.3332999515114352e-05,
+            "subref_build_s": 0.025866124997264706,
+            "prep_s": 0.4580899190004857,
+            "tool_s": 10.793530499002372,
+            "read_output_s": 0.0013796269959129859,
+            "discovery_s": 4.936361249998299,
+            "discovery_build_s": 0.00043470899981912225,
+            "discovery_scan_s": 4.928468958001758,
+            "merge_rescale_s": 0.0003483749969745986,
+            "cache_store_s": 0.004451459000847535,
+            "pin_check_s": 5.066658957999607,
+            "replay_plan_s": 0.0005737920000683516,
+            "replay_s": 0.09474150000096415,
+            "replay_build_s": 0.030752250000659842,
+            "replay_scan_s": 0.06276229099967168,
+            "ic2_neighbor_s": 0.1582693329983158,
+            "ic2_neighbor_build_s": 0.07455070799551322,
+            "ic2_neighbor_scan_s": 0.08114766700236942,
+            "ic2_random_20261031_s": 0.23776841700237128,
+            "ic2_random_20261031_build_s": 0.11620187600055942,
+            "ic2_random_20261031_scan_s": 0.11682837500120513,
+            "ic2_random_20261032_s": 0.22679183400032343,
+            "ic2_random_20261032_build_s": 0.10651729200253612,
+            "ic2_random_20261032_scan_s": 0.11545812500116881,
+            "ic2_random_20261033_s": 0.24422229199990397,
+            "ic2_random_20261033_build_s": 0.12289112500002375,
+            "ic2_random_20261033_scan_s": 0.1166215410012228,
+            "render_s": 0.00032145800287253223,
+            "verify_s": 0.347646000001987,
+            "verify_build_s": 0.0001975839986698702,
+            "verify_scan_s": 0.3469561249985418,
+            "total_s": 30.591056707999087,
+            "probe_wall_s": 17.422223875000782
+          },
+          "probe_phases": {
+            "subref_build_s": 0.1725039579978329,
+            "prep_s": 2.396635956996761,
+            "tool_s": 14.837246499995672,
+            "read_output_s": 0.0007429570032400079
+          },
+          "extra_contract": {},
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2",
+              "tare_body_sha256": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2",
+              "stock_nrows": 55,
+              "tare_nrows": 55
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+              "tare_body_sha256": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+              "stock_nrows": 52,
+              "tare_nrows": 52
+            }
+          }
+        },
+        "arm_C": {
+          "label": "pilot_C_GCF_052882435.1",
+          "wall_s": 38.88438200000019,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": "confirm_fail",
+          "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+          "contract_confirmations": [
+            "probe_roles_n=50"
+          ],
+          "contract_confirm_wall_s": 5.656835875000979,
+          "contract_store_reason": "table 'tbl' column roles/members disagree",
+          "stripped_sha256": "71e81e3aa1b163a395911b43b87c600da04974bf162eaef55e2b4c52ce164f94",
+          "tables": {
+            "domtbl": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+            "tbl": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2"
+          },
+          "phases": {
+            "parse_s": 1.8601803750025283,
+            "coverage_read_s": 0.00024612500055809505,
+            "diff_s": 0.00015020799764897674,
+            "cache_load_s": 1.4625002222601324e-05,
+            "subref_build_s": 0.03461804100879817,
+            "prep_s": 0.42375716699825716,
+            "tool_s": 11.187671959,
+            "read_output_s": 0.0017531690064060967,
+            "discovery_s": 5.259449707999011,
+            "discovery_build_s": 0.0004305830007069744,
+            "discovery_scan_s": 5.251049750000675,
+            "merge_rescale_s": 0.00035529100205167197,
+            "cache_store_s": 0.004335124998760875,
+            "pin_check_s": 5.114869207998709,
+            "replay_plan_s": 0.0006276249987422489,
+            "replay_s": 0.09098199999789358,
+            "replay_build_s": 0.02768537399970228,
+            "replay_scan_s": 0.06196495800031698,
+            "ic2_neighbor_s": 0.1592878749979718,
+            "ic2_neighbor_build_s": 0.07348641700446024,
+            "ic2_neighbor_scan_s": 0.08258583399947383,
+            "ic2_random_20261031_s": 0.23547462500209804,
+            "ic2_random_20261031_build_s": 0.1130281260011543,
+            "ic2_random_20261031_scan_s": 0.11730158399950597,
+            "ic2_random_20261032_s": 0.22969687500153668,
+            "ic2_random_20261032_build_s": 0.10256104200016125,
+            "ic2_random_20261032_scan_s": 0.1223382499993022,
+            "ic2_random_20261033_s": 0.2422488340016571,
+            "ic2_random_20261033_build_s": 0.11388429200087558,
+            "ic2_random_20261033_scan_s": 0.12320862500200747,
+            "render_s": 0.0003161669992550742,
+            "verify_s": 0.3517292920005275,
+            "verify_build_s": 0.00018370799443800934,
+            "verify_scan_s": 0.3510865419993934,
+            "total_s": 38.862161917000776,
+            "probe_wall_s": 19.458858792000683
+          },
+          "probe_phases": {
+            "subref_build_s": 0.2437297079959535,
+            "prep_s": 2.874684624999645,
+            "tool_s": 16.324060999999347,
+            "read_output_s": 0.0008505840014549904
+          },
+          "extra_contract": {
+            "contract_store": "confirm_fail",
+            "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+            "contract_confirmations": [
+              "probe_roles_n=50"
+            ],
+            "contract_confirm_wall_s": 5.656835875000979,
+            "contract_store_reason": "table 'tbl' column roles/members disagree",
+            "contract_store_write": "stored"
+          },
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2",
+              "tare_body_sha256": "1155f0ed156280b134fae410a61d99c68864a024cd87bfe385a9e9f6c893cee2",
+              "stock_nrows": 55,
+              "tare_nrows": 55
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+              "tare_body_sha256": "4a9eb3683203d7c28a0c7977b4c8284a690fd9a2f55fcb18215e431ba2f650b3",
+              "stock_nrows": 52,
+              "tare_nrows": 52
+            }
+          },
+          "genome_index": 2
+        }
+      },
+      {
+        "accession": "GCF_055382035.1",
+        "faa_sha256": "d4943d84aa4bc06f25aff20ddc6f21166c60d4548bdb2d391a8aa8e1b82756ff",
+        "arm_A_stock": {
+          "wall_s": 5.105504125000152,
+          "tbl_sha256": "db60fa8525280a3df7cd5262fcf999d87e88e8243caf98644e6b24a5cdfc1988",
+          "domtbl_sha256": "bf390163a56af957fbd9dbbfc506386f09e3db9e534e934504f9757d544765af",
+          "returncode": 0
+        },
+        "arm_B": {
+          "label": "pilot_B_GCF_055382035.1",
+          "wall_s": 31.5558350839965,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "a1d10c76e3e6c8834bd59f2c79a27f00d9508a35e16d5a8fc5483d48e4080825",
+          "tables": {
+            "domtbl": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+            "tbl": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a"
+          },
+          "phases": {
+            "parse_s": 1.94491220800046,
+            "coverage_read_s": 3.8875001337146387e-05,
+            "diff_s": 0.00015829199764993973,
+            "cache_load_s": 1.3875000149710104e-05,
+            "subref_build_s": 0.026446583000506507,
+            "prep_s": 0.40111699999761186,
+            "tool_s": 10.914866290997452,
+            "read_output_s": 0.001360917005513329,
+            "discovery_s": 4.965378416000021,
+            "discovery_build_s": 0.0004269579949323088,
+            "discovery_scan_s": 4.958384082998236,
+            "merge_rescale_s": 0.00025649999952293,
+            "cache_store_s": 0.004860749999352265,
+            "pin_check_s": 5.022869708998769,
+            "replay_plan_s": 0.0005549169982259627,
+            "replay_s": 0.07570674999806215,
+            "replay_build_s": 0.023463665995222982,
+            "replay_scan_s": 0.05112137499963865,
+            "ic2_neighbor_s": 0.13253762500244193,
+            "ic2_neighbor_build_s": 0.06368070900134626,
+            "ic2_neighbor_scan_s": 0.06634337499781395,
+            "ic2_random_20261031_s": 0.2433858339973085,
+            "ic2_random_20261031_build_s": 0.10998225000003004,
+            "ic2_random_20261031_scan_s": 0.12931337500049267,
+            "ic2_random_20261032_s": 0.2057318330007547,
+            "ic2_random_20261032_build_s": 0.10052566599915735,
+            "ic2_random_20261032_scan_s": 0.10100908299864386,
+            "ic2_random_20261033_s": 0.23730791600246448,
+            "ic2_random_20261033_build_s": 0.10522995800056378,
+            "ic2_random_20261033_scan_s": 0.12780150000253343,
+            "render_s": 0.00034408400097163394,
+            "verify_s": 0.4906507080013398,
+            "verify_build_s": 0.00017466700228396803,
+            "verify_scan_s": 0.48999825000282726,
+            "total_s": 31.536712124998303,
+            "probe_wall_s": 18.1933528749978
+          },
+          "probe_phases": {
+            "subref_build_s": 0.19798995799646946,
+            "prep_s": 2.3083012489987595,
+            "tool_s": 15.670494124002289,
+            "read_output_s": 0.0007731659934506752
+          },
+          "extra_contract": {},
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a",
+              "tare_body_sha256": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a",
+              "stock_nrows": 44,
+              "tare_nrows": 44
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+              "tare_body_sha256": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+              "stock_nrows": 42,
+              "tare_nrows": 42
+            }
+          }
+        },
+        "arm_C": {
+          "label": "pilot_C_GCF_055382035.1",
+          "wall_s": 36.17677295899921,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": "confirm_fail",
+          "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+          "contract_confirmations": [
+            "probe_roles_n=50"
+          ],
+          "contract_confirm_wall_s": 5.173681540996768,
+          "contract_store_reason": "table 'tbl' column roles/members disagree",
+          "stripped_sha256": "fe4cb5f1988b07db2b95b22c9b4d3d9dc585afe1599f8a6eef21f403d402ea64",
+          "tables": {
+            "domtbl": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+            "tbl": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a"
+          },
+          "phases": {
+            "parse_s": 1.8694265409976651,
+            "coverage_read_s": 6.36670010862872e-05,
+            "diff_s": 0.00015424999946844764,
+            "cache_load_s": 1.3917000615037978e-05,
+            "subref_build_s": 0.024660210001457017,
+            "prep_s": 0.3998029590038641,
+            "tool_s": 10.437379417006014,
+            "read_output_s": 0.0012175400042906404,
+            "discovery_s": 4.874204792002274,
+            "discovery_build_s": 0.0004058759950567037,
+            "discovery_scan_s": 4.8670650419990125,
+            "merge_rescale_s": 0.0002533750011934899,
+            "cache_store_s": 0.004410125002323184,
+            "pin_check_s": 4.729601166000066,
+            "replay_plan_s": 0.0005150420001882594,
+            "replay_s": 0.07325070799925015,
+            "replay_build_s": 0.02293000099962228,
+            "replay_scan_s": 0.04925195799660287,
+            "ic2_neighbor_s": 0.12604937500145752,
+            "ic2_neighbor_build_s": 0.06113850000110688,
+            "ic2_neighbor_scan_s": 0.06270883400065941,
+            "ic2_random_20261031_s": 0.23503220800193958,
+            "ic2_random_20261031_build_s": 0.10623504200339084,
+            "ic2_random_20261031_scan_s": 0.12479808300122386,
+            "ic2_random_20261032_s": 0.19810437499836553,
+            "ic2_random_20261032_build_s": 0.09978562500327826,
+            "ic2_random_20261032_scan_s": 0.09441687500293483,
+            "ic2_random_20261033_s": 0.22464933400260634,
+            "ic2_random_20261033_build_s": 0.11030687500169734,
+            "ic2_random_20261033_scan_s": 0.11033141700318083,
+            "render_s": 0.0002442500008328352,
+            "verify_s": 0.4307162500008417,
+            "verify_build_s": 0.00013245899754110724,
+            "verify_scan_s": 0.43015195800035144,
+            "total_s": 36.15871250000055,
+            "probe_wall_s": 18.026247417001287
+          },
+          "probe_phases": {
+            "subref_build_s": 0.34105887499754317,
+            "prep_s": 2.360801666000043,
+            "tool_s": 15.308016542996484,
+            "read_output_s": 0.0007906660030130297
+          },
+          "extra_contract": {
+            "contract_store": "confirm_fail",
+            "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+            "contract_confirmations": [
+              "probe_roles_n=50"
+            ],
+            "contract_confirm_wall_s": 5.173681540996768,
+            "contract_store_reason": "table 'tbl' column roles/members disagree",
+            "contract_store_write": "stored"
+          },
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a",
+              "tare_body_sha256": "ee283eb31ae2378391f816442ad96e3fdbe9f0eaf0a433ce7b6068ad1509a54a",
+              "stock_nrows": 44,
+              "tare_nrows": 44
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+              "tare_body_sha256": "4c9735bd875232d4ab32bb973e68ee223e2d5a1eae19062c918db56a87329946",
+              "stock_nrows": 42,
+              "tare_nrows": 42
+            }
+          },
+          "genome_index": 3
+        }
+      },
+      {
+        "accession": "GCF_057098645.1",
+        "faa_sha256": "26d950db23f7eff071391eb48d57b75ebb8ca1f71cd0747e53e7c4bdcc095ec5",
+        "arm_A_stock": {
+          "wall_s": 4.67552491600145,
+          "tbl_sha256": "7bb9857b472221bf5f723100f0074194f0dab0486580bdd89081ae0e29dae454",
+          "domtbl_sha256": "0f1d9d65bd4ac9a9bf3097a730f38086468bee445316654eab49912f622604f3",
+          "returncode": 0
+        },
+        "arm_B": {
+          "label": "pilot_B_GCF_057098645.1",
+          "wall_s": 31.684458291998453,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": null,
+          "contract_key": null,
+          "contract_confirmations": null,
+          "contract_confirm_wall_s": null,
+          "contract_store_reason": null,
+          "stripped_sha256": "9ee87178b8ef02d5c09b7560e0a35ecda2197111724214bce0dc249c10a73ce4",
+          "tables": {
+            "domtbl": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+            "tbl": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813"
+          },
+          "phases": {
+            "parse_s": 1.843782582996937,
+            "coverage_read_s": 5.0582999392645434e-05,
+            "diff_s": 0.00015654199887649156,
+            "cache_load_s": 3.420800203457475e-05,
+            "subref_build_s": 0.028376791000482626,
+            "prep_s": 0.4226578759953554,
+            "tool_s": 11.587501374993735,
+            "read_output_s": 0.001445835987397004,
+            "discovery_s": 5.470661209001264,
+            "discovery_build_s": 0.0006051260024833027,
+            "discovery_scan_s": 5.4619588749992545,
+            "merge_rescale_s": 0.00031725000008009374,
+            "cache_store_s": 0.004812916999071604,
+            "pin_check_s": 5.38314900000114,
+            "replay_plan_s": 0.0005698329987353645,
+            "replay_s": 0.07458000000042375,
+            "replay_build_s": 0.023200374998850748,
+            "replay_scan_s": 0.05019212499973946,
+            "ic2_neighbor_s": 0.13129900000058115,
+            "ic2_neighbor_build_s": 0.0633705829968676,
+            "ic2_neighbor_scan_s": 0.06540166600098019,
+            "ic2_random_20261031_s": 0.2079356670001289,
+            "ic2_random_20261031_build_s": 0.10081954199631582,
+            "ic2_random_20261031_scan_s": 0.1023403339968354,
+            "ic2_random_20261032_s": 0.2121489589990233,
+            "ic2_random_20261032_build_s": 0.10337458300273283,
+            "ic2_random_20261032_scan_s": 0.10419104199900175,
+            "ic2_random_20261033_s": 0.24520583300181897,
+            "ic2_random_20261033_build_s": 0.13371458300025552,
+            "ic2_random_20261033_scan_s": 0.10651508299997658,
+            "render_s": 0.00031962499997462146,
+            "verify_s": 0.34893416699924273,
+            "verify_build_s": 0.00012550000246847048,
+            "verify_scan_s": 0.3483593329983705,
+            "total_s": 31.657856750000064,
+            "probe_wall_s": 17.71906020899769
+          },
+          "probe_phases": {
+            "subref_build_s": 0.19771454399597133,
+            "prep_s": 2.2615366259997245,
+            "tool_s": 15.240774834001058,
+            "read_output_s": 0.0007771240016154479
+          },
+          "extra_contract": {},
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813",
+              "tare_body_sha256": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813",
+              "stock_nrows": 50,
+              "tare_nrows": 50
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+              "tare_body_sha256": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+              "stock_nrows": 46,
+              "tare_nrows": 46
+            }
+          }
+        },
+        "arm_C": {
+          "label": "pilot_C_GCF_057098645.1",
+          "wall_s": 34.781868124999164,
+          "decision": "SHIP",
+          "reason": "exact replay under pinned normalizer",
+          "contract_store": "confirm_fail",
+          "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+          "contract_confirmations": [
+            "probe_roles_n=50"
+          ],
+          "contract_confirm_wall_s": 5.170954459001223,
+          "contract_store_reason": "table 'domtbl' column roles/members disagree",
+          "stripped_sha256": "aaec2bcd1f10dd0d4d7e03353e147241b88ebf2e901713279b5f66e953be5bab",
+          "tables": {
+            "domtbl": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+            "tbl": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813"
+          },
+          "phases": {
+            "parse_s": 1.9105044999996608,
+            "coverage_read_s": 6.020799992256798e-05,
+            "diff_s": 0.00014387500050361268,
+            "cache_load_s": 1.308399805566296e-05,
+            "subref_build_s": 0.029186249998019775,
+            "prep_s": 0.4149032070017711,
+            "tool_s": 10.429828831998748,
+            "read_output_s": 0.0013830030002282,
+            "discovery_s": 4.724563291998493,
+            "discovery_build_s": 0.0003735430000233464,
+            "discovery_scan_s": 4.7172922089994245,
+            "merge_rescale_s": 0.0003164999980072025,
+            "cache_store_s": 0.004263667000486748,
+            "pin_check_s": 4.9355120830005035,
+            "replay_plan_s": 0.0005738330000895076,
+            "replay_s": 0.07539054199878592,
+            "replay_build_s": 0.02458058299816912,
+            "replay_scan_s": 0.04965375000028871,
+            "ic2_neighbor_s": 0.12954008399901795,
+            "ic2_neighbor_build_s": 0.06210004199601826,
+            "ic2_neighbor_scan_s": 0.0649361659961869,
+            "ic2_random_20261031_s": 0.2129797090019565,
+            "ic2_random_20261031_build_s": 0.10462320700025884,
+            "ic2_random_20261031_scan_s": 0.10373916599928634,
+            "ic2_random_20261032_s": 0.2359482920001028,
+            "ic2_random_20261032_build_s": 0.11796662500273669,
+            "ic2_random_20261032_scan_s": 0.11320029100170359,
+            "ic2_random_20261033_s": 0.22583995799868717,
+            "ic2_random_20261033_build_s": 0.1102148739992117,
+            "ic2_random_20261033_scan_s": 0.11082558300040546,
+            "render_s": 0.0005297089992382098,
+            "verify_s": 0.3678914590018394,
+            "verify_build_s": 0.00014583300071535632,
+            "verify_scan_s": 0.3672065000027942,
+            "total_s": 34.75437920799959,
+            "probe_wall_s": 16.57709291699939
+          },
+          "probe_phases": {
+            "subref_build_s": 0.19829229099559598,
+            "prep_s": 2.250927834000322,
+            "tool_s": 14.112430333996599,
+            "read_output_s": 0.0006831239988969173
+          },
+          "extra_contract": {
+            "contract_store": "confirm_fail",
+            "contract_key": "3370e50028174f6ccfb29c39c582250b3a4f07e1d39429e6e8ab8e55570c4779",
+            "contract_confirmations": [
+              "probe_roles_n=50"
+            ],
+            "contract_confirm_wall_s": 5.170954459001223,
+            "contract_store_reason": "table 'domtbl' column roles/members disagree",
+            "contract_store_write": "stored"
+          },
+          "vs_stock": {
+            "tbl": {
+              "ok": true,
+              "stock_body_sha256": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813",
+              "tare_body_sha256": "33b8499d2a1b4cb75dc210842324bb8d8bd126d934960650d584ce483d7f7813",
+              "stock_nrows": 50,
+              "tare_nrows": 50
+            },
+            "domtbl": {
+              "ok": true,
+              "stock_body_sha256": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+              "tare_body_sha256": "d80c4023ab9e2f49595dca2fed7b09faacb7fb698879a1437895dc2f9de0bb50",
+              "stock_nrows": 46,
+              "tare_nrows": 46
+            }
+          },
+          "genome_index": 4
+        }
+      }
+    ],
+    "order": [
+      "GCF_025782825.1",
+      "GCF_049949335.1",
+      "GCF_052882435.1",
+      "GCF_055382035.1",
+      "GCF_057098645.1"
+    ],
+    "all_byte_identical_to_stock": true
+  },
+  "safety": {
+    "contradiction": {
+      "seed_run": {
+        "decision": "SHIP",
+        "contract_store": "stored"
+      },
+      "poisoned_flipped": true,
+      "followup": {
+        "decision": "SHIP",
+        "contract_store": "confirm_fail",
+        "reason": "table 'tbl' column roles/members disagree",
+        "vs_stock": {
+          "tbl": {
+            "ok": true,
+            "stock_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+            "tare_body_sha256": "1174dbc1f3971cc8923a41d197dd8465359cc7136b1673e66f6869bd2d9000b7",
+            "stock_nrows": 56,
+            "tare_nrows": 56
+          },
+          "domtbl": {
+            "ok": true,
+            "stock_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+            "tare_body_sha256": "2c54687964384bc143367ed65906a94c514d5e481b47e395ca7a94cf548e7359",
+            "stock_nrows": 53,
+            "tare_nrows": 53
+          }
+        }
+      },
+      "pass": true
+    },
+    "key_isolation": {
+      "seed_contract_store": "stored",
+      "argv_E10": {
+        "contract_store": "stored",
+        "decision": "REFUSE",
+        "wall_s": 18.88700287499887,
+        "must_not_be_reused": true
+      },
+      "different_release": {
+        "contract_store": "stored",
+        "decision": "SHIP",
+        "must_not_be_reused": true
+      },
+      "pass": true
+    },
+    "pin_check_evidence": {
+      "per_genome": [
+        {
+          "accession": "GCF_025782825.1",
+          "pin_check_s": 5.0918709590005165,
+          "decision": "SHIP",
+          "contract_store": "stored"
+        },
+        {
+          "accession": "GCF_049949335.1",
+          "pin_check_s": 4.882037166997179,
+          "decision": "SHIP",
+          "contract_store": "reused"
+        },
+        {
+          "accession": "GCF_052882435.1",
+          "pin_check_s": 5.114869207998709,
+          "decision": "SHIP",
+          "contract_store": "confirm_fail"
+        },
+        {
+          "accession": "GCF_055382035.1",
+          "pin_check_s": 4.729601166000066,
+          "decision": "SHIP",
+          "contract_store": "confirm_fail"
+        },
+        {
+          "accession": "GCF_057098645.1",
+          "pin_check_s": 4.9355120830005035,
+          "decision": "SHIP",
+          "contract_store": "confirm_fail"
+        }
+      ],
+      "note": "Code always re-runs pin check per genome (never publishes pin_checks). Evidence only: compare pin_check_s presence and SHIP across genomes.",
+      "argument_for_sharing": "On W5x pin_check is 151.8 s; if conclusion is identical for the same (binary, argv, release) and only depends on help-derived pin template + size members already confirmed, sharing would cut rho(20) toward 1.29.",
+      "argument_against_sharing": "Pin check samples this genome's records and compares whole vs pinned body bytes; empty or sparse samples, different hit sets, or layout width can flip ok. Design table already marks pin_checks as cross-genome-unsafe without re-check."
+    }
+  },
+  "summary": {
+    "GATE_R": "PASS",
+    "gate_r_compare": "stripped decision.txt + comment-stripped table body sha256",
+    "all_byte_identical_to_stock": true,
+    "arm_C_outcomes": {
+      "stored": 1,
+      "reused": 1,
+      "confirm_fail": 3
+    },
+    "confirmation_tax_laptop_s": {
+      "all_confirms_mean": 5.438809791499807,
+      "successful_reuse_only": [
+        5.753767291000258
+      ],
+      "mean_full_probe_arm_B_s": 17.459975066999323,
+      "ratio_confirm_to_probe": 0.3115015783601873
+    },
+    "safety": {
+      "contradiction": true,
+      "key_isolation": true
+    },
+    "rho_policy_note": {
+      "headline_design_rho20": 1.29,
+      "headline_assumes": "share parse+probe+pin once; no confirm tax",
+      "conservative_design_rho20": 2.08,
+      "conservative_assumes": "share probe only; re-pay pin+parse; no confirm tax",
+      "code_implements": "re-pay pin every genome; confirm tax on reuse path; parse always runs",
+      "projected_code_rho20_with_confirm_tax": 2.7406747201226933
+    },
+    "pfam": "seeded 3000-model subset (full Pfam-A 30134; stock full-proteome would exceed 10 min at 2 threads)",
+    "seeds_used": {
+      "primary": 20261332,
+      "proteome_subset": 20261334,
+      "pfam_subset": 20261335,
+      "update_ref": 20261336,
+      "contradiction": 20261337,
+      "p1_smoke_reserved": 20261333,
+      "test_SEED_B_overlap_note": "20261332 also used in tests/test_shared_contract.py as SEED_B"
+    },
+    "finished_utc": "2026-10-24T00:46:04Z"
+  }
+}

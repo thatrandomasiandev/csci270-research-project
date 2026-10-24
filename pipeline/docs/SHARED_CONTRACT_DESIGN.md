@@ -1,7 +1,8 @@
 # Shared contract across genomes — design (P1)
 
 **Status:** PROJECTED (W5x numbers) + code-justified phase table.  
-**Branch:** `exp/shared-contract`. No paper edits. No CARC in this prompt.
+**Branch:** `exp/shared-contract`. No paper edits. No CARC in this prompt.  
+**P2 note:** Headline ρ(20)=1.29 assumes shared pin check; **code re-runs pin every genome** (conservative ρ(20)=2.08 without confirm tax; see `SHARED_CONTRACT_PILOT.md`).
 
 ## 0. Claim
 
