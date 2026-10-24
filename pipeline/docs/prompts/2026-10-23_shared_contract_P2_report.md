@@ -2,7 +2,7 @@
 
 ## Final SHA
 
-*(filled after commit)* — branch `exp/shared-contract`, worktree `../ACTS-sharedcontract`.
+`57ffee1077541959c74bf70d598b63f02ea848e9` — branch `exp/shared-contract`, worktree `../ACTS-sharedcontract`.
 
 Base `origin/main`: `b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8`.  
 P1 tip before this pilot: `86adef392f632a427a034cbe125637bae8482c37`.
