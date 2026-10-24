@@ -4,49 +4,35 @@ Pilot only. Numbers here are not measured CARC results and must not enter the pa
 
 ## What ran
 
-- Branch `exp/semgrep-domain`, scratch `~/tmp/tare_semgrep_p2/`, Semgrep 1.182.1, `-j 2`, seeds **20261322** (pilot), **20261324** (min-delta fix), **20261325** (errors subsets).
-- Release pair (seeded among consecutive commits that touch Python rules): `241477b` → `46a0ecf` (OWASP 2025 mapping). Concatenated 378 Python rules per commit with duplicate bare ids path-qualified.
-- Corpus: 1000 Python files on disk, disjoint from G1’s `~/tmp/tare_g1/venv/lib` by path and content hash. Power: **3269** findings on the newer concat (floor 500).
+- Branch `exp/semgrep-domain`, scratch `~/tmp/tare_semgrep_p2/` (P2) and `~/tmp/w2/` (W2 overnight), Semgrep 1.182.1, `-j 2`.
+- Seeds: **20261322** (pilot), **20261324** (min-delta), **20261325** (errors subsets, pre-timeout lock), **20261326** (errors with `--timeout 0`), **20261327** (second release pair).
+- Release pairs: `241477b` → `46a0ecf` (OWASP 2025 mapping, P2); `2a5cbda` → `c1da51f` (flask-cors confidence, seed 20261327). Concatenated Python rules with duplicate bare ids path-qualified.
+- Corpus: 1000 Python files (`~/tmp/tare_semgrep_p2/corpus/records.txt`), disjoint from G1. Power: **3269** findings (floor 500).
 
-## What it found
+## What it found (P2 + W2)
 
-1. **GATE R PASS** on every committed tool table found (HMMER tblout fixture; DIAMOND/BLAST+ `reference_boundary_tables/*.tsv`) and on live hmmscan tblout/domtblout. No committed Infernal tblout or pfscanV3 tables. Shared tab-aware parse matches origin/main on these files; no shared-path revert required.
+1. **GATE R PASS** on committed HMMER/DIAMOND tables and live hmmscan; shared tab-aware parse unchanged for default table path.
 2. **Stock vs stock PASS** (only `time` differs).
-3. **Positive control FAIL (limitation).** Fill on the older concat SHIPs under identity. Update to the newer concat **REFUSE**s (`IC2 neighbor missing_candidate` on the full OWASP pair; `REFUSE_MATCH` non-candidate pair on a one-rule min-delta fix). Hand-fixture v1→v2 still SHIPs. Semgrep shows cross-rule couplings that exact replay’s IC2/candidate check catches.
-4. **Negative control PASS** (drop-one-finding hook → refuse on row-key set difference).
-5. **Inference PASS:** identity normalizer, no pin; declare `--volatile-json-field time`.
-6. **Errors dependence:** on 10 seeded half-rule subsets, **70%** had a different top-level `errors` list than the full-rule run on the same files (Timeout / syntax warnings are rule-set dependent). Envelope mismatch implies **REFUSE_MATCH** under `verify full` unless `errors` is handled explicitly — this is the main barrier to a Semgrep speedup story.
-7. **Laptop shape (not evidence):** stock newer ~76–78 s; TARE fill ~670–690 s (many exact-mode scans); refused updates ~124–212 s.
+3. **Positive control SHIP (W2).** After locking `--timeout 0` and fixing the json-records empty-batch column lock + tab-aware IC2 split: min-delta, full OWASP pair, and seed-20261327 pair all **SHIP** with `ic2: pass` and output equal to stock except `time`.
+4. **Negative control PASS** (P2: drop-one-finding hook → refuse).
+5. **Inference PASS:** identity normalizer; declare `--volatile-json-field time`.
+6. **Errors dependence (W2, seed 20261326, `--timeout 0`):** rate **0.0** (was 0.7). Remaining top-level `errors`: one **Syntax error** on `0979.py` (`rule_id` null) — present in the full run and every half-rule subset → **rule-independent**.
+7. **Laptop shape (not evidence):** with `--timeout 0`, stock ~170 s; fills still multi-scan.
 
-Pilot code fixes (json-records only): lock flat columns across probe parts; sanitize newlines/tabs in scalar cells so Semgrep messages cannot split the synthetic line table.
+### P2 refuses diagnosed (W2)
 
-## Proposed pre-registration (prompt 3 / CARC measured)
+| Symptom | Class | Evidence |
+|---|---|---|
+| Min-delta `REFUSE_MATCH` `(is, {json...})` on `0012.py` / `pass-body-fn` / span 32:1–35:9 | **TARE bug** | Empty first replay batch locked columns to `[__json__]`; whitespace split of `` `pass` is ... `` → fake record key `is` |
+| Full-pair IC2 `missing_candidate` | **C4** (timeouts) primary | Same pair SHIPs under `--timeout 0` + column-lock fix |
 
-Lock after this pilot’s limitations are accepted or mitigated.
+Checked and not the refuse cause: Semgrep cross-rule dedup plant; qualified-id collisions; `check_id`≠rule id; message wrapping; merge order key.
 
-| Item | Proposed lock |
-|---|---|
-| Goal | Decide whether TARE can **SHIP** Semgrep rule-set updates with equal non-volatile JSON and report a wall-time ratio vs stock on an exclusive node |
-| Releases | **Three consecutive** semgrep-rules commits that change ≥1 Python rule, drawn with a fresh seed; concatenate with the same unique-id qualification |
-| Corpus | **Fresh** ≥1000 Python files, disjoint from pilot and G1 by path+hash; enlarge until stock on the newest release has ≥**500** findings |
-| Machine | Exclusive **EPYC 7542**, one job; no other user load |
-| Design | `r = 3` alternating **stock / TARE** pairs on the same inputs (stock, TARE, stock, TARE, stock, TARE) |
-| TARE argv | `--strategy reference --reference-format yaml-list --output-format json-records --json-rows results --volatile-json-field time --pin --verify full` plus Semgrep `--json --no-rewrite-rule-ids --metrics=off --disable-version-check` |
-| Pass | Every TARE update **SHIP**s; output equals stock except `time`; stock-vs-stock (except `time`) holds on the node |
-| Fail | Any SHIP with a non-volatile mismatch; or IC2/candidate refuse on a release pair intended to demonstrate reuse (record as Semgrep coupling limitation and stop) |
-| Power | ≥500 findings on the newest release stock output; else **INCONCLUSIVE** |
-| Errors | Pre-declare whether top-level `errors` is volatile or must match; if must match, require errors-dependence rate **0** on a 10-subset pilot replay on the CARC corpus before timing |
-| Primary metric | Median wall ratio stock/TARE over the three TARE updates (laptop timings are not this metric) |
+## Addendum 2026-10-24 (W2 overnight): lock timeouts off
 
-Do not start CARC until: (a) a laptop release pair **SHIPs** an update under IC2, or (b) the measured claim is explicitly “refuse on coupling” rather than speedup.
+Semgrep’s default `--timeout 5` emits rule×file `Timeout` rows into top-level `errors` (P2: `hardcoded-token` on `0683.py`). Those rows appear or vanish when the rule set or wall clock changes (C4).
 
-## Addendum 2026-10-24 (W2 overnight): lock timeouts off; diagnose P2 refuses
-
-### C4: wall-clock timeouts are nondeterminism
-
-Semgrep’s default `--timeout 5` emits rule×file `Timeout` rows into top-level `errors` (P2: `hardcoded-token` on `0683.py`). Those rows appear or vanish when the rule set or wall clock changes, so half-rule subsets disagreed with the full run (P2 rate **0.7**, seed 20261325). That is coupling class **C4**, not a TARE merge bug.
-
-**Locked Semgrep argv for every Semgrep/TARE run from this addendum on:**
+**Locked Semgrep argv:**
 
 ```
 --json --no-rewrite-rule-ids --metrics=off --disable-version-check
@@ -54,19 +40,25 @@ Semgrep’s default `--timeout 5` emits rule×file `Timeout` rows into top-level
 -j 2
 ```
 
-(`--timeout 0` and `--timeout-threshold 0` disable per-rule time limits; `--max-memory 0` keeps the default “no memory limit.”) Re-measure of errors-dependence uses seed **20261326** (results below / in `semgrep_pilot.json`).
+Code fixes: `reference_run._coerce_json_tables` / `_seed_json_columns_from_tables`; `exact_certificate.split_body_fields`.
 
-### Attribution bugs found (TARE), not Semgrep cross-rule
+## CARC pre-registration draft (do not submit)
 
-| Symptom (P2) | Root cause | Fix |
-|---|---|---|
-| Min-delta `REFUSE_MATCH` non-candidate `(is, {"check_id":"pass-body-fn"...})` | First empty replay batch locked json-records columns to `[__json__]`; later findings were JSON-only lines; whitespace split of `` `pass` is the body... `` made `record_col` → `is` | Do not lock columns from empty results; seed header from fill `table.meta` |
-| IC2 subject parse on tab cells | `exact_certificate.judge` used `line.split()` | Tab-aware `split_body_fields` (same rule as `_split_body_fields`) |
+Lock after W2 laptop SHIPs (satisfied 2026-10-24).
 
-Checked and **not** the P2 refuse cause: Semgrep dedup of identical spans across rules (plant still inconclusive); rule-id qualification collisions (concat ids unique); `check_id` ≠ rule `id` (pilot uses `--no-rewrite-rule-ids`); message wrapping (sanitized); merge order key (`path, start, end, check_id, message`).
+| Item | Locked proposal |
+|---|---|
+| Goal | Decide whether TARE can **SHIP** Semgrep rule-set updates with equal non-volatile JSON and report a wall-time ratio vs stock on an exclusive node |
+| Releases | **Three consecutive** semgrep-rules commits that change ≥1 Python rule, drawn with a **fresh** seed (not 20261322–20261329); concatenate with the same unique-id qualification |
+| Corpus | **Fresh** ≥1000 Python files, disjoint from pilot/G1/W2 by path+hash; enlarge until stock on the newest release has ≥**500** findings |
+| Machine | Exclusive **EPYC 7542**, one job; no other user load |
+| Design | `r = 3` alternating **stock / TARE** pairs (stock, TARE, stock, TARE, stock, TARE) |
+| Semgrep argv | `--json --no-rewrite-rule-ids --metrics=off --disable-version-check --timeout 0 --timeout-threshold 0 --max-memory 0` plus `-j` matching the exclusive node policy |
+| TARE argv | `--strategy reference --reference-format yaml-list --output-format json-records --json-rows results --volatile-json-field time --pin --verify full` |
+| Pass | Every TARE update **SHIP**s; output equals stock except `time`; stock-vs-stock (except `time`) holds on the node |
+| Fail | Any SHIP with a non-volatile mismatch; or IC2/candidate refuse on a release pair intended to demonstrate reuse |
+| Power | ≥500 findings on the newest release stock output; else **INCONCLUSIVE** |
+| Errors | Top-level `errors` **must match** stock (not volatile). Require errors-dependence rate **0** on a 10-subset replay on the CARC corpus with the locked timeout argv before timing. Expect only rule-independent entries (e.g. syntax) |
+| Primary metric | Median wall ratio stock/TARE over the three TARE updates (laptop timings are not this metric) |
 
-Exact refuse rows (P2 min-delta): file `corpus/files/0012.py`, rule `pass-body-fn`, span start line 32 col 1 → end line 35 col 9 — false non-candidate from the JSON-only lock bug above.
-
-### Re-run status
-
-See `pipeline/results/nonbio/semgrep_pilot.json` → `w2_overnight` and the report `pipeline/docs/prompts/2026-10-24_semgrep_W2_report.md`.
+**Do not submit** this job until Josh reviews. Laptop SHIP under IC2 is satisfied (W2).

@@ -17,7 +17,9 @@
       20261327,
       20261328,
       20261329
-    ]
+    ],
+    "errors_dependence_timeout0": 20261326,
+    "positive_control_second_pair": 20261327
   },
   "semgrep": {
     "binary": "/Users/joshuaterranova/tmp/tare_g1/venv/bin/semgrep",
@@ -509,5 +511,186 @@
     "PRIORITY_1": "done",
     "PRIORITY_2": "done",
     "PRIORITY_3": "done_with_positive_control_limitation"
+  },
+  "w2_overnight": {
+    "date": "2026-10-24",
+    "branch": "exp/semgrep-domain",
+    "git_sha": "68c5b770bb5a3e6a60ec9412a726d5e3b3129702",
+    "tasks": {
+      "1_timeout_lock_errors_dependence": {
+        "seed": 20261326,
+        "semgrep_flags_added": [
+          "--timeout",
+          "0",
+          "--timeout-threshold",
+          "0",
+          "--max-memory",
+          "0"
+        ],
+        "rate_errors_differ_from_full": 0.0,
+        "rate_was_p2": 0.7,
+        "full_n_errors": 1,
+        "full_error_fps": [
+          {
+            "type": "Syntax error",
+            "code": 3,
+            "path": "/Users/joshuaterranova/tmp/tare_semgrep_p2/corpus/files/0979.py",
+            "rule_id": null
+          }
+        ],
+        "remaining_error_types": [
+          "Syntax error"
+        ],
+        "rule_independent": true,
+        "note": "Timeout rows gone; single Syntax error on 0979.py (rule_id null) present in every subset",
+        "report_path": "/Users/joshuaterranova/tmp/w2/errors_dep/report.json"
+      },
+      "2_diagnosis": {
+        "min_delta_refuse_match": {
+          "class": "TARE_BUG",
+          "row": {
+            "file": "/Users/joshuaterranova/tmp/tare_semgrep_p2/corpus/files/0012.py",
+            "rule_id": "pass-body-fn",
+            "span": {
+              "start": {
+                "line": 32,
+                "col": 1,
+                "offset": 703
+              },
+              "end": {
+                "line": 35,
+                "col": 9,
+                "offset": 838
+              }
+            }
+          },
+          "mechanism": "empty first replay batch locked json-records columns to [__json__]; whitespace split of message \"`pass` is ...\" yielded fake record key \"is\"",
+          "fix": "seed header from fill meta; do not lock columns from empty results; IC2 tab-aware split"
+        },
+        "full_pair_ic2_missing_candidate": {
+          "class": "C4_TIMEOUT_NONDETERMINISM_PRIMARY",
+          "evidence": "With --timeout 0 and column-lock fix, same OWASP pair update SHIPs with ic2=pass and equal_except_time",
+          "secondary": "Empty-batch column lock could also corrupt IC2 subject parse on JSON-only lines",
+          "checked_not_cause": [
+            "Semgrep cross-rule dedup plant (still 0 findings on plant)",
+            "rule id collisions after qualification (concat ids unique)",
+            "check_id != rule id (--no-rewrite-rule-ids)",
+            "message wrapping (scalar sanitize)",
+            "merge order key path/start/end/check_id/message"
+          ]
+        }
+      },
+      "3_positive_controls": {
+        "min_delta_p2": {
+          "decision": {
+            "decision": "SHIP",
+            "why": "exact replay under identity normalizer",
+            "mode": "exact",
+            "match": "body-bytes",
+            "reused_rows": "3269",
+            "n_stable": "377",
+            "n_fresh": "1",
+            "f_delta": "0.0026455026455026454",
+            "normalizer": "identity",
+            "ic2": "pass",
+            "volatile_json_fields": "['time']"
+          },
+          "equal_except_time": true,
+          "status": "SHIP"
+        },
+        "full_owasp_p2": {
+          "decision": {
+            "decision": "SHIP",
+            "why": "exact replay under identity normalizer",
+            "mode": "exact",
+            "match": "body-bytes",
+            "reused_rows": "3103",
+            "n_stable": "127",
+            "n_fresh": "251",
+            "f_delta": "0.6640211640211641",
+            "normalizer": "identity",
+            "ic2": "pass",
+            "volatile_json_fields": "['time']"
+          },
+          "equal_except_time": true,
+          "status": "SHIP",
+          "release_pair": {
+            "seed": 20261322,
+            "older": "241477b854cb7adf280bf1406a6d1711c65ed33c",
+            "newer": "46a0ecfdf78f86a6409677c58417f845ef9eae9a",
+            "older_subject": "[go] Add CWE-502 unsafe deserialization rule (#3736)",
+            "newer_subject": "Add owasp 2025 mapping (#3739)",
+            "n_python_yaml_files_touched_in_diff": 245,
+            "rules_concat": {
+              "older_sha256": "b05e7b8ed93b740ce632c617f4fc89de378e7fd9ba5888c604381adbfe0b8b1b",
+              "newer_sha256": "c3d74aae9660260540ed308367bda61cde3f96aa8f455d05ac8d72c881e2cd31",
+              "n_rules": 378,
+              "n_dupes_qualified": 43
+            }
+          }
+        },
+        "seed_20261327": {
+          "decision": {
+            "decision": "SHIP",
+            "why": "exact replay under identity normalizer",
+            "mode": "exact",
+            "match": "body-bytes",
+            "reused_rows": "3269",
+            "n_stable": "374",
+            "n_fresh": "1",
+            "f_delta": "0.0026666666666666666",
+            "normalizer": "identity",
+            "ic2": "pass",
+            "volatile_json_fields": "['time']"
+          },
+          "equal_except_time": true,
+          "status": "SHIP",
+          "release_pair": {
+            "seed": 20261327,
+            "older": "2a5cbdab4b0c2c80a2b2b9795fcb64db74556621",
+            "newer": "c1da51fbff5e25a0b42e9ccb6686ba24b62b0a04",
+            "older_subject": "Update flask-cors-misconfiguration.yaml (#3523)",
+            "newer_subject": "Lower confidence for audit rule",
+            "n_python_yaml_files_touched": 1,
+            "n_candidate_pairs": 17,
+            "files_sample": [
+              "python/flask/security/audit/flask-cors-misconfiguration.yaml"
+            ]
+          },
+          "rules_meta": {
+            "seed": 20261327,
+            "older": {
+              "commit": "2a5cbdab4b0c2c80a2b2b9795fcb64db74556621",
+              "n_files": 334,
+              "n_rules": 375,
+              "n_dupes_qualified": 43,
+              "sha256": "d1d4c47ac327022b079af8da126bdaf21672b654c6cbb03bcb0e4add018872d4",
+              "bytes": 650234
+            },
+            "newer": {
+              "commit": "c1da51fbff5e25a0b42e9ccb6686ba24b62b0a04",
+              "n_files": 334,
+              "n_rules": 375,
+              "n_dupes_qualified": 43,
+              "sha256": "8d5bf118a0ee02a86700a5f731982442e9557631386c97b9e0de47551401e9f0",
+              "bytes": 650233
+            }
+          }
+        },
+        "overall": "SHIP"
+      },
+      "4_carc_prereg": {
+        "written": true,
+        "submitted": false,
+        "location": "pipeline/docs/SEMGREP_PILOT.md"
+      }
+    },
+    "gates": {
+      "G-a_pytest": {
+        "pass": true,
+        "summary": "428 passed, 1 skipped (post-fix)"
+      },
+      "GATE_R": "reconfirmed parse on committed HMMER/DIAMOND/Infernal-manifest tables; prior P2 GATE R PASS retained"
+    }
   }
 }
