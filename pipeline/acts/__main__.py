@@ -201,6 +201,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 subset_aux=args.subset_aux,
                 invalidate_group=args.invalidate_group,
                 f_threshold=args.f_threshold,
+                contract_store=Path(args.contract_store) if args.contract_store else None,
             )
         except RunError as exc:
             print(exc.reason, file=sys.stderr)
@@ -385,6 +386,18 @@ def main(argv: list[str] | None = None) -> int:
     )
     rn.add_argument("--probe-n", type=int, default=500, dest="probe_n")
     rn.add_argument("--probe-seed", type=int, default=20260927, dest="probe_seed")
+    rn.add_argument(
+        "--contract-store",
+        default=None,
+        dest="contract_store",
+        help=(
+            "reference strategy only, opt-in: directory that stores genome-independent "
+            "fit facts keyed by binary sha256 + argv + reference release content hash, "
+            "so a batch of genomes pays the full probe once. Default unset = today's "
+            "behavior. A per-genome confirmation must agree before a stored fit is used; "
+            "pin checks, discovery, IC2, and the audit still run per genome."
+        ),
+    )
     rn.add_argument("tool", nargs=argparse.REMAINDER)
     rn.set_defaults(func=cmd_run)
 

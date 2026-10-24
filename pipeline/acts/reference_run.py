@@ -1072,6 +1072,7 @@ class ReferenceIncremental(Strategy):
         subset_aux: str | Sequence[str] | None = None,
         invalidate_group: str | None = None,
         f_threshold: float | None = None,
+        contract_store: Path | None = None,
     ):
         self.argv = list(argv)
         self.input_path = input_path
@@ -1080,6 +1081,9 @@ class ReferenceIncremental(Strategy):
         self.prep = prep
         self.baseline = baseline
         self.cache_path = cache_path
+        # Opt-in only. Default None keeps today's path (no contract_store import).
+        self.contract_store_path = Path(contract_store) if contract_store else None
+        self._contract_meta: dict = {}
         self.verify = verify if verify in {"audit", "full"} else "audit"
         self.audit_p = AUDIT_P if audit_p is None and self.verify == "audit" else (audit_p or 0.0)
         self.audit_seed = audit_seed
@@ -1318,7 +1322,117 @@ class ReferenceIncremental(Strategy):
             "probe_wall_s": probe_wall,
         }
         payload["probe_phases"] = dict(probe_phases or {})
+        if self._contract_meta:
+            payload.update(self._contract_meta)
         return payload
+
+    def _try_shared_contract(
+        self,
+        cache: ReferenceCache,
+        ns: str,
+        reference: Path,
+        entries: list[Entry],
+        records: list[RecordItem],
+        invoke: Invoke,
+    ) -> dict | None:
+        """Load a shareable fit from --contract-store, confirm on this genome.
+
+        Returns a contract dict ready for this run, or None to fall through to
+        the full probe. Never trusts pin_checks from the store. Records status
+        on ``self._contract_meta`` for decision.txt.
+        """
+        # Lazy import: default path must not load this module (G-d).
+        from acts.contract_store import (
+            CONFIRM_N,
+            ContractStore,
+            contract_key,
+            fit_signatures_match,
+        )
+
+        key_info = contract_key(
+            self.argv,
+            reference,
+            baseline=self.baseline,
+            pin=self.pin if not self._infer_pin else "",
+            slack=self.slack,
+            subset_aux=("\n".join(self._aux_rules) or None),
+            group_rule=self._group_rule or None,
+            strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
+        )
+        store = ContractStore(self.contract_store_path)
+        self._contract_meta = {
+            "contract_store": "miss",
+            "contract_key": key_info["key"],
+            "contract_confirmations": [],
+        }
+        payload, err = store.load(key_info["key"])
+        if err:
+            self._contract_meta["contract_store"] = "corrupt"
+            self._contract_meta["contract_store_reason"] = err
+            return None
+        if payload is None:
+            return None
+        fit = dict(payload["fit"])
+        # Confirm column roles / members on this genome at reduced n.
+        started = time.perf_counter()
+        n_confirm = min(CONFIRM_N, PROBE_N, len(records))
+        confirmed = probe_fit(
+            entries,
+            records,
+            invoke,
+            primary_parts=self.primary_parts,
+            baseline=self.baseline,
+            sample=self.sample,
+            k=PROBE_K,
+            n_p=n_confirm,
+            seed=PROBE_SEED,
+            monotone=bool(self.pin and self.slack),
+        )
+        confirm_wall = time.perf_counter() - started
+        self._contract_meta["contract_confirm_wall_s"] = confirm_wall
+        self._contract_meta["contract_confirmations"] = [
+            f"probe_roles_n={n_confirm}",
+        ]
+        ok, why = fit_signatures_match(fit, confirmed.as_dict())
+        if not ok:
+            self._contract_meta["contract_store"] = "confirm_fail"
+            self._contract_meta["contract_store_reason"] = why
+            return None
+        # pin_checks must not ride along from another genome.
+        fit.pop("pin_checks", None)
+        if self.pin and self._slack_factor is not None and "slack_factor" not in fit:
+            fit["slack_factor"] = self._slack_factor
+        cache.save_contract(ns, fit)
+        self._contract_meta["contract_store"] = "reused"
+        self._contract_meta["contract_confirmations"].append("roles_match")
+        return fit
+
+    def _publish_shared_contract(self, reference: Path, stored: dict) -> None:
+        if self.contract_store_path is None:
+            return
+        if str(stored.get("reason") or "").startswith(("tool failed", "prep failed")):
+            return
+        from acts.contract_store import ContractStore, contract_key
+
+        key_info = contract_key(
+            self.argv,
+            reference,
+            baseline=self.baseline,
+            pin=self.pin if not self._infer_pin else "",
+            slack=self.slack,
+            subset_aux=("\n".join(self._aux_rules) or None),
+            group_rule=self._group_rule or None,
+            strip_flags=self._aux_flags + ((self._group_flag,) if self._group_flag else ()),
+        )
+        ContractStore(self.contract_store_path).save(key_info, stored)
+        if not self._contract_meta:
+            self._contract_meta = {}
+        self._contract_meta.setdefault("contract_key", key_info["key"])
+        # Preserve miss/confirm_fail/corrupt as the read outcome; note the write.
+        if self._contract_meta.get("contract_store") in (None, "miss"):
+            self._contract_meta["contract_store"] = "stored"
+        else:
+            self._contract_meta["contract_store_write"] = "stored"
 
     def _run_cached(
         self,
@@ -1332,6 +1446,24 @@ class ReferenceIncremental(Strategy):
         stored = cache.load_contract(ns)
         probe_wall = 0.0
         probe_phases: dict[str, float] = {}
+        parse_kept = float(self.clock.get("parse_s") or 0.0)
+
+        def _reset_clock_keep_parse() -> None:
+            self.clock.clear()
+            if parse_kept:
+                self.clock["parse_s"] = parse_kept
+
+        if stored is None and self.contract_store_path is not None:
+            started = time.perf_counter()
+            reused = self._try_shared_contract(cache, ns, reference, entries, records, invoke)
+            if reused is not None:
+                stored = reused
+                probe_wall = time.perf_counter() - started
+                probe_phases = {k: v for k, v in self.clock.items() if k != "parse_s"}
+                _reset_clock_keep_parse()
+            else:
+                # miss / confirm_fail / corrupt: discard confirm tool timings.
+                _reset_clock_keep_parse()
         if stored is None:
             started = time.perf_counter()
             fitted = probe_fit(
@@ -1353,11 +1485,14 @@ class ReferenceIncremental(Strategy):
             # not to the probe. Keep it on the post-probe clock.
             if "parse_s" in probe_phases:
                 self.clock["parse_s"] = probe_phases.pop("parse_s")
+            elif parse_kept:
+                self.clock["parse_s"] = parse_kept
             if not fitted.reason.startswith(("tool failed", "prep failed")):
                 payload = fitted.as_dict()
                 if self.pin and self._slack_factor is not None:
                     payload["slack_factor"] = self._slack_factor
                 cache.save_contract(ns, payload)
+                self._publish_shared_contract(reference, payload)
             stored = fitted.as_dict()
             if self.pin and self._slack_factor is not None:
                 stored["slack_factor"] = self._slack_factor

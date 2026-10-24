@@ -1,0 +1,422 @@
+"""Opt-in --contract-store: reuse, isolation, contradiction, corruption, concurrency, default."""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import tempfile
+import threading
+import unittest
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from acts.contract_store import (
+    ContractStore,
+    contract_key,
+    fit_signatures_match,
+    release_content_hash,
+    shareable_payload,
+)
+from acts.reference_formats import parse_entryline, parse_reference, read_records, write_entries
+from acts.reference_run import ReferenceIncremental, body_lines
+
+FIX = Path(__file__).resolve().parent / "fixtures" / "reference_fitter"
+HITS = {"e1", "e3", "e4"}
+ARGV = ["law", "{reference}", "{input}", "{output}"]
+SEED_A = 20261331
+SEED_B = 20261332
+
+
+def _render(records, entries, scale: float, *, hits=HITS, footer: str = "", fmt: str = ".3g"):
+    lines = ["# record entry evalue"]
+    for rec in records:
+        for entry in entries:
+            if entry.primary not in hits:
+                continue
+            lines.append(f"{rec.key} {entry.primary} {format(scale * float(rec.description), fmt)}")
+    if footer:
+        lines.append(f"# {footer}")
+    return {"out": "\n".join(lines) + "\n"}
+
+
+def stock(records, entries):
+    return _render(records, entries, len(entries), footer=f"run on {len(entries)} entries")
+
+
+def honest_pin(records, entries, values):
+    return _render(records, entries, values["entry_count"], footer="pinned")
+
+
+def _genome(tmp: Path, name: str, text: str) -> Path:
+    path = tmp / name
+    path.write_text(text)
+    return path
+
+
+def _run(
+    tmp: Path,
+    *,
+    genome: Path,
+    ref: Path,
+    cache: Path,
+    out: Path,
+    store: Path | None,
+    pin_runner=honest_pin,
+    runner=stock,
+    pin="-Z {entry_count}",
+    argv=None,
+):
+    return ReferenceIncremental(
+        argv=argv or ARGV,
+        input_path=genome,
+        out_dir=out,
+        reference=ref,
+        cache_path=cache,
+        verify="full",
+        runner=runner,
+        pin=pin,
+        pin_runner=pin_runner,
+        contract_store=store,
+    ).run()
+
+
+class SharedContractTests(unittest.TestCase):
+    def _ref(self, tmp: Path) -> Path:
+        return FIX / "ab.entryline"
+
+    def _genomes(self, tmp: Path) -> tuple[Path, Path]:
+        # ab.faa is too small for a stable entry_count vs identity distinction;
+        # use four records with distinct descriptions so both genomes fit the same member.
+        g_a = _genome(
+            tmp,
+            "a.faa",
+            ">a0 2.0\nACDE\n>a1 3.0\nFGHI\n>a2 1.5\nKLMN\n>a3 4.0\nOPQR\n",
+        )
+        g_b = _genome(
+            tmp,
+            "b.faa",
+            ">b0 2.5\nACDE\n>b1 3.5\nFGHI\n>b2 1.0\nKLMN\n>b3 5.0\nOPQR\n",
+        )
+        return g_a, g_b
+
+    def test_reuse_byte_identical_to_stock_and_no_store(self) -> None:
+        """Genome B reuses A's stored contract; output matches stock and no-store B."""
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, g_b = self._genomes(tmp)
+            a = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "cache_a.sqlite",
+                out=tmp / "out_a",
+                store=store,
+            )
+            self.assertEqual(a.decision, "SHIP", a.reason)
+            self.assertEqual(a.extra.get("contract_store"), "stored")
+            b_store = _run(
+                tmp,
+                genome=g_b,
+                ref=ref,
+                cache=tmp / "cache_b.sqlite",
+                out=tmp / "out_b_store",
+                store=store,
+            )
+            self.assertEqual(b_store.decision, "SHIP", b_store.reason)
+            self.assertEqual(b_store.extra.get("contract_store"), "reused", b_store.extra)
+            self.assertIn("roles_match", b_store.extra.get("contract_confirmations") or [])
+            b_plain = _run(
+                tmp,
+                genome=g_b,
+                ref=ref,
+                cache=tmp / "cache_b_plain.sqlite",
+                out=tmp / "out_b_plain",
+                store=None,
+            )
+            self.assertEqual(b_plain.decision, "SHIP", b_plain.reason)
+            got_store = (tmp / "out_b_store" / "tables" / "out").read_text()
+            got_plain = (tmp / "out_b_plain" / "tables" / "out").read_text()
+            want = stock(read_records(g_b), parse_reference(ref))["out"]
+            self.assertEqual(body_lines(got_store), body_lines(want))
+            self.assertEqual(body_lines(got_store), body_lines(got_plain))
+
+    def test_key_isolation_binary_argv_release(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g, _ = self._genomes(tmp)
+            first = _run(
+                tmp, genome=g, ref=ref, cache=tmp / "c1.sqlite", out=tmp / "o1", store=store
+            )
+            self.assertEqual(first.extra.get("contract_store"), "stored")
+            key = first.extra["contract_key"]
+
+            # Different argv → different key, miss.
+            other = _run(
+                tmp,
+                genome=g,
+                ref=ref,
+                cache=tmp / "c2.sqlite",
+                out=tmp / "o2",
+                store=store,
+                argv=["law", "--cpu", "1", "{reference}", "{input}", "{output}"],
+            )
+            self.assertEqual(other.extra.get("contract_store"), "stored")
+            self.assertNotEqual(other.extra.get("contract_key"), key)
+
+            # Different release content → miss.
+            ref2 = tmp / "other.entryline"
+            write_entries(
+                parse_reference(ref) + parse_entryline("e9 7\n"),
+                ref2,
+            )
+            rel = _run(
+                tmp, genome=g, ref=ref2, cache=tmp / "c3.sqlite", out=tmp / "o3", store=store
+            )
+            self.assertNotEqual(rel.extra.get("contract_key"), key)
+            self.assertIn(rel.extra.get("contract_store"), {"stored", "reused"})
+
+            # Binary digest is part of the key (unresolved marker for in-process).
+            info = contract_key(ARGV, ref, pin="-Z {entry_count}")
+            self.assertEqual(info["key"], key)
+            self.assertEqual(info["release_hash"], release_content_hash(ref))
+
+            # Distinct on-disk binaries → distinct keys.
+            bin_a = tmp / "tool_a"
+            bin_b = tmp / "tool_b"
+            bin_a.write_text("#!/bin/sh\n# a\n")
+            bin_b.write_text("#!/bin/sh\n# b\n")
+            bin_a.chmod(0o755)
+            bin_b.chmod(0o755)
+            ka = contract_key([str(bin_a), "{reference}", "{input}"], ref)
+            kb = contract_key([str(bin_b), "{reference}", "{input}"], ref)
+            self.assertNotEqual(ka["binary_digest"], kb["binary_digest"])
+            self.assertNotEqual(ka["key"], kb["key"])
+
+    def test_contradiction_falls_back_to_full_probe(self) -> None:
+        """Genome B's sample contradicts stored roles → confirm_fail, still correct."""
+
+        def scaled(records, entries):
+            # Genome-dependent: records named c* get identity-valued columns;
+            # others get entry_count scaling. Fits disagree across genomes.
+            if any(rec.key.startswith("c") for rec in records):
+                lines = ["# record entry evalue"]
+                for rec in records:
+                    for entry in entries:
+                        if entry.primary not in HITS:
+                            continue
+                        lines.append(f"{rec.key} {entry.primary} {float(rec.description):.3g}")
+                lines.append("# identity")
+                return {"out": "\n".join(lines) + "\n"}
+            return _render(records, entries, len(entries), footer="scaled")
+
+        def scaled_pin(records, entries, values):
+            if any(rec.key.startswith("c") for rec in records):
+                return scaled(records, entries)
+            return _render(records, entries, values["entry_count"], footer="pinned")
+
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store = tmp / "store"
+            g_a, _ = self._genomes(tmp)
+            g_b = _genome(
+                tmp,
+                "const.faa",
+                ">c0 1.0\nAAAA\n>c1 2.0\nBBBB\n>c2 3.0\nCCCC\n>c3 4.0\nDDDD\n",
+            )
+            a = _run(
+                tmp,
+                genome=g_a,
+                ref=ref,
+                cache=tmp / "ca.sqlite",
+                out=tmp / "oa",
+                store=store,
+                runner=scaled,
+                pin_runner=scaled_pin,
+            )
+            self.assertEqual(a.decision, "SHIP", a.reason)
+            b = _run(
+                tmp,
+                genome=g_b,
+                ref=ref,
+                cache=tmp / "cb.sqlite",
+                out=tmp / "ob",
+                store=store,
+                runner=scaled,
+                pin_runner=scaled_pin,
+            )
+            # B must not silently ship on A's entry_count contract.
+            self.assertEqual(b.extra.get("contract_store"), "confirm_fail", b.extra)
+            self.assertTrue(
+                b.decision in {"SHIP", "REFUSE", "REFUSE_PIN", "FALLBACK"},
+                b.decision,
+            )
+            if b.decision == "SHIP":
+                got = (tmp / "ob" / "tables" / "out").read_text()
+                want = scaled(read_records(g_b), parse_reference(ref))["out"]
+                self.assertEqual(body_lines(got), body_lines(want))
+
+    def test_corruption_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            ref = self._ref(tmp)
+            store_dir = tmp / "store"
+            g, _ = self._genomes(tmp)
+            a = _run(
+                tmp, genome=g, ref=ref, cache=tmp / "c.sqlite", out=tmp / "o", store=store_dir
+            )
+            key = a.extra["contract_key"]
+            path = ContractStore(store_dir).path_for(key)
+            path.write_text("{not-json")
+            b = _run(
+                tmp,
+                genome=g,
+                ref=ref,
+                cache=tmp / "c2.sqlite",
+                out=tmp / "o2",
+                store=store_dir,
+            )
+            self.assertEqual(b.extra.get("contract_store"), "corrupt")
+            self.assertEqual(b.decision, "SHIP", b.reason)
+            # Truncation
+            path.write_text('{"version": 1, "key": "%s"' % key)
+            c = _run(
+                tmp,
+                genome=g,
+                ref=ref,
+                cache=tmp / "c3.sqlite",
+                out=tmp / "o3",
+                store=store_dir,
+            )
+            self.assertEqual(c.extra.get("contract_store"), "corrupt")
+
+    def test_concurrency_one_entry_no_partial(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            tmp = Path(raw)
+            store = ContractStore(tmp / "store")
+            ref = self._ref(tmp)
+            key_info = contract_key(ARGV, ref, pin="-Z {entry_count}")
+            fit = {
+                "decision": "SHIP",
+                "reason": "ok",
+                "tables": [],
+                "exact_eligible": False,
+                "column_only_refusal": False,
+            }
+            errors: list[BaseException] = []
+
+            def writer() -> None:
+                try:
+                    store.save(key_info, fit)
+                except BaseException as exc:  # noqa: BLE001 — collect for join
+                    errors.append(exc)
+
+            threads = [threading.Thread(target=writer) for _ in range(8)]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+            self.assertEqual(errors, [])
+            payload, err = store.load(key_info["key"])
+            self.assertIsNone(err)
+            self.assertIsNotNone(payload)
+            self.assertEqual(payload["fit"]["decision"], "SHIP")
+            # No leftover temps
+            leftovers = list((tmp / "store").glob("*.tmp"))
+            self.assertEqual(leftovers, [])
+
+    def test_default_path_does_not_import_contract_store(self) -> None:
+        """Subprocess: run without --contract-store never imports the module."""
+        code = r"""
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(%r)))
+from acts.reference_run import ReferenceIncremental
+
+FIX = Path(%r)
+HITS = {"e1", "e3", "e4"}
+
+def stock(records, entries):
+    lines = ["# record entry evalue"]
+    for rec in records:
+        for entry in entries:
+            if entry.primary not in HITS:
+                continue
+            lines.append(f"{rec.key} {entry.primary} {len(entries) * float(rec.description):.3g}")
+    return {"out": "\n".join(lines) + "\n"}
+
+def pin(records, entries, values):
+    lines = ["# record entry evalue"]
+    for rec in records:
+        for entry in entries:
+            if entry.primary not in HITS:
+                continue
+            lines.append(f"{rec.key} {entry.primary} {values['entry_count'] * float(rec.description):.3g}")
+    return {"out": "\n".join(lines) + "\n"}
+
+import tempfile
+with tempfile.TemporaryDirectory() as raw:
+    tmp = Path(raw)
+    faa = tmp / "g.faa"
+    faa.write_text(">a0 2.0\nACDE\n>a1 3.0\nFGHI\n>a2 1.5\nKLMN\n>a3 4.0\nOPQR\n")
+    ReferenceIncremental(
+        argv=["law", "{reference}", "{input}", "{output}"],
+        input_path=faa,
+        out_dir=tmp / "out",
+        reference=FIX / "ab.entryline",
+        cache_path=tmp / "c.sqlite",
+        verify="full",
+        runner=stock,
+        pin="-Z {entry_count}",
+        pin_runner=pin,
+    ).run()
+print("imported", "acts.contract_store" in sys.modules)
+""" % (
+            str(Path(__file__).resolve().parents[1]),
+            str(FIX),
+        )
+        proc = subprocess.run(
+            [sys.executable, "-c", code],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertIn("imported False", proc.stdout)
+
+    def test_fit_signature_helper_and_shareable_strips_pin_checks(self) -> None:
+        a = {
+            "decision": "SHIP",
+            "tables": [
+                {
+                    "name": "out",
+                    "record_col": 0,
+                    "entry_col": 1,
+                    "index_col": None,
+                    "columns": [{"index": 2, "role": "numeric", "member": "entry_count"}],
+                }
+            ],
+            "exact_eligible": False,
+            "column_only_refusal": False,
+            "pin_checks": {"-Z {entry_count}": {"ok": True}},
+        }
+        b = json.loads(json.dumps(a))
+        ok, _ = fit_signatures_match(a, b)
+        self.assertTrue(ok)
+        b["tables"][0]["columns"][0]["member"] = "identity"
+        ok, why = fit_signatures_match(a, b)
+        self.assertFalse(ok)
+        self.assertIn("disagree", why)
+        shared = shareable_payload(a)
+        self.assertNotIn("pin_checks", shared)
+
+
+if __name__ == "__main__":
+    unittest.main()
