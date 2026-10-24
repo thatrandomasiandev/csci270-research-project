@@ -1,0 +1,55 @@
+#!/bin/bash
+# Semgrep measured SMOKE — non-exclusive, one step, r=1, 1h.
+#SBATCH --job-name=tare-semgrep-smoke
+#SBATCH --account=biyik_1173
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=01:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep/logs/smoke-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep/logs/smoke-%j.err
+
+set -euo pipefail
+
+STAGE=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep
+SCRATCH=/scratch1/${USER}/tare-semgrep
+ASSETS="${STAGE}/assets"
+REPO="${STAGE}/repo"
+VENV="${STAGE}/venv"
+WORK="${SCRATCH}/smoke_${SLURM_JOB_ID}"
+OUT="${STAGE}/results/semgrep_smoke_${SLURM_JOB_ID}.json"
+
+mkdir -p "${SCRATCH}" "${WORK}" "${STAGE}/results" "${STAGE}/logs"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0
+module load python/3.11.9
+
+export PATH="${VENV}/bin:${PATH}"
+export SEMGREP_J=8
+export ACTS_PIPELINE_ROOT="${REPO}/pipeline"
+export PYTHONPATH="${REPO}/pipeline"
+export XDG_CACHE_HOME="${WORK}/xdg_cache"
+export SEMGREP_SEND_METRICS=off
+export SEMGREP_ENABLE_VERSION_CHECK=0
+
+echo "=== smoke host ==="
+hostname; date -Is; uptime
+python3 --version
+semgrep --version
+lscpu | grep -E 'Model name|CPU\(s\)|Thread' || true
+
+python3 "${REPO}/pipeline/scripts/semgrep_measured_carc.py" \
+  --mode smoke \
+  --assets "${ASSETS}" \
+  --work "${WORK}" \
+  --out "${OUT}" \
+  --semgrep "${VENV}/bin/semgrep" \
+  --python "${VENV}/bin/python3" \
+  --skip-errors-dep \
+  --skip-negative
+
+echo SMOKE_DONE

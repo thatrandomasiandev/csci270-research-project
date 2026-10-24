@@ -1,0 +1,56 @@
+#!/bin/bash
+# Semgrep measured run — exclusive EPYC 7542, r=3, chain A→B→C.
+#SBATCH --job-name=tare-semgrep-meas
+#SBATCH --account=biyik_1173
+#SBATCH --partition=main
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=32
+#SBATCH --exclusive
+#SBATCH --mem=0
+#SBATCH --constraint=epyc-7542
+#SBATCH --time=04:00:00
+#SBATCH --output=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep/logs/measured-%j.out
+#SBATCH --error=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep/logs/measured-%j.err
+
+set -euo pipefail
+
+STAGE=/project2/biyik_1165/jjt_373/csci270-star/tare-semgrep
+SCRATCH=/scratch1/${USER}/tare-semgrep
+ASSETS="${STAGE}/assets"
+REPO="${STAGE}/repo"
+VENV="${STAGE}/venv"
+WORK="${SCRATCH}/measured_${SLURM_JOB_ID}"
+OUT="${STAGE}/results/semgrep_measured_${SLURM_JOB_ID}.json"
+
+mkdir -p "${SCRATCH}" "${WORK}" "${STAGE}/results" "${STAGE}/logs"
+
+if [[ -f /etc/profile.d/modules.sh ]]; then source /etc/profile.d/modules.sh; fi
+module purge 2>/dev/null || true
+module load gcc/13.3.0
+module load python/3.11.9
+
+export PATH="${VENV}/bin:${PATH}"
+export ACTS_PIPELINE_ROOT="${REPO}/pipeline"
+export PYTHONPATH="${REPO}/pipeline"
+export XDG_CACHE_HOME="${WORK}/xdg_cache"
+export SEMGREP_SEND_METRICS=off
+export SEMGREP_ENABLE_VERSION_CHECK=0
+
+echo "=== measured host ==="
+hostname; date -Is; uptime
+python3 --version
+semgrep --version
+lscpu | grep -E 'Model name|CPU\(s\)|Thread|Socket' || true
+echo "nproc=$(nproc)"
+
+python3 "${REPO}/pipeline/scripts/semgrep_measured_carc.py" \
+  --mode measured \
+  --assets "${ASSETS}" \
+  --work "${WORK}" \
+  --out "${OUT}" \
+  --semgrep "${VENV}/bin/semgrep" \
+  --python "${VENV}/bin/python3"
+
+cp -f "${OUT}" "${STAGE}/results/semgrep_measured.json"
+echo MEASURED_DONE
