@@ -4,7 +4,7 @@
 
 - Worktree: `../ACTS-formal` (from repo `ACTS`)
 - Branch: `exp/formal-core` (from `origin/hub/submission-ready`)
-- Final SHA: 753b249a658c73759400cc9340f6e4c75913c875
+- Final SHA: `02a5b2fb1bc1ec4f4cd2b989a44d2d453fe13e80` (formal draft content in `753b249`)
 
 ## File list
 
