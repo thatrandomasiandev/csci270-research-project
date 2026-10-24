@@ -82,7 +82,8 @@ echo "GIT_HEAD=${GIT_HEAD}"
 
 echo "=== dry-run: import + check-draw on login (no compute) ==="
 ssh -o BatchMode=yes -o ConnectTimeout=20 discovery \
-  "export PYTHONPATH='${DEST}/pipeline'; python3 '${DEST}/pipeline/scripts/shared_contract_measured.py' --mode check-draw --genomes '${GENOMES}'"
+  "source /etc/profile.d/modules.sh 2>/dev/null; module load python/3.11.9 || module load python; \
+   export PYTHONPATH='${DEST}/pipeline'; python3 '${DEST}/pipeline/scripts/shared_contract_measured.py' --mode check-draw --genomes '${GENOMES}'"
 
 echo "=== sbatch smoke (non-exclusive) ==="
 SMOKE_OUT="$(ssh -o BatchMode=yes discovery \
