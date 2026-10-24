@@ -1,0 +1,512 @@
+{
+  "protocol": "semgrep_pilot",
+  "date": "2026-10-23",
+  "branch": "exp/semgrep-domain",
+  "git": {
+    "worktree_head_at_start": "b5885002b4d694c07c294b87186c8fae13becf2c",
+    "origin_main_base": "b3cd9ad32269c01880f4e2819b26f7fdd8d14cf8",
+    "final_sha": "PENDING_COMMIT"
+  },
+  "seeds": {
+    "pilot": 20261322,
+    "positive_control_min_delta_fix": 20261324,
+    "errors_dependence": 20261325,
+    "unused_reserved": [
+      20261326,
+      20261327,
+      20261328,
+      20261329
+    ]
+  },
+  "semgrep": {
+    "binary": "/Users/joshuaterranova/tmp/tare_g1/venv/bin/semgrep",
+    "version": "1.182.1",
+    "flags": [
+      "--json",
+      "--no-rewrite-rule-ids",
+      "--metrics=off",
+      "--disable-version-check",
+      "-j",
+      "2"
+    ],
+    "env": {
+      "XDG_CACHE_HOME": "/Users/joshuaterranova/tmp/tare_g1/cache",
+      "SEMGREP_SEND_METRICS": "off",
+      "SEMGREP_ENABLE_VERSION_CHECK": "0"
+    }
+  },
+  "release_pair": {
+    "seed": 20261322,
+    "older": "241477b854cb7adf280bf1406a6d1711c65ed33c",
+    "newer": "46a0ecfdf78f86a6409677c58417f845ef9eae9a",
+    "older_subject": "[go] Add CWE-502 unsafe deserialization rule (#3736)",
+    "newer_subject": "Add owasp 2025 mapping (#3739)",
+    "n_python_yaml_files_touched_in_diff": 245,
+    "rules_concat": {
+      "older_sha256": "b05e7b8ed93b740ce632c617f4fc89de378e7fd9ba5888c604381adbfe0b8b1b",
+      "newer_sha256": "c3d74aae9660260540ed308367bda61cde3f96aa8f455d05ac8d72c881e2cd31",
+      "n_rules": 378,
+      "n_dupes_qualified": 43
+    }
+  },
+  "corpus": {
+    "seed": 20261322,
+    "n_files": 1000,
+    "manifest_sha256": "683a4888a1f88a4e43310df2d68b910915f3ef44cd7fd6752f1edaea4d98c15f",
+    "path_list_sha256": "35792052d36cd3ef7d8aa5f047dbe31e3a4cb108b288bd734193c46beae27d57",
+    "eligible_pool": 28126,
+    "g1_excluded_paths": 2754,
+    "g1_excluded_hashes": 2580,
+    "disjoint_from": "~/tmp/tare_g1/venv/lib/**/*.py by path and content sha256"
+  },
+  "power": {
+    "n_findings": 3269,
+    "n_errors": 2,
+    "power_floor": 500,
+    "met": true,
+    "stock_findings_newer": 3269,
+    "stock_errors_newer": 2
+  },
+  "gate_r": {
+    "outcome": "PASS",
+    "shared_table_path_fix": false,
+    "files": [
+      {
+        "path": "pipeline/tests/fixtures/savings/A_hmmscan_01_widen.tbl",
+        "kind": "hmmer_tblout",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "ws",
+        "n_rows": 38,
+        "note": "HMMER tblout"
+      },
+      {
+        "path": "pipeline/results/reference_boundary_tables/part0.tsv",
+        "kind": "diamond_blast_tabular",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 14463,
+        "note": "DIAMOND/BLAST+ outfmt 6"
+      },
+      {
+        "path": "pipeline/results/reference_boundary_tables/part1.tsv",
+        "kind": "diamond_blast_tabular",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 14474,
+        "note": "DIAMOND/BLAST+ outfmt 6"
+      },
+      {
+        "path": "pipeline/results/reference_boundary_tables/whole.tsv",
+        "kind": "diamond_blast_tabular",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 15125,
+        "note": "DIAMOND/BLAST+ outfmt 6"
+      },
+      {
+        "path": "pipeline/results/infernal/inputs.tsv",
+        "kind": "infernal_inputs_manifest",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 108,
+        "note": "Infernal inputs manifest (not cmscan tblout)"
+      },
+      {
+        "path": "pipeline/fixtures/llm_arm/data/smoke.tsv",
+        "kind": "llm_arm_tsv",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 5,
+        "note": "llm_arm fixture TSV (not reference strategy tool out)"
+      },
+      {
+        "path": "pipeline/fixtures/llm_arm/data/dev.tsv",
+        "kind": "llm_arm_tsv",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 9,
+        "note": "llm_arm fixture TSV"
+      },
+      {
+        "path": "pipeline/fixtures/llm_arm/data/test.tsv",
+        "kind": "llm_arm_tsv",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "tab",
+        "n_rows": 9,
+        "note": "llm_arm fixture TSV"
+      },
+      {
+        "path": "/Users/joshuaterranova/tmp/tare_semgrep_p2/gate_r/e2e/stock_old.tbl",
+        "kind": "hmmer_live_tblout",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "ws",
+        "n_rows": 312,
+        "note": null
+      },
+      {
+        "path": "/Users/joshuaterranova/tmp/tare_semgrep_p2/gate_r/e2e/stock_old.dom",
+        "kind": "hmmer_live_domtblout",
+        "identical": true,
+        "rows": "identical",
+        "merge_bodies": "identical",
+        "delimiter": "ws",
+        "n_rows": 313,
+        "note": null
+      }
+    ],
+    "e2e_hmmer": {
+      "fill": {
+        "decision_stripped_identical": true,
+        "tblout_body_sha_branch": "d33aa43e366fb9d654d0ddbe0100dcdb0084669e307a60233256e7832763db14",
+        "tblout_body_sha_main": "d33aa43e366fb9d654d0ddbe0100dcdb0084669e307a60233256e7832763db14",
+        "domtblout_body_sha_branch": "46e37c6bbdd0940d5dfa01bf84e13b63305d01eefff8ebf4854975df1c48ee19",
+        "domtblout_body_sha_main": "46e37c6bbdd0940d5dfa01bf84e13b63305d01eefff8ebf4854975df1c48ee19",
+        "bodies_identical": true
+      },
+      "update": {
+        "decision_stripped_identical": true,
+        "tblout_body_sha_branch": "a8a83bf9536ab07c755eb548ccadf7bc3ac6a04a4d95f8ceb7d2e11605e23fc5",
+        "tblout_body_sha_main": "a8a83bf9536ab07c755eb548ccadf7bc3ac6a04a4d95f8ceb7d2e11605e23fc5",
+        "domtblout_body_sha_branch": "f27864f3da8917b05dc4d0aaa4e5c6a93e465cd91081f1088aacf1580577c3ee",
+        "domtblout_body_sha_main": "f27864f3da8917b05dc4d0aaa4e5c6a93e465cd91081f1088aacf1580577c3ee",
+        "bodies_identical": true
+      }
+    },
+    "missing_committed_tool_tables": [
+      "Infernal cmscan/cmsearch tblout",
+      "pfscanV3 tabular output",
+      "committed HMMER domtblout (live e2e domtblout compared instead)"
+    ],
+    "note": "Full-file tblout sha differs only on volatile # Date: meta; bodies and stripped decision.txt match. No Infernal tblout or pfscanV3 output committed in repo."
+  },
+  "prompt1_gates_rerun": {
+    "G-a": {
+      "pass": true,
+      "summary": "426 passed, 1 skipped, 1 warning in 38.33s"
+    },
+    "G-b": {
+      "pass": true
+    },
+    "G-c": {
+      "pass": true,
+      "rows": [
+        {
+          "key": "parse_reference_text:profile_hmm_median_us",
+          "before": 4.915997124044225,
+          "after": 4.208002792438492,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:profile_hmm_median_us",
+          "before": 4.749999789055437,
+          "after": 4.125002305954695,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "parse_reference_text:fasta_median_us",
+          "before": 4.207999154459685,
+          "after": 3.749999450519681,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:fasta_median_us",
+          "before": 4.124998667975888,
+          "after": 4.082998202648014,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "parse_reference_text:entryline_median_us",
+          "before": 4.207999154459685,
+          "after": 4.208999598631635,
+          "tol": 50.0,
+          "ok": true
+        },
+        {
+          "key": "format_detection:entryline_median_us",
+          "before": 4.207999154459685,
+          "after": 4.208002792438492,
+          "tol": 50.0,
+          "ok": true
+        }
+      ]
+    },
+    "G-d": {
+      "pass": true
+    }
+  },
+  "checks": {
+    "1_stock_vs_stock": {
+      "outcome": "PASS",
+      "diff_keys_non_time": [],
+      "n_results": 3269,
+      "equal_except_time": true
+    },
+    "2_positive_control": {
+      "outcome": "FAIL",
+      "full_owasp_pair_update": {
+        "decision": "REFUSE",
+        "why": "IC2 neighbor out: missing_candidate",
+        "mode": "exact",
+        "match": "body-bytes",
+        "reused_rows": "3103",
+        "n_stable": "127",
+        "n_fresh": "251",
+        "f_delta": "0.6640211640211641",
+        "normalizer": "identity"
+      },
+      "min_delta_fix_update": {
+        "decision": "REFUSE_MATCH",
+        "why": "out: replay reported a non-candidate pair (is, {\"check_id\":\"pass-body-fn\",\"path\":\"/Users/joshuaterranova/tmp/tare_semgrep_p2/corpus/files/0012.py\",\"start\":{\"line\":32,\"col\":1,\"offset\":703},\"end\":{\"line\":35,\"col\":9,\"offset\":838},\"extra\":{\"message\":\"`pass`)",
+        "mode": "exact",
+        "match": "body-bytes",
+        "reused_rows": "3269",
+        "n_stable": "377",
+        "n_fresh": "1",
+        "f_delta": "0.0026455026455026454",
+        "normalizer": "identity"
+      },
+      "limitation": "Pilot-scale update did not SHIP: full pair IC2 missing_candidate; min-delta REFUSE_MATCH non-candidate pair (cross-rule coupling). Hand-fixture v1\u2192v2 SHIP remains green."
+    },
+    "3_negative_control": {
+      "outcome": "PASS",
+      "decision": {
+        "decision": "REFUSE",
+        "why": "out: row-key sets differ (whole 3, union 2, only-union 0, only-whole 1)",
+        "reused_rows": "0"
+      }
+    },
+    "4_inference": {
+      "outcome": "PASS",
+      "fill": {
+        "decision": "SHIP",
+        "why": "exact replay under identity normalizer",
+        "mode": "exact",
+        "match": "body-bytes",
+        "reused_rows": "0",
+        "n_stable": "0",
+        "n_fresh": "378",
+        "f_delta": "1.0",
+        "normalizer": "identity",
+        "ic2": "pass",
+        "volatile_json_fields": "['time']"
+      },
+      "copied_vs_produced": "identity normalizer on all fitted value columns; pin inference finds none; declare volatile JSON field time; non-results envelope must match stock"
+    },
+    "5_couplings": {
+      "a_cross_rule_dedup": {
+        "outcome": "INCONCLUSIVE",
+        "note": "eval plant had 0 findings; min-delta non-candidate refuse is the cross-rule signal"
+      },
+      "b_nosemgrep": {
+        "outcome": "PASS",
+        "note": "correct # nosemgrep: <check_id> yields 0 findings"
+      },
+      "c_taint": {
+        "outcome": "PASS",
+        "note": "59 taint-mode rules in pair; no shipped mismatch"
+      },
+      "d_result_order": {
+        "outcome": "PASS",
+        "note": "stock-vs-stock results order identical"
+      }
+    },
+    "6_errors_dependence": {
+      "seed": 20261325,
+      "rate_errors_differ_from_full": 0.7,
+      "full_n_errors": 2,
+      "n_subsets": 10,
+      "subsets": [
+        {
+          "i": 0,
+          "n_rules": 189,
+          "n_findings": 2013,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 43.116794416997436,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 1,
+          "n_rules": 189,
+          "n_findings": 1265,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 30.538765166998928,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 2,
+          "n_rules": 189,
+          "n_findings": 2085,
+          "n_errors": 2,
+          "errors_differ_from_full": false,
+          "wall_s": 46.77128754200021,
+          "tare_expect_if_envelope_checked": "SHIP_possible"
+        },
+        {
+          "i": 3,
+          "n_rules": 189,
+          "n_findings": 734,
+          "n_errors": 2,
+          "errors_differ_from_full": false,
+          "wall_s": 39.222281333000865,
+          "tare_expect_if_envelope_checked": "SHIP_possible"
+        },
+        {
+          "i": 4,
+          "n_rules": 189,
+          "n_findings": 2310,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 34.288961291000305,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 5,
+          "n_rules": 189,
+          "n_findings": 2628,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 41.957297166998615,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 6,
+          "n_rules": 189,
+          "n_findings": 2670,
+          "n_errors": 2,
+          "errors_differ_from_full": false,
+          "wall_s": 46.446031916999345,
+          "tare_expect_if_envelope_checked": "SHIP_possible"
+        },
+        {
+          "i": 7,
+          "n_rules": 189,
+          "n_findings": 767,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 33.32368474999748,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 8,
+          "n_rules": 189,
+          "n_findings": 291,
+          "n_errors": 1,
+          "errors_differ_from_full": true,
+          "wall_s": 28.757044540998322,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        },
+        {
+          "i": 9,
+          "n_rules": 189,
+          "n_findings": 852,
+          "n_errors": 2,
+          "errors_differ_from_full": true,
+          "wall_s": 29.540400333000434,
+          "tare_expect_if_envelope_checked": "REFUSE_MATCH"
+        }
+      ],
+      "tare_implication": "7/10 half-rule subsets changed top-level errors vs full; envelope mismatch \u21d2 REFUSE_MATCH under verify full, limiting speedup unless errors are declared volatile."
+    },
+    "7_shape_timings_laptop_not_evidence": {
+      "stock_newer_1_s": 75.82,
+      "stock_newer_2_s": 77.98,
+      "tare_fill_older_fullpair_s": 689.8462247909993,
+      "tare_update_newer_fullpair_s": 212.4987046669994,
+      "tare_fill_min_s": 672.5949322080014,
+      "tare_update_min_s": 124.21397324999998,
+      "tare_fill_min_phases": {
+        "parse_s": 0.7982192919989757,
+        "coverage_read_s": 3.550000110408291e-05,
+        "diff_s": 2.7707999834092334e-05,
+        "cache_load_s": 1.5624998923158273e-05,
+        "subref_build_s": 0.004440750995854614,
+        "prep_s": 2.562500594649464e-05,
+        "tool_s": 553.1101520819939,
+        "read_output_s": 0.005256831995211542,
+        "discovery_s": 158.61843145799867,
+        "discovery_build_s": 0.00023220799994305708,
+        "discovery_scan_s": 158.51350483400165,
+        "merge_rescale_s": 0.006777917002182221,
+        "cache_store_s": 0.04507729100077995,
+        "pin_check_s": 61.708735457999865,
+        "replay_plan_s": 0.0012436670003808104,
+        "replay_s": 40.734809500001575,
+        "replay_build_s": 0.0007180409993452486,
+        "replay_scan_s": 40.65209208200031,
+        "ic2_neighbor_s": 40.127532082999096,
+        "ic2_neighbor_build_s": 0.0006874589962535538,
+        "ic2_neighbor_scan_s": 40.053839373998926,
+        "ic2_random_20261031_s": 27.420012084003247,
+        "ic2_random_20261031_build_s": 0.000668000997393392,
+        "ic2_random_20261031_scan_s": 27.37135112499891,
+        "ic2_random_20261032_s": 28.341040582999995,
+        "ic2_random_20261032_build_s": 0.0007113749998097774,
+        "ic2_random_20261032_scan_s": 28.289279124997847,
+        "ic2_random_20261033_s": 38.80630612499954,
+        "ic2_random_20261033_build_s": 0.0007306260013137944,
+        "ic2_random_20261033_scan_s": 38.75672070899964,
+        "render_s": 0.02889566700105206,
+        "verify_s": 157.85775408399786,
+        "verify_build_s": 0.00019100000281468965,
+        "verify_scan_s": 157.79064133299835,
+        "total_s": 672.5949322080014,
+        "probe_wall_s": 117.95576579099725
+      },
+      "tare_update_min_phases": {
+        "parse_s": 0.7702572919988597,
+        "coverage_read_s": 0.022102458999142982,
+        "diff_s": 0.002693792001082329,
+        "cache_load_s": 0.03216012499979115,
+        "subref_build_s": 0.0010271249993820675,
+        "prep_s": 5.583999154623598e-06,
+        "tool_s": 123.28928737499882,
+        "read_output_s": 0.0009961260002455674,
+        "discovery_s": 82.91896400000041,
+        "discovery_build_s": 0.0002975830029754434,
+        "discovery_scan_s": 82.91628325000056,
+        "merge_rescale_s": 0.017120208001870196,
+        "cache_store_s": 0.003102165999735007,
+        "replay_plan_s": 0.0004373340016172733,
+        "replay_s": 40.441693708002276,
+        "replay_build_s": 0.0007351259955612477,
+        "replay_scan_s": 40.37300412499826,
+        "total_s": 124.21397324999998,
+        "probe_wall_s": 0.0
+      }
+    }
+  },
+  "code_fixes_this_pilot": [
+    "acts/table_json.py: column lock + sanitize newlines/tabs in scalar cells",
+    "acts/reference_run.py: lock json-records column header across probe parts",
+    "tests/test_semgrep_domain.py: LineTableSanityTests"
+  ],
+  "priorities_finished": {
+    "PRIORITY_1": "done",
+    "PRIORITY_2": "done",
+    "PRIORITY_3": "done_with_positive_control_limitation"
+  }
+}
